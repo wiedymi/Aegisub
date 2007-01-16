@@ -67,6 +67,10 @@ class VideoDisplay: public wxGLCanvas {
 	friend class VideoDisplayVisual;
 
 private:
+	// GL Context
+	wxGLContext *glContext;
+
+	// Display stuff
 	wxString tempfile;
 
 	wxSize origSize;

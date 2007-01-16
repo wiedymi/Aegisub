@@ -96,8 +96,12 @@ END_EVENT_TABLE()
 ///////////////
 // Constructor
 VideoDisplay::VideoDisplay(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
-: wxGLCanvas (parent, id, pos, size, style, name)
+: wxGLCanvas (parent, id, NULL, pos, size, style, name)
 {
+	// Set GL context
+	glContext = new wxGLContext(this);
+
+	// Set options
 	audio = NULL;
 	provider = NULL;
 	curLine = NULL;
@@ -124,6 +128,7 @@ VideoDisplay::~VideoDisplay () {
 	tempfile = _T("");
 	SetVideo(_T(""));
 	delete visual;
+	delete glContext;
 }
 
 void  VideoDisplay::UpdateSize() {
@@ -282,7 +287,8 @@ void VideoDisplay::OnPaint(wxPaintEvent& event) {
 	wxPaintDC dc(this);
 
 	// Draw frame
-	if (provider) dc.DrawBitmap(GetFrame(frame_n),0,0);
+	RefreshVideo();
+	//if (provider) dc.DrawBitmap(GetFrame(frame_n),0,0);
 }
 
 
@@ -316,7 +322,7 @@ void VideoDisplay::OnMouseEvent(wxMouseEvent& event) {
 	}
 
 	// Send to visual
-	visual->OnMouseEvent(event);
+	//visual->OnMouseEvent(event);
 }
 
 
@@ -562,9 +568,35 @@ void VideoDisplay::OnCopyCoords(wxCommandEvent &event) {
 //////////////////
 // Refresh screen
 void VideoDisplay::RefreshVideo() {
+	// Is shown?
+	if (!GetParent()->IsShown()) return;
+
+	// Set GL context
+	SetCurrent(*glContext);
+
+	// Clear
+	glClearColor(0.0f,0.0f,0.0f,0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// Draw something
+	glBegin(GL_POLYGON);
+		glColor3f(1.0f,0.0f,0.0f);
+		glVertex2f(-1.0f,-1.0f);
+		glColor3f(0.0f,1.0f,0.0f);
+		glVertex2f(1.0f,-1.0f);
+		glColor3f(0.0f,0.0f,1.0f);
+		glVertex2f(1.0f,1.0f);
+		glColor3f(1.0f,0.0f,1.0f);
+		glVertex2f(-1.0f,1.0f);
+	glEnd();
+
+	// Swap
+	glFinish();
+	SwapBuffers();
+
 	// Draw frame
 	wxClientDC dc(this);
-	dc.DrawBitmap(GetFrame(),0,0);
+	//dc.DrawBitmap(GetFrame(),0,0);
 
 	// Draw the control points for FexTracker
 	visual->DrawTrackingOverlay(dc);

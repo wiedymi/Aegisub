@@ -132,7 +132,7 @@ void VideoDisplayVisual::DrawOverlay() {
 	dc.SelectObject(*backbuffer);
 
 	// Draw frame
-	dc.DrawBitmap(parent->GetFrame(frame_n),0,0);
+	//dc.DrawBitmap(parent->GetFrame(frame_n),0,0);
 
 	// Draw the control points for FexTracker
 	DrawTrackingOverlay(dc);
