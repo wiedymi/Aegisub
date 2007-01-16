@@ -125,22 +125,20 @@ int VideoSlider::GetXAtValue(int value) {
 /////////////////////
 // Next frame hotkey
 void VideoSlider::NextFrame() {
-	if (Display->IsPlaying) return;
+	if (VideoContext::Get()->IsPlaying()) return;
 
 	//don't request out of range frames
-	if (GetValue() < max)
-		Display->JumpToFrame(GetValue()+1);
+	if (GetValue() < max) VideoContext::Get()->JumpToFrame(GetValue()+1);
 }
 
 
 /////////////////////////
 // Previous frame hotkey
 void VideoSlider::PrevFrame() {
-	if (Display->IsPlaying) return;
+	if (VideoContext::Get()->IsPlaying()) return;
 
 	//don't request out of range frames
-	if (GetValue() > min)
-		Display->JumpToFrame(GetValue()-1);
+	if (GetValue() > min) VideoContext::Get()->JumpToFrame(GetValue()-1);
 }
 
 
@@ -159,9 +157,9 @@ END_EVENT_TABLE()
 // Change position
 void VideoSlider::UpdateVideo() {
 	if (Display) {
-		if (Display->IsPlaying) return;
+		if (VideoContext::Get()->IsPlaying()) return;
 		locked = true;
-		Display->JumpToFrame(GetValue());
+		VideoContext::Get()->JumpToFrame(GetValue());
 		locked = false;
 	}
 }
@@ -189,7 +187,7 @@ void VideoSlider::OnMouse(wxMouseEvent &event) {
 		if (canDrag) {
 			// Shift click to snap to keyframe
 			if (shift && Display) {
-				wxArrayInt KeyFrames = Display->GetKeyFrames();
+				wxArrayInt KeyFrames = VideoContext::Get()->GetKeyFrames();
 				int keys = KeyFrames.Count();
 				int clickedFrame = GetValueAtX(x);
 				int closest = 0;
@@ -217,10 +215,10 @@ void VideoSlider::OnMouse(wxMouseEvent &event) {
 			Refresh(false);
 
 			// Playing?
-			if (Display->IsPlaying) {
-				Display->Stop();
+			if (VideoContext::Get()->IsPlaying()) {
+				VideoContext::Get()->Stop();
 				UpdateVideo();
-				Display->Play();
+				VideoContext::Get()->Play();
 			}
 			else UpdateVideo();
 		}
@@ -235,14 +233,14 @@ void VideoSlider::OnMouse(wxMouseEvent &event) {
 	}
 
 	// Something else
-	else if (!Display->IsPlaying) event.Skip();
+	else if (!VideoContext::Get()->IsPlaying()) event.Skip();
 }
 
 
 //////////////////
 // Key down event
 void VideoSlider::OnKeyDown(wxKeyEvent &event) {
-	if (Display->IsPlaying) return;
+	if (VideoContext::Get()->IsPlaying()) return;
 
 	// Get flags
 	int key = event.GetKeyCode();
@@ -266,9 +264,9 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 
 		// Fast move
 		if (!ctrl && !shift && alt) {
-			if (Display->IsPlaying) return;
+			if (VideoContext::Get()->IsPlaying()) return;
 			int target = MID(min,GetValue() + direction * Options.AsInt(_T("Video Fast Jump Step")),max);
-			if (target != GetValue()) Display->JumpToFrame(target);
+			if (target != GetValue()) VideoContext::Get()->JumpToFrame(target);
 			return;
 		}
 
@@ -294,8 +292,8 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 
 				// Forward
 				if (direction == 1) {
-					if (Display->frame_n < target1) Display->JumpToFrame(target1);
-					else if (Display->frame_n < target2) Display->JumpToFrame(target2);
+					if (VideoContext::Get()->GetFrameN() < target1) VideoContext::Get()->JumpToFrame(target1);
+					else if (VideoContext::Get()->GetFrameN() < target2) VideoContext::Get()->JumpToFrame(target2);
 					else {
 						if (cur+1 >= grid->GetRows()) return;
 						grid->editBox->SetToLine(cur+1);
@@ -310,8 +308,8 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 
 				// Backward
 				else {
-					if (Display->frame_n > target2) Display->JumpToFrame(target2);
-					else if (Display->frame_n > target1) Display->JumpToFrame(target1);
+					if (VideoContext::Get()->GetFrameN() > target2) VideoContext::Get()->JumpToFrame(target2);
+					else if (VideoContext::Get()->GetFrameN() > target1) VideoContext::Get()->JumpToFrame(target1);
 					else {
 						if (cur-1 < 0) return;
 						grid->editBox->SetToLine(cur-1);
@@ -331,10 +329,10 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 			if (direction != 0) {
 				// Prepare
 				int prevKey = 0;
-				int nextKey = Display->length-1;
-				wxArrayInt KeyFrames = Display->GetKeyFrames();
+				int nextKey = VideoContext::Get()->GetLength()-1;
+				wxArrayInt KeyFrames = VideoContext::Get()->GetKeyFrames();
 				int keys = KeyFrames.Count();
-				int cur = Display->frame_n;
+				int cur = VideoContext::Get()->GetFrameN();
 				int i;
 				int temp;
 
@@ -351,8 +349,8 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 					if (temp > cur && temp < nextKey) nextKey = KeyFrames[i];
 				}
 
-				if (direction == -1) Display->JumpToFrame(prevKey);
-				if (direction == 1) Display->JumpToFrame(nextKey);
+				if (direction == -1) VideoContext::Get()->JumpToFrame(prevKey);
+				if (direction == 1) VideoContext::Get()->JumpToFrame(nextKey);
 				return;
 			}
 		}
@@ -421,7 +419,7 @@ void VideoSlider::DrawImage(wxDC &dc) {
 	int curX;
 	if (Display && Options.AsBool(_T("Show keyframes on video slider"))) {
 		dc.SetPen(wxPen(shad));
-		wxArrayInt KeyFrames = Display->GetKeyFrames();
+		wxArrayInt KeyFrames = VideoContext::Get()->GetKeyFrames();
 		int keys = KeyFrames.Count();
 		for (int i=0;i<keys;i++) {
 			curX = GetXAtValue(KeyFrames[i]);

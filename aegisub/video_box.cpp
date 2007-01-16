@@ -209,21 +209,21 @@ END_EVENT_TABLE()
 //////////////
 // Play video
 void VideoBox::OnVideoPlay(wxCommandEvent &event) {
-	videoDisplay->Play();
+	VideoContext::Get()->Play();
 }
 
 
 ///////////////////
 // Play video line
 void VideoBox::OnVideoPlayLine(wxCommandEvent &event) {
-	videoDisplay->PlayLine();
+	VideoContext::Get()->PlayLine();
 }
 
 
 //////////////
 // Stop video
 void VideoBox::OnVideoStop(wxCommandEvent &event) {
-	videoDisplay->Stop();
+	VideoContext::Get()->Stop();
 }
 
 
@@ -325,7 +325,7 @@ void VideoBox::OnVideoTrackerMenu2(wxCommandEvent &event) {
 ///////////////////
 // Track current line
 void VideoBox::OnVideoTrackPoints(wxCommandEvent &event) {
-	videoDisplay->Stop();
+	VideoContext::Get()->Stop();
 
 	// Get line
 	AssDialogue *curline = frame->SubsBox->GetDialogue(frame->EditBox->linen);
@@ -378,14 +378,14 @@ void VideoBox::OnVideoTrackPoints(wxCommandEvent &event) {
 		curline->Tracker = 0;
 	}
 
-	videoDisplay->RefreshVideo();
+	VideoContext::Get()->Refresh(true,false);
 }
 
 
 ///////////////////
 // Track current line
 void VideoBox::OnVideoTrackMovement(wxCommandEvent &event) {
-	videoDisplay->Stop();
+	VideoContext::Get()->Stop();
 
 	// Get line
 	AssDialogue *curline = frame->SubsBox->GetDialogue(frame->EditBox->linen);
@@ -396,14 +396,14 @@ void VideoBox::OnVideoTrackMovement(wxCommandEvent &event) {
 	if( curline->Movement ) DeleteMovement( curline->Movement );
 	curline->Movement = curline->Tracker->GetMovement();
 
-	videoDisplay->RefreshVideo();
+	VideoContext::Get()->Refresh(true,false);
 }
 
 
 ///////////////////
 // split current line
 void VideoBox::OnVideoTrackSplitLine(wxCommandEvent &event) {
-	videoDisplay->Stop();
+	VideoContext::Get()->Stop();
 
 	// Get line
 	AssDialogue *curline = frame->SubsBox->GetDialogue(frame->EditBox->linen);
@@ -452,7 +452,7 @@ void VideoBox::OnVideoTrackSplitLine(wxCommandEvent &event) {
 	// Remove this line
 	frame->SubsBox->DeleteLines(frame->SubsBox->GetRangeArray(frame->EditBox->linen, frame->EditBox->linen));
 
-	videoDisplay->RefreshVideo();
+	VideoContext::Get()->Refresh(true,false);
 }
 
 
@@ -481,7 +481,7 @@ void VideoBox::OnVideoTrackMovementEmpty(wxCommandEvent &event) {
 ///////////////////
 // link line to move file
 void VideoBox::OnVideoTrackLinkFile(wxCommandEvent &event) {
-	videoDisplay->Stop();
+	VideoContext::Get()->Stop();
 
 	// Get line
 	AssDialogue *curline = frame->SubsBox->GetDialogue(frame->EditBox->linen);
