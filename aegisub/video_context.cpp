@@ -276,8 +276,8 @@ void VideoContext::UpdateDisplays() {
 		display->UpdateSize();
 		display->ControlSlider->SetRange(0,GetLength()-1);
 		display->ControlSlider->SetValue(GetFrameN());
-		//display->RefreshVideo();
 		display->UpdatePositionDisplay();
+		display->Refresh();
 	}
 }
 
@@ -298,6 +298,9 @@ void VideoContext::JumpToFrame(int n) {
 
 	// Prevent intervention during playback
 	if (isPlaying && n != PlayNextFrame) return;
+
+	// Set frame number
+	frame_n = n;
 
 	// Display
 	UpdateDisplays();
@@ -343,8 +346,13 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 	glBindTexture(GL_TEXTURE_2D, tex);
 	err = glGetError();
 
+	// Image type
+	GLenum type = GL_RGBA;
+	if (frame.invertChannels) type = GL_BGRA_EXT;
+	isInverted = frame.flipped;
+
 	// Load image data into texture
-	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,frame.w,frame.h,0,GL_RGBA,GL_UNSIGNED_BYTE,frame.data[0]);
+	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,frame.w,frame.h,0,type,GL_UNSIGNED_BYTE,frame.data[0]);
 	err = glGetError();
 
 	// Unload frame
@@ -352,9 +360,15 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 
 	// Cache texture
 	CachedTexture temp;
-	textureCache.push_back(CachedTexture());
-	textureCache.back().frame = n;
-	textureCache.back().texture = tex;
+	temp.frame = n;
+	temp.texture = tex;
+	textureCache.push_back(temp);
+
+	// Remove old cache data
+	if (textureCache.size() > 32) {
+		textureCache.front().Unload();
+		textureCache.pop_front();
+	}
 
 	return tex;
 }
@@ -586,10 +600,6 @@ bool VideoContext::KeyFramesLoaded() {
 
 //////////////////
 // Cached texture
-CachedTexture::~CachedTexture() {
-	Unload();
-}
-
 void CachedTexture::Unload() {
 	glDeleteTextures(1,&texture);
 }

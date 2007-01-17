@@ -83,6 +83,7 @@ BEGIN_EVENT_TABLE(VideoDisplay, wxGLCanvas)
 	//EVT_KEY_DOWN(VideoDisplay::OnKey)
 	//EVT_LEAVE_WINDOW(VideoDisplay::OnMouseLeave)
 	EVT_PAINT(VideoDisplay::OnPaint)
+	EVT_ERASE_BACKGROUND(VideoDisplay::OnEraseBackground)
 
 	//EVT_MENU(VIDEO_MENU_COPY_TO_CLIPBOARD,VideoDisplay::OnCopyToClipboard)
 	//EVT_MENU(VIDEO_MENU_SAVE_SNAPSHOT,VideoDisplay::OnSaveSnapshot)
@@ -142,28 +143,36 @@ void VideoDisplay::Render() {
 	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 	err = glGetError();
 
+	// Texture coordinates
+	float top = 0.0f;
+	float bot = 1.0f;
+	if (context->IsInverted()) {
+		top = 1.0f;
+		bot = 0.0f;
+	}
+
 	// Draw the frame
 	glBegin(GL_QUADS);
 		// Top-left
 		glColor3f(1.0f,1.0f,1.0f);
-		glTexCoord2f(0.0f,0.0f);
+		glTexCoord2f(0.0f,top);
 		glVertex2f(-1.0f,1.0f);
 
 		// Top-right
-		glTexCoord2f(1.0f,0.0f);
+		glTexCoord2f(1.0f,top);
 		glVertex2f(1.0f,1.0f);
 
 		// Bottom-right
-		glTexCoord2f(1.0f,1.0f);
+		glTexCoord2f(1.0f,bot);
 		glVertex2f(1.0f,-1.0f);
 
 		// Bottom-left
-		glTexCoord2f(0.0f,1.0f);
+		glTexCoord2f(0.0f,bot);
 		glVertex2f(-1.0f,-1.0f);
 	glEnd();
 
 	// Swap
-	glFinish();
+	//glFinish();
 	SwapBuffers();
 
 	// Draw frame

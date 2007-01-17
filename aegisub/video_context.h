@@ -60,9 +60,6 @@ class CachedTexture {
 public:
 	GLuint texture;
 	int frame;
-
-	~CachedTexture();
-
 	void Unload();
 };
 
@@ -102,6 +99,7 @@ private:
 	int PlayNextFrame;
 
 	bool loaded;
+	bool isInverted;
 	int w,h;
 	int frame_n;
 	int length;
@@ -132,6 +130,8 @@ public:
 
 	bool IsLoaded() { return loaded; }
 	bool IsPlaying() { return isPlaying; }
+	bool IsInverted() { return isInverted; }
+
 	int GetWidth() { return w; }
 	int GetHeight() { return h; }
 	int GetLength() { return length; }

@@ -49,6 +49,7 @@ AegiVideoFrame::AegiVideoFrame() {
 	format = FORMAT_RGB24;
 	flipped = false;
 	cppAlloc = true;
+	invertChannels = true;
 }
 
 
@@ -62,6 +63,7 @@ AegiVideoFrame::AegiVideoFrame(int width,int height,VideoFrameFormat fmt) {
 	pitch = w;
 	flipped = false;
 	cppAlloc = true;
+	invertChannels = false;
 
 	data[0] = new unsigned char[pitch*w];
 	for (unsigned int i=0;i<pitch*w;i++) data[0][i] = 0;
