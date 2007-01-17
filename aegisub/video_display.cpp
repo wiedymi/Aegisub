@@ -130,7 +130,13 @@ void VideoDisplay::Render() {
 	GLenum err;
 	glClearColor(0.0f,0.0f,0.0f,0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	// Set viewport
 	glLoadIdentity();
+	glMatrixMode (GL_MODELVIEW);
+	int w,h;
+	GetClientSize(&w,&h);
+	glViewport(0,0,w,h);
 
 	// Set texture
 	glEnable(GL_TEXTURE_2D);
