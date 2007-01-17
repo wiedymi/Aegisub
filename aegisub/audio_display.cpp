@@ -788,8 +788,7 @@ void AudioDisplay::SetFromVideo() {
 		wxString extension = VideoContext::Get()->videoName.Right(4);
 		extension.LowerCase();
 
-		if (extension != _T(".d2v"))
-			SetFile(VideoContext::Get()->videoName, VideoContext::Get()->provider);
+		if (extension != _T(".d2v")) SetFile(VideoContext::Get()->videoName, VideoContext::Get()->GetProvider());
 	}
 }
 
@@ -856,7 +855,7 @@ void AudioDisplay::Play(int start,int end) {
 		if (VideoContext::Get()->IsLoaded()) {
 			try {
 				// Get provider
-				provider = AudioProvider::GetAudioProvider(VideoContext::Get()->videoName, this, VideoContext::Get()->provider,0);
+				provider = AudioProvider::GetAudioProvider(VideoContext::Get()->videoName, this, VideoContext::Get()->GetProvider(),0);
 
 				// Get player
 				player = AudioPlayer::GetAudioPlayer();

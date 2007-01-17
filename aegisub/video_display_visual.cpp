@@ -680,87 +680,87 @@ void VideoDisplayVisual::GetLineClip(AssDialogue *diag,int &x1,int &y1,int &x2,i
 void VideoDisplayVisual::DrawTrackingOverlay( wxDC &dc )
 {
 #if USE_FEXTRACKER == 1
-	int frame_n = VideoContext::Get()->GetFrameN();
-	VideoProvider *provider = parent->provider;
-	if( VideoContext::Get()->IsPlaying() ) return;
+	//int frame_n = VideoContext::Get()->GetFrameN();
+	//VideoProvider *provider = VideoContext::Get()->GetProvider();
+	//if( VideoContext::Get()->IsPlaying() ) return;
 
-	// Get line
-	AssDialogue *curline = VideoContext::Get()->grid->GetDialogue(VideoContext::Get()->grid->editBox->linen);
-	if( !curline ) return;
+	//// Get line
+	//AssDialogue *curline = VideoContext::Get()->grid->GetDialogue(VideoContext::Get()->grid->editBox->linen);
+	//if( !curline ) return;
 
-	int StartFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true);
-	int EndFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false);
-	
-	if( frame_n<StartFrame || frame_n>EndFrame ) return;
+	//int StartFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true);
+	//int EndFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false);
+	//
+	//if( frame_n<StartFrame || frame_n>EndFrame ) return;
 
-	int localframe = frame_n - StartFrame;
+	//int localframe = frame_n - StartFrame;
 
-	if( curline->Tracker )
-	{
-		if( curline->Tracker->GetFrame() <= localframe ) return;
+	//if( curline->Tracker )
+	//{
+	//	if( curline->Tracker->GetFrame() <= localframe ) return;
 
-		dc.SetLogicalFunction(wxCOPY);
+	//	dc.SetLogicalFunction(wxCOPY);
 
-		for( int i=0;i<curline->Tracker->GetCount();i++ )
-		{
-			FexTrackingFeature* f = (*curline->Tracker)[i];
-			if( f->StartTime > localframe ) continue;
-			int llf = localframe - f->StartTime;
-			if( f->Pos.size() <= llf ) continue;
-			vec2 pt = f->Pos[llf];
-			pt.x *= provider->GetZoom();
-			pt.y *= provider->GetZoom();
-			pt.x = int(pt.x);
-			pt.y = int(pt.y);
+	//	for( int i=0;i<curline->Tracker->GetCount();i++ )
+	//	{
+	//		FexTrackingFeature* f = (*curline->Tracker)[i];
+	//		if( f->StartTime > localframe ) continue;
+	//		int llf = localframe - f->StartTime;
+	//		if( f->Pos.size() <= llf ) continue;
+	//		vec2 pt = f->Pos[llf];
+	//		pt.x *= provider->GetZoom();
+	//		pt.y *= provider->GetZoom();
+	//		pt.x = int(pt.x);
+	//		pt.y = int(pt.y);
 
-			dc.SetPen(wxPen(wxColour(255*(1-f->Influence),255*f->Influence,0),1));
+	//		dc.SetPen(wxPen(wxColour(255*(1-f->Influence),255*f->Influence,0),1));
 
-			dc.DrawLine( pt.x-2, pt.y, pt.x, pt.y );
-			dc.DrawLine( pt.x, pt.y-2, pt.x, pt.y );
-			dc.DrawLine( pt.x+1, pt.y, pt.x+3, pt.y );
-			dc.DrawLine( pt.x, pt.y+1, pt.x, pt.y+3 );
-		}
-	}
-	if( curline->Movement )
-	{
-		if( curline->Movement->Frames.size() <= localframe ) return;
+	//		dc.DrawLine( pt.x-2, pt.y, pt.x, pt.y );
+	//		dc.DrawLine( pt.x, pt.y-2, pt.x, pt.y );
+	//		dc.DrawLine( pt.x+1, pt.y, pt.x+3, pt.y );
+	//		dc.DrawLine( pt.x, pt.y+1, pt.x, pt.y+3 );
+	//	}
+	//}
+	//if( curline->Movement )
+	//{
+	//	if( curline->Movement->Frames.size() <= localframe ) return;
 
-		dc.SetPen(wxPen(colour[0],2));
-		FexMovementFrame f = curline->Movement->Frames.lVal[localframe];
-		f.Pos.x *= provider->GetZoom();
-		f.Pos.y *= provider->GetZoom();
-		f.Scale.x *= 30* provider->GetZoom();
-		f.Scale.y *= 30* provider->GetZoom();
+	//	dc.SetPen(wxPen(colour[0],2));
+	//	FexMovementFrame f = curline->Movement->Frames.lVal[localframe];
+	//	f.Pos.x *= provider->GetZoom();
+	//	f.Pos.y *= provider->GetZoom();
+	//	f.Scale.x *= 30* provider->GetZoom();
+	//	f.Scale.y *= 30* provider->GetZoom();
 
-		FexMovementFrame f3 = f;
-		dc.SetPen(wxPen(wxColour(0,0,255),1));
-		int nBack = 8;
-		while( --localframe>0 && nBack-- >0 )
-		{
-			FexMovementFrame f2 = curline->Movement->Frames.lVal[localframe];
-			f2.Pos.x *= provider->GetZoom();
-			f2.Pos.y *= provider->GetZoom();
-			dc.DrawLine( f2.Pos.x, f2.Pos.y, f3.Pos.x, f3.Pos.y );
-			f3 = f2;
-		}
+	//	FexMovementFrame f3 = f;
+	//	dc.SetPen(wxPen(wxColour(0,0,255),1));
+	//	int nBack = 8;
+	//	while( --localframe>0 && nBack-- >0 )
+	//	{
+	//		FexMovementFrame f2 = curline->Movement->Frames.lVal[localframe];
+	//		f2.Pos.x *= provider->GetZoom();
+	//		f2.Pos.y *= provider->GetZoom();
+	//		dc.DrawLine( f2.Pos.x, f2.Pos.y, f3.Pos.x, f3.Pos.y );
+	//		f3 = f2;
+	//	}
 
-		dc.SetPen(wxPen(colour[0],2));
-		dc.DrawLine( f.Pos.x-f.Scale.x, f.Pos.y, f.Pos.x+f.Scale.x+1, f.Pos.y );
-		dc.DrawLine( f.Pos.x, f.Pos.y-f.Scale.y, f.Pos.x, f.Pos.y+f.Scale.y+1 );
+	//	dc.SetPen(wxPen(colour[0],2));
+	//	dc.DrawLine( f.Pos.x-f.Scale.x, f.Pos.y, f.Pos.x+f.Scale.x+1, f.Pos.y );
+	//	dc.DrawLine( f.Pos.x, f.Pos.y-f.Scale.y, f.Pos.x, f.Pos.y+f.Scale.y+1 );
 
-		f3 = f;
-		dc.SetPen(wxPen(wxColour(0,255,0),1));
-		int nFront = 8;
-		localframe = frame_n - StartFrame;
-		while( ++localframe<curline->Movement->Frames.size() && nFront-- >0 )
-		{
-			FexMovementFrame f2 = curline->Movement->Frames.lVal[localframe];
-			f2.Pos.x *= provider->GetZoom();
-			f2.Pos.y *= provider->GetZoom();
-			dc.DrawLine( f2.Pos.x, f2.Pos.y, f3.Pos.x, f3.Pos.y );
-			f3 = f2;
-		}
-	}
+	//	f3 = f;
+	//	dc.SetPen(wxPen(wxColour(0,255,0),1));
+	//	int nFront = 8;
+	//	localframe = frame_n - StartFrame;
+	//	while( ++localframe<curline->Movement->Frames.size() && nFront-- >0 )
+	//	{
+	//		FexMovementFrame f2 = curline->Movement->Frames.lVal[localframe];
+	//		f2.Pos.x *= provider->GetZoom();
+	//		f2.Pos.y *= provider->GetZoom();
+	//		dc.DrawLine( f2.Pos.x, f2.Pos.y, f3.Pos.x, f3.Pos.y );
+	//		f3 = f2;
+	//	}
+	//}
 #endif
 }
 
@@ -778,55 +778,55 @@ void VideoDisplayVisual::OnMouseEvent (wxMouseEvent &event) {
 	int sw,sh;
 	VideoContext::Get()->GetScriptSize(sw,sh);
 	int frame_n = VideoContext::Get()->GetFrameN();
-	VideoProvider *provider = parent->provider;
+	//VideoProvider *provider = parent->provider;
 	SubtitlesGrid *grid = VideoContext::Get()->grid;
 	bool hasOverlay = false;
 	bool realTime = Options.AsBool(_T("Video Visual Realtime"));
 
 	// FexTracker
 	#if USE_FEXTRACKER == 1
-	if( event.ButtonDown(wxMOUSE_BTN_LEFT) ) {
-		parent->MouseDownX = x;
-		parent->MouseDownY = y;
-		parent->bTrackerEditing = 1;
-	}
-	if( event.ButtonUp(wxMOUSE_BTN_LEFT) ) parent->bTrackerEditing = 0;
+	//if( event.ButtonDown(wxMOUSE_BTN_LEFT) ) {
+	//	parent->MouseDownX = x;
+	//	parent->MouseDownY = y;
+	//	parent->bTrackerEditing = 1;
+	//}
+	//if( event.ButtonUp(wxMOUSE_BTN_LEFT) ) parent->bTrackerEditing = 0;
 
-	// Do tracker influence if needed
-	if( parent->bTrackerEditing ) {
-		AssDialogue *curline = VideoContext::Get()->grid->GetDialogue(VideoContext::Get()->grid->editBox->linen);
-		int StartFrame, EndFrame, localframe;
-		if( curline && (StartFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true)) <= frame_n	&& (EndFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false)) >= frame_n ) {
-			localframe = frame_n - StartFrame;
-			if( parent->TrackerEdit!=0 && curline->Tracker && localframe < curline->Tracker->GetFrame() ) curline->Tracker->InfluenceFeatures( localframe, float(x)/provider->GetZoom(), float(y)/provider->GetZoom(), parent->TrackerEdit );
-			if( parent->MovementEdit!=0 && curline->Movement && localframe < curline->Movement->Frames.size() )	{// no /provider->GetZoom() to improve precision
-				if( parent->MovementEdit==1 ) {
-					for( int i=0;i<curline->Movement->Frames.size();i++ ) {
-						curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
-						curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
-					}
-				}
-				else if( parent->MovementEdit==2 ) {
-					curline->Movement->Frames[localframe].Pos.x += float(x-parent->MouseDownX);
-					curline->Movement->Frames[localframe].Pos.y += float(y-parent->MouseDownY);
-				}
-				else if( parent->MovementEdit==3 ) {
-					for( int i=0;i<=localframe;i++ ) {
-						curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
-						curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
-					}
-				}
-				else if( parent->MovementEdit==4 ) {
-					for( int i=localframe;i<curline->Movement->Frames.size();i++ ) {
-						curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
-						curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
-					}
-				}
-			}
-			parent->MouseDownX = x;
-			parent->MouseDownY = y;
-		}
-	}
+	//// Do tracker influence if needed
+	//if( parent->bTrackerEditing ) {
+	//	AssDialogue *curline = VideoContext::Get()->grid->GetDialogue(VideoContext::Get()->grid->editBox->linen);
+	//	int StartFrame, EndFrame, localframe;
+	//	if( curline && (StartFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true)) <= frame_n	&& (EndFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false)) >= frame_n ) {
+	//		localframe = frame_n - StartFrame;
+	//		if( parent->TrackerEdit!=0 && curline->Tracker && localframe < curline->Tracker->GetFrame() ) curline->Tracker->InfluenceFeatures( localframe, float(x)/provider->GetZoom(), float(y)/provider->GetZoom(), parent->TrackerEdit );
+	//		if( parent->MovementEdit!=0 && curline->Movement && localframe < curline->Movement->Frames.size() )	{// no /provider->GetZoom() to improve precision
+	//			if( parent->MovementEdit==1 ) {
+	//				for( int i=0;i<curline->Movement->Frames.size();i++ ) {
+	//					curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
+	//					curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
+	//				}
+	//			}
+	//			else if( parent->MovementEdit==2 ) {
+	//				curline->Movement->Frames[localframe].Pos.x += float(x-parent->MouseDownX);
+	//				curline->Movement->Frames[localframe].Pos.y += float(y-parent->MouseDownY);
+	//			}
+	//			else if( parent->MovementEdit==3 ) {
+	//				for( int i=0;i<=localframe;i++ ) {
+	//					curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
+	//					curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
+	//				}
+	//			}
+	//			else if( parent->MovementEdit==4 ) {
+	//				for( int i=localframe;i<curline->Movement->Frames.size();i++ ) {
+	//					curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
+	//					curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
+	//				}
+	//			}
+	//		}
+	//		parent->MouseDownX = x;
+	//		parent->MouseDownY = y;
+	//	}
+	//}
 	#endif
 
 	// Text of current coords

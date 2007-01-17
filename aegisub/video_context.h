@@ -64,9 +64,10 @@ private:
 	static VideoContext *instance;
 	std::list<VideoDisplay*> displayList;
 
-protected:
 	wxGLContext *glContext;
 	wxString tempfile;
+
+	VideoProvider *provider;
 
 	bool threaded;
 	int nextFrame;
@@ -92,13 +93,11 @@ protected:
 	bool isPlaying;
 	double fps;
 
-	wxBitmap GetFrame(int n);
+	int GetFrame(int n);
 	void SaveSnapshot();
 	void OnPlayTimer(wxTimerEvent &event);
 
 public:
-	VideoProvider *provider;
-
 	SubtitlesGrid *grid;
 	wxString videoName;
 
@@ -110,6 +109,8 @@ public:
 
 	void AddDisplay(VideoDisplay *display);
 	void RemoveDisplay(VideoDisplay *display);
+
+	VideoProvider *GetProvider() { return provider; }
 
 	bool IsLoaded() { return loaded; }
 	bool IsPlaying() { return isPlaying; }

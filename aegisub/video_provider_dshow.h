@@ -58,10 +58,10 @@ class DirectShowVideoProvider: public VideoProvider {
 	struct DF {
 	public:
 	    REFERENCE_TIME  timestamp;  // DS timestamp that we used for this frame
-		wxImage frame;
+		AegiVideoFrame frame;
 
 		DF() : timestamp(-1) { }
-		DF(wxImage f) : timestamp(-1), frame(f) { }
+		DF(AegiVideoFrame f) : timestamp(-1), frame(f) { }
 		DF(const DF& f) { operator=(f); }
 		DF& operator=(const DF& f) { timestamp = f.timestamp; frame = f.frame; return *this; }
 	};
@@ -76,13 +76,6 @@ private:
 	unsigned int num_frames;
 	double fps;
 	long long defd;
-
-	int depth;
-	double dar;
-	double zoom;
-
-	unsigned char* data;
-	wxBitmap last_frame;
 
 	void AttachOverlay(SubtitleProvider::Overlay *overlay) {}
 
@@ -109,22 +102,15 @@ public:
 	~DirectShowVideoProvider();
 
 	void RefreshSubtitles();
-	void SetDAR(double _dar);
-	void SetZoom(double _zoom);
 
-	wxBitmap GetFrame(int n);
+	AegiVideoFrame GetFrame(int n);
 	void GetFloatFrame(float* Buffer, int n);
 
 	int GetPosition() { return last_fnum; };
 	int GetFrameCount() { return num_frames; };
 	double GetFPS() { return fps; };
-
-	int GetWidth() { return height*zoom*dar; };
-	int GetHeight() { return height*zoom; };
-	double GetZoom() { return zoom; };
-
-	int GetSourceWidth() { return width; };
-	int GetSourceHeight() { return height; };
+	int GetWidth() { return width; };
+	int GetHeight() { return height; };
 
 	void OverrideFrameTimeList(wxArrayInt list);
 };

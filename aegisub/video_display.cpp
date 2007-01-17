@@ -236,7 +236,7 @@ void VideoDisplay::SetZoomPos(int value) {
 //////////////////////////
 // Calculate aspect ratio
 double VideoDisplay::GetARFromType(int type) {
-	if (type == 0) return (double)provider->GetSourceWidth()/(double)provider->GetSourceHeight();
+	if (type == 0) return (double)VideoContext::Get()->GetWidth()/(double)VideoContext::Get()->GetHeight();
 	if (type == 1) return 4.0/3.0;
 	if (type == 2) return 16.0/9.0;
 	if (type == 3) return 2.35;

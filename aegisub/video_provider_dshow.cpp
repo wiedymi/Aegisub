@@ -56,8 +56,6 @@ DEFINE_GUID(CLSID_VideoSink, 0xf13d3732, 0x96bd, 0x4108, 0xaf, 0xeb, 0xe8, 0x5f,
 // Constructor
 // Based on Haali's code for DirectShowSource2
 DirectShowVideoProvider::DirectShowVideoProvider(wxString _filename, wxString _subfilename,double _fps) {
-	zoom = 1.0;
-	dar = 4.0/3.0;
 	fps = _fps;
 	m_hFrameReady = CreateEvent(NULL, FALSE, FALSE, NULL);
 	OpenVideo(_filename);
@@ -317,80 +315,31 @@ void DirectShowVideoProvider::ReadFrame(long long timestamp, unsigned format, un
 	// Set frame
 	DF *df = (DF*) arg;
 	df->timestamp = timestamp;
-	unsigned int w_cp = width;
-	unsigned int h_cp = height;
 
-	// Create data
-	unsigned char *data;
-	//data = new unsigned char[width*height*bpp];
-	data = (unsigned char *) malloc(width*height*bpp);
-	unsigned int dstride = width*bpp;
+	// Create frame
+	AegiVideoFrame &final = df->frame;
+	final.w = width;
+	final.h = height;
+	final.pitch = stride;
+	final.cppAlloc = false;
+	final.flipped = true;
 
-	// Read RGB24 data
-	if (format == IVS_RGB24) {
-		unsigned char *dst = data + h_cp*dstride;
-		const unsigned char *src = frame;
-		//unsigned char t1,t2;
-		w_cp *= bpp;
-		for (int y=h_cp; --y>=0;) {
-			dst -= dstride;
-			for (int x=width; --x>=0;) {
-				//t1 = *src++;
-				//t2 = *src++;
-				*dst++ = *(src+2);
-				*dst++ = *(src+1);
-				*dst++ = *src;
-				src += 3;
-			}
-			dst -= dstride;
-		}
+	// Planar
+	if (format == IVS_YUY2) {
+		final.format = FORMAT_YUY2;
 	}
 
-	// Create bitmap out of data
-	//df->frame = wxBitmap((const char*) data, width, height, bpp*8);
-	//delete data;
-	df->frame = wxImage(width,height,data,false);
+	// Interleaved
+	else {
+		unsigned int datalen = stride*height*bpp;
+		final.data[0] = (unsigned char *) malloc(datalen);
+		memcpy(final.data[0],frame,datalen);
 	
-	//else if (format == IVS_YV12 && vi->pixel_type == VideoInfo::CS_YV12) {
-	//  // plane Y
-	//  BYTE                *dp = df->frame->GetWritePtr(PLANAR_Y);
-	//  const unsigned char *sp = frame;
-	//  int                 dstride = df->frame->GetPitch(PLANAR_Y);
-
-	//  for (int y = 0; y < h_cp; ++y) {
-	//	memcpy(dp, sp, w_cp);
-	//	sp += stride;
-	//	dp += dstride;
-	//  }
-
-	//  // UV
-	//  dstride >>= 1;
-	//  stride >>= 1;
-	//  w_cp >>= 1;
-	//  h_cp >>= 1;
-
-	//  // plane V
-	//  dp = df->frame->GetWritePtr(PLANAR_V);
-	//  sp = frame + height * stride * 2;
-	//  dstride = df->frame->GetPitch(PLANAR_V);
-
-	//  for (int y = 0; y < h_cp; ++y) {
-	//	memcpy(dp, sp, w_cp);
-	//	sp += stride;
-	//	dp += dstride;
-	//  }
-
-	//  // plane U
-	//  dp = df->frame->GetWritePtr(PLANAR_U);
-	//  sp = frame + height * stride * 2 + (height >> 1) * stride;
-	//  dstride = df->frame->GetPitch(PLANAR_U);
-
-	//  for (int y = 0; y < h_cp; ++y) {
-	//	memcpy(dp, sp, w_cp);
-	//	sp += stride;
-	//	dp += dstride;
-	//  }
-	//}
+		// Set format
+		if (format == IVS_RGB24) final.format = FORMAT_RGB24;
+		else if (format == IVS_RGB32) final.format = FORMAT_RGB32;
+		else if (format == IVS_YV12) final.format = FORMAT_YV12;
+	}
 }
 
 
@@ -431,9 +380,6 @@ int DirectShowVideoProvider::NextFrame(DF &_df,int &_fn) {
 			if (frameno >= 0) {
 				_fn = frameno;
 				_df = df;
-				if (zoom != 1.0 || dar != 1.0) {
-					_df.frame.Rescale(height*zoom*dar,height*zoom,wxIMAGE_QUALITY_NORMAL);
-				}
 				return 0;
 			}
 		}
@@ -443,13 +389,10 @@ int DirectShowVideoProvider::NextFrame(DF &_df,int &_fn) {
 
 /////////////
 // Get frame
-wxBitmap DirectShowVideoProvider::GetFrame(int n) {
+AegiVideoFrame DirectShowVideoProvider::GetFrame(int n) {
 	// Normalize frame number
 	if (n >= (signed) num_frames) n = num_frames-1;
 	if (n < 0) n = 0;
-
-	// Current
-	if (n == last_fnum) return wxBitmap(rdf.frame);
 
 	// Variables
 	DF df;
@@ -466,7 +409,7 @@ wxBitmap DirectShowVideoProvider::GetFrame(int n) {
 		NextFrame(df,fn);
 		last_fnum = n;
 		rdf.frame = df.frame;
-		return wxBitmap(rdf.frame);
+		return rdf.frame;
 	}
 
 	// Not the next, reset and seek first
@@ -474,7 +417,7 @@ seek:
 	ResetEvent(m_hFrameReady);
 
 	// Seek
-	if (FAILED(m_pGS->SetPositions(&cur, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning))) return wxBitmap(width,height);
+	if (FAILED(m_pGS->SetPositions(&cur, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning))) return AegiVideoFrame(width,height);
 
 	// Set time
 	rdf.timestamp = -1;
@@ -511,35 +454,19 @@ seek:
 
 		// Failed
 		else {
-			return wxBitmap(height*zoom*dar,height*zoom);
+			return AegiVideoFrame(width,height);
 		}
 	}
 
 	// Return frame
 	last_fnum = n;
-	return wxBitmap(rdf.frame);
+	return rdf.frame;
 }
 
 
 ////////////////
 // Refresh subs
 void DirectShowVideoProvider::RefreshSubtitles() {
-}
-
-
-///////////
-// Set DAR
-void DirectShowVideoProvider::SetDAR(double _dar) {
-	dar = _dar;
-	last_fnum = -2;
-}
-
-
-////////////
-// Set Zoom
-void DirectShowVideoProvider::SetZoom(double _zoom) {
-	zoom = _zoom;
-	last_fnum = -2;
 }
 
 

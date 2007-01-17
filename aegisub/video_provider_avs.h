@@ -41,7 +41,7 @@
 // Headers
 #include <wx/wxprec.h>
 
-#ifdef __WINDOWS__
+#ifdef __WIN32__
 #include "avisynth_wrap.h"
 #include "video_provider.h"
 
@@ -65,27 +65,18 @@ private:
 	wxString subfilename;
 	wxString rendererCallString;
 
-	int last_fnum;
 	int num_frames;
+	int last_fnum;
 
-	int depth;
-
-	unsigned char* data;
-	wxBitmap last_frame;
-
-	double dar;
-	double zoom;
 	double fps;
 	wxArrayInt frameTime;
 
 	PClip RGB32Video;
 	PClip SubtitledVideo;
-	PClip ResizedVideo;
 
 	PClip OpenVideo(wxString _filename, bool mpeg2dec3_priority = true);
 	PClip ApplySubtitles(wxString _filename, PClip videosource);
-	PClip ApplyDARZoom(double _zoom, double _dar, PClip videosource);
-	wxBitmap GetFrame(int n, bool force);
+
 	void LoadVSFilter();
 	void LoadASA();
 	void LoadRenderer();
@@ -96,10 +87,8 @@ public:
 	~AvisynthVideoProvider();
 
 	void RefreshSubtitles();
-	void SetDAR(double _dar);
-	void SetZoom(double _zoom);
 
-	wxBitmap GetFrame(int n) { return GetFrame(n,false); };
+	AegiVideoFrame GetFrame(int n);
 	void GetFloatFrame(float* Buffer, int n);
 
 	// properties
@@ -109,10 +98,6 @@ public:
 
 	int GetWidth() { return vi.width; };
 	int GetHeight() { return vi.height; };
-	double GetZoom() { return zoom; };
-
-	int GetSourceWidth() { return RGB32Video->GetVideoInfo().width; };
-	int GetSourceHeight() { return RGB32Video->GetVideoInfo().height; };
 
 	void OverrideFrameTimeList(wxArrayInt list);
 };

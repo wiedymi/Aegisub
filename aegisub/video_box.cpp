@@ -112,6 +112,7 @@ VideoBox::VideoBox(wxWindow *parent)
 	videoDisplay->PositionDisplay = VideoPosition;
 	videoDisplay->SubsPosition = VideoSubsPos;
 	videoDisplay->box = this;
+	VideoContext::Get()->AddDisplay(videoDisplay);
 	videoDisplay->Reset();
 
 	// Set display
@@ -418,8 +419,8 @@ void VideoBox::OnVideoTrackSplitLine(wxCommandEvent &event) {
 	int ResXValue,ResYValue;
 	swscanf( subs->GetScriptInfo(_T("PlayResX")), _T("%d"), &ResXValue );
 	swscanf( subs->GetScriptInfo(_T("PlayResY")), _T("%d"), &ResYValue );
-	int SrcXValue = videoDisplay->provider->GetSourceWidth();
-	int SrcYValue = videoDisplay->provider->GetSourceHeight();
+	int SrcXValue = VideoContext::Get()->GetWidth();
+	int SrcYValue = VideoContext::Get()->GetHeight();
 
 	float sx = float(ResXValue)/float(SrcXValue);
 	float sy = float(ResYValue)/float(SrcYValue);

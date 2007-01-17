@@ -1003,7 +1003,7 @@ void FrameMain::LoadVideo(wxString file,bool autoload) {
 	if (VideoContext::Get()->IsLoaded()) {
 		int scriptx = SubsBox->ass->GetScriptInfoAsInt(_T("PlayResX"));
 		int scripty = SubsBox->ass->GetScriptInfoAsInt(_T("PlayResY"));
-		int vidx = VideoContext::Get()->provider->GetSourceWidth(), vidy = VideoContext::Get()->provider->GetSourceHeight();
+		int vidx = VideoContext::Get()->GetWidth(), vidy = VideoContext::Get()->GetHeight();
 		if (scriptx != vidx || scripty != vidy) {
 			switch (Options.AsInt(_T("Video Check Script Res"))) {
 				case 1:

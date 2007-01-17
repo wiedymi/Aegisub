@@ -84,7 +84,6 @@ private:
 
 public:
 	VideoDisplayVisual *visual;
-	VideoProvider *provider;
 	VideoBox *box;
 
 	wxString videoName;

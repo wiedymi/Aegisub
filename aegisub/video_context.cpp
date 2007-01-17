@@ -326,17 +326,19 @@ void VideoContext::SaveSnapshot() {
 	}
 
 	// Save
-	GetFrame(frame_n).ConvertToImage().SaveFile(path,wxBITMAP_TYPE_PNG);
+	// TODO
+	//GetFrame(frame_n).ConvertToImage().SaveFile(path,wxBITMAP_TYPE_PNG);
 }
 
 
 ////////////////////////
 // Requests a new frame
-wxBitmap VideoContext::GetFrame(int n) {
-	if (n < 0) n = frame_n;
-	frame_n = n;
-	return provider->GetFrame(n);
-	Refresh(true,false);
+int VideoContext::GetFrame(int n) {
+	//if (n < 0) n = frame_n;
+	//frame_n = n;
+	//return provider->GetFrame(n);
+	//Refresh(true,false);
+	return 0;
 }
 
 
