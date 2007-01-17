@@ -51,6 +51,7 @@ class AudioProvider;
 class AudioDisplay;
 class AssDialogue;
 class VideoProvider;
+class VideoDisplay;
 
 
 //////////////
@@ -61,6 +62,7 @@ class VideoContext : public wxEvtHandler {
 
 private:
 	static VideoContext *instance;
+	std::list<VideoDisplay*> displayList;
 
 protected:
 	wxGLContext *glContext;
@@ -95,7 +97,6 @@ protected:
 	void OnPlayTimer(wxTimerEvent &event);
 
 public:
-	VideoDisplayVisual *visual;
 	VideoProvider *provider;
 
 	SubtitlesGrid *grid;
@@ -106,6 +107,9 @@ public:
 
 	VideoContext();
 	~VideoContext();
+
+	void AddDisplay(VideoDisplay *display);
+	void RemoveDisplay(VideoDisplay *display);
 
 	bool IsLoaded() { return loaded; }
 	bool IsPlaying() { return isPlaying; }

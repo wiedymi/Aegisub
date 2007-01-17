@@ -43,6 +43,7 @@
 #include <wx/filename.h>
 #include <wx/config.h>
 #include "utils.h"
+#include "video_display.h"
 #include "video_context.h"
 #include "video_provider.h"
 #include "vfr.h"
@@ -229,14 +230,33 @@ void VideoContext::SetVideo(const wxString &filename) {
 
 
 ///////////////////
+// Add new display
+void VideoContext::AddDisplay(VideoDisplay *display) {
+	for (std::list<VideoDisplay*>::iterator cur=displayList.begin();cur!=displayList.end();cur++) {
+		if ((*cur) == display) return;
+	}
+	displayList.push_back(display);
+}
+
+
+//////////////////
+// Remove display
+void VideoContext::RemoveDisplay(VideoDisplay *display) {
+	displayList.remove(display);
+}
+
+
+///////////////////
 // Update displays
 void VideoContext::UpdateDisplays() {
-	// TODO
-	//ControlSlider->SetRange(0,length-1);
-	//ControlSlider->SetValue(0);
-	//RefreshVideo();
-	//UpdatePositionDisplay();
-	//ControlSlider->SetValue(n);
+	for (std::list<VideoDisplay*>::iterator cur=displayList.begin();cur!=displayList.end();cur++) {
+		VideoDisplay *display = *cur;
+		
+		display->ControlSlider->SetRange(0,GetLength()-1);
+		display->ControlSlider->SetValue(GetFrameN());
+		//display->RefreshVideo();
+		display->UpdatePositionDisplay();
+	}
 }
 
 

@@ -98,35 +98,25 @@ VideoDisplay::VideoDisplay(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 : wxGLCanvas (parent, id, NULL, pos, size, style, name)
 {
 	//// Set options
-	//audio = NULL;
-	//provider = NULL;
-	//curLine = NULL;
-	//ControlSlider = NULL;
-	//PositionDisplay = NULL;
-	//loaded = false;
-	//keyFramesLoaded = false;
-	//overKeyFramesLoaded = false;
-	//frame_n = 0;
-	//origSize = size;
-	//arType = 0;
-	//IsPlaying = false;
-	//threaded = Options.AsBool(_T("Threaded Video"));
-	//nextFrame = -1;
-	//zoomValue = 0.5;
-	//visual = new VideoDisplayVisual(this);
+	ControlSlider = NULL;
+	PositionDisplay = NULL;
+	origSize = size;
+	arType = 0;
+	zoomValue = 0.5;
+	visual = new VideoDisplayVisual(this);
 }
 
 
 //////////////
 // Destructor
 VideoDisplay::~VideoDisplay () {
-	//wxRemoveFile(tempfile);
-	//tempfile = _T("");
-	//SetVideo(_T(""));
-	//delete visual;
-	//delete glContext;
+	delete visual;
+	VideoContext::Get()->RemoveDisplay(this);
 }
 
+
+///////////////
+// Update size
 void  VideoDisplay::UpdateSize() {
 	//if (provider) {
 	//	w = provider->GetWidth();
