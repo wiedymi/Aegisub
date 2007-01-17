@@ -323,6 +323,7 @@ void DirectShowVideoProvider::ReadFrame(long long timestamp, unsigned format, un
 	final.pitch = stride;
 	final.cppAlloc = false;
 	final.flipped = true;
+	final.invertChannels = true;
 
 	// Planar
 	if (format == IVS_YUY2) {
@@ -331,7 +332,7 @@ void DirectShowVideoProvider::ReadFrame(long long timestamp, unsigned format, un
 
 	// Interleaved
 	else {
-		unsigned int datalen = stride*height*bpp;
+		unsigned int datalen = stride*height;
 		final.data[0] = (unsigned char *) malloc(datalen);
 		memcpy(final.data[0],frame,datalen);
 	

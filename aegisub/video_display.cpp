@@ -104,6 +104,7 @@ VideoDisplay::VideoDisplay(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 	arValue = 1.0;
 	zoomValue = 1.0;
 	visual = new VideoDisplayVisual(this);
+	SetCursor(wxNullCursor);
 }
 
 
@@ -129,6 +130,7 @@ void VideoDisplay::Render() {
 	GLenum err;
 	glClearColor(0.0f,0.0f,0.0f,0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
+	glLoadIdentity();
 
 	// Set texture
 	glEnable(GL_TEXTURE_2D);
@@ -199,6 +201,7 @@ void VideoDisplay::UpdateSize() {
 	SetSizeHints(_w,_h,_w,_h);
 
 	box->VideoSizer->Fit(box);
+	Refresh(false);
 }
 
 
@@ -369,30 +372,32 @@ void VideoDisplay::UpdatePositionDisplay() {
 ////////////////////////////////////////////////////
 // Updates box with subs position relative to frame
 void VideoDisplay::UpdateSubsRelativeTime() {
-	//// Set variables
-	//wxString startSign;
-	//wxString endSign;
-	//int startOff,endOff;
+	// Set variables
+	wxString startSign;
+	wxString endSign;
+	int startOff,endOff;
+	int frame_n = VideoContext::Get()->GetFrameN();
+	AssDialogue *curLine = VideoContext::Get()->curLine;
 
-	//// Set start/end
-	//if (curLine) {
-	//	int time = VFR_Output.GetTimeAtFrame(frame_n,true,true);
-	//	startOff = time - curLine->Start.GetMS();
-	//	endOff = time - curLine->End.GetMS();
-	//}
+	// Set start/end
+	if (curLine) {
+		int time = VFR_Output.GetTimeAtFrame(frame_n,true,true);
+		startOff = time - curLine->Start.GetMS();
+		endOff = time - curLine->End.GetMS();
+	}
 
-	//// Fallback to zero
-	//else {
-	//	startOff = 0;
-	//	endOff = 0;
-	//}
+	// Fallback to zero
+	else {
+		startOff = 0;
+		endOff = 0;
+	}
 
-	//// Positive signs
-	//if (startOff > 0) startSign = _T("+");
-	//if (endOff > 0) endSign = _T("+");
+	// Positive signs
+	if (startOff > 0) startSign = _T("+");
+	if (endOff > 0) endSign = _T("+");
 
-	//// Update line
-	//SubsPosition->SetValue(wxString::Format(_T("%s%ims; %s%ims"),startSign.c_str(),startOff,endSign.c_str(),endOff));
+	// Update line
+	SubsPosition->SetValue(wxString::Format(_T("%s%ims; %s%ims"),startSign.c_str(),startOff,endSign.c_str(),endOff));
 }
 
 

@@ -74,12 +74,17 @@ AegiVideoFrame::AegiVideoFrame(int width,int height,VideoFrameFormat fmt) {
 // Clear
 void AegiVideoFrame::Clear() {
 	for (int i=0;i<4;i++) {
-		if (cppAlloc) delete[] data[i];
-		else free(data[i]);
-		data[i] = NULL;
+		if (data[i]) {
+			if (cppAlloc) delete[] data[i];
+			else free(data[i]);
+			data[i] = NULL;
+		}
 	}
 	w = 0;
 	h = 0;
 	pitch = 0;
 	format = FORMAT_RGB24;
+	flipped = false;
+	cppAlloc = true;
+	invertChannels = true;
 }

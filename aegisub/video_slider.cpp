@@ -87,7 +87,7 @@ void VideoSlider::SetRange(int from,int to) {
 	min = from;
 	max = to;
 	val = from;
-	UpdateImage();
+	//UpdateImage();
 }
 
 
@@ -149,6 +149,7 @@ BEGIN_EVENT_TABLE(VideoSlider, wxWindow)
 	EVT_PAINT(VideoSlider::OnPaint)
 	EVT_SET_FOCUS(VideoSlider::OnFocus)
 	EVT_KILL_FOCUS(VideoSlider::OnFocus)
+	EVT_ERASE_BACKGROUND(VideoSlider::OnEraseBackground)
 END_EVENT_TABLE()
 
 
@@ -466,8 +467,9 @@ void VideoSlider::DrawImage(wxDC &dc) {
 ////////////////
 // Update image
 void VideoSlider::UpdateImage () {
-	wxClientDC dc(this);
-	DrawImage(dc);
+	//wxClientDC dc(this);
+	//DrawImage(dc);
+	Refresh(false);
 }
 
 

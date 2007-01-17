@@ -152,6 +152,12 @@ void VideoContext::Reset() {
 	// Update displays
 	UpdateDisplays();
 
+	// Remove textures
+	while (textureCache.size() > 32) {
+		textureCache.front().Unload();
+		textureCache.pop_front();
+	}
+
 	// Finish clean up
 	wxRemoveFile(tempfile);
 	tempfile = _T("");
@@ -347,8 +353,15 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 	err = glGetError();
 
 	// Image type
-	GLenum type = GL_RGBA;
-	if (frame.invertChannels) type = GL_BGRA_EXT;
+	GLenum type;
+	if (frame.format == FORMAT_RGB32) {
+		if (frame.invertChannels) type = GL_BGRA_EXT;
+		else type = GL_RGBA;
+	}
+	if (frame.format == FORMAT_RGB24) {
+		if (frame.invertChannels) type = GL_BGR_EXT;
+		else type = GL_RGB;
+	}
 	isInverted = frame.flipped;
 
 	// Load image data into texture
