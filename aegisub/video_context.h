@@ -123,7 +123,6 @@ public:
 
 	void SetVideo(const wxString &filename);
 	void Reset();
-	void Unload();
 
 	void JumpToFrame(int n);
 	void JumpToTime(int ms);
@@ -148,6 +147,7 @@ public:
 	void SetKeyFramesName(wxString name) { keyFramesFilename = name; }
 
 	static VideoContext *Get();
+	static void Clear();
 
 	DECLARE_EVENT_TABLE()
 };

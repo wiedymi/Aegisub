@@ -84,8 +84,6 @@ BEGIN_EVENT_TABLE(VideoDisplay, wxGLCanvas)
 	//EVT_LEAVE_WINDOW(VideoDisplay::OnMouseLeave)
 	//EVT_PAINT(VideoDisplay::OnPaint)
 
-	//EVT_TIMER(VIDEO_PLAY_TIMER,VideoDisplay::OnPlayTimer)
-
 	//EVT_MENU(VIDEO_MENU_COPY_TO_CLIPBOARD,VideoDisplay::OnCopyToClipboard)
 	//EVT_MENU(VIDEO_MENU_SAVE_SNAPSHOT,VideoDisplay::OnSaveSnapshot)
 	//EVT_MENU(VIDEO_MENU_COPY_COORDS,VideoDisplay::OnCopyCoords)
@@ -97,12 +95,13 @@ END_EVENT_TABLE()
 VideoDisplay::VideoDisplay(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
 : wxGLCanvas (parent, id, NULL, pos, size, style, name)
 {
-	//// Set options
+	// Set options
 	ControlSlider = NULL;
 	PositionDisplay = NULL;
 	origSize = size;
 	arType = 0;
-	zoomValue = 0.5;
+	arValue = 1.0;
+	zoomValue = 1.0;
 	visual = new VideoDisplayVisual(this);
 }
 
@@ -118,19 +117,18 @@ VideoDisplay::~VideoDisplay () {
 ///////////////
 // Update size
 void  VideoDisplay::UpdateSize() {
-	//if (provider) {
-	//	w = provider->GetWidth();
-	//	h = provider->GetHeight();
+	// Get size
+	w = VideoContext::Get()->GetWidth() * zoomValue;
+	h = VideoContext::Get()->GetHeight() * zoomValue;
 
-	//	// Set the size for this control
-	//	SetSizeHints(w,h,w,h);
-	//	SetClientSize(w,h);
-	//	int _w,_h;
-	//	GetSize(&_w,&_h);
-	//	SetSizeHints(_w,_h,_w,_h);
+	// Set the size for this control
+	SetSizeHints(w,h,w,h);
+	SetClientSize(w,h);
+	int _w,_h;
+	GetSize(&_w,&_h);
+	SetSizeHints(_w,_h,_w,_h);
 
-	//	box->VideoSizer->Fit(box);
-	//}
+	box->VideoSizer->Fit(box);
 }
 
 
@@ -247,20 +245,16 @@ double VideoDisplay::GetARFromType(int type) {
 /////////////////////
 // Sets aspect ratio
 void VideoDisplay::SetAspectRatio(int _type, double value) {
-	//if (provider) {
-	//	// Get value
-	//	if (_type != 4) value = GetARFromType(_type);
-	//	if (value < 0.5) value = 0.5;
-	//	if (value > 5.0) value = 5.0;
+	// Get value
+	if (_type != 4) value = GetARFromType(_type);
+	if (value < 0.5) value = 0.5;
+	if (value > 5.0) value = 5.0;
 
-	//	// Set
-	//	provider->SetDAR(value);
-	//	arType = _type;
-	//	arValue = value;
-	//	UpdateSize();
-	//	RefreshVideo();
-	//	GetParent()->Layout();
-	//}
+	// Set
+	arType = _type;
+	arValue = value;
+	UpdateSize();
+	GetParent()->Layout();
 }
 
 

@@ -104,10 +104,7 @@ VideoContext::VideoContext() {
 //////////////
 // Destructor
 VideoContext::~VideoContext () {
-	wxRemoveFile(tempfile);
-	tempfile = _T("");
-	SetVideo(_T(""));
-	delete glContext;
+	Reset();
 }
 
 
@@ -116,6 +113,14 @@ VideoContext::~VideoContext () {
 VideoContext *VideoContext::Get() {
 	if (!instance) instance = new VideoContext;
 	return instance;
+}
+
+
+/////////
+// Clear
+void VideoContext::Clear() {
+	delete instance;
+	instance = NULL;
 }
 
 
@@ -134,6 +139,27 @@ void VideoContext::Reset() {
 		audio->player = NULL;
 		audio->temporary = false;
 	}
+	audio = NULL;
+
+	// Remove video data
+	loaded = false;
+	frame_n = 0;
+	keyFramesLoaded = false;
+	overKeyFramesLoaded = false;
+	isPlaying = false;
+	nextFrame = -1;
+
+	// Update displays
+	UpdateDisplays();
+
+	// Finish clean up
+	wxRemoveFile(tempfile);
+	tempfile = _T("");
+	videoName = _T("");
+	delete provider;
+	provider = NULL;
+	delete glContext;
+	glContext = NULL;
 }
 
 
@@ -141,13 +167,6 @@ void VideoContext::Reset() {
 // Sets video filename
 void VideoContext::SetVideo(const wxString &filename) {
 	// Unload video
-	delete provider;
-	provider = NULL;
-	//if (VFR_Output.GetFrameRateType() == VFR) VFR_Output.Unload();
-	//VFR_Input.Unload();
-	videoName = _T("");
-	loaded = false;
-	frame_n = 0;
 	Reset();
 	
 	// Load video
@@ -205,12 +224,14 @@ void VideoContext::SetVideo(const wxString &filename) {
 			//Gather video parameters
 			length = provider->GetFrameCount();
 			fps = provider->GetFPS();
+			w = provider->GetWidth();
+			h = provider->GetHeight();
+
+			// Set CFR
 			if (!isVfr) {
 				VFR_Input.SetCFR(fps);
 				if (VFR_Output.GetFrameRateType() != VFR) VFR_Output.SetCFR(fps);
 			}
-
-			// Set range of slider
 
 			// Set filename
 			videoName = filename;
@@ -252,6 +273,7 @@ void VideoContext::UpdateDisplays() {
 	for (std::list<VideoDisplay*>::iterator cur=displayList.begin();cur!=displayList.end();cur++) {
 		VideoDisplay *display = *cur;
 		
+		display->UpdateSize();
 		display->ControlSlider->SetRange(0,GetLength()-1);
 		display->ControlSlider->SetValue(GetFrameN());
 		//display->RefreshVideo();

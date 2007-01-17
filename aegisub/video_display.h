@@ -68,11 +68,7 @@ class VideoDisplay: public wxGLCanvas {
 
 private:
 	wxSize origSize;
-
-	double arValue;
-	int arType;
-
-	void UpdateSize();
+	int w,h;
 
 	void OnPaint(wxPaintEvent& event);
 	void OnKey(wxKeyEvent &event);
@@ -86,7 +82,8 @@ public:
 	VideoDisplayVisual *visual;
 	VideoBox *box;
 
-	wxString videoName;
+	double arValue;
+	int arType;
 	double zoomValue;
 
 	bool bTrackerEditing;
@@ -105,6 +102,7 @@ public:
 
 	void DrawText(wxPoint Pos, wxString Text);
 	void UpdatePositionDisplay();
+	void UpdateSize();
 	void SetZoom(double value);
 	void SetZoomPos(int pos);
 	void UpdateSubsRelativeTime();

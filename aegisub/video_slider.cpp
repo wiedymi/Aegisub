@@ -82,8 +82,7 @@ void VideoSlider::SetValue(int value) {
 /////////////
 // Set range
 void VideoSlider::SetRange(int from,int to) {
-	wxASSERT(from <= to);
-
+	if (from > to) from = to;
 	locked = false;
 	min = from;
 	max = to;
