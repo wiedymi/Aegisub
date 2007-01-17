@@ -306,7 +306,7 @@ AegiVideoFrame AvisynthVideoProvider::GetFrame(int _n) {
 
 	// Aegisub's video frame
 	AegiVideoFrame final;
-	final.w = frame->GetRowSize();
+	final.w = frame->GetRowSize() / 4;
 	final.h = frame->GetHeight();
 	final.pitch = frame->GetPitch();
 	final.format = FORMAT_RGB32;

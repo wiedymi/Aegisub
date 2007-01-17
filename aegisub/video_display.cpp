@@ -82,7 +82,7 @@ BEGIN_EVENT_TABLE(VideoDisplay, wxGLCanvas)
 	//EVT_MOUSE_EVENTS(VideoDisplay::OnMouseEvent)
 	//EVT_KEY_DOWN(VideoDisplay::OnKey)
 	//EVT_LEAVE_WINDOW(VideoDisplay::OnMouseLeave)
-	//EVT_PAINT(VideoDisplay::OnPaint)
+	EVT_PAINT(VideoDisplay::OnPaint)
 
 	//EVT_MENU(VIDEO_MENU_COPY_TO_CLIPBOARD,VideoDisplay::OnCopyToClipboard)
 	//EVT_MENU(VIDEO_MENU_SAVE_SNAPSHOT,VideoDisplay::OnSaveSnapshot)
@@ -114,9 +114,70 @@ VideoDisplay::~VideoDisplay () {
 }
 
 
+//////////
+// Render
+void VideoDisplay::Render() {
+	// Is shown?
+	if (!GetParent()->IsShown()) return;
+
+	// Set GL context
+	VideoContext *context = VideoContext::Get();
+	SetCurrent(*context->GetGLContext(this));
+
+	// Clear
+	GLenum err;
+	glClearColor(0.0f,0.0f,0.0f,0.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	// Set texture
+	glEnable(GL_TEXTURE_2D);
+	err = glGetError();
+	glShadeModel(GL_SMOOTH);
+	err = glGetError();
+	GLuint tex = context->GetFrameAsTexture(context->GetFrameN());
+	glBindTexture(GL_TEXTURE_2D,tex);
+	err = glGetError();
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	err = glGetError();
+	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	err = glGetError();
+
+	// Draw the frame
+	glBegin(GL_QUADS);
+		// Top-left
+		glColor3f(1.0f,1.0f,1.0f);
+		glTexCoord2f(0.0f,0.0f);
+		glVertex2f(-1.0f,1.0f);
+
+		// Top-right
+		glTexCoord2f(1.0f,0.0f);
+		glVertex2f(1.0f,1.0f);
+
+		// Bottom-right
+		glTexCoord2f(1.0f,1.0f);
+		glVertex2f(1.0f,-1.0f);
+
+		// Bottom-left
+		glTexCoord2f(0.0f,1.0f);
+		glVertex2f(-1.0f,-1.0f);
+	glEnd();
+
+	// Swap
+	glFinish();
+	SwapBuffers();
+
+	// Draw frame
+	//wxClientDC dc(this);
+	//dc.DrawBitmap(GetFrame(),0,0);
+
+	// Draw the control points for FexTracker
+	//visual->DrawTrackingOverlay(dc);
+}
+
+
 ///////////////
 // Update size
-void  VideoDisplay::UpdateSize() {
+void VideoDisplay::UpdateSize() {
 	// Get size
 	w = VideoContext::Get()->GetWidth() * zoomValue;
 	h = VideoContext::Get()->GetHeight() * zoomValue;
@@ -150,8 +211,7 @@ void VideoDisplay::OnPaint(wxPaintEvent& event) {
 	wxPaintDC dc(this);
 
 	// Draw frame
-	//RefreshVideo();
-	//if (provider) dc.DrawBitmap(GetFrame(frame_n),0,0);
+	Render();
 }
 
 
@@ -211,23 +271,19 @@ void VideoDisplay::OnMouseLeave(wxMouseEvent& event) {
 ///////////////////
 // Sets zoom level
 void VideoDisplay::SetZoom(double value) {
-	//zoomValue = value;
-	//if (provider) {
-	//	provider->SetZoom(value);
-	//	UpdateSize();
-	//	RefreshVideo();
-	//	box->GetParent()->Layout();
-	//}
+	zoomValue = value;
+	UpdateSize();
+	box->GetParent()->Layout();
 }
 
 
 //////////////////////
 // Sets zoom position
 void VideoDisplay::SetZoomPos(int value) {
-	//if (value < 0) value = 0;
-	//if (value > 15) value = 15;
-	//SetZoom(double(value+1)/8.0);
-	//if (zoomBox->GetSelection() != value) zoomBox->SetSelection(value);
+	if (value < 0) value = 0;
+	if (value > 15) value = 15;
+	SetZoom(double(value+1)/8.0);
+	if (zoomBox->GetSelection() != value) zoomBox->SetSelection(value);
 }
 
 
@@ -261,42 +317,43 @@ void VideoDisplay::SetAspectRatio(int _type, double value) {
 ////////////////////////////
 // Updates position display
 void VideoDisplay::UpdatePositionDisplay() {
-	//// Update position display control
-	//if (!PositionDisplay) {
-	//	throw _T("Position Display not set!");
-	//}
+	// Update position display control
+	if (!PositionDisplay) {
+		throw _T("Position Display not set!");
+	}
 
-	//// Get time
-	//int time = VFR_Output.GetTimeAtFrame(frame_n,true,true);
-	//int temp = time;
-	//int h=0, m=0, s=0, ms=0;
-	//while (temp >= 3600000) {
-	//	temp -= 3600000;
-	//	h++;
-	//}
-	//while (temp >= 60000) {
-	//	temp -= 60000;
-	//	m++;
-	//}
-	//while (temp >= 1000) {
-	//	temp -= 1000;
-	//	s++;
-	//}
-	//ms = temp;
+	// Get time
+	int frame_n = VideoContext::Get()->GetFrameN();
+	int time = VFR_Output.GetTimeAtFrame(frame_n,true,true);
+	int temp = time;
+	int h=0, m=0, s=0, ms=0;
+	while (temp >= 3600000) {
+		temp -= 3600000;
+		h++;
+	}
+	while (temp >= 60000) {
+		temp -= 60000;
+		m++;
+	}
+	while (temp >= 1000) {
+		temp -= 1000;
+		s++;
+	}
+	ms = temp;
 
-	//// Position display update
-	//PositionDisplay->SetValue(wxString::Format(_T("%01i:%02i:%02i.%03i - %i"),h,m,s,ms,frame_n));
-	//if (GetKeyFrames().Index(frame_n) != wxNOT_FOUND) {
-	//	PositionDisplay->SetBackgroundColour(Options.AsColour(_T("Grid selection background")));
-	//	PositionDisplay->SetForegroundColour(Options.AsColour(_T("Grid selection foreground")));
-	//}
-	//else {
-	//	PositionDisplay->SetBackgroundColour(wxNullColour);
-	//	PositionDisplay->SetForegroundColour(wxNullColour);
-	//}
+	// Position display update
+	PositionDisplay->SetValue(wxString::Format(_T("%01i:%02i:%02i.%03i - %i"),h,m,s,ms,frame_n));
+	if (VideoContext::Get()->GetKeyFrames().Index(frame_n) != wxNOT_FOUND) {
+		PositionDisplay->SetBackgroundColour(Options.AsColour(_T("Grid selection background")));
+		PositionDisplay->SetForegroundColour(Options.AsColour(_T("Grid selection foreground")));
+	}
+	else {
+		PositionDisplay->SetBackgroundColour(wxNullColour);
+		PositionDisplay->SetForegroundColour(wxNullColour);
+	}
 
-	//// Subs position display update
-	//UpdateSubsRelativeTime();
+	// Subs position display update
+	UpdateSubsRelativeTime();
 }
 
 
@@ -359,44 +416,6 @@ void VideoDisplay::OnCopyCoords(wxCommandEvent &event) {
 	//	wxTheClipboard->Close();
 	//}
 }
-
-
-//////////////////
-// Refresh screen
-//void VideoDisplay::RefreshVideo() {
-	//// Is shown?
-	//if (!GetParent()->IsShown()) return;
-
-	//// Set GL context
-	//SetCurrent(*glContext);
-
-	//// Clear
-	//glClearColor(0.0f,0.0f,0.0f,0.0f);
-	//glClear(GL_COLOR_BUFFER_BIT);
-
-	//// Draw something
-	//glBegin(GL_POLYGON);
-	//	glColor3f(1.0f,0.0f,0.0f);
-	//	glVertex2f(-1.0f,-1.0f);
-	//	glColor3f(0.0f,1.0f,0.0f);
-	//	glVertex2f(1.0f,-1.0f);
-	//	glColor3f(0.0f,0.0f,1.0f);
-	//	glVertex2f(1.0f,1.0f);
-	//	glColor3f(1.0f,0.0f,1.0f);
-	//	glVertex2f(-1.0f,1.0f);
-	//glEnd();
-
-	//// Swap
-	//glFinish();
-	//SwapBuffers();
-
-	//// Draw frame
-	//wxClientDC dc(this);
-	////dc.DrawBitmap(GetFrame(),0,0);
-
-	//// Draw the control points for FexTracker
-	//visual->DrawTrackingOverlay(dc);
-//}
 
 
 //////////////////

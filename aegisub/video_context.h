@@ -54,6 +54,19 @@ class VideoProvider;
 class VideoDisplay;
 
 
+//////////////////
+// Cached texture
+class CachedTexture {
+public:
+	GLuint texture;
+	int frame;
+
+	~CachedTexture();
+
+	void Unload();
+};
+
+
 //////////////
 // Main class
 class VideoContext : public wxEvtHandler {
@@ -63,6 +76,8 @@ class VideoContext : public wxEvtHandler {
 private:
 	static VideoContext *instance;
 	std::list<VideoDisplay*> displayList;
+
+	std::list<CachedTexture> textureCache;
 
 	wxGLContext *glContext;
 	wxString tempfile;
@@ -111,6 +126,9 @@ public:
 	void RemoveDisplay(VideoDisplay *display);
 
 	VideoProvider *GetProvider() { return provider; }
+
+	wxGLContext *GetGLContext(wxGLCanvas *canvas);
+	GLuint GetFrameAsTexture(int n);
 
 	bool IsLoaded() { return loaded; }
 	bool IsPlaying() { return isPlaying; }

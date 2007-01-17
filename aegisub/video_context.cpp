@@ -299,9 +299,6 @@ void VideoContext::JumpToFrame(int n) {
 	// Prevent intervention during playback
 	if (isPlaying && n != PlayNextFrame) return;
 
-	// Set frame
-	GetFrame(n);
-
 	// Display
 	UpdateDisplays();
 
@@ -314,6 +311,52 @@ void VideoContext::JumpToFrame(int n) {
 // Jumps to a specific time
 void VideoContext::JumpToTime(int ms) {
 	JumpToFrame(VFR_Output.GetFrameAtTime(ms));
+}
+
+
+//////////////////
+// Get GL context
+wxGLContext *VideoContext::GetGLContext(wxGLCanvas *canvas) {
+	if (!glContext) glContext = new wxGLContext(canvas);
+	return glContext;
+}
+
+
+///////////////////////////
+// Get GL Texture of frame
+GLuint VideoContext::GetFrameAsTexture(int n) {
+	// See if frame is available on cache
+	for (std::list<CachedTexture>::iterator cur=textureCache.begin();cur!=textureCache.end();cur++) {
+		if ((*cur).frame == n) {
+			return (*cur).texture;
+		}
+	}
+
+	// Get frame
+	AegiVideoFrame frame = provider->GetFrame(n);
+
+	// Generate texture with GL
+	GLuint tex;
+	GLenum err;
+	glGenTextures(1, &tex);
+	err = glGetError();
+	glBindTexture(GL_TEXTURE_2D, tex);
+	err = glGetError();
+
+	// Load image data into texture
+	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,frame.w,frame.h,0,GL_RGBA,GL_UNSIGNED_BYTE,frame.data[0]);
+	err = glGetError();
+
+	// Unload frame
+	frame.Clear();
+
+	// Cache texture
+	CachedTexture temp;
+	textureCache.push_back(CachedTexture());
+	textureCache.back().frame = n;
+	textureCache.back().texture = tex;
+
+	return tex;
 }
 
 
@@ -538,4 +581,15 @@ bool VideoContext::OverKeyFramesLoaded() {
 // Check if keyframes are loaded
 bool VideoContext::KeyFramesLoaded() {
 	return overKeyFramesLoaded || keyFramesLoaded;
+}
+
+
+//////////////////
+// Cached texture
+CachedTexture::~CachedTexture() {
+	Unload();
+}
+
+void CachedTexture::Unload() {
+	glDeleteTextures(1,&texture);
 }

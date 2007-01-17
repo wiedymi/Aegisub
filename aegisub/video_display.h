@@ -100,6 +100,8 @@ public:
 	~VideoDisplay();
 	void Reset();
 
+	void Render();
+
 	void DrawText(wxPoint Pos, wxString Text);
 	void UpdatePositionDisplay();
 	void UpdateSize();
