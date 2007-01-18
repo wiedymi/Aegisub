@@ -60,6 +60,7 @@
 #include "main.h"
 #include "video_slider.h"
 #include "video_box.h"
+#include "utils.h"
 
 
 ///////
@@ -372,7 +373,11 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 		glBindTexture(GL_TEXTURE_2D, lastTex);
 
 		// Load image data into texture
-		glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,frame.w,frame.h,0,format,GL_UNSIGNED_BYTE,NULL);
+		int tw = SmallestPowerOf2(frame.w);
+		int th = SmallestPowerOf2(frame.h);
+		texW = float(frame.w)/float(tw);
+		texH = float(frame.h)/float(th);
+		glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,tw,th,0,format,GL_UNSIGNED_BYTE,NULL);
 
 		// Set texture
 		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);

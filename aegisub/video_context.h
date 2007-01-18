@@ -90,6 +90,7 @@ private:
 	bool isInverted;
 	bool isPlaying;
 
+	float texW,texH;
 	int w,h;
 	int frame_n;
 	int length;
@@ -116,6 +117,8 @@ public:
 
 	wxGLContext *GetGLContext(wxGLCanvas *canvas);
 	GLuint GetFrameAsTexture(int n);
+	float GetTexW() { return texW; }
+	float GetTexH() { return texH; }
 
 	bool IsLoaded() { return loaded; }
 	bool IsPlaying() { return isPlaying; }

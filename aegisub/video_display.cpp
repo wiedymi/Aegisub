@@ -79,15 +79,15 @@ enum {
 ///////////////
 // Event table
 BEGIN_EVENT_TABLE(VideoDisplay, wxGLCanvas)
-	//EVT_MOUSE_EVENTS(VideoDisplay::OnMouseEvent)
-	//EVT_KEY_DOWN(VideoDisplay::OnKey)
-	//EVT_LEAVE_WINDOW(VideoDisplay::OnMouseLeave)
+	EVT_MOUSE_EVENTS(VideoDisplay::OnMouseEvent)
+	EVT_KEY_DOWN(VideoDisplay::OnKey)
+	EVT_LEAVE_WINDOW(VideoDisplay::OnMouseLeave)
 	EVT_PAINT(VideoDisplay::OnPaint)
 	EVT_ERASE_BACKGROUND(VideoDisplay::OnEraseBackground)
 
-	//EVT_MENU(VIDEO_MENU_COPY_TO_CLIPBOARD,VideoDisplay::OnCopyToClipboard)
-	//EVT_MENU(VIDEO_MENU_SAVE_SNAPSHOT,VideoDisplay::OnSaveSnapshot)
-	//EVT_MENU(VIDEO_MENU_COPY_COORDS,VideoDisplay::OnCopyCoords)
+	EVT_MENU(VIDEO_MENU_COPY_TO_CLIPBOARD,VideoDisplay::OnCopyToClipboard)
+	EVT_MENU(VIDEO_MENU_SAVE_SNAPSHOT,VideoDisplay::OnSaveSnapshot)
+	EVT_MENU(VIDEO_MENU_COPY_COORDS,VideoDisplay::OnCopyCoords)
 END_EVENT_TABLE()
 
 
@@ -126,10 +126,6 @@ void VideoDisplay::Render() {
 	VideoContext *context = VideoContext::Get();
 	SetCurrent(*context->GetGLContext(this));
 
-	// Clear
-	//glClearColor(0.0f,0.0f,0.0f,0.0f);
-	//glClear(GL_COLOR_BUFFER_BIT);
-
 	// Set viewport
 	glLoadIdentity();
 	glMatrixMode (GL_MODELVIEW);
@@ -139,39 +135,36 @@ void VideoDisplay::Render() {
 
 	// Texture coordinates
 	float top = 0.0f;
-	float bot = 1.0f;
+	float bot = context->GetTexH();
 	if (context->IsInverted()) {
-		top = 1.0f;
+		top = context->GetTexH();
 		bot = 0.0f;
 	}
+	float left = 0.0;
+	float right = context->GetTexW();
 
 	// Draw the frame
 	glBegin(GL_QUADS);
 		// Top-left
 		glColor3f(1.0f,1.0f,1.0f);
-		glTexCoord2f(0.0f,top);
+		glTexCoord2f(left,top);
 		glVertex2f(-1.0f,1.0f);
 
 		// Top-right
-		glTexCoord2f(1.0f,top);
+		glTexCoord2f(right,top);
 		glVertex2f(1.0f,1.0f);
 
 		// Bottom-right
-		glTexCoord2f(1.0f,bot);
+		glTexCoord2f(right,bot);
 		glVertex2f(1.0f,-1.0f);
 
 		// Bottom-left
-		glTexCoord2f(0.0f,bot);
+		glTexCoord2f(left,bot);
 		glVertex2f(-1.0f,-1.0f);
 	glEnd();
 
 	// Swap
-	//glFinish();
 	SwapBuffers();
-
-	// Draw frame
-	//wxClientDC dc(this);
-	//dc.DrawBitmap(GetFrame(),0,0);
 
 	// Draw the control points for FexTracker
 	//visual->DrawTrackingOverlay(dc);
@@ -224,30 +217,30 @@ void VideoDisplay::OnPaint(wxPaintEvent& event) {
 // Mouse stuff
 void VideoDisplay::OnMouseEvent(wxMouseEvent& event) {
 	// Disable when playing
-	//if (IsPlaying) return;
+	if (VideoContext::Get()->IsPlaying()) return;
 
-	//if (event.Leaving()) {
-	//	// OnMouseLeave isn't called as long as we have an OnMouseEvent
-	//	// Just check for it and call it manually instead
-	//	OnMouseLeave(event);
-	//	event.Skip(true);
-	//	return;
-	//}
+	if (event.Leaving()) {
+		// OnMouseLeave isn't called as long as we have an OnMouseEvent
+		// Just check for it and call it manually instead
+		OnMouseLeave(event);
+		event.Skip(true);
+		return;
+	}
 
-	//// Right click
-	//if (event.ButtonUp(wxMOUSE_BTN_RIGHT)) {
-	//	wxMenu menu;
-	//	menu.Append(VIDEO_MENU_SAVE_SNAPSHOT,_("Save PNG snapshot"));
-	//	menu.Append(VIDEO_MENU_COPY_TO_CLIPBOARD,_("Copy image to Clipboard"));
-	//	menu.Append(VIDEO_MENU_COPY_COORDS,_("Copy coordinates to Clipboard"));
-	//	PopupMenu(&menu);
-	//	return;
-	//}
+	// Right click
+	if (event.ButtonUp(wxMOUSE_BTN_RIGHT)) {
+		wxMenu menu;
+		menu.Append(VIDEO_MENU_SAVE_SNAPSHOT,_("Save PNG snapshot"));
+		menu.Append(VIDEO_MENU_COPY_TO_CLIPBOARD,_("Copy image to Clipboard"));
+		menu.Append(VIDEO_MENU_COPY_COORDS,_("Copy coordinates to Clipboard"));
+		PopupMenu(&menu);
+		return;
+	}
 
-	//// Click?
-	//if (event.ButtonDown(wxMOUSE_BTN_ANY)) {
-	//	SetFocus();
-	//}
+	// Click?
+	if (event.ButtonDown(wxMOUSE_BTN_ANY)) {
+		SetFocus();
+	}
 
 	//// Send to visual
 	////visual->OnMouseEvent(event);
@@ -265,11 +258,9 @@ void VideoDisplay::OnKey(wxKeyEvent &event) {
 //////////////////////
 // Mouse left display
 void VideoDisplay::OnMouseLeave(wxMouseEvent& event) {
-	//if (IsPlaying) return;
-
-	//bTrackerEditing = 0;
-
-	//RefreshVideo();
+	if (VideoContext::Get()->IsPlaying()) return;
+	bTrackerEditing = 0;
+	Refresh(false);
 }
 
 

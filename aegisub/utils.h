@@ -49,6 +49,7 @@ wxString FloatToString(double value);
 wxString IntegerToString(int value);
 wxString PrettySize(int bytes);
 void AppendBitmapMenuItem (wxMenu* parentMenu,int id,wxString text,wxString help,wxBitmap bmp);
+int SmallestPowerOf2(int x);
 
 
 //////////
