@@ -66,8 +66,10 @@ private:
 
 	wxString mouseText;
 	AssDialogue *curSelection;
-
 	VideoDisplay *parent;
+
+	float r1,g1,b1,a1;
+	float r2,g2,b2,a2;
 
 	void GetLinePosition(AssDialogue *diag,int &x,int &y);
 	void GetLinePosition(AssDialogue *diag,int &x,int &y,int &orgx,int &orgy);
@@ -80,10 +82,15 @@ private:
 	void OnMouseEvent(wxMouseEvent &event);
 	void OnKeyEvent(wxKeyEvent &event);
 
-	void DrawEllipsis(bool fill,float x,float y,float radiusX,float radiusY);
-	void DrawCircle(bool fill,float x,float y,float radius) { DrawEllipsis(fill,x,y,radius,radius); }
+	void SetLineColour(wxColour col,float alpha=1.0f,int width=1);
+	void SetFillColour(wxColour col,float alpha=1.0f);
+	void SetModeLine();
+	void SetModeFill();
+	void DrawLine(float x1,float y1,float x2,float y2);
+	void DrawEllipse(float x,float y,float radiusX,float radiusY);
+	void DrawCircle(float x,float y,float radius) { DrawEllipse(x,y,radius,radius); }
 	void DrawRectangle(float x1,float y1,float x2,float y2);
-	void SetColour(wxColour col,float alpha=1.0f,int width=1);
+	void DrawRing(float x,float y,float r1,float r2,float ar=1.0f,float arcStart=0.0f,float arcEnd=0.0f);
 
 public:
 	void SetMode(int mode);

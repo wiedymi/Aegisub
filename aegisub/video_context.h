@@ -42,6 +42,7 @@
 #include <wx/wxprec.h>
 #include <time.h>
 #include <wx/glcanvas.h>
+#include "video_frame.h"
 
 
 //////////////
@@ -67,8 +68,9 @@ private:
 	GLuint lastTex;
 	int lastFrame;
 	wxGLContext *glContext;
-	wxString tempfile;
+	VideoFrameFormat vidFormat;
 
+	wxString tempfile;
 	VideoProvider *provider;
 
 	bool keyFramesLoaded;
@@ -120,6 +122,7 @@ public:
 	GLuint GetFrameAsTexture(int n);
 	float GetTexW() { return texW; }
 	float GetTexH() { return texH; }
+	VideoFrameFormat GetFormat() { return vidFormat; }
 
 	bool IsLoaded() { return loaded; }
 	bool IsPlaying() { return isPlaying; }

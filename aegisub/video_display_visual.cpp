@@ -109,13 +109,13 @@ void VideoDisplayVisual::SetMode(int _mode) {
 // Draw overlay
 void VideoDisplayVisual::DrawOverlay() {
 	// Variables
-	int x = mouseX;
-	int y = mouseY;
-	int w = VideoContext::Get()->GetWidth();
-	int h = VideoContext::Get()->GetHeight();
 	int frame_n = VideoContext::Get()->GetFrameN();
+	int w,h;
+	parent->GetClientSize(&w,&h);
 	int sw,sh;
 	VideoContext::Get()->GetScriptSize(sw,sh);
+	int x = mouseX;
+	int y = mouseY;
 	int mx = mouseX * sw / w;
 	int my = mouseY * sh / h;
 
@@ -192,31 +192,18 @@ void VideoDisplayVisual::DrawOverlay() {
 					// Highlight
 					int brushCol = 1;
 					if (high) brushCol = 2;
-					//dc.SetBrush(wxBrush(colour[brushCol]));
-					//dc.SetPen(wxPen(colour[0],1));
+					SetLineColour(colour[0]);
+					SetFillColour(colour[brushCol],0.3f);
 
 					// Set drawing coordinates
 					int radius = (int) sqrt(double((dx-orgx)*(dx-orgx)+(dy-orgy)*(dy-orgy)));
 
 					// Drag
 					if (mode == 1) {
-						glEnable(GL_BLEND);
-						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-						SetColour(colour[brushCol],0.5);
-						glBegin(GL_QUADS);
-							glVertex2d(dx-8,dy-8);
-							glVertex2d(dx+8,dy-8);
-							glVertex2d(dx+8,dy+8);
-							glVertex2d(dx-8,dy+8);
-						glEnd();
-						glDisable(GL_BLEND);
-						SetColour(colour[2]);
-						glBegin(GL_LINE_LOOP);
-							glVertex2d(dx-8,dy-8);
-							glVertex2d(dx+8,dy-8);
-							glVertex2d(dx+8,dy+8);
-							glVertex2d(dx-8,dy+8);
-						glEnd();
+						SetFillColour(colour[brushCol],0.5f);
+						DrawRectangle(dx-8,dy-8,dx+8,dy+8);
+						SetLineColour(colour[2]);
+						SetModeLine();
 						glBegin(GL_LINES);
 							glVertex2d(dx,dy-16);
 							glVertex2d(dx,dy+16);
@@ -234,9 +221,9 @@ void VideoDisplayVisual::DrawOverlay() {
 						dy = orgy;
 
 						// Draw pivot
-						//dc.DrawCircle(dx,dy,7);
-						//dc.DrawLine(dx,dy-16,dx,dy+16);
-						//dc.DrawLine(dx-16,dy,dx+16,dy);
+						DrawCircle(dx,dy,7);
+						DrawLine(dx,dy-16,dx,dy+16);
+						DrawLine(dx-16,dy,dx+16,dy);
 							
 						// Get angle
 						if (isCur) {
@@ -250,44 +237,54 @@ void VideoDisplayVisual::DrawOverlay() {
 
 						// Rotate Z
 						if (mode == 2) {
-							//// Calculate radii
-							//int oRadiusX = radius * w / sw;
-							//int oRadiusY = radius * h / sh;
-							//if (radius < 50) radius = 50;
-							//int radiusX = radius * w / sw;
-							//int radiusY = radius * h / sh;
+							// Calculate radii
+							int oRadiusX = radius;
+							int oRadiusY = radius;
+							if (radius < 50) radius = 50;
+							int radiusX = radius;
+							int radiusY = radius;
 
-							//// Draw the circle
-							//dc.SetBrush(*wxTRANSPARENT_BRUSH);
-							//dc.DrawEllipse(dx-radiusX-2,dy-radiusY-2,2*radiusX+4,2*radiusY+4);
-							//dc.DrawEllipse(dx-radiusX+2,dy-radiusY+2,2*radiusX-4,2*radiusY-4);
+							// Draw the circle
+							SetLineColour(colour[0]);
+							SetFillColour(colour[1],0.3f);
+							DrawRing(dx,dy,radiusY+4,radiusY-4,radiusX/radiusY);
 
-							//// Draw line to mouse
-							//dc.DrawLine(dx,dy,mouseX,mouseY);
+							// Draw markers around circle
+							int markers = 6;
+							float markStart = -90.0f / markers;
+							float markEnd = markStart+(180.0f/markers);
+							for (int i=0;i<markers;i++) {
+								float angle = i*(360.0f/markers);
+								DrawRing(dx,dy,radiusY+30,radiusY+12,radiusX/radiusY,angle+markStart,angle+markEnd);
+							}
 
-							//// Get deltas
-							//deltax = int(cos(rz*3.1415926536/180.0)*radiusX);
-							//deltay = int(-sin(rz*3.1415926536/180.0)*radiusY);
+							// Draw line to mouse
+							DrawLine(dx,dy,mx,my);
 
-							//// Draw the baseline
-							//dc.SetPen(wxPen(colour[3],2));
-							//dc.DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
+							// Get deltas
+							deltax = int(cos(rz*3.1415926536/180.0)*radiusX);
+							deltay = int(-sin(rz*3.1415926536/180.0)*radiusY);
 
-							//// Draw the connection line
-							//if (orgx != odx && orgy != ody) {
-							//	double angle = atan2(double(dy*sh/h-ody*sh/h),double(odx*sw/w-dx*sw/w)) + rz*3.1415926536/180.0;
-							//	int fx = dx+int(cos(angle)*oRadiusX);
-							//	int fy = dy-int(sin(angle)*oRadiusY);
-							//	dc.DrawLine(dx,dy,fx,fy);
-							//	int mdx = cos(rz*3.1415926536/180.0)*20;
-							//	int mdy = -sin(rz*3.1415926536/180.0)*20;
-							//	dc.DrawLine(fx-mdx,fy-mdy,fx+mdx,fy+mdy);
-							//}
+							// Draw the baseline
+							SetLineColour(colour[3],1.0f,2);
+							DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
 
-							//// Draw the rotation line
-							//dc.SetPen(wxPen(colour[0],1));
-							//dc.SetBrush(wxBrush(colour[brushCol]));
-							//dc.DrawCircle(dx+deltax,dy+deltay,4);
+							// Draw the connection line
+							if (orgx != odx && orgy != ody) {
+								//double angle = atan2(double(dy*sh/h-ody*sh/h),double(odx*sw/w-dx*sw/w)) + rz*3.1415926536/180.0;
+								double angle = atan2(double(dy-ody),double(odx-dx)) + rz*3.1415926536/180.0;
+								int fx = dx+int(cos(angle)*oRadiusX);
+								int fy = dy-int(sin(angle)*oRadiusY);
+								DrawLine(dx,dy,fx,fy);
+								int mdx = cos(rz*3.1415926536/180.0)*20;
+								int mdy = -sin(rz*3.1415926536/180.0)*20;
+								DrawLine(fx-mdx,fy-mdy,fx+mdx,fy+mdy);
+							}
+
+							// Draw the rotation line
+							SetLineColour(colour[0],1.0f,1);
+							SetFillColour(colour[brushCol],0.3f);
+							DrawCircle(dx+deltax,dy+deltay,4);
 						}
 
 						// Rotate XY
@@ -381,17 +378,18 @@ void VideoDisplayVisual::DrawOverlay() {
 						}
 						else GetLineClip(diag,dx1,dy1,dx2,dy2);
 
+						// Swap
+						if (dx1 > dx2) IntSwap(dx1,dx2);
+						if (dy1 > dy2) IntSwap(dy1,dy2);
+
 						// Draw rectangle
-						SetColour(colour[3]);
-						glBegin(GL_LINE_LOOP);
-							glVertex2d(dx1,dy1);
-							glVertex2d(dx2,dy1);
-							glVertex2d(dx2,dy2);
-							glVertex2d(dx1,dy2);
-						glEnd();
+						SetLineColour(colour[3]);
+						SetFillColour(colour[3],0.0f);
+						DrawRectangle(dx1,dy1,dx2,dy2);
 
 						// Draw outside area
-						SetColour(colour[3],0.3f);
+						SetLineColour(colour[3],0.0f);
+						SetFillColour(colour[3],0.3f);
 						glEnable(GL_BLEND);
 						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 						DrawRectangle(0,0,sw,dy1);
@@ -400,19 +398,13 @@ void VideoDisplayVisual::DrawOverlay() {
 						DrawRectangle(dx2,dy1,sw,dy2);
 						glDisable(GL_BLEND);
 
-						// Draw circles fills
-						SetColour(colour[1],0.5);
-						DrawCircle(true,dx1,dy1,4);
-						DrawCircle(true,dx2,dy1,4);
-						DrawCircle(true,dx2,dy2,4);
-						DrawCircle(true,dx1,dy2,4);
-
-						// Draw circles outlines
-						SetColour(colour[0]);
-						DrawCircle(false,dx1,dy1,4);
-						DrawCircle(false,dx2,dy1,4);
-						DrawCircle(false,dx2,dy2,4);
-						DrawCircle(false,dx1,dy2,4);
+						// Draw circles
+						SetLineColour(colour[0]);
+						SetFillColour(colour[1],0.5);
+						DrawCircle(dx1,dy1,4);
+						DrawCircle(dx2,dy1,4);
+						DrawCircle(dx2,dy2,4);
+						DrawCircle(dx1,dy2,4);
 					}
 				}
 			}
@@ -787,8 +779,8 @@ void VideoDisplayVisual::OnMouseEvent (wxMouseEvent &event) {
 	// Coords
 	int x = event.GetX();
 	int y = event.GetY();
-	int w = VideoContext::Get()->GetWidth();
-	int h = VideoContext::Get()->GetHeight();
+	int w,h;
+	parent->GetClientSize(&w,&h);
 	int orgx = -1;
 	int orgy = -1;
 	int sw,sh;
@@ -1204,43 +1196,203 @@ void VideoDisplayVisual::OnKeyEvent(wxKeyEvent &event) {
 }
 
 
+/////////////
+// Draw line
+void VideoDisplayVisual::DrawLine(float x1,float y1,float x2,float y2) {
+	SetModeLine();
+	glBegin(GL_LINES);
+		glVertex2f(x1,y1);
+		glVertex2f(x2,y2);
+	glEnd();
+}
+
+
 ///////////////
 // Draw circle
-void VideoDisplayVisual::DrawEllipsis(bool fill,float x,float y,float radiusX,float radiusY) {
-	// Math
-	int steps = (radiusX + radiusY)*2;
-	if (steps < 12) steps = 12;
-	float end = 6.283185307179586476925286766559f;
-	float step = end/steps;
+void VideoDisplayVisual::DrawEllipse(float x,float y,float radiusX,float radiusY) {
+	//// Math
+	//int steps = int(radiusX + radiusY)*4;
+	//if (steps < 12) steps = 12;
+	//float end = 6.283185307179586476925286766559f;
+	//float step = end/steps;
 
-	// Function
-	if (fill) glBegin(GL_POLYGON);
-	else glBegin(GL_LINE_LOOP);
+	//// Fill
+	//if (a2 != 0.0) {
+	//	SetModeFill();
+	//	glBegin(GL_POLYGON);
+	//	for (int i=0;i<steps;i++) glVertex2f(x+sin(i*step)*radiusX,y+cos(i*step)*radiusY);
+	//	glEnd();
+	//}
 
-	// Draw
-	for (float i=0.0;i<end;i+=step) {
-		glVertex2f(x+sin(i)*radiusX,y+cos(i)*radiusY);
-	}
-
-	// End
-	glEnd();
+	//// Outline
+	//if (a1 != 0.0) {
+	//	SetModeLine();
+	//	glBegin(GL_LINE_LOOP);
+	//	for (int i=0;i<steps;i++) glVertex2f(x+sin(i*step)*radiusX,y+cos(i*step)*radiusY);
+	//	glEnd();
+	//}
+	DrawRing(x,y,radiusY,radiusY,radiusX/radiusY);
 }
 
 
 //////////////////
 // Draw rectangle
 void VideoDisplayVisual::DrawRectangle(float x1,float y1,float x2,float y2) {
-	glBegin(GL_QUADS);
-		glVertex2f(x1,y1);
-		glVertex2f(x2,y1);
-		glVertex2f(x2,y2);
-		glVertex2f(x1,y2);
-	glEnd();
+	// Fill
+	if (a2 != 0.0) {
+		SetModeFill();
+		glBegin(GL_QUADS);
+			glVertex2f(x1,y1);
+			glVertex2f(x2,y1);
+			glVertex2f(x2,y2);
+			glVertex2f(x1,y2);
+		glEnd();
+	}
+
+	// Outline
+	if (a1 != 0.0) {
+		SetModeLine();
+		glBegin(GL_LINE_LOOP);
+			glVertex2f(x1,y1);
+			glVertex2f(x2,y1);
+			glVertex2f(x2,y2);
+			glVertex2f(x1,y2);
+		glEnd();
+	}
 }
 
 
-////////////
-// Set line
-void VideoDisplayVisual::SetColour(wxColour col,float alpha,int width) {
-	glColor4f(col.Red()/255.0,col.Green()/255.0,col.Blue()/255.0,alpha);
+///////////////////////
+// Draw ring (annulus)
+void VideoDisplayVisual::DrawRing(float x,float y,float r1,float r2,float ar,float arcStart,float arcEnd) {
+	// Make r1 bigger
+	if (r2 > r1) {
+		float temp = r1;
+		r1 = r2;
+		r2 = temp;
+	}
+
+	// Arc range
+	bool hasEnds = arcStart != arcEnd;
+	float pi = 3.1415926535897932384626433832795f;
+	arcEnd *= pi / 180.f;
+	arcStart *= pi / 180.f;
+	if (arcEnd <= arcStart) arcEnd += 2.0f*pi;
+	float range = arcEnd - arcStart;
+
+	// Math
+	int steps = int((r1 + r1*ar) * range / (2.0f*pi))*4;
+	if (steps < 12) steps = 12;
+	float end = arcEnd;
+	float step = range/steps;
+	float curAngle = arcStart;
+
+	// Fill
+	if (a2 != 0.0) {
+		SetModeFill();
+
+		// Annulus
+		if (r1 != r2) {
+			glBegin(GL_QUADS);
+			for (int i=0;i<steps;i++) {
+				glVertex2f(x+sin(curAngle)*r1*ar,y+cos(curAngle)*r1);
+				glVertex2f(x+sin(curAngle)*r2*ar,y+cos(curAngle)*r2);
+				curAngle += step;
+				glVertex2f(x+sin(curAngle)*r2*ar,y+cos(curAngle)*r2);
+				glVertex2f(x+sin(curAngle)*r1*ar,y+cos(curAngle)*r1);
+			}
+			glEnd();
+		}
+
+		// Circle
+		else {
+			glBegin(GL_POLYGON);
+			for (int i=0;i<steps;i++) {
+				glVertex2f(x+sin(curAngle)*r1,y+cos(curAngle)*r1);
+				curAngle += step;
+			}
+			glEnd();
+		}
+
+		// Reset angle
+		curAngle = arcStart;
+	}
+
+	// Outlines
+	if (a1 != 0.0) {
+		// Outer
+		steps++;
+		SetModeLine();
+		glBegin(GL_LINE_STRIP);
+		for (int i=0;i<steps;i++) {
+			glVertex2f(x+sin(curAngle)*r1,y+cos(curAngle)*r1);
+			curAngle += step;
+		}
+		glEnd();
+
+		// Inner
+		if (r1 != r2) {
+			curAngle = arcStart;
+			glBegin(GL_LINE_STRIP);
+			for (int i=0;i<steps;i++) {
+				glVertex2f(x+sin(curAngle)*r2,y+cos(curAngle)*r2);
+				curAngle += step;
+			}
+			glEnd();
+
+			// End caps
+			if (hasEnds) {
+				glBegin(GL_LINES);
+					glVertex2f(x+sin(arcStart)*r1,y+cos(arcStart)*r1);
+					glVertex2f(x+sin(arcStart)*r2,y+cos(arcStart)*r2);
+					glVertex2f(x+sin(arcEnd)*r1,y+cos(arcEnd)*r1);
+					glVertex2f(x+sin(arcEnd)*r2,y+cos(arcEnd)*r2);
+				glEnd();
+			}
+		}
+	}
+}
+
+
+///////////////////
+// Set line colour
+void VideoDisplayVisual::SetLineColour(wxColour col,float alpha,int width) {
+	r1 = col.Red()/255.0f;
+	g1 = col.Green()/255.0f;
+	b1 = col.Blue()/255.0f;
+	a1 = alpha;
+}
+
+
+///////////////////
+// Set fill colour
+void VideoDisplayVisual::SetFillColour(wxColour col,float alpha) {
+	r2 = col.Red()/255.0f;
+	g2 = col.Green()/255.0f;
+	b2 = col.Blue()/255.0f;
+	a2 = alpha;
+}
+
+
+////////
+// Line
+void VideoDisplayVisual::SetModeLine() {
+	glColor4f(r1,g1,b1,a1);
+	if (a1 == 1.0f) glDisable(GL_BLEND);
+	else {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	}
+}
+
+
+////////
+// Fill
+void VideoDisplayVisual::SetModeFill() {
+	glColor4f(r2,g2,b2,a2);
+	if (a2 == 1.0f) glDisable(GL_BLEND);
+	else {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+	}
 }

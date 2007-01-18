@@ -128,9 +128,11 @@ void VideoDisplay::Render() {
 	SetCurrent(*context->GetGLContext(this));
 
 	// Get sizes
-	int w,h,sw,sh;
+	int w,h,sw,sh,pw,ph;
 	GetClientSize(&w,&h);
 	context->GetScriptSize(sw,sh);
+	pw = context->GetWidth();
+	ph = context->GetHeight();
 
 	// Set viewport
 	glEnable(GL_TEXTURE_2D);
@@ -138,7 +140,17 @@ void VideoDisplay::Render() {
 	glLoadIdentity();
 	gluOrtho2D(0,sw,sh,0);
 	glMatrixMode(GL_MODELVIEW);
-	glViewport(0,0,w-1,h-1);
+	glViewport(0,0,w,h);
+
+	// Texture mode
+	if (w != pw || h != ph) {
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	}
+	else {
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+	}
 
 	// Texture coordinates
 	float top = 0.0f;
@@ -150,31 +162,30 @@ void VideoDisplay::Render() {
 	float left = 0.0;
 	float right = context->GetTexW();
 
-	// Draw the frame
+	// Draw interleaved frame or luma of YV12
+	glColor3f(1.0f,1.0f,1.0f);
 	glBegin(GL_QUADS);
 		// Top-left
-		glColor3f(1.0f,1.0f,1.0f);
 		glTexCoord2f(left,top);
 		glVertex2f(0,0);
-
 		// Top-right
 		glTexCoord2f(right,top);
 		glVertex2f(sw,0);
-
 		// Bottom-right
 		glTexCoord2f(right,bot);
 		glVertex2f(sw,sh);
-
 		// Bottom-left
 		glTexCoord2f(left,bot);
 		glVertex2f(0,sh);
 	glEnd();
 
+	// Draw UV planes
+	if (context->GetFormat() == FORMAT_YV12) {
+
+	}
+
 	// Draw overlay
 	visual->DrawOverlay();
-
-	// Draw the control points for FexTracker
-	//visual->DrawTrackingOverlay(dc);
 
 	// Swap buffers
 	SwapBuffers();

@@ -388,6 +388,8 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 		glBindTexture(GL_TEXTURE_2D, lastTex);
 
 		// Load image data into texture
+		int height = frame.h;
+		if (frame.format == FORMAT_YV12) height = frame.h * 3 / 2;
 		int tw = SmallestPowerOf2(frame.w);
 		int th = SmallestPowerOf2(frame.h);
 		texW = float(frame.w)/float(tw);
@@ -395,13 +397,17 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 		glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,tw,th,0,format,GL_UNSIGNED_BYTE,NULL);
 
 		// Set texture
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 	}
 	
 	// Load texture data
 	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,frame.w,frame.h,format,GL_UNSIGNED_BYTE,frame.data[0]);
+
+	// UV planes for YV12
+	if (frame.format == FORMAT_YV12) {
+		glTexSubImage2D(GL_TEXTURE_2D,0,0,frame.h,frame.w/2,frame.h/2,format,GL_UNSIGNED_BYTE,frame.data[1]);
+		glTexSubImage2D(GL_TEXTURE_2D,0,frame.w/2,frame.h,frame.w/2,frame.h/2,format,GL_UNSIGNED_BYTE,frame.data[2]);
+	}
 
 	// Unload frame
 	frame.Clear();
