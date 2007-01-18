@@ -366,9 +366,12 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 		if (frame.invertChannels) format = GL_BGRA_EXT;
 		else format = GL_RGBA;
 	}
-	if (frame.format == FORMAT_RGB24) {
+	else if (frame.format == FORMAT_RGB24) {
 		if (frame.invertChannels) format = GL_BGR_EXT;
 		else format = GL_RGB;
+	}
+	else if (frame.format == FORMAT_YV12) {
+		format = GL_LUMINANCE;
 	}
 	isInverted = frame.flipped;
 

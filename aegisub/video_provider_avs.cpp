@@ -303,20 +303,41 @@ AegiVideoFrame AvisynthVideoProvider::GetFrame(int _n) {
 	AVSTRACE(_T("AvisynthVideoProvider::GetFrame"));
 	wxMutexLocker lock(AviSynthMutex);
 	PVideoFrame frame = SubtitledVideo->GetFrame(n,env);
+	int Bpp = vi.BitsPerPixel() / 8;
 
 	// Aegisub's video frame
 	AegiVideoFrame final;
-	final.format = FORMAT_RGB32;
-	final.flipped = true;
-	final.cppAlloc = false;
+	final.flipped = false;
+	final.cppAlloc = true;
 
-	// Real coordinates
-	final.w = frame->GetRowSize() / 4;
+	// Format
+	if (vi.IsRGB32()) {
+		final.format = FORMAT_RGB32;
+		final.flipped = true;
+	}
+	else if (vi.IsRGB24()) {
+		final.format = FORMAT_RGB24;
+		final.flipped = true;
+	}
+	else if (vi.IsYV12()) final.format = FORMAT_YV12;
+	else if (vi.IsYUY2()) final.format = FORMAT_YUY2;
+
+	// Copy first plane
+	final.w = frame->GetRowSize() / Bpp;
 	final.h = frame->GetHeight();
 	final.pitch = frame->GetPitch();
-	//final.data[0] = (unsigned char*) malloc(final.pitch * final.h);
 	final.data[0] = new unsigned char [final.pitch * final.h];
 	memcpy(final.data[0],frame->GetReadPtr(),final.pitch * final.h);
+
+	// Copy second and third planes for YV12
+	if (final.format == FORMAT_YV12) {
+		int uvpitch = frame->GetPitch(PLANAR_U);
+		int uvh = frame->GetHeight(PLANAR_U);
+		final.data[1] = new unsigned char [uvpitch * uvh];
+		final.data[2] = new unsigned char [uvpitch * uvh];
+		memcpy(final.data[1],frame->GetReadPtr(PLANAR_U),uvpitch * uvh);
+		memcpy(final.data[2],frame->GetReadPtr(PLANAR_V),uvpitch * uvh);
+	}
 
 	// Set last number
 	last_fnum = n;
