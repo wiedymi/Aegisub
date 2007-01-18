@@ -202,7 +202,7 @@ void VideoDisplayVisual::DrawOverlay() {
 					if (mode == 1) {
 						glEnable(GL_BLEND);
 						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-						glColor4f(colour[brushCol].Red()/255.0,colour[brushCol].Green()/255.0,colour[brushCol].Blue()/255.0,0.5);
+						SetColour(colour[brushCol],0.5);
 						glBegin(GL_QUADS);
 							glVertex2d(dx-8,dy-8);
 							glVertex2d(dx+8,dy-8);
@@ -210,13 +210,12 @@ void VideoDisplayVisual::DrawOverlay() {
 							glVertex2d(dx-8,dy+8);
 						glEnd();
 						glDisable(GL_BLEND);
-						glColor3f(colour[2].Red()/255.0,colour[2].Green()/255.0,colour[2].Blue()/255.0);
-						glBegin(GL_LINE_STRIP);
+						SetColour(colour[2]);
+						glBegin(GL_LINE_LOOP);
 							glVertex2d(dx-8,dy-8);
 							glVertex2d(dx+8,dy-8);
 							glVertex2d(dx+8,dy+8);
 							glVertex2d(dx-8,dy+8);
-							glVertex2d(dx-8,dy-8);
 						glEnd();
 						glBegin(GL_LINES);
 							glVertex2d(dx,dy-16);
@@ -371,35 +370,49 @@ void VideoDisplayVisual::DrawOverlay() {
 
 					// Clip
 					if (mode == 5) {
-						//int dx1,dx2,dy1,dy2;
+						int dx1,dx2,dy1,dy2;
 
-						//// Get position
-						//if (isCur) {
-						//	dx1 = startX;
-						//	dy1 = startY;
-						//	dx2 = x;
-						//	dy2 = y;
-						//}
-						//else {
-						//	GetLineClip(diag,dx1,dy1,dx2,dy2);
-						//	dx1 = dx1 * w / sw;
-						//	dx2 = dx2 * w / sw;
-						//	dy1 = dy1 * h / sh;
-						//	dy2 = dy2 * h / sh;
-						//}
+						// Get position
+						if (isCur) {
+							dx1 = startX * sw / w;
+							dy1 = startY * sh / h;
+							dx2 = mx;
+							dy2 = my;
+						}
+						else GetLineClip(diag,dx1,dy1,dx2,dy2);
 
-						//// Draw rectangle
-						//dc.SetPen(wxPen(colour[3],1));
-						//dc.SetBrush(*wxTRANSPARENT_BRUSH);
-						//dc.DrawRectangle(dx1,dy1,dx2-dx1+1,dy2-dy1+1);
+						// Draw rectangle
+						SetColour(colour[3]);
+						glBegin(GL_LINE_LOOP);
+							glVertex2d(dx1,dy1);
+							glVertex2d(dx2,dy1);
+							glVertex2d(dx2,dy2);
+							glVertex2d(dx1,dy2);
+						glEnd();
 
-						//// Draw circles
-						//dc.SetPen(wxPen(colour[0],1));
-						//dc.SetBrush(wxBrush(colour[brushCol]));
-						//dc.DrawCircle(dx1,dy1,4);
-						//dc.DrawCircle(dx1,dy2,4);
-						//dc.DrawCircle(dx2,dy1,4);
-						//dc.DrawCircle(dx2,dy2,4);
+						// Draw outside area
+						SetColour(colour[3],0.3f);
+						glEnable(GL_BLEND);
+						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+						DrawRectangle(0,0,sw,dy1);
+						DrawRectangle(0,dy2,sw,sh);
+						DrawRectangle(0,dy1,dx1,dy2);
+						DrawRectangle(dx2,dy1,sw,dy2);
+						glDisable(GL_BLEND);
+
+						// Draw circles fills
+						SetColour(colour[1],0.5);
+						DrawCircle(true,dx1,dy1,4);
+						DrawCircle(true,dx2,dy1,4);
+						DrawCircle(true,dx2,dy2,4);
+						DrawCircle(true,dx1,dy2,4);
+
+						// Draw circles outlines
+						SetColour(colour[0]);
+						DrawCircle(false,dx1,dy1,4);
+						DrawCircle(false,dx2,dy1,4);
+						DrawCircle(false,dx2,dy2,4);
+						DrawCircle(false,dx1,dy2,4);
 					}
 				}
 			}
@@ -1188,4 +1201,46 @@ void VideoDisplayVisual::OnKeyEvent(wxKeyEvent &event) {
 	if (event.GetKeyCode() == 'F') SetMode(3);
 	if (event.GetKeyCode() == 'G') SetMode(4);
 	if (event.GetKeyCode() == 'H') SetMode(5);
+}
+
+
+///////////////
+// Draw circle
+void VideoDisplayVisual::DrawEllipsis(bool fill,float x,float y,float radiusX,float radiusY) {
+	// Math
+	int steps = (radiusX + radiusY)*2;
+	if (steps < 12) steps = 12;
+	float end = 6.283185307179586476925286766559f;
+	float step = end/steps;
+
+	// Function
+	if (fill) glBegin(GL_POLYGON);
+	else glBegin(GL_LINE_LOOP);
+
+	// Draw
+	for (float i=0.0;i<end;i+=step) {
+		glVertex2f(x+sin(i)*radiusX,y+cos(i)*radiusY);
+	}
+
+	// End
+	glEnd();
+}
+
+
+//////////////////
+// Draw rectangle
+void VideoDisplayVisual::DrawRectangle(float x1,float y1,float x2,float y2) {
+	glBegin(GL_QUADS);
+		glVertex2f(x1,y1);
+		glVertex2f(x2,y1);
+		glVertex2f(x2,y2);
+		glVertex2f(x1,y2);
+	glEnd();
+}
+
+
+////////////
+// Set line
+void VideoDisplayVisual::SetColour(wxColour col,float alpha,int width) {
+	glColor4f(col.Red()/255.0,col.Green()/255.0,col.Blue()/255.0,alpha);
 }

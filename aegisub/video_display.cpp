@@ -138,7 +138,7 @@ void VideoDisplay::Render() {
 	glLoadIdentity();
 	gluOrtho2D(0,sw,sh,0);
 	glMatrixMode(GL_MODELVIEW);
-	glViewport(0,0,w,h);
+	glViewport(0,0,w-1,h-1);
 
 	// Texture coordinates
 	float top = 0.0f;
