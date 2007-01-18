@@ -54,16 +54,6 @@ class VideoProvider;
 class VideoDisplay;
 
 
-//////////////////
-// Cached texture
-class CachedTexture {
-public:
-	GLuint texture;
-	int frame;
-	void Unload();
-};
-
-
 //////////////
 // Main class
 class VideoContext : public wxEvtHandler {
@@ -74,15 +64,12 @@ private:
 	static VideoContext *instance;
 	std::list<VideoDisplay*> displayList;
 
-	std::list<CachedTexture> textureCache;
-
+	GLuint lastTex;
+	int lastFrame;
 	wxGLContext *glContext;
 	wxString tempfile;
 
 	VideoProvider *provider;
-
-	bool threaded;
-	int nextFrame;
 
 	bool keyFramesLoaded;
 	bool overKeyFramesLoaded;
@@ -90,20 +77,22 @@ private:
 	wxArrayInt overKeyFrames;
 	wxString keyFramesFilename;
 
-	clock_t PlayTime;
-	clock_t StartTime;
-	wxTimer Playback;
-
-	int StartFrame;
-	int EndFrame;
-	int PlayNextFrame;
+	wxTimer playback;
+	clock_t playTime;
+	clock_t startTime;
+	int startFrame;
+	int endFrame;
+	int playNextFrame;
+	int nextFrame;
+	bool threaded;
 
 	bool loaded;
 	bool isInverted;
+	bool isPlaying;
+
 	int w,h;
 	int frame_n;
 	int length;
-	bool isPlaying;
 	double fps;
 
 	int GetFrame(int n);

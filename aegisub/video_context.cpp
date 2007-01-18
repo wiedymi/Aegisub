@@ -86,6 +86,8 @@ VideoContext *VideoContext::instance = NULL;
 VideoContext::VideoContext() {
 	// Set GL context
 	glContext = NULL;
+	lastTex = 0;
+	lastFrame = -1;
 
 	// Set options
 	audio = NULL;
@@ -119,6 +121,7 @@ VideoContext *VideoContext::Get() {
 /////////
 // Clear
 void VideoContext::Clear() {
+	instance->audio = NULL;
 	delete instance;
 	instance = NULL;
 }
@@ -139,7 +142,6 @@ void VideoContext::Reset() {
 		audio->player = NULL;
 		audio->temporary = false;
 	}
-	audio = NULL;
 
 	// Remove video data
 	loaded = false;
@@ -153,10 +155,10 @@ void VideoContext::Reset() {
 	UpdateDisplays();
 
 	// Remove textures
-	while (textureCache.size() > 32) {
-		textureCache.front().Unload();
-		textureCache.pop_front();
+	if (lastTex != 0) {
+		glDeleteTextures(1,&lastTex);
 	}
+	lastFrame = -1;
 
 	// Finish clean up
 	wxRemoveFile(tempfile);
@@ -225,33 +227,33 @@ void VideoContext::SetVideo(const wxString &filename) {
 
 			// Choose a provider
 			provider = VideoProvider::GetProvider(filename,GetTempWorkFile(),overFps);
-			if (isVfr) provider->OverrideFrameTimeList(temp.GetFrameTimeList());
+			loaded = provider != NULL;
 
-			//Gather video parameters
-			length = provider->GetFrameCount();
+			// Set frame rate
 			fps = provider->GetFPS();
-			w = provider->GetWidth();
-			h = provider->GetHeight();
-
-			// Set CFR
 			if (!isVfr) {
 				VFR_Input.SetCFR(fps);
 				if (VFR_Output.GetFrameRateType() != VFR) VFR_Output.SetCFR(fps);
 			}
+			else provider->OverrideFrameTimeList(temp.GetFrameTimeList());
+
+			// Gather video parameters
+			length = provider->GetFrameCount();
+			w = provider->GetWidth();
+			h = provider->GetHeight();
 
 			// Set filename
 			videoName = filename;
 			Options.AddToRecentList(filename,_T("Recent vid"));
 
-			// Update displays
-			UpdateDisplays();
+			// Get frame
+			VideoContext::Get()->JumpToFrame(0);
 		}
 		
 		catch (wxString &e) {
 			wxMessageBox(e,_T("Error setting video"),wxICON_ERROR | wxOK);
 		}
 	}
-
 	loaded = provider != NULL;
 }
 
@@ -284,6 +286,7 @@ void VideoContext::UpdateDisplays() {
 		display->ControlSlider->SetValue(GetFrameN());
 		display->UpdatePositionDisplay();
 		display->Refresh();
+		display->Update();
 	}
 }
 
@@ -303,10 +306,11 @@ void VideoContext::JumpToFrame(int n) {
 	if (!loaded) return;
 
 	// Prevent intervention during playback
-	if (isPlaying && n != PlayNextFrame) return;
+	if (isPlaying && n != playNextFrame) return;
 
 	// Set frame number
 	frame_n = n;
+	GetFrameAsTexture(n);
 
 	// Display
 	UpdateDisplays();
@@ -334,56 +338,56 @@ wxGLContext *VideoContext::GetGLContext(wxGLCanvas *canvas) {
 ///////////////////////////
 // Get GL Texture of frame
 GLuint VideoContext::GetFrameAsTexture(int n) {
-	// See if frame is available on cache
-	for (std::list<CachedTexture>::iterator cur=textureCache.begin();cur!=textureCache.end();cur++) {
-		if ((*cur).frame == n) {
-			return (*cur).texture;
-		}
-	}
+	// Already uploaded
+	if (n == lastFrame) return lastTex;
 
 	// Get frame
 	AegiVideoFrame frame = provider->GetFrame(n);
 
-	// Generate texture with GL
-	GLuint tex;
-	GLenum err;
-	glGenTextures(1, &tex);
-	err = glGetError();
-	glBindTexture(GL_TEXTURE_2D, tex);
-	err = glGetError();
+	// Set frame
+	lastFrame = n;
 
 	// Image type
-	GLenum type;
+	GLenum format;
 	if (frame.format == FORMAT_RGB32) {
-		if (frame.invertChannels) type = GL_BGRA_EXT;
-		else type = GL_RGBA;
+		if (frame.invertChannels) format = GL_BGRA_EXT;
+		else format = GL_RGBA;
 	}
 	if (frame.format == FORMAT_RGB24) {
-		if (frame.invertChannels) type = GL_BGR_EXT;
-		else type = GL_RGB;
+		if (frame.invertChannels) format = GL_BGR_EXT;
+		else format = GL_RGB;
 	}
 	isInverted = frame.flipped;
 
-	// Load image data into texture
-	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,frame.w,frame.h,0,type,GL_UNSIGNED_BYTE,frame.data[0]);
-	err = glGetError();
+	// Set context
+	GetGLContext(displayList.front())->SetCurrent(*displayList.front());
+
+	if (lastTex == 0) {
+		// Enable
+		glEnable(GL_TEXTURE_2D);
+		glShadeModel(GL_FLAT);
+
+		// Generate texture with GL
+		glGenTextures(1, &lastTex);
+		glBindTexture(GL_TEXTURE_2D, lastTex);
+
+		// Load image data into texture
+		glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,frame.w,frame.h,0,format,GL_UNSIGNED_BYTE,NULL);
+
+		// Set texture
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+	}
+	
+	// Load texture data
+	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,frame.w,frame.h,format,GL_UNSIGNED_BYTE,frame.data[0]);
 
 	// Unload frame
 	frame.Clear();
 
-	// Cache texture
-	CachedTexture temp;
-	temp.frame = n;
-	temp.texture = tex;
-	textureCache.push_back(temp);
-
-	// Remove old cache data
-	if (textureCache.size() > 32) {
-		textureCache.front().Unload();
-		textureCache.pop_front();
-	}
-
-	return tex;
+	// Return texture number
+	return lastTex;
 }
 
 
@@ -452,17 +456,17 @@ void VideoContext::Play() {
 
 	// Set variables
 	isPlaying = true;
-	StartFrame = frame_n;
-	EndFrame = -1;
+	startFrame = frame_n;
+	endFrame = -1;
 
 	// Start playing audio
-	audio->Play(VFR_Output.GetTimeAtFrame(StartFrame),-1);
+	audio->Play(VFR_Output.GetTimeAtFrame(startFrame),-1);
 
 	// Start timer
-	StartTime = clock();
-	PlayTime = StartTime;
-	Playback.SetOwner(this,VIDEO_PLAY_TIMER);
-	Playback.Start(1);
+	startTime = clock();
+	playTime = startTime;
+	playback.SetOwner(this,VIDEO_PLAY_TIMER);
+	playback.Start(1);
 }
 
 
@@ -478,20 +482,20 @@ void VideoContext::PlayLine() {
 
 	// Set variables
 	isPlaying = true;
-	StartFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true);
-	EndFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false);
+	startFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true);
+	endFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false);
 
 	// Jump to start
-	PlayNextFrame = StartFrame;
-	JumpToFrame(StartFrame);
+	playNextFrame = startFrame;
+	JumpToFrame(startFrame);
 
 	// Set other variables
-	StartTime = clock();
-	PlayTime = StartTime;
+	startTime = clock();
+	playTime = startTime;
 
 	// Start timer
-	Playback.SetOwner(this,VIDEO_PLAY_TIMER);
-	Playback.Start(1);
+	playback.SetOwner(this,VIDEO_PLAY_TIMER);
+	playback.Start(1);
 }
 
 
@@ -499,7 +503,7 @@ void VideoContext::PlayLine() {
 // Stop
 void VideoContext::Stop() {
 	if (isPlaying) {
-		Playback.Stop();
+		playback.Stop();
 		isPlaying = false;
 		audio->Stop();
 	}
@@ -511,12 +515,12 @@ void VideoContext::Stop() {
 void VideoContext::OnPlayTimer(wxTimerEvent &event) {
 	// Get time difference
 	clock_t cur = clock();
-	int dif = (clock() - StartTime)*1000/CLOCKS_PER_SEC;
+	int dif = (clock() - startTime)*1000/CLOCKS_PER_SEC;
 	if (!dif) return;
-	PlayTime = cur;
+	playTime = cur;
 
 	// Find next frame
-	int startMs = VFR_Output.GetTimeAtFrame(StartFrame);
+	int startMs = VFR_Output.GetTimeAtFrame(startFrame);
 	int nextFrame = frame_n;
 	for (int i=0;i<10;i++) {
 		if (nextFrame >= length) break;
@@ -530,7 +534,7 @@ void VideoContext::OnPlayTimer(wxTimerEvent &event) {
 	if (nextFrame == frame_n) return;
 
 	// End
-	if (nextFrame >= length || (EndFrame != -1 && nextFrame > EndFrame)) {
+	if (nextFrame >= length || (endFrame != -1 && nextFrame > endFrame)) {
 		Stop();
 		return;
 	}
@@ -539,7 +543,7 @@ void VideoContext::OnPlayTimer(wxTimerEvent &event) {
 	if (nextFrame < frame_n || nextFrame > frame_n + 2) audio->player->SetCurrentPosition(audio->GetSampleAtMS(VFR_Output.GetTimeAtFrame(nextFrame)));
 
 	// Jump to next frame
-	PlayNextFrame = nextFrame;
+	playNextFrame = nextFrame;
 	JumpToFrame(nextFrame);
 
 	// Sync audio
@@ -608,11 +612,4 @@ bool VideoContext::OverKeyFramesLoaded() {
 // Check if keyframes are loaded
 bool VideoContext::KeyFramesLoaded() {
 	return overKeyFramesLoaded || keyFramesLoaded;
-}
-
-
-//////////////////
-// Cached texture
-void CachedTexture::Unload() {
-	glDeleteTextures(1,&texture);
 }

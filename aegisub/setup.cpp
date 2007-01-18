@@ -71,6 +71,7 @@
 #pragma comment(lib, "wxmsw28u_media.lib")
 #pragma comment(lib, "wxmsw28u_core.lib")
 #pragma comment(lib, "wxmsw28u_adv.lib")
+#pragma comment(lib, "wxmsw28u_gl.lib")
 #endif
 
 #else 

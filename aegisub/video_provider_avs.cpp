@@ -306,15 +306,18 @@ AegiVideoFrame AvisynthVideoProvider::GetFrame(int _n) {
 
 	// Aegisub's video frame
 	AegiVideoFrame final;
+	final.format = FORMAT_RGB32;
+	final.flipped = true;
+	final.cppAlloc = false;
+
+	// Real coordinates
 	final.w = frame->GetRowSize() / 4;
 	final.h = frame->GetHeight();
 	final.pitch = frame->GetPitch();
-	final.format = FORMAT_RGB32;
-	final.data[0] = new unsigned char[final.pitch * final.h];
-	final.flipped = true;
-	final.cppAlloc = true;
+	//final.data[0] = (unsigned char*) malloc(final.pitch * final.h);
+	final.data[0] = new unsigned char [final.pitch * final.h];
 	memcpy(final.data[0],frame->GetReadPtr(),final.pitch * final.h);
-	
+
 	// Set last number
 	last_fnum = n;
 	return final;

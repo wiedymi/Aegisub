@@ -127,9 +127,8 @@ void VideoDisplay::Render() {
 	SetCurrent(*context->GetGLContext(this));
 
 	// Clear
-	GLenum err;
-	glClearColor(0.0f,0.0f,0.0f,0.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	//glClearColor(0.0f,0.0f,0.0f,0.0f);
+	//glClear(GL_COLOR_BUFFER_BIT);
 
 	// Set viewport
 	glLoadIdentity();
@@ -137,19 +136,6 @@ void VideoDisplay::Render() {
 	int w,h;
 	GetClientSize(&w,&h);
 	glViewport(0,0,w,h);
-
-	// Set texture
-	glEnable(GL_TEXTURE_2D);
-	err = glGetError();
-	glShadeModel(GL_SMOOTH);
-	err = glGetError();
-	GLuint tex = context->GetFrameAsTexture(context->GetFrameN());
-	glBindTexture(GL_TEXTURE_2D,tex);
-	err = glGetError();
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	err = glGetError();
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	err = glGetError();
 
 	// Texture coordinates
 	float top = 0.0f;
@@ -196,7 +182,8 @@ void VideoDisplay::Render() {
 // Update size
 void VideoDisplay::UpdateSize() {
 	// Get size
-	w = VideoContext::Get()->GetWidth() * zoomValue;
+	if (arType == 0) w = VideoContext::Get()->GetWidth() * zoomValue;
+	else w = VideoContext::Get()->GetHeight() * zoomValue * arValue;
 	h = VideoContext::Get()->GetHeight() * zoomValue;
 
 	// Set the size for this control

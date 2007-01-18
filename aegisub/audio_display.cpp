@@ -120,6 +120,14 @@ AudioDisplay::~AudioDisplay() {
 	delete spectrumDisplaySelected;
 	delete peak;
 	delete min;
+	provider = NULL;
+	player = NULL;
+	origImage = NULL;
+	spectrumRenderer = NULL;
+	spectrumDisplay = NULL;
+	spectrumDisplaySelected = NULL;
+	peak = NULL;
+	min = NULL;
 }
 
 
