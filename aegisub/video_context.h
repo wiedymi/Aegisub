@@ -98,6 +98,7 @@ private:
 
 	int GetFrame(int n);
 	void SaveSnapshot();
+	void UnloadTexture();
 	void OnPlayTimer(wxTimerEvent &event);
 
 public:
@@ -138,7 +139,7 @@ public:
 	void JumpToTime(int ms);
 
 	void Refresh(bool video,bool subtitles);
-	void UpdateDisplays();
+	void UpdateDisplays(bool full);
 
 	void GetScriptSize(int &w,int &h);
 	wxString GetTempWorkFile ();

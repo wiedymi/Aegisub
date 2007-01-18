@@ -74,7 +74,6 @@ void VideoSlider::SetValue(int value) {
 	val = value;
 	if (val < min) val = min;
 	if (val > max) val = max;
-	//UpdateImage();
 	Refresh(false);
 }
 
@@ -86,8 +85,8 @@ void VideoSlider::SetRange(int from,int to) {
 	locked = false;
 	min = from;
 	max = to;
-	val = from;
-	//UpdateImage();
+	if (val < from) val = from;
+	if (val > to) val = to;
 }
 
 
@@ -128,6 +127,8 @@ void VideoSlider::NextFrame() {
 
 	//don't request out of range frames
 	if (GetValue() < max) VideoContext::Get()->JumpToFrame(GetValue()+1);
+	Refresh(false);
+	Update();
 }
 
 
@@ -138,6 +139,8 @@ void VideoSlider::PrevFrame() {
 
 	//don't request out of range frames
 	if (GetValue() > min) VideoContext::Get()->JumpToFrame(GetValue()-1);
+	Refresh(false);
+	Update();
 }
 
 
@@ -377,23 +380,29 @@ void VideoSlider::OnPaint(wxPaintEvent &event) {
 
 //////////////
 // Draw image
-void VideoSlider::DrawImage(wxDC &dc) {
+void VideoSlider::DrawImage(wxDC &destdc) {
 	// Get dimensions
 	int w,h;
 	GetClientSize(&w,&h);
 
-	// Draw background
-	dc.Clear();
+	// Back buffer
+	wxMemoryDC dc;
+	wxBitmap bmp(w,h);
+	dc.SelectObject(bmp);
 
 	// Colors
 	wxColour shad = wxSystemSettings::GetColour(wxSYS_COLOUR_3DDKSHADOW);
 	wxColour high = wxSystemSettings::GetColour(wxSYS_COLOUR_3DLIGHT);
 	wxColour face = wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
-	//wxColour sel(244,198,38);
 	wxColour sel(123,251,232);
 	wxColour notSel(sel.Red()*2/5,sel.Green()*2/5,sel.Blue()*2/5);
 	wxColour bord(0,0,0);
 	int x1,x2,y1,y2;
+
+	// Background
+	dc.SetPen(*wxTRANSPARENT_PEN);
+	dc.SetBrush(face);
+	dc.DrawRectangle(0,0,w,h);
 
 	// Selection border
 	bool selected = wxWindow::FindFocus() == this;
@@ -461,6 +470,9 @@ void VideoSlider::DrawImage(wxDC &dc) {
 	if (selected) dc.SetBrush(wxBrush(sel));
 	else dc.SetBrush(wxBrush(notSel));
 	dc.DrawRectangle(curX-3,y2+1,7,4);
+
+	// Draw final
+	destdc.Blit(0,0,w,h,&dc,0,0);
 }
 
 

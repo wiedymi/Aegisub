@@ -153,13 +153,10 @@ void VideoContext::Reset() {
 	nextFrame = -1;
 
 	// Update displays
-	UpdateDisplays();
+	UpdateDisplays(true);
 
 	// Remove textures
-	if (lastTex != 0) {
-		glDeleteTextures(1,&lastTex);
-	}
-	lastFrame = -1;
+	UnloadTexture();
 
 	// Finish clean up
 	wxRemoveFile(tempfile);
@@ -169,6 +166,17 @@ void VideoContext::Reset() {
 	provider = NULL;
 	delete glContext;
 	glContext = NULL;
+}
+
+
+//////////////////
+// Unload texture
+void VideoContext::UnloadTexture() {
+	// Remove textures
+	if (lastTex != 0) {
+		glDeleteTextures(1,&lastTex);
+	}
+	lastFrame = -1;
 }
 
 
@@ -248,6 +256,7 @@ void VideoContext::SetVideo(const wxString &filename) {
 			Options.AddToRecentList(filename,_T("Recent vid"));
 
 			// Get frame
+			UpdateDisplays(true);
 			VideoContext::Get()->JumpToFrame(0);
 		}
 		
@@ -278,12 +287,14 @@ void VideoContext::RemoveDisplay(VideoDisplay *display) {
 
 ///////////////////
 // Update displays
-void VideoContext::UpdateDisplays() {
+void VideoContext::UpdateDisplays(bool full) {
 	for (std::list<VideoDisplay*>::iterator cur=displayList.begin();cur!=displayList.end();cur++) {
 		VideoDisplay *display = *cur;
 		
-		display->UpdateSize();
-		display->ControlSlider->SetRange(0,GetLength()-1);
+		if (full) {
+			display->UpdateSize();
+			display->ControlSlider->SetRange(0,GetLength()-1);
+		}
 		display->ControlSlider->SetValue(GetFrameN());
 		display->UpdatePositionDisplay();
 		display->Refresh();
@@ -295,8 +306,9 @@ void VideoContext::UpdateDisplays() {
 /////////////////////
 // Refresh subtitles
 void VideoContext::Refresh (bool video, bool subtitles) {
-	//provider->RefreshSubtitles();
-	//RefreshVideo();
+	lastFrame = -1;
+	if (subtitles) provider->RefreshSubtitles();
+	JumpToFrame(frame_n);
 }
 
 
@@ -314,7 +326,7 @@ void VideoContext::JumpToFrame(int n) {
 	GetFrameAsTexture(n);
 
 	// Display
-	UpdateDisplays();
+	UpdateDisplays(false);
 
 	// Update grid
 	if (!isPlaying && Options.AsBool(_T("Highlight subs in frame"))) grid->Refresh(false);

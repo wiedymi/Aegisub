@@ -42,6 +42,7 @@
 #include <wx/clipbrd.h>
 #include <wx/filename.h>
 #include <wx/config.h>
+#include <GL/glu.h>
 #include "utils.h"
 #include "video_display.h"
 #include "video_display_visual.h"
@@ -126,11 +127,16 @@ void VideoDisplay::Render() {
 	VideoContext *context = VideoContext::Get();
 	SetCurrent(*context->GetGLContext(this));
 
-	// Set viewport
-	glLoadIdentity();
-	glMatrixMode (GL_MODELVIEW);
-	int w,h;
+	// Get sizes
+	int w,h,sw,sh;
 	GetClientSize(&w,&h);
+	context->GetScriptSize(sw,sh);
+
+	// Set viewport
+	glMatrixMode (GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0,sw,sh,0);
+	glMatrixMode (GL_MODELVIEW);
 	glViewport(0,0,w,h);
 
 	// Texture coordinates
@@ -148,19 +154,23 @@ void VideoDisplay::Render() {
 		// Top-left
 		glColor3f(1.0f,1.0f,1.0f);
 		glTexCoord2f(left,top);
-		glVertex2f(-1.0f,1.0f);
+		//glVertex2f(-1.0f,1.0f);
+		glVertex2f(0,0);
 
 		// Top-right
 		glTexCoord2f(right,top);
-		glVertex2f(1.0f,1.0f);
+		//glVertex2f(1.0f,1.0f);
+		glVertex2f(sw,0);
 
 		// Bottom-right
 		glTexCoord2f(right,bot);
-		glVertex2f(1.0f,-1.0f);
+		//glVertex2f(1.0f,-1.0f);
+		glVertex2f(sw,sh);
 
 		// Bottom-left
 		glTexCoord2f(left,bot);
-		glVertex2f(-1.0f,-1.0f);
+		//glVertex2f(-1.0f,-1.0f);
+		glVertex2f(0,sh);
 	glEnd();
 
 	// Swap
@@ -178,15 +188,20 @@ void VideoDisplay::UpdateSize() {
 	if (arType == 0) w = VideoContext::Get()->GetWidth() * zoomValue;
 	else w = VideoContext::Get()->GetHeight() * zoomValue * arValue;
 	h = VideoContext::Get()->GetHeight() * zoomValue;
+	int _w,_h;
 
 	// Set the size for this control
 	SetSizeHints(w,h,w,h);
 	SetClientSize(w,h);
-	int _w,_h;
 	GetSize(&_w,&_h);
 	SetSizeHints(_w,_h,_w,_h);
-
 	box->VideoSizer->Fit(box);
+
+	// Layout
+	box->GetParent()->Layout();
+	SetClientSize(w,h);
+
+	// Refresh
 	Refresh(false);
 }
 
@@ -269,7 +284,6 @@ void VideoDisplay::OnMouseLeave(wxMouseEvent& event) {
 void VideoDisplay::SetZoom(double value) {
 	zoomValue = value;
 	UpdateSize();
-	box->GetParent()->Layout();
 }
 
 
@@ -306,7 +320,6 @@ void VideoDisplay::SetAspectRatio(int _type, double value) {
 	arType = _type;
 	arValue = value;
 	UpdateSize();
-	GetParent()->Layout();
 }
 
 
