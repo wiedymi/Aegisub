@@ -377,10 +377,10 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 
 	// Set context
 	GetGLContext(displayList.front())->SetCurrent(*displayList.front());
+	glEnable(GL_TEXTURE_2D);
 
 	if (lastTex == 0) {
 		// Enable
-		glEnable(GL_TEXTURE_2D);
 		glShadeModel(GL_FLAT);
 
 		// Generate texture with GL

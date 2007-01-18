@@ -64,7 +64,6 @@ private:
 	int hold;
 	bool holding;
 
-	wxBitmap *backbuffer;
 	wxString mouseText;
 	AssDialogue *curSelection;
 
@@ -76,7 +75,7 @@ private:
 	void GetLineScale(AssDialogue *diag,float &scalX,float &scalY);
 	void GetLineClip(AssDialogue *diag,int &x1,int &y1,int &x2,int &y2);
 
-	void DrawTrackingOverlay(wxDC &dc);
+	void DrawTrackingOverlay();
 	void DrawOverlay();
 	void OnMouseEvent(wxMouseEvent &event);
 	void OnKeyEvent(wxKeyEvent &event);

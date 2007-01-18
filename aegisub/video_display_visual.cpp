@@ -36,6 +36,7 @@
 
 //////////////
 // Headers
+#include <wx/glcanvas.h>
 #include <wx/wxprec.h>
 #include "video_display_visual.h"
 #include "video_display.h"
@@ -62,7 +63,6 @@
 // Constructor
 VideoDisplayVisual::VideoDisplayVisual(VideoDisplay *par) {
 	parent = par;
-	backbuffer = NULL;
 	curSelection = NULL;
 	holding = false;
 	mode = -1;
@@ -77,7 +77,6 @@ VideoDisplayVisual::VideoDisplayVisual(VideoDisplay *par) {
 //////////////
 // Destructor
 VideoDisplayVisual::~VideoDisplayVisual() {
-	delete backbuffer;
 }
 
 
@@ -109,339 +108,344 @@ void VideoDisplayVisual::SetMode(int _mode) {
 ////////////////
 // Draw overlay
 void VideoDisplayVisual::DrawOverlay() {
-	//// Variables
-	//int x = mouseX;
-	//int y = mouseY;
-	//int w = VideoContext::Get()->GetWidth();
-	//int h = VideoContext::Get()->GetHeight();
-	//int frame_n = VideoContext::Get()->GetFrameN();
-	//int sw,sh;
-	//VideoContext::Get()->GetScriptSize(sw,sh);
+	// Variables
+	int x = mouseX;
+	int y = mouseY;
+	int w = VideoContext::Get()->GetWidth();
+	int h = VideoContext::Get()->GetHeight();
+	int frame_n = VideoContext::Get()->GetFrameN();
+	int sw,sh;
+	VideoContext::Get()->GetScriptSize(sw,sh);
+	int mx = mouseX * sw / w;
+	int my = mouseY * sh / h;
 
-	//// Create backbuffer if needed
-	//bool needCreate = false;
-	//if (!backbuffer) needCreate = true;
-	//else if (backbuffer->GetWidth() != w || backbuffer->GetHeight() != h) {
-	//	needCreate = true;
-	//	delete backbuffer;
-	//}
-	//if (needCreate) backbuffer = new wxBitmap(w,h);
+	// Draw the control points for FexTracker
+	glDisable(GL_TEXTURE_2D);
+	DrawTrackingOverlay();
 
-	//// Prepare drawing
-	//wxMemoryDC dc;
-	//dc.SelectObject(*backbuffer);
+	// Draw lines
+	if (mode != 0) {
+		int numRows = VideoContext::Get()->grid->GetRows();
+		AssDialogue *diag;
+		AssDialogue *diagHigh = NULL;
 
-	//// Draw frame
-	////dc.DrawBitmap(parent->GetFrame(frame_n),0,0);
+		// Find where the highlight is
+		if (mode == 1) {
+			int dx,dy;
+			for (int i=0;i<numRows;i++) {
+				diag = VideoContext::Get()->grid->GetDialogue(i);
+				if (diag) {
+					if (VFR_Output.GetFrameAtTime(diag->Start.GetMS(),true) <= frame_n && VFR_Output.GetFrameAtTime(diag->End.GetMS(),false) >= frame_n) {
+						GetLinePosition(diag,dx,dy);
+						dx = dx * w / sw;
+						dy = dy * h / sh;
+						if (x >= dx-8 && x <= dx+8 && y >= dy-8 && y <= dy+8) {
+							diagHigh = diag;
+						}
+					}
+				}
+			}
+		}
 
-	//// Draw the control points for FexTracker
-	//DrawTrackingOverlay(dc);
+		// For each line
+		for (int i=0;i<numRows;i++) {
+			diag = VideoContext::Get()->grid->GetDialogue(i);
+			if (diag) {
+				// Draw?
+				bool draw = false;
+				bool high = false;
+				bool isCur = diag == curSelection;
+				bool timeVisible = VFR_Output.GetFrameAtTime(diag->Start.GetMS(),true) <= frame_n && VFR_Output.GetFrameAtTime(diag->End.GetMS(),false) >= frame_n;
+				bool show = timeVisible;
+				if (mode != 1) {
+					show = diag == VideoContext::Get()->grid->GetDialogue(VideoContext::Get()->grid->editBox->linen) && timeVisible;
+				}
 
-	//// Draw lines
-	//if (mode != 0) {
-	//	int numRows = VideoContext::Get()->grid->GetRows();
-	//	AssDialogue *diag;
-	//	AssDialogue *diagHigh = NULL;
+				// Variables
+				int dx = -1;
+				int dy = -1;
+				int orgx = -1;
+				int orgy = -1;
+				float rx = 0.0f;
+				float ry = 0.0f;
+				float rz = 0.0f;
+				float scalX = 100.0f;
+				float scalY = 100.0f;
+				int deltax = 0;
+				int deltay = 0;
 
-	//	// Find where the highlight is
-	//	if (mode == 1) {
-	//		int dx,dy;
-	//		for (int i=0;i<numRows;i++) {
-	//			diag = VideoContext::Get()->grid->GetDialogue(i);
-	//			if (diag) {
-	//				if (VFR_Output.GetFrameAtTime(diag->Start.GetMS(),true) <= frame_n && VFR_Output.GetFrameAtTime(diag->End.GetMS(),false) >= frame_n) {
-	//					GetLinePosition(diag,dx,dy);
-	//					dx = dx * w / sw;
-	//					dy = dy * h / sh;
-	//					if (x >= dx-8 && x <= dx+8 && y >= dy-8 && y <= dy+8) {
-	//						diagHigh = diag;
-	//					}
-	//				}
-	//			}
-	//		}
-	//	}
+				// Line visible?
+				if (show) {
+					// Get position
+					if (isCur && mode == 1) {
+						dx = curX;
+						dy = curY;
+						high = true;
+					}
+					else GetLinePosition(diag,dx,dy,orgx,orgy);
 
-	//	// For each line
-	//	for (int i=0;i<numRows;i++) {
-	//		diag = VideoContext::Get()->grid->GetDialogue(i);
-	//		if (diag) {
-	//			// Draw?
-	//			bool draw = false;
-	//			bool high = false;
-	//			bool isCur = diag == curSelection;
-	//			bool timeVisible = VFR_Output.GetFrameAtTime(diag->Start.GetMS(),true) <= frame_n && VFR_Output.GetFrameAtTime(diag->End.GetMS(),false) >= frame_n;
-	//			bool show = timeVisible;
-	//			if (mode != 1) {
-	//				show = diag == VideoContext::Get()->grid->GetDialogue(VideoContext::Get()->grid->editBox->linen) && timeVisible;
-	//			}
+					// Mouse over?
+					if (diag == diagHigh) {
+						high = true;
+					}
 
-	//			// Variables
-	//			int dx = -1;
-	//			int dy = -1;
-	//			int orgx = -1;
-	//			int orgy = -1;
-	//			float rx = 0.0f;
-	//			float ry = 0.0f;
-	//			float rz = 0.0f;
-	//			float scalX = 100.0f;
-	//			float scalY = 100.0f;
-	//			int deltax = 0;
-	//			int deltay = 0;
+					// Highlight
+					int brushCol = 1;
+					if (high) brushCol = 2;
+					//dc.SetBrush(wxBrush(colour[brushCol]));
+					//dc.SetPen(wxPen(colour[0],1));
 
-	//			// Line visible?
-	//			if (show) {
-	//				// Get position
-	//				if (isCur && mode == 1) {
-	//					dx = curX;
-	//					dy = curY;
-	//					high = true;
-	//				}
-	//				else GetLinePosition(diag,dx,dy,orgx,orgy);
+					// Set drawing coordinates
+					int radius = (int) sqrt(double((dx-orgx)*(dx-orgx)+(dy-orgy)*(dy-orgy)));
 
-	//				// Mouse over?
-	//				if (diag == diagHigh) {
-	//					high = true;
-	//				}
+					// Drag
+					if (mode == 1) {
+						glEnable(GL_BLEND);
+						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+						glColor4f(colour[brushCol].Red()/255.0,colour[brushCol].Green()/255.0,colour[brushCol].Blue()/255.0,0.5);
+						glBegin(GL_QUADS);
+							glVertex2d(dx-8,dy-8);
+							glVertex2d(dx+8,dy-8);
+							glVertex2d(dx+8,dy+8);
+							glVertex2d(dx-8,dy+8);
+						glEnd();
+						glDisable(GL_BLEND);
+						glColor3f(colour[2].Red()/255.0,colour[2].Green()/255.0,colour[2].Blue()/255.0);
+						glBegin(GL_LINE_STRIP);
+							glVertex2d(dx-8,dy-8);
+							glVertex2d(dx+8,dy-8);
+							glVertex2d(dx+8,dy+8);
+							glVertex2d(dx-8,dy+8);
+							glVertex2d(dx-8,dy-8);
+						glEnd();
+						glBegin(GL_LINES);
+							glVertex2d(dx,dy-16);
+							glVertex2d(dx,dy+16);
+							glVertex2d(dx-16,dy);
+							glVertex2d(dx+16,dy);
+						glEnd();
+					}
 
-	//				// Highlight
-	//				int brushCol = 1;
-	//				if (high) brushCol = 2;
-	//				dc.SetBrush(wxBrush(colour[brushCol]));
-	//				dc.SetPen(wxPen(colour[0],1));
+					// Rotation
+					if (mode == 2 || mode == 3) {
+						// Pivot coordinates
+						int odx = dx;
+						int ody = dy;
+						dx = orgx;
+						dy = orgy;
 
-	//				// Set drawing coordinates
-	//				int radius = (int) sqrt(double((dx-orgx)*(dx-orgx)+(dy-orgy)*(dy-orgy)));
-	//				dx = dx * w / sw;
-	//				dy = dy * h / sh;
-	//				orgx = orgx * w / sw;
-	//				orgy = orgy * h / sh;
+						// Draw pivot
+						//dc.DrawCircle(dx,dy,7);
+						//dc.DrawLine(dx,dy-16,dx,dy+16);
+						//dc.DrawLine(dx-16,dy,dx+16,dy);
+							
+						// Get angle
+						if (isCur) {
+							if (mode == 2) rz = curAngle;
+							else {
+								rx = curAngle;
+								ry = curAngle2;
+							}
+						}
+						else GetLineRotation(diag,rx,ry,rz);
 
-	//				// Drag
-	//				if (mode == 1) {
-	//					dc.DrawRectangle(dx-8,dy-8,17,17);
-	//					dc.DrawLine(dx,dy-16,dx,dy+16);
-	//					dc.DrawLine(dx-16,dy,dx+16,dy);
-	//				}
+						// Rotate Z
+						if (mode == 2) {
+							//// Calculate radii
+							//int oRadiusX = radius * w / sw;
+							//int oRadiusY = radius * h / sh;
+							//if (radius < 50) radius = 50;
+							//int radiusX = radius * w / sw;
+							//int radiusY = radius * h / sh;
 
-	//				// Rotation
-	//				if (mode == 2 || mode == 3) {
-	//					// Pivot coordinates
-	//					int odx = dx;
-	//					int ody = dy;
-	//					dx = orgx;
-	//					dy = orgy;
+							//// Draw the circle
+							//dc.SetBrush(*wxTRANSPARENT_BRUSH);
+							//dc.DrawEllipse(dx-radiusX-2,dy-radiusY-2,2*radiusX+4,2*radiusY+4);
+							//dc.DrawEllipse(dx-radiusX+2,dy-radiusY+2,2*radiusX-4,2*radiusY-4);
 
-	//					// Draw pivot
-	//					dc.DrawCircle(dx,dy,7);
-	//					dc.DrawLine(dx,dy-16,dx,dy+16);
-	//					dc.DrawLine(dx-16,dy,dx+16,dy);
-	//						
-	//					// Get angle
-	//					if (isCur) {
-	//						if (mode == 2) rz = curAngle;
-	//						else {
-	//							rx = curAngle;
-	//							ry = curAngle2;
-	//						}
-	//					}
-	//					else GetLineRotation(diag,rx,ry,rz);
+							//// Draw line to mouse
+							//dc.DrawLine(dx,dy,mouseX,mouseY);
 
-	//					// Rotate Z
-	//					if (mode == 2) {
-	//						// Calculate radii
-	//						int oRadiusX = radius * w / sw;
-	//						int oRadiusY = radius * h / sh;
-	//						if (radius < 50) radius = 50;
-	//						int radiusX = radius * w / sw;
-	//						int radiusY = radius * h / sh;
+							//// Get deltas
+							//deltax = int(cos(rz*3.1415926536/180.0)*radiusX);
+							//deltay = int(-sin(rz*3.1415926536/180.0)*radiusY);
 
-	//						// Draw the circle
-	//						dc.SetBrush(*wxTRANSPARENT_BRUSH);
-	//						dc.DrawEllipse(dx-radiusX-2,dy-radiusY-2,2*radiusX+4,2*radiusY+4);
-	//						dc.DrawEllipse(dx-radiusX+2,dy-radiusY+2,2*radiusX-4,2*radiusY-4);
+							//// Draw the baseline
+							//dc.SetPen(wxPen(colour[3],2));
+							//dc.DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
 
-	//						// Draw line to mouse
-	//						dc.DrawLine(dx,dy,mouseX,mouseY);
+							//// Draw the connection line
+							//if (orgx != odx && orgy != ody) {
+							//	double angle = atan2(double(dy*sh/h-ody*sh/h),double(odx*sw/w-dx*sw/w)) + rz*3.1415926536/180.0;
+							//	int fx = dx+int(cos(angle)*oRadiusX);
+							//	int fy = dy-int(sin(angle)*oRadiusY);
+							//	dc.DrawLine(dx,dy,fx,fy);
+							//	int mdx = cos(rz*3.1415926536/180.0)*20;
+							//	int mdy = -sin(rz*3.1415926536/180.0)*20;
+							//	dc.DrawLine(fx-mdx,fy-mdy,fx+mdx,fy+mdy);
+							//}
 
-	//						// Get deltas
-	//						deltax = int(cos(rz*3.1415926536/180.0)*radiusX);
-	//						deltay = int(-sin(rz*3.1415926536/180.0)*radiusY);
+							//// Draw the rotation line
+							//dc.SetPen(wxPen(colour[0],1));
+							//dc.SetBrush(wxBrush(colour[brushCol]));
+							//dc.DrawCircle(dx+deltax,dy+deltay,4);
+						}
 
-	//						// Draw the baseline
-	//						dc.SetPen(wxPen(colour[3],2));
-	//						dc.DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
+						// Rotate XY
+						if (mode == 3) {
+							//// Calculate radii
+							//if (radius < 80) radius = 80;
+							//int radius1X = radius * w / sw / 3;
+							//int radius1Y = radius * h / sh;
+							//int radius2X = radius * w / sw;
+							//int radius2Y = radius * h / sh / 3;
 
-	//						// Draw the connection line
-	//						if (orgx != odx && orgy != ody) {
-	//							double angle = atan2(double(dy*sh/h-ody*sh/h),double(odx*sw/w-dx*sw/w)) + rz*3.1415926536/180.0;
-	//							int fx = dx+int(cos(angle)*oRadiusX);
-	//							int fy = dy-int(sin(angle)*oRadiusY);
-	//							dc.DrawLine(dx,dy,fx,fy);
-	//							int mdx = cos(rz*3.1415926536/180.0)*20;
-	//							int mdy = -sin(rz*3.1415926536/180.0)*20;
-	//							dc.DrawLine(fx-mdx,fy-mdy,fx+mdx,fy+mdy);
-	//						}
+							//// Draw the ellipses
+							//dc.SetBrush(*wxTRANSPARENT_BRUSH);
+							//dc.DrawEllipse(dx-radius1X-2,dy-radius1Y-2,2*radius1X+4,2*radius1Y+4);
+							//dc.DrawEllipse(dx-radius1X+2,dy-radius1Y+2,2*radius1X-4,2*radius1Y-4);
+							//dc.DrawEllipse(dx-radius2X-2,dy-radius2Y-2,2*radius2X+4,2*radius2Y+4);
+							//dc.DrawEllipse(dx-radius2X+2,dy-radius2Y+2,2*radius2X-4,2*radius2Y-4);
 
-	//						// Draw the rotation line
-	//						dc.SetPen(wxPen(colour[0],1));
-	//						dc.SetBrush(wxBrush(colour[brushCol]));
-	//						dc.DrawCircle(dx+deltax,dy+deltay,4);
-	//					}
+							//// Draw line to mouse
+							//dc.DrawLine(dx,dy,mouseX,mouseY);
+							//dc.SetBrush(wxBrush(colour[brushCol]));
 
-	//					// Rotate XY
-	//					if (mode == 3) {
-	//						// Calculate radii
-	//						if (radius < 80) radius = 80;
-	//						int radius1X = radius * w / sw / 3;
-	//						int radius1Y = radius * h / sh;
-	//						int radius2X = radius * w / sw;
-	//						int radius2Y = radius * h / sh / 3;
+							//// Draw Y baseline
+							//deltax = int(cos(ry*3.1415926536/180.0)*radius2X);
+							//deltay = int(-sin(ry*3.1415926536/180.0)*radius2Y);
+							//dc.SetPen(wxPen(colour[3],2));
+							//dc.DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
+							//dc.SetPen(wxPen(colour[0],1));
+							//dc.DrawCircle(dx+deltax,dy+deltay,4);
 
-	//						// Draw the ellipses
-	//						dc.SetBrush(*wxTRANSPARENT_BRUSH);
-	//						dc.DrawEllipse(dx-radius1X-2,dy-radius1Y-2,2*radius1X+4,2*radius1Y+4);
-	//						dc.DrawEllipse(dx-radius1X+2,dy-radius1Y+2,2*radius1X-4,2*radius1Y-4);
-	//						dc.DrawEllipse(dx-radius2X-2,dy-radius2Y-2,2*radius2X+4,2*radius2Y+4);
-	//						dc.DrawEllipse(dx-radius2X+2,dy-radius2Y+2,2*radius2X-4,2*radius2Y-4);
+							//// Draw X baseline
+							//deltax = int(cos(rx*3.1415926536/180.0)*radius1X);
+							//deltay = int(-sin(rx*3.1415926536/180.0)*radius1Y);
+							//dc.SetPen(wxPen(colour[3],2));
+							//dc.DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
+							//dc.SetPen(wxPen(colour[0],1));
+							//dc.DrawCircle(dx+deltax,dy+deltay,4);
+						}
+					}
 
-	//						// Draw line to mouse
-	//						dc.DrawLine(dx,dy,mouseX,mouseY);
-	//						dc.SetBrush(wxBrush(colour[brushCol]));
+					// Scale
+					if (mode == 4) {
+						//// Get scale
+						//if (isCur) {
+						//	scalX = curScaleX;
+						//	scalY = curScaleY;
+						//}
+						//else GetLineScale(diag,scalX,scalY);
 
-	//						// Draw Y baseline
-	//						deltax = int(cos(ry*3.1415926536/180.0)*radius2X);
-	//						deltay = int(-sin(ry*3.1415926536/180.0)*radius2Y);
-	//						dc.SetPen(wxPen(colour[3],2));
-	//						dc.DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
-	//						dc.SetPen(wxPen(colour[0],1));
-	//						dc.DrawCircle(dx+deltax,dy+deltay,4);
+						//// Scale parameters
+						//int len = 160;
+						//int lenx = int(1.6 * scalX);
+						//int leny = int(1.6 * scalY);
+						//int drawX = dx + len/2 + 10;
+						//int drawY = dy + len/2 + 10;
 
-	//						// Draw X baseline
-	//						deltax = int(cos(rx*3.1415926536/180.0)*radius1X);
-	//						deltay = int(-sin(rx*3.1415926536/180.0)*radius1Y);
-	//						dc.SetPen(wxPen(colour[3],2));
-	//						dc.DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
-	//						dc.SetPen(wxPen(colour[0],1));
-	//						dc.DrawCircle(dx+deltax,dy+deltay,4);
-	//					}
-	//				}
+						//// Draw length markers
+						//dc.SetPen(wxPen(colour[3],2));
+						//dc.DrawLine(dx-lenx/2,drawY+10,dx+lenx/2,drawY+10);
+						//dc.DrawLine(drawX+10,dy-leny/2,drawX+10,dy+leny/2);
+						//dc.SetPen(wxPen(colour[0],1));
+						//dc.SetBrush(wxBrush(colour[brushCol]));
+						//dc.DrawCircle(dx+lenx/2,drawY+10,4);
+						//dc.DrawCircle(drawX+10,dy-leny/2,4);
 
-	//				// Scale
-	//				if (mode == 4) {
-	//					// Get scale
-	//					if (isCur) {
-	//						scalX = curScaleX;
-	//						scalY = curScaleY;
-	//					}
-	//					else GetLineScale(diag,scalX,scalY);
+						//// Draw horizontal scale
+						//dc.SetPen(wxPen(colour[0],1));
+						//dc.DrawRectangle(dx-len/2,drawY,len+1,5);
+						//dc.SetPen(wxPen(colour[0],2));
+						//dc.DrawLine(dx-len/2+1,drawY+5,dx-len/2+1,drawY+15);
+						//dc.DrawLine(dx+len/2,drawY+5,dx+len/2,drawY+15);
 
-	//					// Scale parameters
-	//					int len = 160;
-	//					int lenx = int(1.6 * scalX);
-	//					int leny = int(1.6 * scalY);
-	//					int drawX = dx + len/2 + 10;
-	//					int drawY = dy + len/2 + 10;
+						//// Draw vertical scale
+						//dc.SetPen(wxPen(colour[0],1));
+						//dc.DrawRectangle(drawX,dy-len/2,5,len+1);
+						//dc.SetPen(wxPen(colour[0],2));
+						//dc.DrawLine(drawX+5,dy-len/2+1,drawX+15,dy-len/2+1);
+						//dc.DrawLine(drawX+5,dy+len/2,drawX+15,dy+len/2);
+					}
 
-	//					// Draw length markers
-	//					dc.SetPen(wxPen(colour[3],2));
-	//					dc.DrawLine(dx-lenx/2,drawY+10,dx+lenx/2,drawY+10);
-	//					dc.DrawLine(drawX+10,dy-leny/2,drawX+10,dy+leny/2);
-	//					dc.SetPen(wxPen(colour[0],1));
-	//					dc.SetBrush(wxBrush(colour[brushCol]));
-	//					dc.DrawCircle(dx+lenx/2,drawY+10,4);
-	//					dc.DrawCircle(drawX+10,dy-leny/2,4);
+					// Clip
+					if (mode == 5) {
+						//int dx1,dx2,dy1,dy2;
 
-	//					// Draw horizontal scale
-	//					dc.SetPen(wxPen(colour[0],1));
-	//					dc.DrawRectangle(dx-len/2,drawY,len+1,5);
-	//					dc.SetPen(wxPen(colour[0],2));
-	//					dc.DrawLine(dx-len/2+1,drawY+5,dx-len/2+1,drawY+15);
-	//					dc.DrawLine(dx+len/2,drawY+5,dx+len/2,drawY+15);
+						//// Get position
+						//if (isCur) {
+						//	dx1 = startX;
+						//	dy1 = startY;
+						//	dx2 = x;
+						//	dy2 = y;
+						//}
+						//else {
+						//	GetLineClip(diag,dx1,dy1,dx2,dy2);
+						//	dx1 = dx1 * w / sw;
+						//	dx2 = dx2 * w / sw;
+						//	dy1 = dy1 * h / sh;
+						//	dy2 = dy2 * h / sh;
+						//}
 
-	//					// Draw vertical scale
-	//					dc.SetPen(wxPen(colour[0],1));
-	//					dc.DrawRectangle(drawX,dy-len/2,5,len+1);
-	//					dc.SetPen(wxPen(colour[0],2));
-	//					dc.DrawLine(drawX+5,dy-len/2+1,drawX+15,dy-len/2+1);
-	//					dc.DrawLine(drawX+5,dy+len/2,drawX+15,dy+len/2);
-	//				}
+						//// Draw rectangle
+						//dc.SetPen(wxPen(colour[3],1));
+						//dc.SetBrush(*wxTRANSPARENT_BRUSH);
+						//dc.DrawRectangle(dx1,dy1,dx2-dx1+1,dy2-dy1+1);
 
-	//				// Clip
-	//				if (mode == 5) {
-	//					int dx1,dx2,dy1,dy2;
+						//// Draw circles
+						//dc.SetPen(wxPen(colour[0],1));
+						//dc.SetBrush(wxBrush(colour[brushCol]));
+						//dc.DrawCircle(dx1,dy1,4);
+						//dc.DrawCircle(dx1,dy2,4);
+						//dc.DrawCircle(dx2,dy1,4);
+						//dc.DrawCircle(dx2,dy2,4);
+					}
+				}
+			}
+		}
+	}
 
-	//					// Get position
-	//					if (isCur) {
-	//						dx1 = startX;
-	//						dy1 = startY;
-	//						dx2 = x;
-	//						dy2 = y;
-	//					}
-	//					else {
-	//						GetLineClip(diag,dx1,dy1,dx2,dy2);
-	//						dx1 = dx1 * w / sw;
-	//						dx2 = dx2 * w / sw;
-	//						dy1 = dy1 * h / sh;
-	//						dy2 = dy2 * h / sh;
-	//					}
+	// Current position info
+	if (mode == 0 && x >= 0 && x < w && y >= 0 && y < h) {
+		// Draw cross
+		glEnable(GL_COLOR_LOGIC_OP);
+		glLogicOp(GL_INVERT);
+		glBegin(GL_LINES);
+			glColor3f(1.0f,1.0f,1.0f);
+			glVertex2f(0,my);
+			glVertex2f(sw,my);
+			glVertex2f(mx,0);
+			glVertex2f(mx,sh);
+		glEnd();
+		glDisable(GL_COLOR_LOGIC_OP);
 
-	//					// Draw rectangle
-	//					dc.SetPen(wxPen(colour[3],1));
-	//					dc.SetBrush(*wxTRANSPARENT_BRUSH);
-	//					dc.DrawRectangle(dx1,dy1,dx2-dx1+1,dy2-dy1+1);
+		//// Setup text
+		//wxFont font(10,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,_T("Verdana"));
+		//dc.SetFont(font);
+		//int tw,th;
+		//parent->GetTextExtent(mouseText,&tw,&th,NULL,NULL,&font);
 
-	//					// Draw circles
-	//					dc.SetPen(wxPen(colour[0],1));
-	//					dc.SetBrush(wxBrush(colour[brushCol]));
-	//					dc.DrawCircle(dx1,dy1,4);
-	//					dc.DrawCircle(dx1,dy2,4);
-	//					dc.DrawCircle(dx2,dy1,4);
-	//					dc.DrawCircle(dx2,dy2,4);
-	//				}
-	//			}
-	//		}
-	//	}
-	//}
+		//// Inversion
+		//bool left = x > w/2;
+		//bool bottom = y < h/2;
 
-	//// Current position info
-	//if (mode == 0 && x >= 0 && x < w && y >= 0 && y < h) {
-	//	// Draw cross
-	//	dc.SetPen(wxPen(colour[2],1));
-	//	dc.SetLogicalFunction(wxINVERT);
-	//	dc.DrawLine(0,y,w-1,y);
-	//	dc.DrawLine(x,0,x,h-1);
+		//// Text draw coords
+		//int dx = x,dy = y;
+		//if (left) dx -= tw + 4;
+		//else dx += 4;
+		//if (bottom) dy += 3;
+		//else dy -= th + 3;
 
-	//	// Setup text
-	//	wxFont font(10,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,_T("Verdana"));
-	//	dc.SetFont(font);
-	//	int tw,th;
-	//	parent->GetTextExtent(mouseText,&tw,&th,NULL,NULL,&font);
-
-	//	// Inversion
-	//	bool left = x > w/2;
-	//	bool bottom = y < h/2;
-
-	//	// Text draw coords
-	//	int dx = x,dy = y;
-	//	if (left) dx -= tw + 4;
-	//	else dx += 4;
-	//	if (bottom) dy += 3;
-	//	else dy -= th + 3;
-
-	//	// Draw text
-	//	dc.SetTextForeground(wxColour(64,64,64));
-	//	dc.DrawText(mouseText,dx+1,dy-1);
-	//	dc.DrawText(mouseText,dx+1,dy+1);
-	//	dc.DrawText(mouseText,dx-1,dy-1);
-	//	dc.DrawText(mouseText,dx-1,dy+1);
-	//	dc.SetTextForeground(colour[2]);
-	//	dc.DrawText(mouseText,dx,dy);
-	//}
-
-	//// Blit to screen
-	//wxClientDC dcScreen(parent);
-	////dcScreen.DrawBitmap(backbuffer,0,0);
-	//dcScreen.Blit(0,0,w,h,&dc,0,0);
+		//// Draw text
+		//dc.SetTextForeground(wxColour(64,64,64));
+		//dc.DrawText(mouseText,dx+1,dy-1);
+		//dc.DrawText(mouseText,dx+1,dy+1);
+		//dc.DrawText(mouseText,dx-1,dy-1);
+		//dc.DrawText(mouseText,dx-1,dy+1);
+		//dc.SetTextForeground(colour[2]);
+		//dc.DrawText(mouseText,dx,dy);
+	}
 }
 
 
@@ -677,8 +681,7 @@ void VideoDisplayVisual::GetLineClip(AssDialogue *diag,int &x1,int &y1,int &x2,i
 
 //////////////////
 // Draw Tracking Overlay
-void VideoDisplayVisual::DrawTrackingOverlay( wxDC &dc )
-{
+void VideoDisplayVisual::DrawTrackingOverlay() {
 #if USE_FEXTRACKER == 1
 	//int frame_n = VideoContext::Get()->GetFrameN();
 	//VideoProvider *provider = VideoContext::Get()->GetProvider();
@@ -1170,7 +1173,8 @@ void VideoDisplayVisual::OnMouseEvent (wxMouseEvent &event) {
 
 	// Has something to draw
 	if (hasOverlay) {
-		DrawOverlay();
+		//DrawOverlay();
+		parent->Render();
 	}
 }
 

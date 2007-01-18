@@ -133,10 +133,11 @@ void VideoDisplay::Render() {
 	context->GetScriptSize(sw,sh);
 
 	// Set viewport
-	glMatrixMode (GL_PROJECTION);
+	glEnable(GL_TEXTURE_2D);
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluOrtho2D(0,sw,sh,0);
-	glMatrixMode (GL_MODELVIEW);
+	glMatrixMode(GL_MODELVIEW);
 	glViewport(0,0,w,h);
 
 	// Texture coordinates
@@ -154,30 +155,29 @@ void VideoDisplay::Render() {
 		// Top-left
 		glColor3f(1.0f,1.0f,1.0f);
 		glTexCoord2f(left,top);
-		//glVertex2f(-1.0f,1.0f);
 		glVertex2f(0,0);
 
 		// Top-right
 		glTexCoord2f(right,top);
-		//glVertex2f(1.0f,1.0f);
 		glVertex2f(sw,0);
 
 		// Bottom-right
 		glTexCoord2f(right,bot);
-		//glVertex2f(1.0f,-1.0f);
 		glVertex2f(sw,sh);
 
 		// Bottom-left
 		glTexCoord2f(left,bot);
-		//glVertex2f(-1.0f,-1.0f);
 		glVertex2f(0,sh);
 	glEnd();
 
-	// Swap
-	SwapBuffers();
+	// Draw overlay
+	visual->DrawOverlay();
 
 	// Draw the control points for FexTracker
 	//visual->DrawTrackingOverlay(dc);
+
+	// Swap buffers
+	SwapBuffers();
 }
 
 
@@ -257,8 +257,8 @@ void VideoDisplay::OnMouseEvent(wxMouseEvent& event) {
 		SetFocus();
 	}
 
-	//// Send to visual
-	////visual->OnMouseEvent(event);
+	// Send to visual
+	visual->OnMouseEvent(event);
 }
 
 
@@ -275,7 +275,8 @@ void VideoDisplay::OnKey(wxKeyEvent &event) {
 void VideoDisplay::OnMouseLeave(wxMouseEvent& event) {
 	if (VideoContext::Get()->IsPlaying()) return;
 	bTrackerEditing = 0;
-	Refresh(false);
+	//OnMouseEvent(event);
+	visual->OnMouseEvent(event);
 }
 
 
