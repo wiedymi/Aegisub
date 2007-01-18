@@ -108,6 +108,8 @@ VideoContext::VideoContext() {
 // Destructor
 VideoContext::~VideoContext () {
 	Reset();
+	delete glContext;
+	glContext = NULL;
 }
 
 
@@ -164,8 +166,6 @@ void VideoContext::Reset() {
 	videoName = _T("");
 	delete provider;
 	provider = NULL;
-	delete glContext;
-	glContext = NULL;
 }
 
 
@@ -175,6 +175,7 @@ void VideoContext::UnloadTexture() {
 	// Remove textures
 	if (lastTex != 0) {
 		glDeleteTextures(1,&lastTex);
+		lastTex = 0;
 	}
 	lastFrame = -1;
 }
