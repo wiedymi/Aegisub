@@ -75,5 +75,5 @@ inline void IntSwap(int &a,int &b) {
 #endif
 
 #ifndef MID
-#define MID(a,b,c) MAX(a,MIN(b,c))
+#define MID(a,b,c) MAX((a),MIN((b),(c)))
 #endif

@@ -204,12 +204,8 @@ void VideoDisplayVisual::DrawOverlay() {
 						DrawRectangle(dx-8,dy-8,dx+8,dy+8);
 						SetLineColour(colour[2]);
 						SetModeLine();
-						glBegin(GL_LINES);
-							glVertex2d(dx,dy-16);
-							glVertex2d(dx,dy+16);
-							glVertex2d(dx-16,dy);
-							glVertex2d(dx+16,dy);
-						glEnd();
+						DrawLine(dx,dy-16,dx,dy+16);
+						DrawLine(dx-16,dy,dx+16,dy);
 					}
 
 					// Rotation
@@ -238,16 +234,13 @@ void VideoDisplayVisual::DrawOverlay() {
 						// Rotate Z
 						if (mode == 2) {
 							// Calculate radii
-							int oRadiusX = radius;
-							int oRadiusY = radius;
+							int oRadius = radius;
 							if (radius < 50) radius = 50;
-							int radiusX = radius;
-							int radiusY = radius;
 
 							// Draw the circle
 							SetLineColour(colour[0]);
 							SetFillColour(colour[1],0.3f);
-							DrawRing(dx,dy,radiusY+4,radiusY-4,radiusX/radiusY);
+							DrawRing(dx,dy,radius+4,radius-4);
 
 							// Draw markers around circle
 							int markers = 6;
@@ -255,15 +248,15 @@ void VideoDisplayVisual::DrawOverlay() {
 							float markEnd = markStart+(180.0f/markers);
 							for (int i=0;i<markers;i++) {
 								float angle = i*(360.0f/markers);
-								DrawRing(dx,dy,radiusY+30,radiusY+12,radiusX/radiusY,angle+markStart,angle+markEnd);
+								DrawRing(dx,dy,radius+30,radius+12,radius/radius,angle+markStart,angle+markEnd);
 							}
 
 							// Draw line to mouse
 							DrawLine(dx,dy,mx,my);
 
 							// Get deltas
-							deltax = int(cos(rz*3.1415926536/180.0)*radiusX);
-							deltay = int(-sin(rz*3.1415926536/180.0)*radiusY);
+							deltax = int(cos(rz*3.1415926536/180.0)*radius);
+							deltay = int(-sin(rz*3.1415926536/180.0)*radius);
 
 							// Draw the baseline
 							SetLineColour(colour[3],1.0f,2);
@@ -273,8 +266,8 @@ void VideoDisplayVisual::DrawOverlay() {
 							if (orgx != odx && orgy != ody) {
 								//double angle = atan2(double(dy*sh/h-ody*sh/h),double(odx*sw/w-dx*sw/w)) + rz*3.1415926536/180.0;
 								double angle = atan2(double(dy-ody),double(odx-dx)) + rz*3.1415926536/180.0;
-								int fx = dx+int(cos(angle)*oRadiusX);
-								int fy = dy-int(sin(angle)*oRadiusY);
+								int fx = dx+int(cos(angle)*oRadius);
+								int fy = dy-int(sin(angle)*oRadius);
 								DrawLine(dx,dy,fx,fy);
 								int mdx = cos(rz*3.1415926536/180.0)*20;
 								int mdy = -sin(rz*3.1415926536/180.0)*20;
@@ -327,42 +320,44 @@ void VideoDisplayVisual::DrawOverlay() {
 
 					// Scale
 					if (mode == 4) {
-						//// Get scale
-						//if (isCur) {
-						//	scalX = curScaleX;
-						//	scalY = curScaleY;
-						//}
-						//else GetLineScale(diag,scalX,scalY);
+						// Get scale
+						if (isCur) {
+							scalX = curScaleX;
+							scalY = curScaleY;
+						}
+						else GetLineScale(diag,scalX,scalY);
 
-						//// Scale parameters
-						//int len = 160;
-						//int lenx = int(1.6 * scalX);
-						//int leny = int(1.6 * scalY);
-						//int drawX = dx + len/2 + 10;
-						//int drawY = dy + len/2 + 10;
+						// Scale parameters
+						int len = 160;
+						int lenx = int(1.6 * scalX);
+						int leny = int(1.6 * scalY);
+						dx = MID(len/2+10,dx,sw-len/2-30);
+						dy = MID(len/2+10,dy,sh-len/2-30);
+						int drawX = dx + len/2 + 10;
+						int drawY = dy + len/2 + 10;
 
-						//// Draw length markers
-						//dc.SetPen(wxPen(colour[3],2));
-						//dc.DrawLine(dx-lenx/2,drawY+10,dx+lenx/2,drawY+10);
-						//dc.DrawLine(drawX+10,dy-leny/2,drawX+10,dy+leny/2);
-						//dc.SetPen(wxPen(colour[0],1));
-						//dc.SetBrush(wxBrush(colour[brushCol]));
-						//dc.DrawCircle(dx+lenx/2,drawY+10,4);
-						//dc.DrawCircle(drawX+10,dy-leny/2,4);
+						// Draw length markers
+						SetLineColour(colour[3],1.0f,2);
+						DrawLine(dx-lenx/2,drawY+10,dx+lenx/2,drawY+10);
+						DrawLine(drawX+10,dy-leny/2,drawX+10,dy+leny/2);
+						SetLineColour(colour[0],1.0f,1);
+						SetFillColour(colour[brushCol],0.3f);
+						DrawCircle(dx+lenx/2,drawY+10,4);
+						DrawCircle(drawX+10,dy-leny/2,4);
 
-						//// Draw horizontal scale
-						//dc.SetPen(wxPen(colour[0],1));
-						//dc.DrawRectangle(dx-len/2,drawY,len+1,5);
-						//dc.SetPen(wxPen(colour[0],2));
-						//dc.DrawLine(dx-len/2+1,drawY+5,dx-len/2+1,drawY+15);
-						//dc.DrawLine(dx+len/2,drawY+5,dx+len/2,drawY+15);
+						// Draw horizontal scale
+						SetLineColour(colour[0],1.0f,1);
+						DrawRectangle(dx-len/2,drawY,dx+len/2+1,drawY+5);
+						SetLineColour(colour[0],1.0f,2);
+						DrawLine(dx-len/2+1,drawY+5,dx-len/2+1,drawY+15);
+						DrawLine(dx+len/2,drawY+5,dx+len/2,drawY+15);
 
-						//// Draw vertical scale
-						//dc.SetPen(wxPen(colour[0],1));
-						//dc.DrawRectangle(drawX,dy-len/2,5,len+1);
-						//dc.SetPen(wxPen(colour[0],2));
-						//dc.DrawLine(drawX+5,dy-len/2+1,drawX+15,dy-len/2+1);
-						//dc.DrawLine(drawX+5,dy+len/2,drawX+15,dy+len/2);
+						// Draw vertical scale
+						SetLineColour(colour[0],1.0f,1);
+						DrawRectangle(drawX,dy-len/2,drawX+5,dy+len/2+1);
+						SetLineColour(colour[0],1.0f,2);
+						DrawLine(drawX+5,dy-len/2+1,drawX+15,dy-len/2+1);
+						DrawLine(drawX+5,dy+len/2,drawX+15,dy+len/2);
 					}
 
 					// Clip
