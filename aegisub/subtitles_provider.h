@@ -40,6 +40,7 @@
 ///////////
 // Headers
 #include <wx/wxprec.h>
+#include "video_frame.h"
 
 
 //////////////
@@ -52,5 +53,7 @@ class AssFile;
 class SubtitlesProvider {
 public:
 	virtual ~SubtitlesProvider();
-	virtual void RefreshSubtitles()=0;		// Refresh subtitles display
+
+	virtual void LoadSubtitles(AssFile *subs)=0;
+	virtual void DrawSubtitles(AegiVideoFrame &dst,int nframe) {}
 };

@@ -63,7 +63,6 @@ class AvisynthVideoProvider: public VideoProvider, SubtitlesProvider, AviSynthWr
 private:
 	VideoInfo vi;
 
-	wxString subfilename;
 	wxString rendererCallString;
 
 	int num_frames;
@@ -83,11 +82,11 @@ private:
 	void LoadRenderer();
 
 public:
-	AvisynthVideoProvider(wxString _filename, wxString _subfilename, double fps=0.0);
+	AvisynthVideoProvider(wxString _filename, double fps=0.0);
 	~AvisynthVideoProvider();
 
 	SubtitlesProvider *GetAsSubtitlesProvider();
-	void RefreshSubtitles();
+	void LoadSubtitles(AssFile *subs);
 
 	AegiVideoFrame GetFrame(int n);
 	void GetFloatFrame(float* Buffer, int n);

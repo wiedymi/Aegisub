@@ -134,7 +134,7 @@ VideoProvider *VideoProvider::GetProvider(wxString video,wxString subtitles,doub
 	// Use Avisynth provider
 	if (!provider) {
 		try {
-			provider = new AvisynthVideoProvider(video,subtitles,fps);
+			provider = new AvisynthVideoProvider(video,fps);
 		}
 		catch (...) {
 			delete provider;

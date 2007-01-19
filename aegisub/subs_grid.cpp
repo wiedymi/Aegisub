@@ -1279,8 +1279,8 @@ void SubtitlesGrid::CommitChanges(bool force,bool videoOnly) {
 		}
 
 		// Export
-		wxString workfile = VideoContext::Get()->GetTempWorkFile();
-		ass->Export(workfile);
+		//wxString workfile = VideoContext::Get()->GetTempWorkFile();
+		//ass->Export(workfile);
 
 		// Update video
 		if (VideoContext::Get()->IsLoaded()) VideoContext::Get()->Refresh(false,true);

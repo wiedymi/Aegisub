@@ -38,9 +38,11 @@
 #include <wx/msw/registry.h>
 #include <wx/filename.h>
 #include "video_provider_avs.h"
+#include "video_context.h"
 #include "options.h"
 #include "main.h"
 #include "vfr.h"
+#include "ass_file.h"
 
 
 #ifdef __WIN32__
@@ -48,7 +50,7 @@
 
 ///////////////
 // Constructor
-AvisynthVideoProvider::AvisynthVideoProvider(wxString _filename, wxString _subfilename, double _fps) {
+AvisynthVideoProvider::AvisynthVideoProvider(wxString _filename, double _fps) {
 	AVSTRACE(wxString::Format(_T("AvisynthVideoProvider: Creating new AvisynthVideoProvider: \"%s\", \"%s\""), _filename, _subfilename));
 	bool mpeg2dec3_priority = true;
 	RGB32Video = NULL;
@@ -56,8 +58,6 @@ AvisynthVideoProvider::AvisynthVideoProvider(wxString _filename, wxString _subfi
 	fps = _fps;
 	num_frames = 0;
 	last_fnum = -1;
-
-	subfilename = _subfilename;
 
 	AVSTRACE(_T("AvisynthVideoProvider: Loading Subtitles Renderer"));
 	LoadRenderer();
@@ -67,8 +67,7 @@ AvisynthVideoProvider::AvisynthVideoProvider(wxString _filename, wxString _subfi
 	RGB32Video = OpenVideo(_filename,mpeg2dec3_priority);
 	AVSTRACE(_T("AvisynthVideoProvider: Video opened"));
 
-	if( _subfilename.IsEmpty() ) SubtitledVideo = RGB32Video;
-	else SubtitledVideo = ApplySubtitles(subfilename, RGB32Video);
+	SubtitledVideo = RGB32Video;
 	AVSTRACE(_T("AvisynthVideoProvider: Applied subtitles"));
 
 	vi = SubtitledVideo->GetVideoInfo();
@@ -96,13 +95,21 @@ SubtitlesProvider *AvisynthVideoProvider::GetAsSubtitlesProvider() {
 
 /////////////////////
 // Refresh subtitles
-void AvisynthVideoProvider::RefreshSubtitles() {
+void AvisynthVideoProvider::LoadSubtitles(AssFile *subs) {
+	// Reset
 	AVSTRACE(_T("AvisynthVideoProvider::RefreshSubtitles: Refreshing subtitles"));
 	SubtitledVideo = NULL;
 
+	// Dump subs to disk
+	wxString subfilename = VideoContext::Get()->GetTempWorkFile();
+	subs->Save(subfilename,false,false,_T("UTF-8"));
+	delete subs;
+
+	// Load subtitles
 	SubtitledVideo = ApplySubtitles(subfilename, RGB32Video);
-	//GetFrame(last_fnum);
 	AVSTRACE(_T("AvisynthVideoProvider::RefreshSubtitles: Subtitles refreshed"));
+	vi = SubtitledVideo->GetVideoInfo();
+	AVSTRACE(_T("AvisynthVideoProvider: Got video info"));
 }
 
 

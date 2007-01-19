@@ -49,6 +49,7 @@
 #include "subtitles_provider.h"
 #include "vfr.h"
 #include "ass_file.h"
+#include "ass_exporter.h"
 #include "ass_time.h"
 #include "ass_dialogue.h"
 #include "ass_style.h"
@@ -94,6 +95,7 @@ VideoContext::VideoContext() {
 	// Set options
 	audio = NULL;
 	provider = NULL;
+	subsProvider = NULL;
 	curLine = NULL;
 	loaded = false;
 	keyFramesLoaded = false;
@@ -161,10 +163,14 @@ void VideoContext::Reset() {
 	// Remove textures
 	UnloadTexture();
 
-	// Finish clean up
+	// Clean up video data
 	wxRemoveFile(tempfile);
 	tempfile = _T("");
 	videoName = _T("");
+
+	// Remove provider
+	if (provider && subsProvider && provider->GetAsSubtitlesProvider() != subsProvider) delete subsProvider;
+	subsProvider = NULL;
 	delete provider;
 	provider = NULL;
 }
@@ -262,7 +268,8 @@ void VideoContext::SetVideo(const wxString &filename) {
 
 			// Get frame
 			UpdateDisplays(true);
-			VideoContext::Get()->JumpToFrame(0);
+			frame_n = 0;
+			Refresh(true,true);
 		}
 		
 		catch (wxString &e) {
@@ -311,8 +318,17 @@ void VideoContext::UpdateDisplays(bool full) {
 /////////////////////
 // Refresh subtitles
 void VideoContext::Refresh (bool video, bool subtitles) {
+	// Reset frame
 	lastFrame = -1;
-	if (subsProvider) subsProvider->RefreshSubtitles();
+
+	// Get provider
+	if (subsProvider) {
+		AssExporter exporter(grid->ass);
+		exporter.AddAutoFilters();
+		subsProvider->LoadSubtitles(exporter.ExportTransform());
+	}
+
+	// Jump to frame
 	JumpToFrame(frame_n);
 }
 
@@ -361,6 +377,7 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 
 	// Get frame
 	AegiVideoFrame frame = provider->GetFrame(n);
+	if (subsProvider) subsProvider->DrawSubtitles(frame,n);
 
 	// Set frame
 	lastFrame = n;
