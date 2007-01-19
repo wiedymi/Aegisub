@@ -87,6 +87,13 @@ AvisynthVideoProvider::~AvisynthVideoProvider() {
 }
 
 
+/////////////////////////////
+// Get as subtitles provider
+SubtitlesProvider *AvisynthVideoProvider::GetAsSubtitlesProvider() {
+	return this;
+}
+
+
 /////////////////////
 // Refresh subtitles
 void AvisynthVideoProvider::RefreshSubtitles() {

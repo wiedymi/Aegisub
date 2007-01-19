@@ -44,6 +44,7 @@
 #ifdef __WIN32__
 #include "avisynth_wrap.h"
 #include "video_provider.h"
+#include "subtitles_provider.h"
 
 /*class GetFrameVPThread: public wxThread {
 private:
@@ -58,7 +59,7 @@ public:
 	GetFrameVPThread(PClip clip);
 };*/
 
-class AvisynthVideoProvider: public VideoProvider, AviSynthWrapper {
+class AvisynthVideoProvider: public VideoProvider, SubtitlesProvider, AviSynthWrapper {
 private:
 	VideoInfo vi;
 
@@ -80,12 +81,12 @@ private:
 	void LoadVSFilter();
 	void LoadASA();
 	void LoadRenderer();
-	void AttachOverlay(SubtitleProvider::Overlay *_overlay) {}
 
 public:
 	AvisynthVideoProvider(wxString _filename, wxString _subfilename, double fps=0.0);
 	~AvisynthVideoProvider();
 
+	SubtitlesProvider *GetAsSubtitlesProvider();
 	void RefreshSubtitles();
 
 	AegiVideoFrame GetFrame(int n);
@@ -95,7 +96,6 @@ public:
 	int GetPosition() { return last_fnum; };
 	int GetFrameCount() { return num_frames? num_frames: vi.num_frames; };
 	double GetFPS() { return (double)vi.fps_numerator/(double)vi.fps_denominator; };
-
 	int GetWidth() { return vi.width; };
 	int GetHeight() { return vi.height; };
 

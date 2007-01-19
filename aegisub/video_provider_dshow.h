@@ -77,8 +77,6 @@ private:
 	double fps;
 	long long defd;
 
-	void AttachOverlay(SubtitleProvider::Overlay *overlay) {}
-
 	HRESULT OpenVideo(wxString _filename);
 	void CloseVideo();
 

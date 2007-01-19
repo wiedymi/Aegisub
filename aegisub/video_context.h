@@ -53,6 +53,7 @@ class AudioDisplay;
 class AssDialogue;
 class VideoProvider;
 class VideoDisplay;
+class SubtitlesProvider;
 
 
 //////////////
@@ -72,6 +73,7 @@ private:
 
 	wxString tempfile;
 	VideoProvider *provider;
+	SubtitlesProvider *subsProvider;
 
 	bool keyFramesLoaded;
 	bool overKeyFramesLoaded;

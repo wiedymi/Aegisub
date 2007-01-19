@@ -39,27 +39,52 @@
 
 //////////
 // Headers
-#include "subtitle_provider.h"
 #include "video_frame.h"
+
+
+//////////////
+// Prototypes
+class SubtitlesProvider;
+
+
+////////////////
+// Cached frame
+class CachedFrame {
+public:
+	AegiVideoFrame frame;
+	int n;
+};
 
 
 ////////////////////////////
 // Video Provider interface
 class VideoProvider {
+private:
+	int cacheMax;
+	std::list<CachedFrame> cache;
+
+protected:
+	void SetCacheMax(int n_frames);
+	void Cache(int n,AegiVideoFrame frame);
+	void ClearCache();
+	AegiVideoFrame GetCachedFrame(int n);
+
 public:
+	// Base methods
 	void GetFloatFrame(float* Buffer, int n);	// Get frame as float
 	static VideoProvider *GetProvider(wxString video,wxString subtitles,double fps=0.0);
-	virtual ~VideoProvider() {}
+	VideoProvider();
+	virtual ~VideoProvider();
+
+	// Subtitles
+	virtual SubtitlesProvider *GetAsSubtitlesProvider() { return NULL; }	// Get subtitles provider
 
 	// Override the following methods:
 	virtual AegiVideoFrame GetFrame(int n)=0;	// Get frame as AegiVideoFrame
-	virtual void RefreshSubtitles()=0;			// Refresh subtitles display
-
-	virtual int GetPosition()=0;				// Get the last frame loaded
+	virtual int GetPosition()=0;				// Get the number of the last frame loaded
 	virtual int GetFrameCount()=0;				// Get total number of frames
 	virtual int GetWidth()=0;					// Returns the video width in pixels
 	virtual int GetHeight()=0;					// Returns the video height in pixels
 	virtual double GetFPS()=0;					// Get framerate in frames per second
-
 	virtual void OverrideFrameTimeList(wxArrayInt list) {}	// Override the list with the provided one, for VFR handling
 };

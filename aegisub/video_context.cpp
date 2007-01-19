@@ -46,6 +46,7 @@
 #include "video_display.h"
 #include "video_context.h"
 #include "video_provider.h"
+#include "subtitles_provider.h"
 #include "vfr.h"
 #include "ass_file.h"
 #include "ass_time.h"
@@ -239,6 +240,9 @@ void VideoContext::SetVideo(const wxString &filename) {
 			provider = VideoProvider::GetProvider(filename,GetTempWorkFile(),overFps);
 			loaded = provider != NULL;
 
+			// Get subtitles provider
+			subsProvider = provider->GetAsSubtitlesProvider();
+
 			// Set frame rate
 			fps = provider->GetFPS();
 			if (!isVfr) {
@@ -308,7 +312,7 @@ void VideoContext::UpdateDisplays(bool full) {
 // Refresh subtitles
 void VideoContext::Refresh (bool video, bool subtitles) {
 	lastFrame = -1;
-	if (subtitles) provider->RefreshSubtitles();
+	if (subsProvider) subsProvider->RefreshSubtitles();
 	JumpToFrame(frame_n);
 }
 

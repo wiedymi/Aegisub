@@ -44,6 +44,19 @@
 #include "vfr.h"
 
 
+///////////////
+// Constructor
+VideoProvider::VideoProvider() {
+	cacheMax = 0;
+}
+
+
+//////////////
+// Destructor
+VideoProvider::~VideoProvider() {
+}
+
+
 ////////////////
 // Get provider
 VideoProvider *VideoProvider::GetProvider(wxString video,wxString subtitles,double fps) {
