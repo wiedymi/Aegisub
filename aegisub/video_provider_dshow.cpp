@@ -48,9 +48,6 @@
 #include "utils.h"
 #include "vfr.h"
 
-// CLSID for videosink: {F13D3732-96BD-4108-AFEB-E85F68FF64DC}
-DEFINE_GUID(CLSID_VideoSink, 0xf13d3732, 0x96bd, 0x4108, 0xaf, 0xeb, 0xe8, 0x5f, 0x68, 0xff, 0x64, 0xdc);
-
 
 ///////////////
 // Constructor
@@ -188,10 +185,13 @@ HRESULT DirectShowVideoProvider::OpenVideo(wxString _filename) {
 	if (FAILED(hr = pG.CoCreateInstance(CLSID_FilterGraph))) return hr;
 
 	// Create an Instance of the Video Sink
+	//CComPtr<IBaseFilter> pR;
+	//CLSID CLSID_VideoSink;
+	//CLSIDFromString(L"{F13D3732-96BD-4108-AFEB-E85F68FF64DC}",&CLSID_VideoSink);
+	//if (FAILED(hr = pR.CoCreateInstance(CLSID_VideoSink))) return hr;
+
 	CComPtr<IBaseFilter> pR;
-	CLSID CLSID_VideoSink;
-	CLSIDFromString(L"{F13D3732-96BD-4108-AFEB-E85F68FF64DC}",&CLSID_VideoSink);
-	if (FAILED(hr = pR.CoCreateInstance(CLSID_VideoSink))) return hr;
+	hr = CreateVideoSink(&pR);
 
 	// Add VideoSink to graph
 	pG->AddFilter(pR, L"VideoSink");
@@ -311,18 +311,24 @@ void DirectShowVideoProvider::CloseVideo() {
 
 /////////////////////////
 // Read DirectShow frame
-void DirectShowVideoProvider::ReadFrame(long long timestamp, unsigned format, unsigned bpp, const unsigned char *frame, unsigned width, unsigned height, unsigned stride, unsigned arx, unsigned ary, void *arg) {
+void DirectShowVideoProvider::ReadFrame(long long timestamp, unsigned format, unsigned bpp, const unsigned char *frame, unsigned width, unsigned height, int stride, unsigned arx, unsigned ary, void *arg) {
 	// Set frame
 	DF *df = (DF*) arg;
 	df->timestamp = timestamp;
 
 	// Create frame
 	AegiVideoFrame &final = df->frame;
+	const unsigned char * src = frame;
+	if (stride < 0) {
+		src += stride*(height-1);
+		stride = -stride;
+		final.flipped = true;
+	}
+	else final.flipped = false;
 	final.w = width;
 	final.h = height;
 	final.pitch = stride;
 	final.cppAlloc = false;
-	final.flipped = true;
 	final.invertChannels = true;
 
 	// Planar
@@ -334,7 +340,7 @@ void DirectShowVideoProvider::ReadFrame(long long timestamp, unsigned format, un
 	else {
 		unsigned int datalen = stride*height;
 		final.data[0] = (unsigned char *) malloc(datalen);
-		memcpy(final.data[0],frame,datalen);
+		memcpy(final.data[0],src,datalen);
 	
 		// Set format
 		if (format == IVS_RGB24) final.format = FORMAT_RGB24;

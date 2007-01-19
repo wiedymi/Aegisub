@@ -82,7 +82,7 @@ private:
 	HRESULT OpenVideo(wxString _filename);
 	void CloseVideo();
 
-	static void ReadFrame(long long timestamp, unsigned format, unsigned bpp, const unsigned char *frame, unsigned width, unsigned height, unsigned stride, unsigned arx, unsigned ary,	void *arg);
+	static void ReadFrame(long long timestamp, unsigned format, unsigned bpp, const unsigned char *frame, unsigned width, unsigned height, int stride, unsigned arx, unsigned ary,	void *arg);
 	int NextFrame(DF &df,int &fn);
 
 	void RegROT();

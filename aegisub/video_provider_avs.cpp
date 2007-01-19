@@ -343,29 +343,6 @@ AegiVideoFrame AvisynthVideoProvider::GetFrame(int _n) {
 }
 
 
-///////////////////////////////////
-// Get a frame intensity as floats
-void AvisynthVideoProvider::GetFloatFrame(float* Buffer, int n) {
-	AVSTRACE(_T("AvisynthVideoProvider::GetFloatFrame"));
-	wxMutexLocker lock(AviSynthMutex);
-
-	PVideoFrame frame = SubtitledVideo->GetFrame(n,env);
-
-	int rs = vi.RowSize();
-	const unsigned char* src = frame->GetReadPtr();
-	int srcpitch = frame->GetPitch();
-
-	for( int i = 0; i < vi.height; i++ ) 
-	{
-		for( int x=0; x<vi.width;x++ )
-		{
-			Buffer[(vi.height-i-1)*vi.width+x] = src[x*4+0]*0.3 + src[x*4+1]*0.4 + src[x*4+2]*0.3;
-		}
-		src+=srcpitch;
-	}
-}
-
-
 /////////////////////////////
 // Load appropriate renderer
 void AvisynthVideoProvider::LoadRenderer() {

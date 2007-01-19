@@ -134,3 +134,9 @@ VideoProvider *VideoProvider::GetProvider(wxString video,wxString subtitles,doub
 	// Return provider
 	return provider;
 }
+
+
+////////////////
+// Get as float
+void VideoProvider::GetFloatFrame(float* Buffer, int n) {
+}
