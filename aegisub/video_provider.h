@@ -69,10 +69,14 @@ protected:
 	void ClearCache();
 	AegiVideoFrame GetCachedFrame(int n);
 
+	// Override this method to actually get frames
+	virtual AegiVideoFrame DoGetFrame(int n)=0;	// Get frame as AegiVideoFrame
+
 public:
 	// Base methods
 	void GetFloatFrame(float* Buffer, int n);	// Get frame as float
-	static VideoProvider *GetProvider(wxString video,wxString subtitles,double fps=0.0);
+	static VideoProvider *GetProvider(wxString video,double fps=0.0);
+	AegiVideoFrame GetFrame(int n);
 	VideoProvider();
 	virtual ~VideoProvider();
 
@@ -80,7 +84,6 @@ public:
 	virtual SubtitlesProvider *GetAsSubtitlesProvider() { return NULL; }	// Get subtitles provider
 
 	// Override the following methods:
-	virtual AegiVideoFrame GetFrame(int n)=0;	// Get frame as AegiVideoFrame
 	virtual int GetPosition()=0;				// Get the number of the last frame loaded
 	virtual int GetFrameCount()=0;				// Get total number of frames
 	virtual int GetWidth()=0;					// Returns the video width in pixels

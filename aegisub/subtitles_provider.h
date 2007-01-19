@@ -52,6 +52,8 @@ class AssFile;
 // Subtitles provider interface
 class SubtitlesProvider {
 public:
+	static SubtitlesProvider *GetProvider();
+
 	virtual ~SubtitlesProvider();
 
 	virtual void LoadSubtitles(AssFile *subs)=0;

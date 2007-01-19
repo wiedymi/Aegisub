@@ -86,31 +86,8 @@ AvisynthVideoProvider::~AvisynthVideoProvider() {
 }
 
 
-/////////////////////////////
-// Get as subtitles provider
-SubtitlesProvider *AvisynthVideoProvider::GetAsSubtitlesProvider() {
-	return this;
-}
 
-
-/////////////////////
-// Refresh subtitles
-void AvisynthVideoProvider::LoadSubtitles(AssFile *subs) {
-	// Reset
-	AVSTRACE(_T("AvisynthVideoProvider::RefreshSubtitles: Refreshing subtitles"));
-	SubtitledVideo = NULL;
-
-	// Dump subs to disk
-	wxString subfilename = VideoContext::Get()->GetTempWorkFile();
-	subs->Save(subfilename,false,false,_T("UTF-8"));
-	delete subs;
-
-	// Load subtitles
-	SubtitledVideo = ApplySubtitles(subfilename, RGB32Video);
-	AVSTRACE(_T("AvisynthVideoProvider::RefreshSubtitles: Subtitles refreshed"));
-	vi = SubtitledVideo->GetVideoInfo();
-	AVSTRACE(_T("AvisynthVideoProvider: Got video info"));
-}
+////////////////////////////////////// VIDEO PROVIDER //////////////////////////////////////
 
 
 /////////////////////////////////////////
@@ -268,39 +245,9 @@ PClip AvisynthVideoProvider::OpenVideo(wxString _filename, bool mpeg2dec3_priori
 }
 
 
-////////////////////////////////////////////////////////
-// Apply VSFilter subtitles, or whatever is appropriate
-PClip AvisynthVideoProvider::ApplySubtitles(wxString _filename, PClip videosource) {
-	AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Applying subtitles"));
-	wxMutexLocker lock(AviSynthMutex);
-	AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Got AVS mutex"));
-
-	// Insert subs
-	AVSValue script;
-	char temp[512];
-	wxFileName fname(_filename);
-	strcpy(temp,fname.GetShortPath().mb_str(wxConvLocal));
-	AVSValue args[2] = { videosource, temp };
-
-	try {
-		AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Now invoking ") + rendererCallString);
-		script = env->Invoke(rendererCallString.mb_str(wxConvUTF8), AVSValue(args,2));
-		AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Invoked successfully"));
-	}
-	catch (AvisynthError &err) {
-		AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Avisynth error: ") + wxString(err.msg,wxConvLocal));
-		throw _T("AviSynth error: ") + wxString(err.msg,wxConvLocal);
-	}
-
-	// Cache
-	AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Subtitles applied, AVS mutex will be released now"));
-	return (env->Invoke("Cache", script)).AsClip();
-}
-
-
 ////////////////////////
 // Actually get a frame
-AegiVideoFrame AvisynthVideoProvider::GetFrame(int _n) {
+AegiVideoFrame AvisynthVideoProvider::DoGetFrame(int _n) {
 	// Transform n if overriden
 	int n = _n;
 	if (frameTime.Count()) {
@@ -354,6 +301,67 @@ AegiVideoFrame AvisynthVideoProvider::GetFrame(int _n) {
 	// Set last number
 	last_fnum = n;
 	return final;
+}
+
+
+////////////////////////////////////////////////////////
+// Apply VSFilter subtitles, or whatever is appropriate
+PClip AvisynthVideoProvider::ApplySubtitles(wxString _filename, PClip videosource) {
+	AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Applying subtitles"));
+	wxMutexLocker lock(AviSynthMutex);
+	AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Got AVS mutex"));
+
+	// Insert subs
+	AVSValue script;
+	char temp[512];
+	wxFileName fname(_filename);
+	strcpy(temp,fname.GetShortPath().mb_str(wxConvLocal));
+	AVSValue args[2] = { videosource, temp };
+
+	try {
+		AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Now invoking ") + rendererCallString);
+		script = env->Invoke(rendererCallString.mb_str(wxConvUTF8), AVSValue(args,2));
+		AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Invoked successfully"));
+	}
+	catch (AvisynthError &err) {
+		AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Avisynth error: ") + wxString(err.msg,wxConvLocal));
+		throw _T("AviSynth error: ") + wxString(err.msg,wxConvLocal);
+	}
+
+	// Cache
+	AVSTRACE(_T("AvisynthVideoProvider::ApplySutitles: Subtitles applied, AVS mutex will be released now"));
+	return (env->Invoke("Cache", script)).AsClip();
+}
+
+
+
+////////////////////////////////////// SUBTITLES PROVIDER //////////////////////////////////////
+
+
+/////////////////////////////
+// Get as subtitles provider
+SubtitlesProvider *AvisynthVideoProvider::GetAsSubtitlesProvider() {
+	return this;
+}
+
+
+/////////////////////
+// Refresh subtitles
+void AvisynthVideoProvider::LoadSubtitles(AssFile *subs) {
+	// Reset
+	AVSTRACE(_T("AvisynthVideoProvider::RefreshSubtitles: Refreshing subtitles"));
+	SubtitledVideo = NULL;
+
+	// Dump subs to disk
+	wxString subfilename = VideoContext::Get()->GetTempWorkFile();
+	subs->Save(subfilename,false,false,_T("UTF-8"));
+	delete subs;
+
+	// Load subtitles
+	SubtitledVideo = ApplySubtitles(subfilename, RGB32Video);
+	AVSTRACE(_T("AvisynthVideoProvider::RefreshSubtitles: Subtitles refreshed"));
+	vi = SubtitledVideo->GetVideoInfo();
+	AVSTRACE(_T("AvisynthVideoProvider: Got video info"));
 }
 
 

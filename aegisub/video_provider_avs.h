@@ -88,7 +88,7 @@ public:
 	SubtitlesProvider *GetAsSubtitlesProvider();
 	void LoadSubtitles(AssFile *subs);
 
-	AegiVideoFrame GetFrame(int n);
+	AegiVideoFrame DoGetFrame(int n);
 	void GetFloatFrame(float* Buffer, int n);
 
 	// properties

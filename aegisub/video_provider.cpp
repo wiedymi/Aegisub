@@ -59,7 +59,7 @@ VideoProvider::~VideoProvider() {
 
 ////////////////
 // Get provider
-VideoProvider *VideoProvider::GetProvider(wxString video,wxString subtitles,double fps) {
+VideoProvider *VideoProvider::GetProvider(wxString video,double fps) {
 	// Check if avisynth is available
 	bool avisynthAvailable = false;
 	bool dshowAvailable = false;
@@ -86,7 +86,7 @@ VideoProvider *VideoProvider::GetProvider(wxString video,wxString subtitles,doub
 		bool success = false;
 		wxString error;
 		try {
-			provider = new LAVCVideoProvider(video,subtitles);
+			provider = new LAVCVideoProvider(video);
 			success = true;
 		}
 
@@ -120,8 +120,8 @@ VideoProvider *VideoProvider::GetProvider(wxString video,wxString subtitles,doub
 	// Use DirectShow provider
 	if (!provider && (preffered == _T("dshow") || !avisynthAvailable)) {
 		try {
-			if (VFR_Input.GetFrameRateType() == VFR) provider = new DirectShowVideoProvider(video,subtitles);
-			else provider = new DirectShowVideoProvider(video,subtitles,fps);
+			if (VFR_Input.GetFrameRateType() == VFR) provider = new DirectShowVideoProvider(video);
+			else provider = new DirectShowVideoProvider(video,fps);
 		}
 		catch (...) {
 			delete provider;
@@ -146,6 +146,13 @@ VideoProvider *VideoProvider::GetProvider(wxString video,wxString subtitles,doub
 
 	// Return provider
 	return provider;
+}
+
+
+/////////////
+// Get frame
+AegiVideoFrame VideoProvider::GetFrame(int n) {
+	return DoGetFrame(n);
 }
 
 

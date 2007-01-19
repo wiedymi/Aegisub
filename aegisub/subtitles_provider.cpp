@@ -43,3 +43,10 @@
 // Destructor
 SubtitlesProvider::~SubtitlesProvider() {
 }
+
+
+////////////////
+// Get provider
+SubtitlesProvider* SubtitlesProvider::GetProvider() {
+	return NULL;
+}

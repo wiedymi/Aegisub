@@ -243,11 +243,12 @@ void VideoContext::SetVideo(const wxString &filename) {
 #endif
 
 			// Choose a provider
-			provider = VideoProvider::GetProvider(filename,GetTempWorkFile(),overFps);
+			provider = VideoProvider::GetProvider(filename,overFps);
 			loaded = provider != NULL;
 
 			// Get subtitles provider
 			subsProvider = provider->GetAsSubtitlesProvider();
+			if (!subsProvider) subsProvider = SubtitlesProvider::GetProvider();
 
 			// Set frame rate
 			fps = provider->GetFPS();
@@ -322,7 +323,7 @@ void VideoContext::Refresh (bool video, bool subtitles) {
 	lastFrame = -1;
 
 	// Get provider
-	if (subsProvider) {
+	if (subtitles && subsProvider) {
 		AssExporter exporter(grid->ass);
 		exporter.AddAutoFilters();
 		subsProvider->LoadSubtitles(exporter.ExportTransform());

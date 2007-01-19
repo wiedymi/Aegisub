@@ -339,7 +339,7 @@ void VideoBox::OnVideoTrackPoints(wxCommandEvent &event) {
 	if( !config.FeatureNumber ) return;
 
 	// Get Video
-	VideoProvider *movie = VideoProvider::GetProvider(VideoContext::Get()->videoName, wxString(_T("")));
+	VideoProvider *movie = VideoProvider::GetProvider(VideoContext::Get()->videoName);
 
 	// Create Tracker
 	if( curline->Tracker ) delete curline->Tracker;

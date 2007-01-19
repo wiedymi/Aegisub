@@ -67,7 +67,6 @@ class DirectShowVideoProvider: public VideoProvider {
 	};
 
 private:
-	wxString subfilename;
 	wxArrayInt frameTime;
 
 	unsigned int last_fnum;
@@ -96,12 +95,12 @@ private:
 	DWORD                   m_rot_cookie;
 
 public:
-	DirectShowVideoProvider(wxString _filename, wxString _subfilename,double _fps=0.0);
+	DirectShowVideoProvider(wxString _filename, double _fps=0.0);
 	~DirectShowVideoProvider();
 
 	void RefreshSubtitles();
 
-	AegiVideoFrame GetFrame(int n);
+	AegiVideoFrame DoGetFrame(int n);
 	void GetFloatFrame(float* Buffer, int n);
 
 	int GetPosition() { return last_fnum; };

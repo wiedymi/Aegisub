@@ -52,8 +52,9 @@
 ///////////////
 // Constructor
 // Based on Haali's code for DirectShowSource2
-DirectShowVideoProvider::DirectShowVideoProvider(wxString _filename, wxString _subfilename,double _fps) {
+DirectShowVideoProvider::DirectShowVideoProvider(wxString _filename, double _fps) {
 	fps = _fps;
+	m_registered = false;
 	m_hFrameReady = CreateEvent(NULL, FALSE, FALSE, NULL);
 	OpenVideo(_filename);
 }
@@ -190,8 +191,9 @@ HRESULT DirectShowVideoProvider::OpenVideo(wxString _filename) {
 	//CLSIDFromString(L"{F13D3732-96BD-4108-AFEB-E85F68FF64DC}",&CLSID_VideoSink);
 	//if (FAILED(hr = pR.CoCreateInstance(CLSID_VideoSink))) return hr;
 
-	CComPtr<IBaseFilter> pR;
+	CComPtr<IBaseFilter>	pR;
 	hr = CreateVideoSink(&pR);
+	pR.p->AddRef();
 
 	// Add VideoSink to graph
 	pG->AddFilter(pR, L"VideoSink");
@@ -211,7 +213,6 @@ HRESULT DirectShowVideoProvider::OpenVideo(wxString _filename) {
 	// Pass the event to sink, so it gets set when a frame is available
 	ResetEvent(m_hFrameReady);
 	sink2->NotifyFrame(m_hFrameReady);
-
 	// Create source filter and add it to graph
 	CComPtr<IBaseFilter> pS;
 	if (FAILED(hr = pG->AddSourceFilter(_filename.wc_str(), NULL, &pS))) return hr;
@@ -396,7 +397,7 @@ int DirectShowVideoProvider::NextFrame(DF &_df,int &_fn) {
 
 /////////////
 // Get frame
-AegiVideoFrame DirectShowVideoProvider::GetFrame(int n) {
+AegiVideoFrame DirectShowVideoProvider::DoGetFrame(int n) {
 	// Normalize frame number
 	if (n >= (signed) num_frames) n = num_frames-1;
 	if (n < 0) n = 0;
