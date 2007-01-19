@@ -67,8 +67,6 @@ AvisynthVideoProvider::AvisynthVideoProvider(wxString _filename, wxString _subfi
 	RGB32Video = OpenVideo(_filename,mpeg2dec3_priority);
 	AVSTRACE(_T("AvisynthVideoProvider: Video opened"));
 
-	AVSTRACE(_T("AvisynthVideoProvider: Calculated aspect ratio"));
-
 	if( _subfilename.IsEmpty() ) SubtitledVideo = RGB32Video;
 	else SubtitledVideo = ApplySubtitles(subfilename, RGB32Video);
 	AVSTRACE(_T("AvisynthVideoProvider: Applied subtitles"));
@@ -96,7 +94,7 @@ void AvisynthVideoProvider::RefreshSubtitles() {
 	SubtitledVideo = NULL;
 
 	SubtitledVideo = ApplySubtitles(subfilename, RGB32Video);
-	GetFrame(last_fnum);
+	//GetFrame(last_fnum);
 	AVSTRACE(_T("AvisynthVideoProvider::RefreshSubtitles: Subtitles refreshed"));
 }
 

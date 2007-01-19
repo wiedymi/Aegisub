@@ -70,6 +70,7 @@ private:
 
 	float r1,g1,b1,a1;
 	float r2,g2,b2,a2;
+	int lw;
 
 	void GetLinePosition(AssDialogue *diag,int &x,int &y);
 	void GetLinePosition(AssDialogue *diag,int &x,int &y,int &orgx,int &orgy);

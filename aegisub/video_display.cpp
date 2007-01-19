@@ -138,9 +138,9 @@ void VideoDisplay::Render() {
 	glEnable(GL_TEXTURE_2D);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluOrtho2D(0,sw,sh,0);
-	glMatrixMode(GL_MODELVIEW);
 	glViewport(0,0,w,h);
+	glOrtho(0.0f,sw,sh,0.0f,-1000.0f,1000.0f);
+	glMatrixMode(GL_MODELVIEW);
 
 	// Texture mode
 	if (w != pw || h != ph) {
@@ -163,7 +163,8 @@ void VideoDisplay::Render() {
 	float right = context->GetTexW();
 
 	// Draw interleaved frame or luma of YV12
-	glColor3f(1.0f,1.0f,1.0f);
+	glDisable(GL_BLEND);
+	glColor4f(1.0f,1.0f,1.0f,1.0f);
 	glBegin(GL_QUADS);
 		// Top-left
 		glTexCoord2f(left,top);

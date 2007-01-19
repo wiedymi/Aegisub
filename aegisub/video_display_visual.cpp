@@ -37,6 +37,7 @@
 //////////////
 // Headers
 #include <wx/glcanvas.h>
+#include <GL/glu.h>
 #include <wx/wxprec.h>
 #include "video_display_visual.h"
 #include "video_display.h"
@@ -184,6 +185,13 @@ void VideoDisplayVisual::DrawOverlay() {
 					}
 					else GetLinePosition(diag,dx,dy,orgx,orgy);
 
+					// Get scale
+					if (isCur && mode == 4) {
+						scalX = curScaleX;
+						scalY = curScaleY;
+					}
+					else GetLineScale(diag,scalX,scalY);
+
 					// Mouse over?
 					if (diag == diagHigh) {
 						high = true;
@@ -222,6 +230,7 @@ void VideoDisplayVisual::DrawOverlay() {
 						DrawLine(dx-16,dy,dx+16,dy);
 							
 						// Get angle
+						GetLineRotation(diag,rx,ry,rz);
 						if (isCur) {
 							if (mode == 2) rz = curAngle;
 							else {
@@ -229,10 +238,21 @@ void VideoDisplayVisual::DrawOverlay() {
 								ry = curAngle2;
 							}
 						}
-						else GetLineRotation(diag,rx,ry,rz);
 
 						// Rotate Z
 						if (mode == 2) {
+							// Transform
+							glMatrixMode(GL_MODELVIEW);
+							glPushMatrix();
+							glLoadIdentity();
+							glTranslatef(dx,dy,-1.0f);
+							float matrix[16] = { 2500, 0, 0, 0, 0, 2500, 0, 0, 0, 0, 1, 1, 0, 0, 2500, 2500 };
+							glMultMatrixf(matrix);
+							glScalef(1.0f,1.0f,8.0f);
+							glRotatef(ry,0.0f,-1.0f,0.0f);
+							glRotatef(rx,-1.0f,0.0f,0.0f);
+							glScalef(scalX/100.0f,scalY/100.0f,1.0f);
+
 							// Calculate radii
 							int oRadius = radius;
 							if (radius < 50) radius = 50;
@@ -240,7 +260,7 @@ void VideoDisplayVisual::DrawOverlay() {
 							// Draw the circle
 							SetLineColour(colour[0]);
 							SetFillColour(colour[1],0.3f);
-							DrawRing(dx,dy,radius+4,radius-4);
+							DrawRing(0,0,radius+4,radius-4);
 
 							// Draw markers around circle
 							int markers = 6;
@@ -248,11 +268,8 @@ void VideoDisplayVisual::DrawOverlay() {
 							float markEnd = markStart+(180.0f/markers);
 							for (int i=0;i<markers;i++) {
 								float angle = i*(360.0f/markers);
-								DrawRing(dx,dy,radius+30,radius+12,radius/radius,angle+markStart,angle+markEnd);
+								DrawRing(0,0,radius+30,radius+12,radius/radius,angle+markStart,angle+markEnd);
 							}
-
-							// Draw line to mouse
-							DrawLine(dx,dy,mx,my);
 
 							// Get deltas
 							deltax = int(cos(rz*3.1415926536/180.0)*radius);
@@ -260,28 +277,125 @@ void VideoDisplayVisual::DrawOverlay() {
 
 							// Draw the baseline
 							SetLineColour(colour[3],1.0f,2);
-							DrawLine(dx+deltax,dy+deltay,dx-deltax,dy-deltay);
+							DrawLine(deltax,deltay,-deltax,-deltay);
 
 							// Draw the connection line
 							if (orgx != odx && orgy != ody) {
 								//double angle = atan2(double(dy*sh/h-ody*sh/h),double(odx*sw/w-dx*sw/w)) + rz*3.1415926536/180.0;
 								double angle = atan2(double(dy-ody),double(odx-dx)) + rz*3.1415926536/180.0;
-								int fx = dx+int(cos(angle)*oRadius);
-								int fy = dy-int(sin(angle)*oRadius);
-								DrawLine(dx,dy,fx,fy);
+								int fx = int(cos(angle)*oRadius);
+								int fy = -int(sin(angle)*oRadius);
+								DrawLine(0,0,fx,fy);
 								int mdx = cos(rz*3.1415926536/180.0)*20;
 								int mdy = -sin(rz*3.1415926536/180.0)*20;
-								DrawLine(fx-mdx,fy-mdy,fx+mdx,fy+mdy);
+								DrawLine(-mdx,-mdy,mdx,mdy);
 							}
 
 							// Draw the rotation line
 							SetLineColour(colour[0],1.0f,1);
 							SetFillColour(colour[brushCol],0.3f);
-							DrawCircle(dx+deltax,dy+deltay,4);
+							DrawCircle(deltax,deltay,4);
+
+							// Restore
+							glPopMatrix();
+
+							// Draw line to mouse
+							SetLineColour(colour[0]);
+							DrawLine(dx,dy,mx,my);
 						}
 
 						// Rotate XY
 						if (mode == 3) {
+							// Transform grid
+							glPushMatrix();
+							glLoadIdentity();
+							glTranslatef(dx,dy,0.0f);
+							float matrix[16] = { 2500, 0, 0, 0, 0, 2500, 0, 0, 0, 0, 1, 1, 0, 0, 2500, 2500 };
+							glMultMatrixf(matrix);
+							glScalef(1.0f,1.0f,8.0f);
+							glRotatef(ry,0.0f,-1.0f,0.0f);
+							glRotatef(rx,-1.0f,0.0f,0.0f);
+							glRotatef(rz,0.0f,0.0f,-1.0f);
+
+							//glScalef(0.125f,0.125f,0.125f);
+							//glTranslatef(8*dx,8*dy,0.0f);
+							//float matrix[16] = { 20000, 0, 0, 0, 0, 20000, 0, 0, 0, 0, 1, 1, 0, 0, 20000, 20000 };
+							//glMultMatrixf(matrix);
+							//glScalef(1.0f,1.0f,8.0f);
+							//glRotatef(ry,0.0f,-1.0f,0.0f);
+							//glRotatef(rx,-1.0f,0.0f,0.0f);
+							//glRotatef(rz,0.0f,0.0f,-1.0f);
+							//glScalef(8.0f,8.0f,8.0f);
+
+							// Draw grid
+							glShadeModel(GL_SMOOTH);
+							SetLineColour(colour[0],0.5f,1);
+							SetModeLine();
+							float r = colour[0].Red()/255.0f;
+							float g = colour[0].Green()/255.0f;
+							float b = colour[0].Blue()/255.0f;
+							glBegin(GL_LINES);
+							for (int i=0;i<11;i++) {
+								float a = 1.0f - abs(i-5)*0.18f;
+								int pos = 20*(i-5);
+								glColor4f(r,g,b,0.0f);
+								glVertex2i(pos,120);
+								glColor4f(r,g,b,a);
+								glVertex2i(pos,0);
+								glVertex2i(pos,0);
+								glColor4f(r,g,b,0.0f);
+								glVertex2i(pos,-120);
+								glVertex2i(120,pos);
+								glColor4f(r,g,b,a);
+								glVertex2i(0,pos);
+								glVertex2i(0,pos);
+								glColor4f(r,g,b,0.0f);
+								glVertex2i(-120,pos);
+							}
+							glEnd();
+
+							// Draw vectors
+							SetLineColour(colour[3],1.0f,2);
+							SetModeLine();
+							glBegin(GL_LINES);
+								glVertex3f(0.0f,0.0f,0.0f);
+								glVertex3f(50.0f,0.0f,0.0f);
+								glVertex3f(0.0f,0.0f,0.0f);
+								glVertex3f(0.0f,-50.0f,0.0f);
+								glVertex3f(0.0f,0.0f,0.0f);
+								glVertex3f(0.0f,0.0f,-50.0f);
+							glEnd();
+
+							// Draw arrow tops
+							glBegin(GL_TRIANGLE_FAN);
+								glVertex3f(60.0f,0.0f,0.0f);
+								glVertex3f(50.0f,-3.0f,-3.0f);
+								glVertex3f(50.0f,3.0f,-3.0f);
+								glVertex3f(50.0f,3.0f,3.0f);
+								glVertex3f(50.0f,-3.0f,3.0f);
+								glVertex3f(50.0f,-3.0f,-3.0f);
+							glEnd();
+							glBegin(GL_TRIANGLE_FAN);
+								glVertex3f(0.0f,-60.0f,0.0f);
+								glVertex3f(-3.0f,-50.0f,-3.0f);
+								glVertex3f(3.0f,-50.0f,-3.0f);
+								glVertex3f(3.0f,-50.0f,3.0f);
+								glVertex3f(-3.0f,-50.0f,3.0f);
+								glVertex3f(-3.0f,-50.0f,-3.0f);
+							glEnd();
+							glBegin(GL_TRIANGLE_FAN);
+								glVertex3f(0.0f,0.0f,-60.0f);
+								glVertex3f(-3.0f,-3.0f,-50.0f);
+								glVertex3f(3.0f,-3.0f,-50.0f);
+								glVertex3f(3.0f,3.0f,-50.0f);
+								glVertex3f(-3.0f,3.0f,-50.0f);
+								glVertex3f(-3.0f,-3.0f,-50.0f);
+							glEnd();
+
+							// Restore gl's state
+							glPopMatrix();
+							glShadeModel(GL_FLAT);
+
 							//// Calculate radii
 							//if (radius < 80) radius = 80;
 							//int radius1X = radius * w / sw / 3;
@@ -320,13 +434,6 @@ void VideoDisplayVisual::DrawOverlay() {
 
 					// Scale
 					if (mode == 4) {
-						// Get scale
-						if (isCur) {
-							scalX = curScaleX;
-							scalY = curScaleY;
-						}
-						else GetLineScale(diag,scalX,scalY);
-
 						// Scale parameters
 						int len = 160;
 						int lenx = int(1.6 * scalX);
@@ -1356,6 +1463,7 @@ void VideoDisplayVisual::SetLineColour(wxColour col,float alpha,int width) {
 	g1 = col.Green()/255.0f;
 	b1 = col.Blue()/255.0f;
 	a1 = alpha;
+	lw = width;
 }
 
 
@@ -1378,6 +1486,8 @@ void VideoDisplayVisual::SetModeLine() {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	}
+	glLineWidth(lw);
+	//glEnable(GL_LINE_SMOOTH);
 }
 
 
