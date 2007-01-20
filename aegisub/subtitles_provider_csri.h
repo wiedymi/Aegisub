@@ -40,16 +40,22 @@
 ///////////
 // Headers
 #include "subtitles_provider.h"
+#define CSRIAPI __declspec(dllexport)
+#include "csri/csri.h"
+#include "csri/loader.h"
 
 
 /////////////////////////////////////////////////
 // Common Subtitles Rendering Interface provider
 class CSRISubtitlesProvider : public SubtitlesProvider {
+private:
+	csri_inst *instance;
+
 public:
 	CSRISubtitlesProvider();
 	~CSRISubtitlesProvider();
 
-	bool CanRaster() { return false; }
+	bool CanRaster() { return true; }
 	bool CanOverlay() { return false; }
 
 	void LoadSubtitles(AssFile *subs);

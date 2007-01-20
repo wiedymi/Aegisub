@@ -479,7 +479,7 @@ AegiVideoFrame VideoContext::GetFrame(int n) {
 	AegiVideoFrame frame = provider->GetFrame(n);
 	if (subsProvider && subsProvider->CanRaster()) {
 		tempFrame.CopyFrom(frame);
-		subsProvider->DrawSubtitles(frame,n);
+		subsProvider->DrawSubtitles(tempFrame,VFR_Input.GetTimeAtFrame(n,true,true)/1000.0);
 		return tempFrame;
 	}
 	else return frame;

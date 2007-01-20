@@ -38,6 +38,7 @@
 // Headers
 #include "subtitles_provider_csri.h"
 #include "ass_file.h"
+#include "video_context.h"
 
 
 ///////////
@@ -52,23 +53,68 @@ public:
 ///////////////
 // Constructor
 CSRISubtitlesProvider::CSRISubtitlesProvider() {
+	instance = NULL;
 }
 
 
 //////////////
 // Destructor
 CSRISubtitlesProvider::~CSRISubtitlesProvider() {
+	if (instance) csri_close(instance);
+	instance = NULL;
 }
 
 
 //////////////////
 // Load subtitles
 void CSRISubtitlesProvider::LoadSubtitles(AssFile *subs) {
+	// Close
+	// HACK: REMOVE THE FOLLOWING LINE
+	if (instance) return;
+	if (instance) csri_close(instance);
+	instance = NULL;
+
+	// Prepare subtitles
+	wxString subsfilename = VideoContext::Get()->GetTempWorkFile();
+	subs->Save(subsfilename,false,false,_T("UTF-8"));
 	delete subs;
+
+	// Open
+	instance = csri_open_file(csri_renderer_default(),subsfilename.mb_str(wxConvUTF8),NULL);
 }
 
 
 //////////////////
 // Draw subtitles
 void CSRISubtitlesProvider::DrawSubtitles(AegiVideoFrame &dst,double time) {
+	// Check if CSRI loaded properly
+	if (!instance) return;
+
+	// Load data into frame
+	csri_frame frame;
+	for (int i=0;i<4;i++) {
+		if (dst.flipped) {
+			frame.planes[i] = dst.data[i] + (dst.h-1) * dst.pitch[i];
+			frame.strides[i] = -(signed)dst.pitch[i];
+		}
+		else {
+			frame.planes[i] = dst.data[i];
+			frame.strides[i] = dst.pitch[i];
+		}
+	}
+	switch (dst.format) {
+		case FORMAT_RGB32: frame.pixfmt = CSRI_F_BGR_; break;
+		case FORMAT_RGB24: frame.pixfmt = CSRI_F_BGR; break;
+	}
+
+	// Set format
+	csri_fmt format;
+	format.width = dst.w;
+	format.height = dst.h;
+	format.pixfmt = frame.pixfmt;
+	int error = csri_query_fmt(instance,&format);
+	if (error) return;
+
+	// Render
+	csri_render(instance,&frame,time);
 }

@@ -175,4 +175,9 @@
 #endif
 
 
+///////
+// asa
+#pragma comment(lib,"asa.lib")
+
+
 #endif // VisualC
