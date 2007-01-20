@@ -97,17 +97,20 @@ void VideoProvider::Cache(int n,const AegiVideoFrame frame) {
 	// Cache enabled?
 	if (cacheMax == 0) return;
 
-	// Remove frames if it doesn't fit
-	while (cache.size() >= cacheMax) {
-		cache.front().frame.Clear();
+	// Cache full, remove use frame at front
+	if (cache.size() >= cacheMax) {
+		cache.push_back(cache.front());
 		cache.pop_front();
 	}
 
+	// Cache not full, insert new one
+	else {
+		cache.push_back(CachedFrame());
+	}
+
 	// Cache
-	CachedFrame cached;
-	cached.frame = frame.Copy();
-	cached.n = n;
-	cache.push_back(cached);
+	cache.front().n = n;
+	cache.front().frame.CopyFrom(frame);
 }
 
 
@@ -126,6 +129,9 @@ void VideoProvider::ClearCache() {
 VideoProvider *VideoProviderFactory::GetProvider(wxString video,double fps) {
 	// List of providers
 	wxArrayString list = GetFactoryList();
+
+	// None available
+	if (list.Count() == 0) throw _T("No video providers are available.");
 
 	// Put preffered on top
 	wxString preffered = Options.AsText(_T("Video provider")).Lower();

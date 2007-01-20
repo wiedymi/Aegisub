@@ -37,6 +37,16 @@
 ///////////
 // Headers
 #include "subtitles_provider_csri.h"
+#include "ass_file.h"
+
+
+///////////
+// Factory
+class CSRISubtitlesProviderFactory : public SubtitlesProviderFactory {
+public:
+	SubtitlesProvider *CreateProvider() { return new CSRISubtitlesProvider(); }
+	CSRISubtitlesProviderFactory() : SubtitlesProviderFactory(_T("csri")) {}
+} registerCSRI;
 
 
 ///////////////
@@ -54,6 +64,7 @@ CSRISubtitlesProvider::~CSRISubtitlesProvider() {
 //////////////////
 // Load subtitles
 void CSRISubtitlesProvider::LoadSubtitles(AssFile *subs) {
+	delete subs;
 }
 
 

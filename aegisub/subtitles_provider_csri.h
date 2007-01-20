@@ -49,6 +49,9 @@ public:
 	CSRISubtitlesProvider();
 	~CSRISubtitlesProvider();
 
+	bool CanRaster() { return false; }
+	bool CanOverlay() { return false; }
+
 	void LoadSubtitles(AssFile *subs);
 	void DrawSubtitles(AegiVideoFrame &dst,double time);
 };

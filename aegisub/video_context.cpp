@@ -167,6 +167,7 @@ void VideoContext::Reset() {
 	wxRemoveFile(tempfile);
 	tempfile = _T("");
 	videoName = _T("");
+	tempFrame.Clear();
 
 	// Remove provider
 	if (provider && subsProvider && provider->GetAsSubtitlesProvider() != subsProvider) delete subsProvider;
@@ -248,7 +249,7 @@ void VideoContext::SetVideo(const wxString &filename) {
 
 			// Get subtitles provider
 			subsProvider = provider->GetAsSubtitlesProvider();
-			if (!subsProvider) subsProvider = SubtitlesProvider::GetProvider();
+			if (!subsProvider) subsProvider = SubtitlesProviderFactory::GetProvider();
 
 			// Set frame rate
 			fps = provider->GetFPS();
@@ -476,8 +477,12 @@ void VideoContext::SaveSnapshot() {
 AegiVideoFrame VideoContext::GetFrame(int n) {
 	if (n == -1) n = frame_n;
 	AegiVideoFrame frame = provider->GetFrame(n);
-	if (subsProvider) subsProvider->DrawSubtitles(frame,n);
-	return frame;
+	if (subsProvider && subsProvider->CanRaster()) {
+		tempFrame.CopyFrom(frame);
+		subsProvider->DrawSubtitles(frame,n);
+		return tempFrame;
+	}
+	else return frame;
 }
 
 

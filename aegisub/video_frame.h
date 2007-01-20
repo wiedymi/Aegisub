@@ -69,6 +69,6 @@ public:
 
 	void Allocate();
 	void Clear();
-	AegiVideoFrame Copy() const;
+	void CopyFrom(const AegiVideoFrame &source);
 	wxImage GetImage() const;
 };

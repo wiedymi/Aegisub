@@ -41,6 +41,7 @@
 // Headers
 #include <wx/wxprec.h>
 #include "video_frame.h"
+#include "factory.h"
 
 
 //////////////
@@ -52,10 +53,24 @@ class AssFile;
 // Subtitles provider interface
 class SubtitlesProvider {
 public:
-	static SubtitlesProvider *GetProvider();
-
 	virtual ~SubtitlesProvider();
+
+	virtual bool CanRaster() { return false; }
+	virtual bool CanOverlay() { return false; }
 
 	virtual void LoadSubtitles(AssFile *subs)=0;
 	virtual void DrawSubtitles(AegiVideoFrame &dst,double time) {}
+};
+
+
+///////////
+// Factory
+class SubtitlesProviderFactory : public AegisubFactory<SubtitlesProviderFactory> {
+protected:
+	virtual SubtitlesProvider *CreateProvider()=0;
+	SubtitlesProviderFactory(wxString name) { RegisterFactory(name); }
+
+public:
+	virtual ~SubtitlesProviderFactory() {}
+	static SubtitlesProvider *GetProvider();
 };

@@ -119,17 +119,17 @@ void AegiVideoFrame::Clear() {
 
 ///////////////
 // Create copy
-AegiVideoFrame AegiVideoFrame::Copy() const {
-	AegiVideoFrame frame = *this;
+void AegiVideoFrame::CopyFrom(const AegiVideoFrame &source) {
+	w = source.w;
+	h = source.h;
+	format = source.format;
+	for (int i=0;i<4;i++) pitch[i] = source.pitch[i];
+	Allocate();
 	for (int i=0;i<4;i++) {
-		frame.memSize[i] = 0;
-		frame.data[i] = NULL;
+		memcpy(data[i],source.data[i],memSize[i]);
 	}
-	frame.Allocate();
-	for (int i=0;i<4;i++) {
-		memcpy(frame.data[i],data[i],memSize[i]);
-	}
-	return frame;
+	flipped = source.flipped;
+	invertChannels = source.invertChannels;
 }
 
 

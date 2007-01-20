@@ -70,6 +70,7 @@ private:
 	int lastFrame;
 	wxGLContext *glContext;
 	VideoFrameFormat vidFormat;
+	AegiVideoFrame tempFrame;
 
 	wxString tempfile;
 	VideoProvider *provider;

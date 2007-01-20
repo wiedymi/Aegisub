@@ -37,6 +37,7 @@
 ///////////
 // Headers
 #include "subtitles_provider.h"
+#include "options.h"
 
 
 //////////////
@@ -47,6 +48,37 @@ SubtitlesProvider::~SubtitlesProvider() {
 
 ////////////////
 // Get provider
-SubtitlesProvider* SubtitlesProvider::GetProvider() {
-	return NULL;
+SubtitlesProvider* SubtitlesProviderFactory::GetProvider() {
+	// List of providers
+	wxArrayString list = GetFactoryList();
+
+	// None available
+	if (list.Count() == 0) throw _T("No video providers are available.");
+
+	// Put preffered on top
+	wxString preffered = Options.AsText(_T("Subtitles provider")).Lower();
+	if (list.Index(preffered) != wxNOT_FOUND) {
+		list.Remove(preffered);
+		list.Insert(preffered,0);
+	}
+
+	// Get provider
+	wxString error;
+	for (unsigned int i=0;i<list.Count();i++) {
+		try {
+			SubtitlesProvider *provider = GetFactory(list[i])->CreateProvider();
+			if (provider) return provider;
+		}
+		catch (wxString err) { error += list[i] + _T(" factory: ") + err + _T("\n"); }
+		catch (const wxChar *err) { error += list[i] + _T(" factory: ") + wxString(err) + _T("\n"); }
+		catch (...) { error += list[i] + _T(" factory: Unknown error\n"); }
+	}
+
+	// Failed
+	throw error;
 }
+
+
+//////////
+// Static
+std::map<wxString,SubtitlesProviderFactory*>* AegisubFactory<SubtitlesProviderFactory>::factories=NULL;
