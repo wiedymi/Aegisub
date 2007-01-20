@@ -131,3 +131,39 @@ AegiVideoFrame AegiVideoFrame::Copy() const {
 	}
 	return frame;
 }
+
+
+///////////////
+// Get wxImage
+// ------
+// This function is only used on screenshots, so it doesn't have to be fast
+wxImage AegiVideoFrame::GetImage() const {
+	if (format == FORMAT_RGB32) {
+		// Create
+		unsigned char *buf = (unsigned char*)malloc(w*h*3);
+		const unsigned char *src = data[0];
+		unsigned char *dst = buf;
+
+		// Convert
+		for (unsigned int y=0;y<h;y++) {
+			dst = buf + y*w*3;
+			if (flipped) src = data[0] + (h-y-1)*pitch[0];
+			else src = data[0] + y*pitch[0];
+			for (unsigned int x=0;x<w;x++) {
+				*dst++ = *(src+2);
+				*dst++ = *(src+1);
+				*dst++ = *(src);
+				src += 4;
+			}
+		}
+
+		// Make image
+		wxImage img(w,h);
+		img.SetData(buf);
+		return img;
+	}
+
+	else {
+		return wxImage(w,h);
+	}
+}

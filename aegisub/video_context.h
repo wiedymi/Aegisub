@@ -101,8 +101,6 @@ private:
 	int length;
 	double fps;
 
-	int GetFrame(int n);
-	void SaveSnapshot();
 	void UnloadTexture();
 	void OnPlayTimer(wxTimerEvent &event);
 
@@ -120,6 +118,8 @@ public:
 	void RemoveDisplay(VideoDisplay *display);
 
 	VideoProvider *GetProvider() { return provider; }
+	AegiVideoFrame GetFrame(int n);
+	void SaveSnapshot();
 
 	wxGLContext *GetGLContext(wxGLCanvas *canvas);
 	GLuint GetFrameAsTexture(int n);

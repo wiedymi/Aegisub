@@ -377,8 +377,7 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 	if (n == lastFrame) return lastTex;
 
 	// Get frame
-	AegiVideoFrame frame = provider->GetFrame(n);
-	if (subsProvider) subsProvider->DrawSubtitles(frame,n);
+	AegiVideoFrame frame = GetFrame(n);
 
 	// Set frame
 	lastFrame = n;
@@ -432,9 +431,6 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 		glTexSubImage2D(GL_TEXTURE_2D,0,frame.w/2,frame.h,frame.w/2,frame.h/2,format,GL_UNSIGNED_BYTE,frame.data[2]);
 	}
 
-	// Unload frame
-	//frame.Clear();
-
 	// Return texture number
 	return lastTex;
 }
@@ -471,19 +467,17 @@ void VideoContext::SaveSnapshot() {
 	}
 
 	// Save
-	// TODO
-	//GetFrame(frame_n).ConvertToImage().SaveFile(path,wxBITMAP_TYPE_PNG);
+	GetFrame(frame_n).GetImage().SaveFile(path,wxBITMAP_TYPE_PNG);
 }
 
 
 ////////////////////////
 // Requests a new frame
-int VideoContext::GetFrame(int n) {
-	//if (n < 0) n = frame_n;
-	//frame_n = n;
-	//return provider->GetFrame(n);
-	//Refresh(true,false);
-	return 0;
+AegiVideoFrame VideoContext::GetFrame(int n) {
+	if (n == -1) n = frame_n;
+	AegiVideoFrame frame = provider->GetFrame(n);
+	if (subsProvider) subsProvider->DrawSubtitles(frame,n);
+	return frame;
 }
 
 

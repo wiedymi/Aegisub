@@ -277,7 +277,7 @@ void VideoDisplay::OnMouseEvent(wxMouseEvent& event) {
 /////////////
 // Key event
 void VideoDisplay::OnKey(wxKeyEvent &event) {
-	//visual->OnKeyEvent(event);
+	visual->OnKeyEvent(event);
 }
 
 
@@ -414,17 +414,17 @@ void VideoDisplay::UpdateSubsRelativeTime() {
 /////////////////////
 // Copy to clipboard
 void VideoDisplay::OnCopyToClipboard(wxCommandEvent &event) {
-	//if (wxTheClipboard->Open()) {
-	//	wxTheClipboard->SetData(new wxBitmapDataObject(GetFrame(frame_n)));
-	//	wxTheClipboard->Close();
-	//}
+	if (wxTheClipboard->Open()) {
+		wxTheClipboard->SetData(new wxBitmapDataObject(wxBitmap(VideoContext::Get()->GetFrame(-1).GetImage(),24)));
+		wxTheClipboard->Close();
+	}
 }
 
 
 /////////////////
 // Save snapshot
 void VideoDisplay::OnSaveSnapshot(wxCommandEvent &event) {
-	//SaveSnapshot();
+	VideoContext::Get()->SaveSnapshot();
 }
 
 
