@@ -560,6 +560,7 @@ HRESULT CreateVideoSink(IBaseFilter **pVS) {
 		delete vs;
 		vs = NULL;
 	}
+	vs->AddRef();
 	*pVS = vs;
 	return hr;
 }

@@ -82,6 +82,8 @@ AvisynthVideoProvider::~AvisynthVideoProvider() {
 	AVSTRACE(_T("AvisynthVideoProvider: Destroying AvisynthVideoProvider"));
 	RGB32Video = NULL;
 	SubtitledVideo = NULL;
+	AVSTRACE(_T("AvisynthVideoProvider: Destroying frame"));
+	iframe.Clear();
 	AVSTRACE(_T("AvisynthVideoProvider: AvisynthVideoProvider destroyed"));
 }
 
@@ -247,7 +249,7 @@ PClip AvisynthVideoProvider::OpenVideo(wxString _filename, bool mpeg2dec3_priori
 
 ////////////////////////
 // Actually get a frame
-AegiVideoFrame AvisynthVideoProvider::DoGetFrame(int _n) {
+const AegiVideoFrame AvisynthVideoProvider::DoGetFrame(int _n) {
 	// Transform n if overriden
 	int n = _n;
 	if (frameTime.Count()) {
@@ -265,7 +267,7 @@ AegiVideoFrame AvisynthVideoProvider::DoGetFrame(int _n) {
 	int Bpp = vi.BitsPerPixel() / 8;
 
 	// Aegisub's video frame
-	AegiVideoFrame final;
+	AegiVideoFrame &final = iframe;
 	final.flipped = false;
 	final.cppAlloc = true;
 
@@ -281,19 +283,24 @@ AegiVideoFrame AvisynthVideoProvider::DoGetFrame(int _n) {
 	else if (vi.IsYV12()) final.format = FORMAT_YV12;
 	else if (vi.IsYUY2()) final.format = FORMAT_YUY2;
 
-	// Copy first plane
+	// Set size properties
+	int uvpitch = 0;
+	if (final.format == FORMAT_YV12) uvpitch = frame->GetPitch(PLANAR_U);
+	final.pitch[0] = frame->GetPitch();
+	final.pitch[1] = uvpitch;
+	final.pitch[2] = uvpitch;
 	final.w = frame->GetRowSize() / Bpp;
 	final.h = frame->GetHeight();
-	final.pitch = frame->GetPitch();
-	final.data[0] = new unsigned char [final.pitch * final.h];
-	memcpy(final.data[0],frame->GetReadPtr(),final.pitch * final.h);
+
+	// Allocate
+	final.Allocate();
+
+	// Copy
+	memcpy(final.data[0],frame->GetReadPtr(),final.pitch[0] * final.h);
 
 	// Copy second and third planes for YV12
 	if (final.format == FORMAT_YV12) {
-		int uvpitch = frame->GetPitch(PLANAR_U);
 		int uvh = frame->GetHeight(PLANAR_U);
-		final.data[1] = new unsigned char [uvpitch * uvh];
-		final.data[2] = new unsigned char [uvpitch * uvh];
 		memcpy(final.data[1],frame->GetReadPtr(PLANAR_U),uvpitch * uvh);
 		memcpy(final.data[2],frame->GetReadPtr(PLANAR_V),uvpitch * uvh);
 	}

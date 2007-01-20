@@ -60,23 +60,25 @@ public:
 // Video Provider interface
 class VideoProvider {
 private:
-	int cacheMax;
+	unsigned int cacheMax;
 	std::list<CachedFrame> cache;
 
-protected:
-	void SetCacheMax(int n_frames);
-	void Cache(int n,AegiVideoFrame frame);
-	void ClearCache();
+	void Cache(int n,const AegiVideoFrame frame);
 	AegiVideoFrame GetCachedFrame(int n);
 
+protected:
 	// Override this method to actually get frames
-	virtual AegiVideoFrame DoGetFrame(int n)=0;	// Get frame as AegiVideoFrame
+	virtual const AegiVideoFrame DoGetFrame(int n)=0;	// Get frame as AegiVideoFrame
+
+	// Cache functions
+	void SetCacheMax(int n_frames);
+	void ClearCache();
 
 public:
 	// Base methods
 	void GetFloatFrame(float* Buffer, int n);	// Get frame as float
 	static VideoProvider *GetProvider(wxString video,double fps=0.0);
-	AegiVideoFrame GetFrame(int n);
+	const AegiVideoFrame GetFrame(int n);
 	VideoProvider();
 	virtual ~VideoProvider();
 

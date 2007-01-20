@@ -81,6 +81,7 @@ private:
 	wxArrayInt overKeyFrames;
 	wxString keyFramesFilename;
 
+	wxMutex playMutex;
 	wxTimer playback;
 	clock_t playTime;
 	clock_t startTime;

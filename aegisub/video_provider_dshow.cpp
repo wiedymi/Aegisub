@@ -56,6 +56,7 @@ DirectShowVideoProvider::DirectShowVideoProvider(wxString _filename, double _fps
 	fps = _fps;
 	m_registered = false;
 	m_hFrameReady = CreateEvent(NULL, FALSE, FALSE, NULL);
+	SetCacheMax(8);
 	OpenVideo(_filename);
 }
 
@@ -193,7 +194,6 @@ HRESULT DirectShowVideoProvider::OpenVideo(wxString _filename) {
 
 	CComPtr<IBaseFilter>	pR;
 	hr = CreateVideoSink(&pR);
-	pR.p->AddRef();
 
 	// Add VideoSink to graph
 	pG->AddFilter(pR, L"VideoSink");
@@ -299,6 +299,7 @@ HRESULT DirectShowVideoProvider::OpenVideo(wxString _filename) {
 ///////////////
 // Close video
 void DirectShowVideoProvider::CloseVideo() {
+	rdf.frame.Clear();
 	CComQIPtr<IVideoSink2>  pVS2(m_pR);
 	if (pVS2) pVS2->NotifyFrame(NULL);
 
@@ -318,54 +319,58 @@ void DirectShowVideoProvider::ReadFrame(long long timestamp, unsigned format, un
 	df->timestamp = timestamp;
 
 	// Create frame
-	AegiVideoFrame &final = df->frame;
 	const unsigned char * src = frame;
 	if (stride < 0) {
 		src += stride*(height-1);
 		stride = -stride;
-		final.flipped = true;
+		df->frame.flipped = true;
 	}
-	else final.flipped = false;
-	final.w = width;
-	final.h = height;
-	final.pitch = stride;
-	final.cppAlloc = false;
-	final.invertChannels = true;
+	else df->frame.flipped = false;
+	df->frame.w = width;
+	df->frame.h = height;
+	df->frame.pitch[0] = stride;
+	df->frame.cppAlloc = false;
+	df->frame.invertChannels = true;
 
 	// Planar
 	if (format == IVS_YUY2) {
-		final.format = FORMAT_YUY2;
+		df->frame.format = FORMAT_YUY2;
 	}
 
 	// Interleaved
 	else {
 		unsigned int datalen = stride*height;
-		final.data[0] = (unsigned char *) malloc(datalen);
-		memcpy(final.data[0],src,datalen);
+		df->frame.Allocate();
+		memcpy(df->frame.data[0],src,datalen);
 	
 		// Set format
-		if (format == IVS_RGB24) final.format = FORMAT_RGB24;
-		else if (format == IVS_RGB32) final.format = FORMAT_RGB32;
-		else if (format == IVS_YV12) final.format = FORMAT_YV12;
+		if (format == IVS_RGB24) df->frame.format = FORMAT_RGB24;
+		else if (format == IVS_RGB32) df->frame.format = FORMAT_RGB32;
+		else if (format == IVS_YV12) df->frame.format = FORMAT_YV12;
 	}
 }
 
 
 /////////////////////
 // Get Next DS Frame
-int DirectShowVideoProvider::NextFrame(DF &_df,int &_fn) {
+int DirectShowVideoProvider::NextFrame(DF &df,int &_fn) {
 	// Keep reading until it gets a good frame
 	while (true) {
 		// Set object and receive data
-		DF df;
 		if (WaitForSingleObject(m_hFrameReady, INFINITE) != WAIT_OBJECT_0) return 1;
 
 		// Read frame
 		HRESULT hr = m_pR->ReadFrame(ReadFrame, &df);
-		if (FAILED(hr)) return 2;
+		if (FAILED(hr)) {
+			//df.frame.Clear();
+			return 2;
+		}
 
 		// End of file
-		if (hr == S_FALSE) return 3;
+		if (hr == S_FALSE) {
+			//df.frame.Clear();
+			return 3;
+		}
 
 		// Valid timestamp
 		if (df.timestamp >= 0) {
@@ -387,23 +392,25 @@ int DirectShowVideoProvider::NextFrame(DF &_df,int &_fn) {
 			// Got a good one
 			if (frameno >= 0) {
 				_fn = frameno;
-				_df = df;
+				//_df = df;
 				return 0;
 			}
 		}
+
+		//df.frame.Clear();
 	}
 }
 
 
 /////////////
 // Get frame
-AegiVideoFrame DirectShowVideoProvider::DoGetFrame(int n) {
+const AegiVideoFrame DirectShowVideoProvider::DoGetFrame(int n) {
 	// Normalize frame number
 	if (n >= (signed) num_frames) n = num_frames-1;
 	if (n < 0) n = 0;
 
 	// Variables
-	DF df;
+	//DF df;
 	int fn;
 
 	// Time to seek to
@@ -414,9 +421,9 @@ AegiVideoFrame DirectShowVideoProvider::DoGetFrame(int n) {
 
 	// Is next
 	if (n == last_fnum + 1) {
-		NextFrame(df,fn);
+		//rdf.frame.Clear();
+		NextFrame(rdf,fn);
 		last_fnum = n;
-		rdf.frame = df.frame;
 		return rdf.frame;
 	}
 
@@ -428,30 +435,35 @@ seek:
 	if (FAILED(m_pGS->SetPositions(&cur, AM_SEEKING_AbsolutePositioning, NULL, AM_SEEKING_NoPositioning))) return AegiVideoFrame(width,height);
 
 	// Set time
-	rdf.timestamp = -1;
+	REFERENCE_TIME timestamp = -1;
 
 	// Actually get data
 	while (true) {
 		// Get frame
-		DF df;
 		int fn = -1;
-		int result = NextFrame(df,fn);
+		int result = NextFrame(rdf,fn);
 
 		// Preroll
-		if (result == 0 && fn < n) continue;
+		if (result == 0 && fn < n) {
+			continue;
+		}
 
 		// Right frame
 		else if (fn == n) {
 			// we want this frame, compare timestamps to account for decimation
 			// we see this for the first time
-			if (rdf.timestamp < 0) rdf.timestamp = df.timestamp;
+			if (timestamp < 0) timestamp = rdf.timestamp;
 
 			// early, ignore
-			if (df.timestamp < rdf.timestamp) continue;
+			if (rdf.timestamp < timestamp) {
+				continue;
+			}
 
 			// this is the frame we want
-			rdf.frame = df.frame;
-			break;
+			last_fnum = n;
+			//rdf.frame.Clear();
+			//rdf.frame = df.frame;
+			return rdf.frame;
 		}
 
 		// Passed or end of file, seek back and try again
@@ -465,10 +477,6 @@ seek:
 			return AegiVideoFrame(width,height);
 		}
 	}
-
-	// Return frame
-	last_fnum = n;
-	return rdf.frame;
 }
 
 

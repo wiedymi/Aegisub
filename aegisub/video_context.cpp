@@ -433,7 +433,7 @@ GLuint VideoContext::GetFrameAsTexture(int n) {
 	}
 
 	// Unload frame
-	frame.Clear();
+	//frame.Clear();
 
 	// Return texture number
 	return lastTex;
@@ -562,16 +562,22 @@ void VideoContext::Stop() {
 //////////////
 // Play timer
 void VideoContext::OnPlayTimer(wxTimerEvent &event) {
+	// Lock
+	wxMutexError res = playMutex.TryLock();
+	if (res == wxMUTEX_BUSY) return;
+	playMutex.Unlock();
+	wxMutexLocker lock(playMutex);
+
 	// Get time difference
 	clock_t cur = clock();
-	int dif = (clock() - startTime)*1000/CLOCKS_PER_SEC;
-	if (!dif) return;
+	clock_t dif = (clock() - startTime)*1000/CLOCKS_PER_SEC;
 	playTime = cur;
 
 	// Find next frame
 	int startMs = VFR_Output.GetTimeAtFrame(startFrame);
 	int nextFrame = frame_n;
-	for (int i=0;i<10;i++) {
+	int i=0;
+	for (i=0;i<10;i++) {
 		if (nextFrame >= length) break;
 		if (dif < VFR_Output.GetTimeAtFrame(nextFrame) - startMs) {
 			break;
@@ -579,20 +585,21 @@ void VideoContext::OnPlayTimer(wxTimerEvent &event) {
 		nextFrame++;
 	}
 
-	// Same frame
-	if (nextFrame == frame_n) return;
-
 	// End
 	if (nextFrame >= length || (endFrame != -1 && nextFrame > endFrame)) {
 		Stop();
 		return;
 	}
 
+	// Same frame
+	if (nextFrame == frame_n) return;
+
 	// Next frame is before or over 2 frames ahead, so force audio resync
 	if (nextFrame < frame_n || nextFrame > frame_n + 2) audio->player->SetCurrentPosition(audio->GetSampleAtMS(VFR_Output.GetTimeAtFrame(nextFrame)));
 
 	// Jump to next frame
 	playNextFrame = nextFrame;
+	frame_n = nextFrame;
 	JumpToFrame(nextFrame);
 
 	// Sync audio

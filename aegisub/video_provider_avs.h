@@ -62,6 +62,7 @@ public:
 class AvisynthVideoProvider: public VideoProvider, SubtitlesProvider, AviSynthWrapper {
 private:
 	VideoInfo vi;
+	AegiVideoFrame iframe;
 
 	wxString rendererCallString;
 
@@ -88,7 +89,7 @@ public:
 	SubtitlesProvider *GetAsSubtitlesProvider();
 	void LoadSubtitles(AssFile *subs);
 
-	AegiVideoFrame DoGetFrame(int n);
+	const AegiVideoFrame DoGetFrame(int n);
 	void GetFloatFrame(float* Buffer, int n);
 
 	// properties

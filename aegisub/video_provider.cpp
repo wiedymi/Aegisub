@@ -54,6 +54,7 @@ VideoProvider::VideoProvider() {
 //////////////
 // Destructor
 VideoProvider::~VideoProvider() {
+	ClearCache();
 }
 
 
@@ -151,12 +152,64 @@ VideoProvider *VideoProvider::GetProvider(wxString video,double fps) {
 
 /////////////
 // Get frame
-AegiVideoFrame VideoProvider::GetFrame(int n) {
-	return DoGetFrame(n);
+const AegiVideoFrame VideoProvider::GetFrame(int n) {
+	// See if frame is cached
+	CachedFrame cached;
+	for (std::list<CachedFrame>::iterator cur=cache.begin();cur!=cache.end();cur++) {
+		cached = *cur;
+		if (cached.n == n) {
+			cache.erase(cur);
+			cache.push_back(cached);
+			return cached.frame;
+		}
+	}
+
+	// Not cached, retrieve it
+	const AegiVideoFrame frame = DoGetFrame(n);
+	Cache(n,frame);
+	return frame;
 }
 
 
 ////////////////
 // Get as float
 void VideoProvider::GetFloatFrame(float* Buffer, int n) {
+}
+
+
+//////////////////////////
+// Set maximum cache size
+void VideoProvider::SetCacheMax(int n) {
+	if (n < 0) n = 0;
+	cacheMax = n;
+}
+
+
+////////////////
+// Add to cache
+void VideoProvider::Cache(int n,const AegiVideoFrame frame) {
+	// Cache enabled?
+	if (cacheMax == 0) return;
+
+	// Remove frames if it doesn't fit
+	while (cache.size() >= cacheMax) {
+		cache.front().frame.Clear();
+		cache.pop_front();
+	}
+
+	// Cache
+	CachedFrame cached;
+	cached.frame = frame.Copy();
+	cached.n = n;
+	cache.push_back(cached);
+}
+
+
+///////////////
+// Clear cache
+void VideoProvider::ClearCache() {
+	while (cache.size()) {
+		cache.front().frame.Clear();
+		cache.pop_front();
+	}
 }

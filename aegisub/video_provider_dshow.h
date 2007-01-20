@@ -100,7 +100,7 @@ public:
 
 	void RefreshSubtitles();
 
-	AegiVideoFrame DoGetFrame(int n);
+	const AegiVideoFrame DoGetFrame(int n);
 	void GetFloatFrame(float* Buffer, int n);
 
 	int GetPosition() { return last_fnum; };

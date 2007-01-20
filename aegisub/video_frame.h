@@ -50,12 +50,15 @@ enum VideoFrameFormat {
 /////////////////////
 // Video Frame class
 class AegiVideoFrame {
+private:
+	unsigned int memSize[4];
+
 public:
 	unsigned char *data[4];		// Pointers to the data planes. Interleaved formats only use data[0]
 	VideoFrameFormat format;	// Data format, one of FORMAT_RGB24, FORMAT_RGB32, FORMAT_YUY2 and FORMAT_YV12
-	unsigned int w;				// Width
-	unsigned int h;				// Height
-	unsigned int pitch;			// Pitch, that is, the number of bytes used by each row. >= w
+	unsigned int w;				// Width in pixels
+	unsigned int h;				// Height in pixels
+	unsigned int pitch[4];		// Pitch, that is, the number of bytes used by each row.
 
 	bool flipped;				// First row is actually the bottom one
 	bool invertChannels;		// Invert Red and Blue channels
@@ -63,5 +66,8 @@ public:
 
 	AegiVideoFrame();
 	AegiVideoFrame(int width,int height,VideoFrameFormat format=FORMAT_RGB32);
+
+	void Allocate();
 	void Clear();
+	AegiVideoFrame Copy() const;
 };
