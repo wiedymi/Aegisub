@@ -49,6 +49,16 @@
 #include "vfr.h"
 
 
+///////////
+// Factory
+class DirectShowVideoProviderFactory : public VideoProviderFactory {
+public:
+	VideoProvider *CreateProvider(wxString video,double fps=0.0) { return new DirectShowVideoProvider(video,fps); }
+	DirectShowVideoProviderFactory() : VideoProviderFactory(_T("dshow")) {}
+} registerDShow;
+
+
+
 ///////////////
 // Constructor
 // Based on Haali's code for DirectShowSource2
@@ -57,7 +67,8 @@ DirectShowVideoProvider::DirectShowVideoProvider(wxString _filename, double _fps
 	m_registered = false;
 	m_hFrameReady = CreateEvent(NULL, FALSE, FALSE, NULL);
 	SetCacheMax(8);
-	OpenVideo(_filename);
+	HRESULT hr = OpenVideo(_filename);
+	if (FAILED(hr)) throw _T("Failed opening DirectShow content.");
 }
 
 

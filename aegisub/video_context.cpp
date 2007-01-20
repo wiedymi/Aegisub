@@ -243,7 +243,7 @@ void VideoContext::SetVideo(const wxString &filename) {
 #endif
 
 			// Choose a provider
-			provider = VideoProvider::GetProvider(filename,overFps);
+			provider = VideoProviderFactory::GetProvider(filename,overFps);
 			loaded = provider != NULL;
 
 			// Get subtitles provider

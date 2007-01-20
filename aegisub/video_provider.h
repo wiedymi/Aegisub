@@ -40,6 +40,7 @@
 //////////
 // Headers
 #include "video_frame.h"
+#include "factory.h"
 
 
 //////////////
@@ -77,7 +78,6 @@ protected:
 public:
 	// Base methods
 	void GetFloatFrame(float* Buffer, int n);	// Get frame as float
-	static VideoProvider *GetProvider(wxString video,double fps=0.0);
 	const AegiVideoFrame GetFrame(int n);
 	VideoProvider();
 	virtual ~VideoProvider();
@@ -92,4 +92,17 @@ public:
 	virtual int GetHeight()=0;					// Returns the video height in pixels
 	virtual double GetFPS()=0;					// Get framerate in frames per second
 	virtual void OverrideFrameTimeList(wxArrayInt list) {}	// Override the list with the provided one, for VFR handling
+};
+
+
+///////////
+// Factory
+class VideoProviderFactory : public AegisubFactory<VideoProviderFactory> {
+protected:
+	virtual VideoProvider *CreateProvider(wxString video,double fps=0.0)=0;
+	VideoProviderFactory(wxString name) { RegisterFactory(name); }
+
+public:
+	virtual ~VideoProviderFactory() {}
+	static VideoProvider *GetProvider(wxString video,double fps=0.0);
 };

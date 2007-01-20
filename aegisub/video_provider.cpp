@@ -36,9 +36,7 @@
 
 ///////////
 // Headers
-#include "video_provider_avs.h"
-#include "video_provider_lavc.h"
-#include "video_provider_dshow.h"
+#include "video_provider.h"
 #include "options.h"
 #include "setup.h"
 #include "vfr.h"
@@ -55,98 +53,6 @@ VideoProvider::VideoProvider() {
 // Destructor
 VideoProvider::~VideoProvider() {
 	ClearCache();
-}
-
-
-////////////////
-// Get provider
-VideoProvider *VideoProvider::GetProvider(wxString video,double fps) {
-	// Check if avisynth is available
-	bool avisynthAvailable = false;
-	bool dshowAvailable = false;
-	#ifdef __WINDOWS__
-	dshowAvailable = true;
-	try {
-		// If avisynth.dll cannot be loaded, an exception will be thrown and avisynthAvailable will never be set to true
-		AviSynthWrapper avs;
-		avisynthAvailable = true;
-	}
-	catch (...) {}
-	#endif
-
-	// Initialize to null
-	VideoProvider *provider = NULL;
-
-	// Preffered provider
-	wxString preffered = Options.AsText(_T("Video provider")).Lower();
-
-	// See if it's OK to use LAVC
-	#if USE_LAVC == 1
-	if (preffered == _T("ffmpeg") || (!avisynthAvailable && !dshowAvailable)) {
-		// Load
-		bool success = false;
-		wxString error;
-		try {
-			provider = new LAVCVideoProvider(video);
-			success = true;
-		}
-
-		// Catch error
-		catch (const wchar_t *err) {
-			error = err;
-		}
-		catch (...) {
-			error = _T("Unhandled exception.");
-		}
-
-		if (!success) {
-			// Delete old provider
-			delete provider;
-			provider = NULL;
-
-			// Try to fallback to avisynth
-			if (avisynthAvailable) {
-				wxMessageBox(_T("Failed loading FFmpeg decoder for video, falling back to Avisynth.\nError message: ") + error,_T("FFmpeg error."));
-				provider = NULL;
-			}
-
-			// Out of options, rethrow
-			else throw error.c_str();
-		}
-	}
-	#endif
-
-	#ifdef __WINDOWS__
-	#if USE_DIRECTSHOW == 1
-	// Use DirectShow provider
-	if (!provider && (preffered == _T("dshow") || !avisynthAvailable)) {
-		try {
-			if (VFR_Input.GetFrameRateType() == VFR) provider = new DirectShowVideoProvider(video);
-			else provider = new DirectShowVideoProvider(video,fps);
-		}
-		catch (...) {
-			delete provider;
-			provider = NULL;
-			throw;
-		}
-	}
-	#endif
-
-	// Use Avisynth provider
-	if (!provider) {
-		try {
-			provider = new AvisynthVideoProvider(video,fps);
-		}
-		catch (...) {
-			delete provider;
-			provider = NULL;
-			throw;
-		}
-	}
-	#endif
-
-	// Return provider
-	return provider;
 }
 
 
@@ -213,3 +119,38 @@ void VideoProvider::ClearCache() {
 		cache.pop_front();
 	}
 }
+
+
+////////////////
+// Get provider
+VideoProvider *VideoProviderFactory::GetProvider(wxString video,double fps) {
+	// List of providers
+	wxArrayString list = GetFactoryList();
+
+	// Put preffered on top
+	wxString preffered = Options.AsText(_T("Video provider")).Lower();
+	if (list.Index(preffered) != wxNOT_FOUND) {
+		list.Remove(preffered);
+		list.Insert(preffered,0);
+	}
+
+	// Get provider
+	wxString error;
+	for (unsigned int i=0;i<list.Count();i++) {
+		try {
+			VideoProvider *provider = GetFactory(list[i])->CreateProvider(video,fps);
+			if (provider) return provider;
+		}
+		catch (wxString err) { error += list[i] + _T(" factory: ") + err + _T("\n"); }
+		catch (const wxChar *err) { error += list[i] + _T(" factory: ") + wxString(err) + _T("\n"); }
+		catch (...) { error += list[i] + _T(" factory: Unknown error\n"); }
+	}
+
+	// Failed
+	throw error;
+}
+
+
+//////////
+// Static
+std::map<wxString,VideoProviderFactory*>* AegisubFactory<VideoProviderFactory>::factories=NULL;

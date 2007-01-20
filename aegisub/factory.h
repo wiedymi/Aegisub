@@ -39,23 +39,36 @@
 
 ///////////
 // Headers
-#include <wx/wxprec.h>
-#include "video_frame.h"
+#include <map>
 
 
-//////////////
-// Prototypes
-class AssFile;
+/////////////////
+// Factory class
+template <class T>
+class AegisubFactory {
+protected:
+	static std::map<wxString,T*> *factories;
+	void RegisterFactory(wxString name) {
+		if (factories == NULL) factories = new std::map<wxString,T*>;
+		factories->insert(std::make_pair(name.Lower(),(T*)this));
+	}
+	static T *GetFactory(wxString name) {
+		if (factories == NULL) {
+			factories = new std::map<wxString,T*>;
+			return NULL;
+		}
+		std::map<wxString,T*>::iterator res = factories->find(name.Lower());
+		if (res != factories->end()) return res->second;
+		return NULL;
+	}
 
-
-////////////////////////////////
-// Subtitles provider interface
-class SubtitlesProvider {
 public:
-	static SubtitlesProvider *GetProvider();
-
-	virtual ~SubtitlesProvider();
-
-	virtual void LoadSubtitles(AssFile *subs)=0;
-	virtual void DrawSubtitles(AegiVideoFrame &dst,double time) {}
+	static wxArrayString GetFactoryList() {
+		wxArrayString list;
+		for (std::map<wxString,T*>::iterator cur=factories->begin();cur!=factories->end();cur++) {
+			list.Add(cur->first);
+		}
+		return list;
+	}
+	virtual ~AegisubFactory() {}
 };

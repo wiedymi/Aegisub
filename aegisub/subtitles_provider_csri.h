@@ -39,23 +39,16 @@
 
 ///////////
 // Headers
-#include <wx/wxprec.h>
-#include "video_frame.h"
+#include "subtitles_provider.h"
 
 
-//////////////
-// Prototypes
-class AssFile;
-
-
-////////////////////////////////
-// Subtitles provider interface
-class SubtitlesProvider {
+/////////////////////////////////////////////////
+// Common Subtitles Rendering Interface provider
+class CSRISubtitlesProvider : public SubtitlesProvider {
 public:
-	static SubtitlesProvider *GetProvider();
+	CSRISubtitlesProvider();
+	~CSRISubtitlesProvider();
 
-	virtual ~SubtitlesProvider();
-
-	virtual void LoadSubtitles(AssFile *subs)=0;
-	virtual void DrawSubtitles(AegiVideoFrame &dst,double time) {}
+	void LoadSubtitles(AssFile *subs);
+	void DrawSubtitles(AegiVideoFrame &dst,double time);
 };

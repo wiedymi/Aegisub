@@ -59,6 +59,9 @@ public:
 	GetFrameVPThread(PClip clip);
 };*/
 
+
+////////////
+// Provider
 class AvisynthVideoProvider: public VideoProvider, SubtitlesProvider, AviSynthWrapper {
 private:
 	VideoInfo vi;

@@ -34,28 +34,30 @@
 //
 
 
-#pragma once
-
-
 ///////////
 // Headers
-#include <wx/wxprec.h>
-#include "video_frame.h"
+#include "subtitles_provider_csri.h"
+
+
+///////////////
+// Constructor
+CSRISubtitlesProvider::CSRISubtitlesProvider() {
+}
 
 
 //////////////
-// Prototypes
-class AssFile;
+// Destructor
+CSRISubtitlesProvider::~CSRISubtitlesProvider() {
+}
 
 
-////////////////////////////////
-// Subtitles provider interface
-class SubtitlesProvider {
-public:
-	static SubtitlesProvider *GetProvider();
+//////////////////
+// Load subtitles
+void CSRISubtitlesProvider::LoadSubtitles(AssFile *subs) {
+}
 
-	virtual ~SubtitlesProvider();
 
-	virtual void LoadSubtitles(AssFile *subs)=0;
-	virtual void DrawSubtitles(AegiVideoFrame &dst,double time) {}
-};
+//////////////////
+// Draw subtitles
+void CSRISubtitlesProvider::DrawSubtitles(AegiVideoFrame &dst,double time) {
+}
