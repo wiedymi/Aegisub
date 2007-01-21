@@ -431,14 +431,14 @@ void VideoDisplay::OnSaveSnapshot(wxCommandEvent &event) {
 /////////////////////
 // Copy coordinates
 void VideoDisplay::OnCopyCoords(wxCommandEvent &event) {
-	//if (wxTheClipboard->Open()) {
-	//	int sw,sh;
-	//	GetScriptSize(sw,sh);
-	//	int vx = (sw * visual->mouseX + w/2) / w;
-	//	int vy = (sh * visual->mouseY + h/2) / h;
-	//	wxTheClipboard->SetData(new wxTextDataObject(wxString::Format(_T("%i,%i"),vx,vy)));
-	//	wxTheClipboard->Close();
-	//}
+	if (wxTheClipboard->Open()) {
+		int sw,sh;
+		VideoContext::Get()->GetScriptSize(sw,sh);
+		int vx = (sw * visual->mouseX + w/2) / w;
+		int vy = (sh * visual->mouseY + h/2) / h;
+		wxTheClipboard->SetData(new wxTextDataObject(wxString::Format(_T("%i,%i"),vx,vy)));
+		wxTheClipboard->Close();
+	}
 }
 
 

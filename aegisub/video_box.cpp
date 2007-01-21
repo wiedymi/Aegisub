@@ -88,9 +88,9 @@ VideoBox::VideoBox(wxWindow *parent)
 
 	// Fextracker
 	#if USE_FEXTRACKER == 1
-	wxBitmapButton *VideoTrackerMenuButton = new wxBitmapButton(videoPage,Video_Tracker_Menu,wxBITMAP(button_track_points),wxDefaultPosition,wxSize(25,-1));
+	wxBitmapButton *VideoTrackerMenuButton = new wxBitmapButton(videoPage,Video_Tracker_Menu,wxBITMAP(button_track_points));
 	VideoTrackerMenuButton->SetToolTip(_("FexTracker"));
-	wxBitmapButton *VideoTrackerMenu2Button = new wxBitmapButton(videoPage,Video_Tracker_Menu2,wxBITMAP(button_track_trail),wxDefaultPosition,wxSize(25,-1));
+	wxBitmapButton *VideoTrackerMenu2Button = new wxBitmapButton(videoPage,Video_Tracker_Menu2,wxBITMAP(button_track_trail));
 	VideoTrackerMenu2Button->SetToolTip(_("FexMovement"));
 	#endif
 
@@ -143,6 +143,11 @@ VideoBox::VideoBox(wxWindow *parent)
 	typeSizer->Add(scale,0,wxEXPAND,0);
 	typeSizer->Add(clip,0,wxEXPAND | wxBOTTOM,5);
 	typeSizer->Add(realtime,0,wxEXPAND,0);
+	#if USE_FEXTRACKER == 1
+	typeSizer->Add(new wxStaticLine(videoPage),0,wxEXPAND|wxBOTTOM|wxTOP,5);
+	typeSizer->Add(VideoTrackerMenuButton,0,wxEXPAND,0);
+	typeSizer->Add(VideoTrackerMenu2Button,0,wxEXPAND,0);
+	#endif
 	typeSizer->AddStretchSpacer(1);
 
 	// Top sizer
@@ -159,10 +164,6 @@ VideoBox::VideoBox(wxWindow *parent)
 	videoBottomSizer->Add(VideoPlayLineButton,0,wxTOP|wxBOTTOM|wxALIGN_CENTER,2);
 	videoBottomSizer->Add(VideoStopButton,0,wxTOP|wxBOTTOM|wxALIGN_CENTER,2);
 	videoBottomSizer->Add(AutoScroll,0,wxTOP|wxBOTTOM|wxALIGN_CENTER|wxEXPAND,2);
-	#if USE_FEXTRACKER == 1
-	videoBottomSizer->Add(VideoTrackerMenuButton,0,wxTOP|wxBOTTOM|wxALIGN_CENTER|wxEXPAND,2);
-	videoBottomSizer->Add(VideoTrackerMenu2Button,0,wxTOP|wxBOTTOM|wxALIGN_CENTER|wxEXPAND,2);
-	#endif
 	videoBottomSizer->Add(VideoPosition,1,wxLEFT|wxALIGN_CENTER,5);
 	videoBottomSizer->Add(VideoSubsPos,1,wxALIGN_CENTER,0);
 	VideoSizer = new wxBoxSizer(wxVERTICAL);

@@ -79,7 +79,9 @@ const AegiVideoFrame VideoProvider::GetFrame(int n) {
 
 ////////////////
 // Get as float
-void VideoProvider::GetFloatFrame(float* Buffer, int n) {
+void VideoProvider::GetFloatFrame(float* buffer, int n) {
+	const AegiVideoFrame frame = GetFrame(n);
+	frame.GetFloat(buffer);
 }
 
 

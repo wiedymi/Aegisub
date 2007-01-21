@@ -138,11 +138,14 @@ void AegiVideoFrame::CopyFrom(const AegiVideoFrame &source) {
 // ------
 // This function is only used on screenshots, so it doesn't have to be fast
 wxImage AegiVideoFrame::GetImage() const {
-	if (format == FORMAT_RGB32) {
+	if (format == FORMAT_RGB32 || format == FORMAT_RGB24) {
 		// Create
 		unsigned char *buf = (unsigned char*)malloc(w*h*3);
 		const unsigned char *src = data[0];
 		unsigned char *dst = buf;
+
+		// Bytes per pixel
+		int Bpp = GetBpp();
 
 		// Convert
 		for (unsigned int y=0;y<h;y++) {
@@ -153,7 +156,7 @@ wxImage AegiVideoFrame::GetImage() const {
 				*dst++ = *(src+2);
 				*dst++ = *(src+1);
 				*dst++ = *(src);
-				src += 4;
+				src += Bpp;
 			}
 		}
 
@@ -165,5 +168,45 @@ wxImage AegiVideoFrame::GetImage() const {
 
 	else {
 		return wxImage(w,h);
+	}
+}
+
+
+/////////////////////////////
+// Get float luminosity data
+void AegiVideoFrame::GetFloat(float *buffer) const {
+	int Bpp = GetBpp();
+	const unsigned char *src = data[0];
+	float *dst = buffer;
+	float temp;
+
+	// Convert
+	if (format == FORMAT_RGB32 || format == FORMAT_RGB24) {
+		int delta = 4-Bpp;
+		for (unsigned int y=0;y<h;y++) {
+			dst = buffer + y*w*3;
+			if (!flipped) src = data[0] + (h-y-1)*pitch[0];	// I think that it requires flipped data - amz
+			else src = data[0] + y*pitch[0];
+			for (unsigned int x=0;x<w;x++) {
+				temp = (*src++)*0.3 + (*src++)*0.4 + (*src++)*0.3;
+				src += delta;
+				*dst++ = temp;
+			}
+		}
+	}
+}
+
+
+///////////////////////
+// Get Bytes per Pixel
+int AegiVideoFrame::GetBpp(int plane) const {
+	switch (format) {
+		case FORMAT_RGB32: return 4;
+		case FORMAT_RGB24: return 3;
+		case FORMAT_YUY2: return 2;
+		case FORMAT_YV12:
+			if (plane == 0) return 1;
+			else return 0;
+		default: return 0;
 	}
 }

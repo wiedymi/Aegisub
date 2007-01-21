@@ -70,5 +70,8 @@ public:
 	void Allocate();
 	void Clear();
 	void CopyFrom(const AegiVideoFrame &source);
+
 	wxImage GetImage() const;
+	void GetFloat(float *buffer) const;
+	int GetBpp(int plane=0) const;
 };
