@@ -37,55 +37,22 @@
 #pragma once
 
 
-///////////
-// Headers
-#include "gl_wrap.h"
-
-
-//////////////
-// Prototypes
-class VideoDisplay;
-class AssDialogue;
-
-
-////////////////////////
-// Visual handler class
-class VideoDisplayVisual : public OpenGLWrapper {
-	friend class VideoDisplay;
-
+//////////////////
+// OpenGL Wrapper
+class OpenGLWrapper {
 private:
-	wxColour colour[4];
-
-	int mouseX,mouseY;
-	int startX,startY;
-	int curX,curY,curX2,curY2;
-	int origX,origY;
-	float curAngle,startAngle,origAngle;
-	float curAngle2,startAngle2,origAngle2;
-	float curScaleX,curScaleY,origScaleX,origScaleY;
-	int lineOrgX,lineOrgY;
-
-	int mode;
-	int hold;
-	bool holding;
-
-	wxString mouseText;
-	AssDialogue *curSelection;
-	VideoDisplay *parent;
-
-	void GetLinePosition(AssDialogue *diag,int &x,int &y);
-	void GetLinePosition(AssDialogue *diag,int &x,int &y,int &orgx,int &orgy);
-	void GetLineRotation(AssDialogue *diag,float &rx,float &ry,float &rz);
-	void GetLineScale(AssDialogue *diag,float &scalX,float &scalY);
-	void GetLineClip(AssDialogue *diag,int &x1,int &y1,int &x2,int &y2);
-
-	void DrawOverlay();
-	void OnMouseEvent(wxMouseEvent &event);
-	void OnKeyEvent(wxKeyEvent &event);
+	float r1,g1,b1,a1;
+	float r2,g2,b2,a2;
+	int lw;
 
 public:
-	void SetMode(int mode);
-
-	VideoDisplayVisual(VideoDisplay *parent);
-	~VideoDisplayVisual();
+	void SetLineColour(wxColour col,float alpha=1.0f,int width=1);
+	void SetFillColour(wxColour col,float alpha=1.0f);
+	void SetModeLine();
+	void SetModeFill();
+	void DrawLine(float x1,float y1,float x2,float y2);
+	void DrawEllipse(float x,float y,float radiusX,float radiusY);
+	void DrawCircle(float x,float y,float radius) { DrawEllipse(x,y,radius,radius); }
+	void DrawRectangle(float x1,float y1,float x2,float y2);
+	void DrawRing(float x,float y,float r1,float r2,float ar=1.0f,float arcStart=0.0f,float arcEnd=0.0f);
 };

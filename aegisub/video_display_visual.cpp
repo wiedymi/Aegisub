@@ -40,6 +40,7 @@
 #include <GL/glu.h>
 #include <wx/wxprec.h>
 #include "video_display_visual.h"
+#include "video_display_fextracker.h"
 #include "video_display.h"
 #include "video_provider.h"
 #include "vfr.h"
@@ -53,11 +54,6 @@
 #include "subs_edit_box.h"
 #include "export_visible_lines.h"
 #include "utils.h"
-#if USE_FEXTRACKER == 1
-#include "../FexTrackerSource/FexTracker.h"
-#include "../FexTrackerSource/FexTrackingFeature.h"
-#include "../FexTrackerSource/FexMovement.h"
-#endif
 
 
 ///////////////
@@ -122,7 +118,7 @@ void VideoDisplayVisual::DrawOverlay() {
 
 	// Draw the control points for FexTracker
 	glDisable(GL_TEXTURE_2D);
-	DrawTrackingOverlay();
+	parent->tracker->Render();
 
 	// Draw lines
 	if (mode != 0) {
@@ -786,95 +782,6 @@ void VideoDisplayVisual::GetLineClip(AssDialogue *diag,int &x1,int &y1,int &x2,i
 }
 
 
-//////////////////
-// Draw Tracking Overlay
-void VideoDisplayVisual::DrawTrackingOverlay() {
-#if USE_FEXTRACKER == 1
-	//int frame_n = VideoContext::Get()->GetFrameN();
-	//VideoProvider *provider = VideoContext::Get()->GetProvider();
-	//if( VideoContext::Get()->IsPlaying() ) return;
-
-	//// Get line
-	//AssDialogue *curline = VideoContext::Get()->grid->GetDialogue(VideoContext::Get()->grid->editBox->linen);
-	//if( !curline ) return;
-
-	//int StartFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true);
-	//int EndFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false);
-	//
-	//if( frame_n<StartFrame || frame_n>EndFrame ) return;
-
-	//int localframe = frame_n - StartFrame;
-
-	//if( curline->Tracker )
-	//{
-	//	if( curline->Tracker->GetFrame() <= localframe ) return;
-
-	//	dc.SetLogicalFunction(wxCOPY);
-
-	//	for( int i=0;i<curline->Tracker->GetCount();i++ )
-	//	{
-	//		FexTrackingFeature* f = (*curline->Tracker)[i];
-	//		if( f->StartTime > localframe ) continue;
-	//		int llf = localframe - f->StartTime;
-	//		if( f->Pos.size() <= llf ) continue;
-	//		vec2 pt = f->Pos[llf];
-	//		pt.x *= provider->GetZoom();
-	//		pt.y *= provider->GetZoom();
-	//		pt.x = int(pt.x);
-	//		pt.y = int(pt.y);
-
-	//		dc.SetPen(wxPen(wxColour(255*(1-f->Influence),255*f->Influence,0),1));
-
-	//		dc.DrawLine( pt.x-2, pt.y, pt.x, pt.y );
-	//		dc.DrawLine( pt.x, pt.y-2, pt.x, pt.y );
-	//		dc.DrawLine( pt.x+1, pt.y, pt.x+3, pt.y );
-	//		dc.DrawLine( pt.x, pt.y+1, pt.x, pt.y+3 );
-	//	}
-	//}
-	//if( curline->Movement )
-	//{
-	//	if( curline->Movement->Frames.size() <= localframe ) return;
-
-	//	dc.SetPen(wxPen(colour[0],2));
-	//	FexMovementFrame f = curline->Movement->Frames.lVal[localframe];
-	//	f.Pos.x *= provider->GetZoom();
-	//	f.Pos.y *= provider->GetZoom();
-	//	f.Scale.x *= 30* provider->GetZoom();
-	//	f.Scale.y *= 30* provider->GetZoom();
-
-	//	FexMovementFrame f3 = f;
-	//	dc.SetPen(wxPen(wxColour(0,0,255),1));
-	//	int nBack = 8;
-	//	while( --localframe>0 && nBack-- >0 )
-	//	{
-	//		FexMovementFrame f2 = curline->Movement->Frames.lVal[localframe];
-	//		f2.Pos.x *= provider->GetZoom();
-	//		f2.Pos.y *= provider->GetZoom();
-	//		dc.DrawLine( f2.Pos.x, f2.Pos.y, f3.Pos.x, f3.Pos.y );
-	//		f3 = f2;
-	//	}
-
-	//	dc.SetPen(wxPen(colour[0],2));
-	//	dc.DrawLine( f.Pos.x-f.Scale.x, f.Pos.y, f.Pos.x+f.Scale.x+1, f.Pos.y );
-	//	dc.DrawLine( f.Pos.x, f.Pos.y-f.Scale.y, f.Pos.x, f.Pos.y+f.Scale.y+1 );
-
-	//	f3 = f;
-	//	dc.SetPen(wxPen(wxColour(0,255,0),1));
-	//	int nFront = 8;
-	//	localframe = frame_n - StartFrame;
-	//	while( ++localframe<curline->Movement->Frames.size() && nFront-- >0 )
-	//	{
-	//		FexMovementFrame f2 = curline->Movement->Frames.lVal[localframe];
-	//		f2.Pos.x *= provider->GetZoom();
-	//		f2.Pos.y *= provider->GetZoom();
-	//		dc.DrawLine( f2.Pos.x, f2.Pos.y, f3.Pos.x, f3.Pos.y );
-	//		f3 = f2;
-	//	}
-	//}
-#endif
-}
-
-
 ///////////////
 // Mouse event
 void VideoDisplayVisual::OnMouseEvent (wxMouseEvent &event) {
@@ -887,57 +794,13 @@ void VideoDisplayVisual::OnMouseEvent (wxMouseEvent &event) {
 	int orgy = -1;
 	int sw,sh;
 	VideoContext::Get()->GetScriptSize(sw,sh);
+	int mx = x * VideoContext::Get()->GetWidth() / w;
+	int my = y * VideoContext::Get()->GetHeight() / h;
 	int frame_n = VideoContext::Get()->GetFrameN();
-	//VideoProvider *provider = parent->provider;
 	SubtitlesGrid *grid = VideoContext::Get()->grid;
 	bool hasOverlay = false;
 	bool realTime = Options.AsBool(_T("Video Visual Realtime"));
-
-	// FexTracker
-	#if USE_FEXTRACKER == 1
-	//if( event.ButtonDown(wxMOUSE_BTN_LEFT) ) {
-	//	parent->MouseDownX = x;
-	//	parent->MouseDownY = y;
-	//	parent->bTrackerEditing = 1;
-	//}
-	//if( event.ButtonUp(wxMOUSE_BTN_LEFT) ) parent->bTrackerEditing = 0;
-
-	//// Do tracker influence if needed
-	//if( parent->bTrackerEditing ) {
-	//	AssDialogue *curline = VideoContext::Get()->grid->GetDialogue(VideoContext::Get()->grid->editBox->linen);
-	//	int StartFrame, EndFrame, localframe;
-	//	if( curline && (StartFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true)) <= frame_n	&& (EndFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false)) >= frame_n ) {
-	//		localframe = frame_n - StartFrame;
-	//		if( parent->TrackerEdit!=0 && curline->Tracker && localframe < curline->Tracker->GetFrame() ) curline->Tracker->InfluenceFeatures( localframe, float(x)/provider->GetZoom(), float(y)/provider->GetZoom(), parent->TrackerEdit );
-	//		if( parent->MovementEdit!=0 && curline->Movement && localframe < curline->Movement->Frames.size() )	{// no /provider->GetZoom() to improve precision
-	//			if( parent->MovementEdit==1 ) {
-	//				for( int i=0;i<curline->Movement->Frames.size();i++ ) {
-	//					curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
-	//					curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
-	//				}
-	//			}
-	//			else if( parent->MovementEdit==2 ) {
-	//				curline->Movement->Frames[localframe].Pos.x += float(x-parent->MouseDownX);
-	//				curline->Movement->Frames[localframe].Pos.y += float(y-parent->MouseDownY);
-	//			}
-	//			else if( parent->MovementEdit==3 ) {
-	//				for( int i=0;i<=localframe;i++ ) {
-	//					curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
-	//					curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
-	//				}
-	//			}
-	//			else if( parent->MovementEdit==4 ) {
-	//				for( int i=localframe;i<curline->Movement->Frames.size();i++ ) {
-	//					curline->Movement->Frames[i].Pos.x += float(x-parent->MouseDownX);
-	//					curline->Movement->Frames[i].Pos.y += float(y-parent->MouseDownY);
-	//				}
-	//			}
-	//		}
-	//		parent->MouseDownX = x;
-	//		parent->MouseDownY = y;
-	//	}
-	//}
-	#endif
+	parent->tracker->OnMouseEvent(event);
 
 	// Text of current coords
 	int vx = (sw * x + w/2) / w;
@@ -1295,209 +1158,4 @@ void VideoDisplayVisual::OnKeyEvent(wxKeyEvent &event) {
 	if (event.GetKeyCode() == 'F') SetMode(3);
 	if (event.GetKeyCode() == 'G') SetMode(4);
 	if (event.GetKeyCode() == 'H') SetMode(5);
-}
-
-
-/////////////
-// Draw line
-void VideoDisplayVisual::DrawLine(float x1,float y1,float x2,float y2) {
-	SetModeLine();
-	glBegin(GL_LINES);
-		glVertex2f(x1,y1);
-		glVertex2f(x2,y2);
-	glEnd();
-}
-
-
-///////////////
-// Draw circle
-void VideoDisplayVisual::DrawEllipse(float x,float y,float radiusX,float radiusY) {
-	//// Math
-	//int steps = int(radiusX + radiusY)*4;
-	//if (steps < 12) steps = 12;
-	//float end = 6.283185307179586476925286766559f;
-	//float step = end/steps;
-
-	//// Fill
-	//if (a2 != 0.0) {
-	//	SetModeFill();
-	//	glBegin(GL_POLYGON);
-	//	for (int i=0;i<steps;i++) glVertex2f(x+sin(i*step)*radiusX,y+cos(i*step)*radiusY);
-	//	glEnd();
-	//}
-
-	//// Outline
-	//if (a1 != 0.0) {
-	//	SetModeLine();
-	//	glBegin(GL_LINE_LOOP);
-	//	for (int i=0;i<steps;i++) glVertex2f(x+sin(i*step)*radiusX,y+cos(i*step)*radiusY);
-	//	glEnd();
-	//}
-	DrawRing(x,y,radiusY,radiusY,radiusX/radiusY);
-}
-
-
-//////////////////
-// Draw rectangle
-void VideoDisplayVisual::DrawRectangle(float x1,float y1,float x2,float y2) {
-	// Fill
-	if (a2 != 0.0) {
-		SetModeFill();
-		glBegin(GL_QUADS);
-			glVertex2f(x1,y1);
-			glVertex2f(x2,y1);
-			glVertex2f(x2,y2);
-			glVertex2f(x1,y2);
-		glEnd();
-	}
-
-	// Outline
-	if (a1 != 0.0) {
-		SetModeLine();
-		glBegin(GL_LINE_LOOP);
-			glVertex2f(x1,y1);
-			glVertex2f(x2,y1);
-			glVertex2f(x2,y2);
-			glVertex2f(x1,y2);
-		glEnd();
-	}
-}
-
-
-///////////////////////
-// Draw ring (annulus)
-void VideoDisplayVisual::DrawRing(float x,float y,float r1,float r2,float ar,float arcStart,float arcEnd) {
-	// Make r1 bigger
-	if (r2 > r1) {
-		float temp = r1;
-		r1 = r2;
-		r2 = temp;
-	}
-
-	// Arc range
-	bool hasEnds = arcStart != arcEnd;
-	float pi = 3.1415926535897932384626433832795f;
-	arcEnd *= pi / 180.f;
-	arcStart *= pi / 180.f;
-	if (arcEnd <= arcStart) arcEnd += 2.0f*pi;
-	float range = arcEnd - arcStart;
-
-	// Math
-	int steps = int((r1 + r1*ar) * range / (2.0f*pi))*4;
-	if (steps < 12) steps = 12;
-	float end = arcEnd;
-	float step = range/steps;
-	float curAngle = arcStart;
-
-	// Fill
-	if (a2 != 0.0) {
-		SetModeFill();
-
-		// Annulus
-		if (r1 != r2) {
-			glBegin(GL_QUADS);
-			for (int i=0;i<steps;i++) {
-				glVertex2f(x+sin(curAngle)*r1*ar,y+cos(curAngle)*r1);
-				glVertex2f(x+sin(curAngle)*r2*ar,y+cos(curAngle)*r2);
-				curAngle += step;
-				glVertex2f(x+sin(curAngle)*r2*ar,y+cos(curAngle)*r2);
-				glVertex2f(x+sin(curAngle)*r1*ar,y+cos(curAngle)*r1);
-			}
-			glEnd();
-		}
-
-		// Circle
-		else {
-			glBegin(GL_POLYGON);
-			for (int i=0;i<steps;i++) {
-				glVertex2f(x+sin(curAngle)*r1,y+cos(curAngle)*r1);
-				curAngle += step;
-			}
-			glEnd();
-		}
-
-		// Reset angle
-		curAngle = arcStart;
-	}
-
-	// Outlines
-	if (a1 != 0.0) {
-		// Outer
-		steps++;
-		SetModeLine();
-		glBegin(GL_LINE_STRIP);
-		for (int i=0;i<steps;i++) {
-			glVertex2f(x+sin(curAngle)*r1,y+cos(curAngle)*r1);
-			curAngle += step;
-		}
-		glEnd();
-
-		// Inner
-		if (r1 != r2) {
-			curAngle = arcStart;
-			glBegin(GL_LINE_STRIP);
-			for (int i=0;i<steps;i++) {
-				glVertex2f(x+sin(curAngle)*r2,y+cos(curAngle)*r2);
-				curAngle += step;
-			}
-			glEnd();
-
-			// End caps
-			if (hasEnds) {
-				glBegin(GL_LINES);
-					glVertex2f(x+sin(arcStart)*r1,y+cos(arcStart)*r1);
-					glVertex2f(x+sin(arcStart)*r2,y+cos(arcStart)*r2);
-					glVertex2f(x+sin(arcEnd)*r1,y+cos(arcEnd)*r1);
-					glVertex2f(x+sin(arcEnd)*r2,y+cos(arcEnd)*r2);
-				glEnd();
-			}
-		}
-	}
-}
-
-
-///////////////////
-// Set line colour
-void VideoDisplayVisual::SetLineColour(wxColour col,float alpha,int width) {
-	r1 = col.Red()/255.0f;
-	g1 = col.Green()/255.0f;
-	b1 = col.Blue()/255.0f;
-	a1 = alpha;
-	lw = width;
-}
-
-
-///////////////////
-// Set fill colour
-void VideoDisplayVisual::SetFillColour(wxColour col,float alpha) {
-	r2 = col.Red()/255.0f;
-	g2 = col.Green()/255.0f;
-	b2 = col.Blue()/255.0f;
-	a2 = alpha;
-}
-
-
-////////
-// Line
-void VideoDisplayVisual::SetModeLine() {
-	glColor4f(r1,g1,b1,a1);
-	if (a1 == 1.0f) glDisable(GL_BLEND);
-	else {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	}
-	glLineWidth(lw);
-	//glEnable(GL_LINE_SMOOTH);
-}
-
-
-////////
-// Fill
-void VideoDisplayVisual::SetModeFill() {
-	glColor4f(r2,g2,b2,a2);
-	if (a2 == 1.0f) glDisable(GL_BLEND);
-	else {
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-	}
 }

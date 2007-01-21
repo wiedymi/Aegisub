@@ -57,6 +57,7 @@ class AudioDisplay;
 class AssDialogue;
 class VideoProvider;
 class VideoDisplayVisual;
+class VideoDisplayFexTracker;
 class VideoBox;
 
 
@@ -81,16 +82,12 @@ private:
 
 public:
 	VideoDisplayVisual *visual;
+	VideoDisplayFexTracker *tracker;
 	VideoBox *box;
 
 	double arValue;
 	int arType;
 	double zoomValue;
-
-	bool bTrackerEditing;
-	int MovementEdit;
-	double TrackerEdit;
-	int MouseDownX, MouseDownY;
 
 	VideoSlider *ControlSlider;
 	wxComboBox *zoomBox;

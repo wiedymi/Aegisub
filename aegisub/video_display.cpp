@@ -61,11 +61,7 @@
 #include "main.h"
 #include "video_slider.h"
 #include "video_box.h"
-#if USE_FEXTRACKER == 1
-#include "../FexTrackerSource/FexTracker.h"
-#include "../FexTrackerSource/FexTrackingFeature.h"
-#include "../FexTrackerSource/FexMovement.h"
-#endif
+#include "video_display_fextracker.h"
 
 
 ///////
@@ -105,6 +101,10 @@ VideoDisplay::VideoDisplay(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 	arValue = 1.0;
 	zoomValue = 1.0;
 	visual = new VideoDisplayVisual(this);
+	tracker = NULL;
+#if USE_FEXTRACKER == 1
+	tracker = new VideoDisplayFexTracker(this);
+#endif
 	SetCursor(wxNullCursor);
 }
 
@@ -113,6 +113,9 @@ VideoDisplay::VideoDisplay(wxWindow* parent, wxWindowID id, const wxPoint& pos, 
 // Destructor
 VideoDisplay::~VideoDisplay () {
 	delete visual;
+#if USE_FEXTRACKER == 1
+	delete tracker;
+#endif
 	VideoContext::Get()->RemoveDisplay(this);
 }
 
@@ -286,9 +289,8 @@ void VideoDisplay::OnKey(wxKeyEvent &event) {
 // Mouse left display
 void VideoDisplay::OnMouseLeave(wxMouseEvent& event) {
 	if (VideoContext::Get()->IsPlaying()) return;
-	bTrackerEditing = 0;
-	//OnMouseEvent(event);
 	visual->OnMouseEvent(event);
+	tracker->bTrackerEditing = 0;
 }
 
 

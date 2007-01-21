@@ -1,4 +1,4 @@
-// Copyright (c) 2007, Rodrigo Braz Monteiro
+// Copyright (c) 2005-2007, Rodrigo Braz Monteiro, Hajo Krabbenhöft
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -45,47 +45,35 @@
 //////////////
 // Prototypes
 class VideoDisplay;
-class AssDialogue;
 
 
-////////////////////////
-// Visual handler class
-class VideoDisplayVisual : public OpenGLWrapper {
-	friend class VideoDisplay;
+///////////////////////////////
+// Fex tracker video interface
+class VideoDisplayFexTracker : public wxEvtHandler, public OpenGLWrapper {
+public:
+	bool bTrackerEditing;
+	int MovementEdit;
+	double TrackerEdit;
+	int MouseDownX, MouseDownY;
 
-private:
-	wxColour colour[4];
-
-	int mouseX,mouseY;
-	int startX,startY;
-	int curX,curY,curX2,curY2;
-	int origX,origY;
-	float curAngle,startAngle,origAngle;
-	float curAngle2,startAngle2,origAngle2;
-	float curScaleX,curScaleY,origScaleX,origScaleY;
-	int lineOrgX,lineOrgY;
-
-	int mode;
-	int hold;
-	bool holding;
-
-	wxString mouseText;
-	AssDialogue *curSelection;
 	VideoDisplay *parent;
 
-	void GetLinePosition(AssDialogue *diag,int &x,int &y);
-	void GetLinePosition(AssDialogue *diag,int &x,int &y,int &orgx,int &orgy);
-	void GetLineRotation(AssDialogue *diag,float &rx,float &ry,float &rz);
-	void GetLineScale(AssDialogue *diag,float &scalX,float &scalY);
-	void GetLineClip(AssDialogue *diag,int &x1,int &y1,int &x2,int &y2);
+	VideoDisplayFexTracker(VideoDisplay *parent);
 
-	void DrawOverlay();
 	void OnMouseEvent(wxMouseEvent &event);
-	void OnKeyEvent(wxKeyEvent &event);
+	void Render();
 
-public:
-	void SetMode(int mode);
+	void OnVideoTrackPoints(wxCommandEvent &event);
+	void OnVideoTrackPointAdd(wxCommandEvent &event);
+	void OnVideoTrackPointDel(wxCommandEvent &event);
+	void OnVideoTrackMovement(wxCommandEvent &event);
+	void OnVideoTrackMovementMoveAll(wxCommandEvent &event);
+	void OnVideoTrackMovementMoveOne(wxCommandEvent &event);
+	void OnVideoTrackMovementMoveBefore(wxCommandEvent &event);
+	void OnVideoTrackMovementMoveAfter(wxCommandEvent &event);
+	void OnVideoTrackSplitLine(wxCommandEvent &event);
+	void OnVideoTrackLinkFile(wxCommandEvent &event);
+	void OnVideoTrackMovementEmpty(wxCommandEvent &event);
 
-	VideoDisplayVisual(VideoDisplay *parent);
-	~VideoDisplayVisual();
+	DECLARE_EVENT_TABLE()
 };
