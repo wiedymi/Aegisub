@@ -67,14 +67,7 @@ wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISE
 	audioScroll = new wxScrollBar(this,Audio_Scrollbar);
 	audioScroll->PushEventHandler(new FocusEvent());
 	audioScroll->SetToolTip(_("Seek bar"));
-	Sash = new wxSashWindow(this,Audio_Sash,wxDefaultPosition,wxDefaultSize,wxCLIP_CHILDREN | wxSW_3DBORDER);
-	sashSizer = new wxBoxSizer(wxVERTICAL);
-	audioDisplay = new AudioDisplay(Sash);
-	sashSizer->Add(audioDisplay,1,wxEXPAND,0);
-	Sash->SetSizer(sashSizer);
-	Sash->SetSashVisible(wxSASH_BOTTOM,true);
-	//Sash->SetSashBorder(wxSASH_BOTTOM,true);
-	Sash->SetMinimumSizeY(50);
+	audioDisplay = new AudioDisplay(this);
 	audioDisplay->ScrollBar = audioScroll;
 	audioDisplay->box = this;
 	int _w,_h;
@@ -102,8 +95,8 @@ wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISE
 
 	// Display sizer
 	DisplaySizer = new wxBoxSizer(wxVERTICAL);
-	//DisplaySizer->Add(audioDisplay,1,wxEXPAND,0);
-	DisplaySizer->Add(Sash,0,wxEXPAND,0);
+	DisplaySizer->Add(audioDisplay,1,wxEXPAND,0);
+	//DisplaySizer->Add(Sash,0,wxEXPAND,0);
 	DisplaySizer->Add(audioScroll,0,wxEXPAND,0);
 
 	// VertVol sider
@@ -214,7 +207,7 @@ wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISE
 
 	// Main sizer
 	MainSizer = new wxBoxSizer(wxVERTICAL);
-	MainSizer->Add(TopSizer,0,wxEXPAND,0);
+	MainSizer->Add(TopSizer,1,wxEXPAND,0);
 	MainSizer->Add(ButtonSizer,0,wxEXPAND,0);
 	MainSizer->Add(new wxStaticLine(this),0,wxEXPAND|wxTOP|wxBOTTOM,2);
 	MainSizer->Add(karaokeSizer,0,wxEXPAND,0);

@@ -543,11 +543,9 @@ void FrameMain::InitContents() {
 	videoBox->videoDisplay->zoomBox = ZoomBox;
 	auiManager->AddPane(videoBox,wxLEFT,_("Video"));
 	wxAuiPaneInfo &vidPane = auiManager->GetPane(videoBox);
-//	vidPane.Hide();
-//	vidPane.CaptionVisible(true);
 	vidPane.BestSize(640,480);
+	vidPane.MinSize(100,100);
 	vidPane.Layer(1);
-	//TopSizer->Add(videoBox,0,wxEXPAND,0);
 
 	// Subtitles area
 	SubsBox = new SubtitlesGrid(this,this,-1,wxDefaultPosition,wxSize(600,100),wxWANTS_CHARS | wxSUNKEN_BORDER,_T("Subs grid"));
@@ -559,19 +557,28 @@ void FrameMain::InitContents() {
 	Search.grid = SubsBox;
 	wxAuiPaneInfo &subsPane = auiManager->GetPane(SubsBox);
 	subsPane.Layer(2);
+	subsPane.CloseButton(false);
+	subsPane.BestSize(600,400);
+	subsPane.MinSize(300,100);
 
 	// Audio area
 	audioBox = new AudioBox(this);
 	audioBox->frameMain = this;
 	VideoContext::Get()->audio = audioBox->audioDisplay;
 	auiManager->AddPane(audioBox,wxTOP,_("Audio"));
-	auiManager->GetPane(audioBox).Hide();
+	wxAuiPaneInfo &audioPane = auiManager->GetPane(audioBox);
+	audioPane.BestSize(600,250);
+	audioPane.MinSize(300,250);
 
 	// Edit box
 	EditBox = new SubsEditBox(this,SubsBox);
 	EditBox->audio = audioBox->audioDisplay;
 	auiManager->AddPane(EditBox,wxCENTER,_("Edit Box"));
 	wxAuiPaneInfo &editPane = auiManager->GetPane(EditBox);
+	editPane.CaptionVisible(true);
+	editPane.BestSize(400,200);
+	editPane.MinSize(300,150);
+	editPane.MaxSize(300,150);
 
 	// Done
 	auiManager->Update();
