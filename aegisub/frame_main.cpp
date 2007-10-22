@@ -495,18 +495,9 @@ void FrameMain::InitMenu() {
 ///////////////////////
 // Initialize contents
 void FrameMain::InitContents() {
+	/*
 	// Set a background panel
 	Panel = new wxPanel(this,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL | wxCLIP_CHILDREN);
-
-	// Initialize sizers
-	MainSizer = new wxBoxSizer(wxVERTICAL);
-	TopSizer = new wxBoxSizer(wxHORIZONTAL);
-	BottomSizer = new wxBoxSizer(wxHORIZONTAL);
-
-	// Video area;
-	videoBox = new VideoBox(Panel);
-	TopSizer->Add(videoBox,0,wxEXPAND,0);
-	videoBox->videoDisplay->zoomBox = ZoomBox;
 
 	// Subtitles area
 	SubsBox = new SubtitlesGrid(this,Panel,-1,wxDefaultPosition,wxSize(600,100),wxWANTS_CHARS | wxSUNKEN_BORDER,_T("Subs grid"));
@@ -542,6 +533,48 @@ void FrameMain::InitContents() {
 	SetDisplayMode(0,0);
 	Layout();
 	EditBox->TextEdit->SetFocus();
+	*/
+
+	// AUI Manager
+	auiManager = new wxAuiManager(this);
+
+	// Video area
+	videoBox = new VideoBox(this);
+	videoBox->videoDisplay->zoomBox = ZoomBox;
+	auiManager->AddPane(videoBox,wxLEFT,_("Video"));
+	wxAuiPaneInfo &vidPane = auiManager->GetPane(videoBox);
+//	vidPane.Hide();
+//	vidPane.CaptionVisible(true);
+	vidPane.BestSize(640,480);
+	vidPane.Layer(1);
+	//TopSizer->Add(videoBox,0,wxEXPAND,0);
+
+	// Subtitles area
+	SubsBox = new SubtitlesGrid(this,this,-1,wxDefaultPosition,wxSize(600,100),wxWANTS_CHARS | wxSUNKEN_BORDER,_T("Subs grid"));
+	auiManager->AddPane(SubsBox,wxBOTTOM,_("Subtitles"));
+	AssFile::StackReset();
+	videoBox->videoSlider->grid = SubsBox;
+	VideoContext::Get()->grid = SubsBox;
+	videoBox->videoDisplay->SetZoomPos(Options.AsInt(_T("Video Default Zoom")));
+	Search.grid = SubsBox;
+	wxAuiPaneInfo &subsPane = auiManager->GetPane(SubsBox);
+	subsPane.Layer(2);
+
+	// Audio area
+	audioBox = new AudioBox(this);
+	audioBox->frameMain = this;
+	VideoContext::Get()->audio = audioBox->audioDisplay;
+	auiManager->AddPane(audioBox,wxTOP,_("Audio"));
+	auiManager->GetPane(audioBox).Hide();
+
+	// Edit box
+	EditBox = new SubsEditBox(this,SubsBox);
+	EditBox->audio = audioBox->audioDisplay;
+	auiManager->AddPane(EditBox,wxCENTER,_("Edit Box"));
+	wxAuiPaneInfo &editPane = auiManager->GetPane(EditBox);
+
+	// Done
+	auiManager->Update();
 }
 
 
@@ -757,16 +790,18 @@ void FrameMain::SetDisplayMode(int _showVid,int _showAudio) {
 	VideoContext::Get()->Stop();
 
 	// Set display
-	TopSizer->Show(videoBox,showVideo,true);
-	ToolSizer->Show(audioBox,showAudio,true);
+	//TopSizer->Show(videoBox,showVideo,true);
+	//ToolSizer->Show(audioBox,showAudio,true);
+	auiManager->GetPane(videoBox).Show(showVideo);
+	auiManager->GetPane(audioBox).Show(showAudio);
+	auiManager->Update();
 
 	// Update
 	UpdateToolbar();
 	EditBox->SetSplitLineMode();
-	MainSizer->CalcMin();
-	MainSizer->RecalcSizes();
-	//videoBox->VideoSizer->Layout();
-	MainSizer->Layout();
+	//MainSizer->CalcMin();
+	//MainSizer->RecalcSizes();
+	//MainSizer->Layout();
 	Layout();
 	Show(true);
 	VideoContext::Get()->UpdateDisplays(true);

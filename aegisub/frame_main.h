@@ -48,6 +48,7 @@
 #include <wx/combobox.h>
 #include <wx/sizer.h>
 #include <wx/panel.h>
+#include <wx/aui/aui.h>
 #include <vector>
 
 
@@ -263,6 +264,7 @@ public:
 	VideoBox *videoBox;
 	DialogDetachedVideo *detachedVideo;
 
+	wxAuiManager *auiManager;
 	wxBoxSizer *MainSizer;
 	wxBoxSizer *TopSizer;
 	wxBoxSizer *BottomSizer;

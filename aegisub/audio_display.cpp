@@ -1302,6 +1302,7 @@ void AudioDisplay::OnPaint(wxPaintEvent& event) {
 	if (w == 0 || h == 0) return;
 
 	wxPaintDC dc(this);
+	if (!origImage) return;
 	dc.DrawBitmap(*origImage,0,0);
 }
 
