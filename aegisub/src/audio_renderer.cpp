@@ -40,6 +40,7 @@
 #include <wx/dcmemory.h>
 #endif
 
+#include "block_cache.h"
 #include "audio_renderer.h"
 #include "include/aegisub/audio_provider.h"
 

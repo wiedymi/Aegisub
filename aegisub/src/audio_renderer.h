@@ -43,8 +43,6 @@
 #include <wx/gdicmn.h>
 #endif
 
-#include "block_cache.h"
-
 
 // Some forward declarations for outside stuff
 class AudioProvider;

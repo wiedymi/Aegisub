@@ -50,269 +50,231 @@
 
 #include "audio_player_manager.h"
 #include "audio_provider_manager.h"
-#include "audio_renderer_spectrum.h"
+#include "audio_controller.h"
 
 
 //////////////
 // Prototypes
-class AssDialogue;
-class StreamAudioProvider;
-class SubtitlesGrid;
-class AudioBox;
+class AudioRenderer;
+class AudioSpectrumRenderer;
 class AudioKaraoke;
-class VideoProvider;
-class FrameMain;
+class AudioProvider;
+class AudioPlayer;
+
+class AudioBox;
+class SubtitlesGrid;
+class AssDialogue;
+class wxScrollBar;
 
 
 
-/// DOCME
+
 /// @class AudioDisplay
-/// @brief DOCME
+/// @brief Control that displays audio and lets the user create selections
 ///
-/// DOCME
-class AudioDisplay: public wxWindow {
-	friend class FrameMain;
+/// Everyone hates this class.
+class AudioDisplay: public wxWindow, private AudioControllerEventListener {
 private:
 
-	/// DOCME
-	SubtitlesGrid *grid;
+	/// The audio renderer manager
+	AudioRenderer *audio_renderer;
 
-	/// DOCME
-	int line_n;
-
-	/// DOCME
-	AssDialogue *dialogue;
+	/// The renderer for audio spectrums
+	AudioSpectrumRenderer *audio_spectrum_renderer;
 
 
-	/// DOCME
-	AudioSpectrum *spectrumRenderer;
+	/// Leftmost pixel in the vitual audio image being displayed
+	int scroll_left;
 
+	/// Horizontal zoom measured in audio samples per pixel
+	int pixel_samples;
 
-	/// DOCME
-	wxBitmap *origImage;
+	/// Amplitude scaling ("vertical zoom") as a factor, 1.0 is neutral
+	float scale_amplitude;
 
-	/// DOCME
-	wxBitmap *spectrumDisplay;
-
-	/// DOCME
-	wxBitmap *spectrumDisplaySelected;
-
-	/// DOCME
-	int64_t PositionSample;
-
-	/// DOCME
-	float scale;
-
-	/// DOCME
-	int samples;
-
-	/// DOCME
-	int64_t Position;
-
-	/// DOCME
-	int samplesPercent;
-
-	/// DOCME
-	int oldCurPos;
-
-	/// DOCME
-	bool hasFocus;
-
-	/// DOCME
-	bool blockUpdate;
-
-	/// DOCME
-	bool dontReadTimes;
-
-	/// DOCME
-	bool playingToEnd;
-
-
-	/// DOCME
-	bool needImageUpdate;
-
-	/// DOCME
-	bool needImageUpdateWeak;
-
-
-	/// DOCME
-	bool hasSel;
-
-	/// DOCME
-	bool hasKaraoke;
-
-	/// DOCME
-	bool diagUpdated;
-
-	/// DOCME
-	bool holding;
-
-	/// DOCME
-	bool draggingScale;
-
-	/// DOCME
-	int64_t selStart;
-
-	/// DOCME
-	int64_t selEnd;
-
-	/// DOCME
-	int64_t lineStart;
-
-	/// DOCME
-	int64_t lineEnd;
-
-	/// DOCME
-	int64_t selStartCap;
-
-	/// DOCME
-	int64_t selEndCap;
-
-	/// DOCME
-	int hold;
-
-	/// DOCME
-	int lastX;
-
-	/// DOCME
-	int lastDragX;
-
-	/// DOCME
-	int curStartMS;
-
-	/// DOCME
-	int curEndMS;
-
-	/// DOCME
-	int holdSyl;
-
-
-	/// DOCME
-	int *peak;
-
-	/// DOCME
-	int *min;
-
-
-	/// DOCME
-	int scrubTime;
-
-	/// DOCME
-	int64_t scrubLastPos;
-
-	/// DOCME
-	bool scrubbing;
-
-	/// DOCME
-	int scrubLastRate;
 
 	void OnPaint(wxPaintEvent &event);
 	void OnMouseEvent(wxMouseEvent &event);
 	void OnSize(wxSizeEvent &event);
-	void OnUpdateTimer(wxTimerEvent &event);
 	void OnKeyDown(wxKeyEvent &event);
-	void OnGetFocus(wxFocusEvent &event);
-	void OnLoseFocus(wxFocusEvent &event);
 
-	void UpdateSamples();
-	void Reset();
-	void DrawTimescale(wxDC &dc);
-	void DrawKeyframes(wxDC &dc);
-	void DrawInactiveLines(wxDC &dc);
-	void DrawWaveform(wxDC &dc,bool weak);
-	void DrawSpectrum(wxDC &dc,bool weak);
-	void GetDialoguePos(int64_t &start,int64_t &end,bool cap);
-	void GetKaraokePos(int64_t &start,int64_t &end,bool cap);
-	void UpdatePosition(int pos,bool IsSample=false);
 
-	int GetBoundarySnap(int x,int range,bool shiftHeld,bool start=true);
-	void DoUpdateImage();
+private:
+	// AudioControllerEventListener implementation
+	virtual void OnAudioOpen(AudioProvider *provider);
+	virtual void OnAudioClose();
+	virtual void OnMarkersMoved();
+	virtual void OnSelectionChanges();
+	virtual void OnPlaybackPosition(int64_t sample_position);
+	virtual void OnPlaybackStop();
+
+public:
+	// Here's all kinds of stuff other parts depend on
+	// Annotating where each field or function is referenced
+
+
+	/// Things have changed and a commit is required
+	// audio_karaoke.cpp 667 715 927
+	bool NeedCommit;
+
+	/// Is the audio provider a temporary one (linked to the video provider)?
+	// video_context.cpp 178 183
+	bool temporary;
+
+	/// Is any audio loaded?
+	// video_context.cpp 382
+	// dialog_translation.cpp 135 412
+	// frame_main_events.cpp 296 1967 1989
+	// dialog_styling_assistant.cpp 276 456
+	// frame_main.cpp 1348
+	// base_grid.cpp 1158
+	// subs_grid.cpp 206
+	bool loaded;
+
+	/// Current start something in milliseconds
+	// frame_main_events.cpp  2035 2045
+	int curStartMS;
+
+	/// Current end something in milliseconds
+	// frame_main_events.cpp 2055 2065
+	int curEndMS;
+
+
+	/// Do a commit
+	// audio_karaoke.cpp 928
+	// audio_box.cpp 568
+	// frame_main_events.cpp 2107
+	void CommitChanges(bool) { }
+	void CommitChanges() { }
+
+	/// Set amplitude scaling
+	// audio_box.cpp 346
+	void SetScale(float) { }
+
+	/// Get the selection start and end times
+	// audio_box.cpp 445 502 514 526 540 554
+	// frame_main_events.cpp 2009 2026 2076 2085
+	void GetTimesSelection(int &, int &) { }
+
+	/// Start playback
+	// audio_box.cpp 446 459 503 515 529 543 555
+	// video_context.cpp 689 711
+	// dialog_translation.cpp 413 445
+	// frame_main_events.cpp 2010 2027 2077 2086
+	// dialog_styling_assistant.cpp 387 457
+	void Play(int, int) { }
+
+	/// Get the stored start and end times for the current dialogue line
+	// audio_box.cpp 457
+	void GetTimesDialogue(int &, int &) { }
+
+	/// Set the selection start and end
+	// audio_box.cpp 458
+	void SetSelection(int, int) { }
+
+	/// Stop playback
+	// audio_box.cpp 469 479 490
+	// video_context.cpp 738
+	// frame_main_events.cpp 1605 2019
+	void Stop() { }
+
+	/// Switch to the next line (or syllable if in karaoke mode)
+	// audio_box.cpp 480
+	// frame_main_events.cpp 2093
+	void Next(bool) { }
+	void Next() { }
+
+	/// Switch to the previous line (or syllable if in karaoke mode)
+	// audio_box.cpp 491
+	// frame_main_events.cpp 2100
+	void Prev(bool) { }
+	void Prev() { }
+
+	/// Switch dialogue line
+	// subs_edit_box.cpp 298 798 1051
+	// audio_box.cpp 588 596
+	void SetDialogue(SubtitlesGrid *, AssDialogue *, int) { }
+	void SetDialogue() { }
+
+	/// Update image back buffer
+	// video_context.cpp 384
+	// audio_box.cpp 729
+	void UpdateImage(bool) { }
+
+	/// Ensure the current dialogue line is visible to the user
+	// audio_box.cpp 673
+	void MakeDialogueVisible(bool) { }
+
+	/// Add lead in and/or lead out
+	// audio_box.cpp 741 750
+	void AddLead(bool, bool) { }
+
+	/// Get the sample number for the time in milliseconds
+	// video_context.cpp 780 789
+	// subs_grid.cpp 736 738
+	int GetSampleAtMS(int) { return 0; }
+
+	/// Push selection times to time edit controls
+	// frame_main_events.cpp 2038 2048 2058 2068
+	void UpdateTimeEditCtrls() { }
+
+	/// Reloads the audio provider
+	// dialog_options.cpp 1002
+	void Reload() { }
+
+	/// Recreates the back buffer image
+	// dialog_options.cpp 1006
+	void RecreateImage() { }
+
+	/// Scrolls or something to the position given in some measure
+	// audio_box.cpp 324
+	void SetPosition(int) { }
+
+	/// Attempts to load the current video as an audio file
+	// audio_box.cpp 264
+	void SetFromVideo() { }
+
+	/// Loads audio from the given file
+	// audio_box.cpp 270
+	void SetFile(const wxString &) { }
+
+	/// Set horizontal zoom level in percent of the total audio length
+	// audio_box.cpp 333
+	void SetSamplesPercent(int) { }
+
+
+	/// Karaoke control and controller
+	AudioKaraoke *karaoke;
+
+	/// Audio provider, owned unless temporary
+	// video_context.cpp 179 180 788 793
+	// subs_grid.cpp 727
+	AudioProvider *provider;
+
+	/// Audio player, owned
+	// audio_box.cpp 348 363 378
+	// video_context.cpp 181 182 780 788 790 794
+	// frame_main_events.cpp 2018
+	AudioPlayer *player;
+
+	/// When triggered, updates playback position
+	wxTimer UpdateTimer;
+
+	/// The audio box
+	// dialog_styling_assistant.cpp 75
+	AudioBox *box;
+
+	/// Scroll bar used to scroll the view
+	// audio_box.cpp 81
+	wxScrollBar *ScrollBar;
+
 
 public:
 
-	/// DOCME
-	AudioProvider *provider;
-
-	/// DOCME
-	StreamAudioProvider *scrubProvider;
-
-	/// DOCME
-	AudioPlayer *player;
-
-
-	/// DOCME
-	bool NeedCommit;
-
-	/// DOCME
-	bool loaded;
-
-	/// DOCME
-	bool temporary;
-
-	/// DOCME
-
-	/// DOCME
-	int w,h;
-
-	/// DOCME
-	AudioBox *box;
-
-	/// DOCME
-	AudioKaraoke *karaoke;
-
-	/// DOCME
-	wxScrollBar *ScrollBar;
-
-	/// DOCME
-	wxTimer UpdateTimer;
-
 	AudioDisplay(wxWindow *parent);
 	~AudioDisplay();
-
-	void UpdateImage(bool weak=false);
-	void Update();
-	void RecreateImage();
-	void SetPosition(int pos);
-	void SetSamplesPercent(int percent,bool update=true,float pivot=0.5);
-	void SetScale(float scale);
-	void UpdateScrollbar();
-	void SetDialogue(SubtitlesGrid *_grid=NULL,AssDialogue *diag=NULL,int n=-1);
-	void MakeDialogueVisible(bool force=false);
-	void ChangeLine(int delta, bool block=false);
-	void Next(bool play=true);
-	void Prev(bool play=true);
-
-	void UpdateTimeEditCtrls();
-	void CommitChanges(bool nextLine=false);
-	void AddLead(bool in,bool out);
-
-	void SetFile(wxString file);
-	void SetFromVideo();
-	void Reload();
-
-	void Play(int start,int end);
-	void Stop();
-
-	int64_t GetSampleAtX(int x);
-	int GetXAtSample(int64_t n);
-	int GetMSAtX(int64_t x);
-	int GetXAtMS(int64_t ms);
-	int GetMSAtSample(int64_t x);
-	int64_t GetSampleAtMS(int64_t ms);
-	int GetSyllableAtX(int x);
-
-	void GetTimesDialogue(int &start,int &end);
-	void GetTimesSelection(int &start,int &end);
-	void SetSelection(int start, int end);
 
 	DECLARE_EVENT_TABLE()
 };
 
 
-///////
-// IDs
-enum {
-
-	/// DOCME
-	Audio_Update_Timer = 1700
-};

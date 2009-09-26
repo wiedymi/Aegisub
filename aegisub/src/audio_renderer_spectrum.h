@@ -1,5 +1,4 @@
-// Copyright (c) 2005, 2006, Rodrigo Braz Monteiro
-// Copyright (c) 2006, 2007, Niels Martin Hansen
+// Copyright (c) 2009, Niels Martin Hansen
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -37,72 +36,147 @@
 /// Calculate and render a frequency-power spectrum for PCM audio data.
 
 
-
-
-#ifndef AGI_PRE
 #include <stdint.h>
-#endif
-
-#include "audio_provider_manager.h"
 
 
-// Specified and implemented in cpp file, interface is private to spectrum code
-class AudioSpectrumCacheManager;
 
-
-/// @class AudioSpectrum
-/// @brief Render frequency-power spectrum graphs for audio data.
+/// @class AudioSpectrumColorMap
+/// @brief Provides colour maps for audio spectrum rendering
 ///
-/// Renders frequency-power spectrum graphs of PCM audio data using a fast fourier transform
-/// to derive the data. The frequency-power data are cached to avoid re-computing them
-/// frequently, and the cache size is limited by a configuration setting.
+/// Maps values from floats in range 0..1 into RGB colour values.
 ///
-/// The spectrum image is rendered to a 32 bit RGB bitmap. Power data is scaled linearly
-/// and not logarithmically, since the rendering is done with limited precision, but
-/// an amplification factor can be specified to see different ranges.
-class AudioSpectrum {
-private:
+/// First create an instance of this class, then call an initialisation function
+/// in it to fill the palette with a colour map.
+///
+/// @todo Let consumers of this class specify their own palette generation function.
+class AudioSpectrumColorMap {
+	/// The palette data for the map
+	unsigned char *palette;
 
-	/// Internal cache management for the spectrum
-	AudioSpectrumCacheManager *cache;
-
-	/// Colour table used for regular rendering
-	unsigned char colours_normal[256*3];
-
-	/// Colour table used for rendering the audio selection
-	unsigned char colours_selected[256*3];
-
-	/// The audio provider to use as source
-	AudioProvider *provider;
-
-	unsigned long line_length; ///< Number of frequency components per line (half of number of samples)
-	unsigned long num_lines;   ///< Number of lines needed for the audio
-	unsigned int fft_overlaps; ///< Number of overlaps used in FFT
-	float power_scale;         ///< Amplification of displayed power
-	int minband;               ///< Smallest frequency band displayed
-	int maxband;               ///< Largest frequency band displayed
+	/// Factor to multiply 0..1 values by to map them into the palette range
+	size_t factor;
 
 public:
 	/// @brief Constructor
-	/// @param _provider Audio provider to render spectrum data for.
+	/// @param prec Bit precision to create the colour map with
 	///
-	/// Reads configuration data for the spectrum display and initialises itself following that.
-	AudioSpectrum(AudioProvider *_provider);
+	/// Allocates the palette array to 2^prec entries
+	AudioSpectrumColorMap(int prec)
+		: palette(new unsigned char[(4<<prec) + 4])
+		, factor(1<<prec)
+	{
+	}
+
 	/// @brief Destructor
-	~AudioSpectrum();
+	///
+	/// De-allocates the palette array
+	~AudioSpectrumColorMap()
+	{
+		delete[] palette;
+	}
 
-	/// @brief Render a range of audio spectrum to a bitmap buffer.
-	/// @param range_start First audio sample in the range to render.
-	/// @param range_end   Last audio sample in the range to render.
-	/// @param selected    Use the alternate colour palette?
-	/// @param img         Pointer to 32 bit RGBX data
-	/// @param imgleft     Offset from left edge of bitmap to render to, in pixels
-	/// @param imgwidth    Width of bitmap to render, in pixels
-	/// @param imgpitch    Offset from one scanline to the next in the bitmap, in bytes
-	/// @param imgheight   Number of lines in the bitmap
-	void RenderRange(int64_t range_start, int64_t range_end, bool selected, unsigned char *img, int imgleft, int imgwidth, int imgpitch, int imgheight);
+	/// @brief Initialise the palette to the Aegisub 2.1 "Icy Blue" scheme (unselected)
+	void InitIcyBlue_Normal();
+	/// @brief Initialise the palette to the Aegisub 2.1 "Icy Blue" scheme (selected)
+	void InitIcyBlue_Selected();
 
-	/// @brief Set the amplification to use when rendering.
-	/// @param _power_scale Amplification factor to use.
-	void SetScaling(float _power_scale);
+	/// @brief Map a floating point value to RGB
+	/// @param val   [in] The value to map from
+	/// @param pixel [out] First byte of the pixel to write
+	///
+	/// Writes into the XRGB pixel (assumed 32 bit without alpha) passed.
+	/// The pixel format is assumed to be the same as that in the palette.
+	inline void map(float val, unsigned char *pixel)
+	{
+		// This is going to be *slow* in builds with asserts enabled!
+		assert(val >= 0.0);
+		assert(val <= 1.0);
+		// Find the colour in the palette
+		unsigned char *color = palette + ((int)(val*factor) * 4);
+		// Copy to the destination
+		*(uint32_t*)(pixel) = *(uint32_t*)(color);
+	}
+};
+
+
+
+// Specified and implemented in cpp file, to avoid pulling in too much
+// complex template code in this header.
+class AudioSpectrumCache;
+struct AudioSpectrumCacheBlockFactory;
+
+
+
+/// @class AudioSpectrumRenderer
+/// @brief Render frequency-power spectrum graphs for audio data.
+///
+/// Renders frequency-power spectrum graphs of PCM audio data using a derivation function
+/// such as the fast fourier transform.
+class AudioSpectrumRenderer : public AudioRendererBitmapProvider {
+	friend struct AudioSpectrumCacheBlockFactory;
+
+	/// Internal cache management for the spectrum
+	AudioSpectrumCache *cache;
+
+	/// Colour table used for regular rendering
+	AudioSpectrumColorMap colors_normal;
+
+	/// Colour table used for rendering the audio selection
+	AudioSpectrumColorMap colors_selected;
+
+	/// Binary logarithm of number of samples to use in deriving frequency-power data
+	size_t derivation_size;
+
+	/// Binary logarithm of number of samples between the start of derivations
+	size_t derivation_dist;
+
+	/// @brief Reset in response to changing audio provider
+	///
+	/// Overrides the OnSetProvider event handler in the base class, to reset things
+	/// when the audio provider is changed.
+	void OnSetProvider();
+
+	/// @brief Recreates the cache
+	///
+	/// To be called when the number of blocks in cache might have changed,
+	// eg. new audio provider or new resolution.
+	void RecreateCache();
+
+	/// @brief Fill a block with frequency-power data for a time range
+	/// @param      block_index Index of the block to fill data for
+	/// @param[out] block       Address to write the data to
+	void FillBlock(size_t block_index, float *block);
+
+	/// Pre-allocated scratch area for doing FFT derivations
+	float *fft_scratch;
+	/// Pre-allocates scratch area for storing raw audio data
+	int16_t *audio_scratch;
+
+public:
+	/// @brief Constructor
+	AudioSpectrumRenderer();
+
+	/// @brief Destructor
+	~AudioSpectrumRenderer();
+
+	/// @brief Render a range of audio spectrum
+	/// @param bmp      [in,out] Bitmap to render into, also carries lenght information
+	/// @param start    First column of pixel data in display to render
+	/// @param selected Whether to use the alternate colour scheme
+	void Render(wxBitmap &bmp, int start, bool selected);
+
+	/// @brief Set the derivation resolution
+	/// @param derivation_size Binary logarithm of number of samples to use in deriving frequency-power data
+	/// @param derivation_dist Binary logarithm of number of samples between the start of derivations
+	///
+	/// The derivations done will each use 2^derivation_size audio samples and at a distance
+	/// of 2^derivation_dist samples.
+	///
+	/// The derivation distance must be smaller than or equal to the size. If the distance
+	/// is specified too large, it will be clamped to the size.
+	void SetResolution(size_t derivation_size, size_t derivation_dist);
+
+	/// @brief Cleans up the cache
+	/// @param max_size Maximum size in bytes for the cache
+	void AgeCache(size_t max_size);
 };

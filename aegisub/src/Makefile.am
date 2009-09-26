@@ -196,6 +196,7 @@ aegisub_2_2_SOURCES = \
 	ass_style_storage.cpp \
 	ass_time.cpp \
 	audio_box.cpp \
+	audio_controller.cpp \
 	audio_display.cpp \
 	audio_karaoke.cpp \
 	audio_provider.cpp \

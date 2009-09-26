@@ -752,6 +752,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\block_cache.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\charset_conv.cpp"
 				>
 			</File>
@@ -1773,6 +1777,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\audio_box.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio_controller.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio_controller.h"
 				>
 			</File>
 			<File
