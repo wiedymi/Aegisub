@@ -205,11 +205,14 @@ void AudioController::ChangePlaybackEnd(int64_t end_sample)
 int64_t AudioController::GetPlaybackPosition()
 {
 	if (!IsPlaying()) return 0;
+	return 0;
 }
 
 
 int64_t AudioController::SamplesFromMilliseconds(int64_t ms) const
 {
+	/// @todo There might be some subtle rounding errors here.
+
 	if (!provider) return 0;
 
 	int64_t sr = provider->GetSampleRate();
@@ -222,6 +225,8 @@ int64_t AudioController::SamplesFromMilliseconds(int64_t ms) const
 
 int64_t AudioController::MillisecondsFromSamples(int64_t samples) const
 {
+	/// @todo There might be some subtle rounding errors here.
+
 	if (!provider) return 0;
 
 	int64_t sr = provider->GetSampleRate();
