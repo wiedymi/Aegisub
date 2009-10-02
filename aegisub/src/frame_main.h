@@ -103,9 +103,6 @@ private:
 
 
 	/// DOCME
-	bool blockAudioLoad;
-
-	/// DOCME
 	bool blockVideoLoad;
 
 
@@ -323,7 +320,6 @@ private:
 	void OnMedusaPrev(wxCommandEvent &event);
 
 	void LoadVideo(wxString filename,bool autoload=false);
-	void LoadAudio(wxString filename,bool FromVideo=false);
 	void LoadVFR(wxString filename);
 	void SaveVFR(wxString filename);
 	void LoadSubtitles(wxString filename,wxString charset=_T(""));

@@ -133,8 +133,7 @@ FrameMain::FrameMain (wxArrayString args)
 	// Initialize flags
 	HasSelection = false;
 	menuCreated = false;
-	blockAudioLoad = false;
-	blockAudioLoad = false;
+	blockVideoLoad = false;
 
 	StartupLog(_T("Install PNG handler"));
 	// Create PNG handler
@@ -1036,9 +1035,8 @@ void FrameMain::SynchronizeProject(bool fromSubs) {
 			}
 
 			// Audio
-			if (curSubsAudio != audioBox->audioName) {
-				if (curSubsAudio == _T("?video")) LoadAudio(_T(""),true);
-				else LoadAudio(curSubsAudio);
+			if (curSubsAudio != audioController->GetAudioURL()) {
+				audioController->OpenAudio(curSubsAudio);
 			}
 
 			// Automation scripts
@@ -1213,35 +1211,6 @@ void FrameMain::LoadVideo(wxString file,bool autoload) {
 
 	DetachVideo(VideoContext::Get()->IsLoaded() && Options.AsBool(_T("Detached Video")));
 	Thaw();
-}
-
-
-
-/// @brief Loads audio 
-/// @param filename  
-/// @param FromVideo 
-/// @return 
-///
-void FrameMain::LoadAudio(wxString filename,bool FromVideo) {
-	if (blockAudioLoad) return;
-	VideoContext::Get()->Stop();
-	try {
-		audioBox->SetFile(filename,FromVideo);
-		SetDisplayMode(-1,-1);
-	}
-	catch (const wchar_t *error) {
-		wxString err(error);
-		wxMessageBox(err, _T("Error opening audio file"), wxOK | wxICON_ERROR, this);
-	}
-	#ifdef WITH_AVISYNTH
-	catch (AvisynthError err) {
-		wxMessageBox (wxString(_T("AviSynth error: ")) + wxString(err.msg,wxConvUTF8), _T("Error loading audio"), wxOK | wxICON_ERROR);
-		return;
-	}
-	#endif
-	catch (...) {
-		wxMessageBox(_T("Unknown error"), _T("Error opening audio file"), wxOK | wxICON_ERROR, this);
-	}
 }
 
 
@@ -1440,7 +1409,6 @@ bool FrameMain::LoadList(wxArrayString list) {
 	}
 
 	// Set blocking
-	blockAudioLoad = (audio != _T(""));
 	blockVideoLoad = (video != _T(""));
 
 	// Load files
@@ -1451,10 +1419,7 @@ bool FrameMain::LoadList(wxArrayString list) {
 		blockVideoLoad = false;
 		LoadVideo(video);
 	}
-	if (blockAudioLoad) {
-		blockAudioLoad = false;
-		LoadAudio(audio);
-	}
+	audioController->OpenAudio(audio);
 
 	// Result
 	return ((subs != _T("")) || (audio != _T("")) || (video != _T("")));

@@ -562,7 +562,7 @@ void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
 void FrameMain::OnOpenRecentAudio(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Audio_Recent;
 	wxString key = _T("Recent aud #") + wxString::Format(_T("%i"),number+1);
-	LoadAudio(Options.AsText(key));
+	audioController->OpenAudio(Options.AsText(key));
 }
 
 
@@ -708,7 +708,7 @@ void FrameMain::OnOpenAudio (wxCommandEvent& WXUNUSED(event)) {
 				 + _("All files") + _T(" (*.*)|*.*");
 	wxString filename = wxFileSelector(_("Open audio file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (!filename.empty()) {
-		LoadAudio(filename);
+		audioController->OpenAudio(filename);
 		Options.SetText(_T("Last open audio path"), filename);
 		Options.Save();
 	}
@@ -720,7 +720,7 @@ void FrameMain::OnOpenAudio (wxCommandEvent& WXUNUSED(event)) {
 /// @param event 
 ///
 void FrameMain::OnOpenAudioFromVideo (wxCommandEvent& WXUNUSED(event)) {
-	LoadAudio(_T(""),true);
+	audioController->OpenAudio(_T("audio-video:cache"));
 }
 
 
@@ -729,7 +729,7 @@ void FrameMain::OnOpenAudioFromVideo (wxCommandEvent& WXUNUSED(event)) {
 /// @param event 
 ///
 void FrameMain::OnCloseAudio (wxCommandEvent& WXUNUSED(event)) {
-	LoadAudio(_T(""));
+	audioController->CloseAudio();
 }
 
 #ifdef _DEBUG
@@ -738,14 +738,14 @@ void FrameMain::OnCloseAudio (wxCommandEvent& WXUNUSED(event)) {
 /// @param event 
 ///
 void FrameMain::OnOpenDummyAudio (wxCommandEvent& WXUNUSED(event)) {
-	LoadAudio(_T("?dummy"));
+	audioController->OpenAudio(_T("dummy-audio:silence?sr=44100&bd=16&ch=1&ln=396900000"));
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnOpenDummyNoiseAudio (wxCommandEvent& WXUNUSED(event)) {
-	LoadAudio(_T("?noise"));
+	audioController->OpenAudio(_T("dummy-audio:noise?sr=44100&bd=16&ch=1&ln=396900000"));
 }
 #endif
 
