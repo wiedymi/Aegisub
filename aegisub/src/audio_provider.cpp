@@ -43,7 +43,8 @@
 #include <wx/thread.h>
 #endif
 
-#include "audio_display.h"
+#include "audio_provider_manager.h"
+#include "include/aegisub/audio_provider.h"
 #ifdef WITH_AVISYNTH
 #include "audio_provider_avs.h"
 #endif

@@ -48,7 +48,9 @@
 #include <wx/laywin.h> // Keep this last so wxSW_3D is set.
 #endif
 
+#include "include/aegisub/audio_player.h"
 #include "audio_box.h"
+#include "audio_controller.h"
 #include "audio_display.h"
 #include "audio_karaoke.h"
 #include "frame_main.h"

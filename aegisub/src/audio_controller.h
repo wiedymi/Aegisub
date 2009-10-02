@@ -44,6 +44,8 @@
 
 #include <set>
 
+#define AGI_AUDIO_CONTROLLER_INCLUDED 1
+
 
 class AudioDisplay;
 class AudioPlayer;

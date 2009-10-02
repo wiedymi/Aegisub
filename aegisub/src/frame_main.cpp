@@ -54,6 +54,7 @@
 
 #include "ass_file.h"
 #include "audio_box.h"
+#include "audio_controller.h"
 #include "audio_display.h"
 #ifdef WITH_AUTOMATION
 #include "auto4_base.h"
@@ -145,6 +146,9 @@ FrameMain::FrameMain (wxArrayString args)
 	StartupLog(_T("Create local Automation script manager"));
 	local_scripts = new Automation4::ScriptManager();
 #endif
+
+	// Contexts and controllers
+	audioController = new AudioController;
 
 	// Create menu and tool bars
 	StartupLog(_T("Apply saved Maximized state"));
@@ -243,6 +247,7 @@ FrameMain::FrameMain (wxArrayString args)
 ///
 FrameMain::~FrameMain () {
 	DeInitContents();
+	delete audioController;
 #ifdef WITH_AUTOMATION
 	delete local_scripts;
 #endif

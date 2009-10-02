@@ -65,6 +65,7 @@ class VideoBox;
 class DialogDetachedVideo;
 class DialogStyling;
 class AegisubFileDropTarget;
+class AudioController;
 
 /// DOCME
 namespace Automation4 { class FeatureMacro; class ScriptManager; };
@@ -351,6 +352,9 @@ public:
 
 	/// DOCME
 	DialogStyling *stylingAssistant;
+
+	/// The audio controller for the open project
+	AudioController *audioController;
 
 
 	/// DOCME

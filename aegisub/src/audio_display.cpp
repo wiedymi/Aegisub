@@ -39,6 +39,7 @@
 // Headers
 #include "config.h"
 
+#include "audio_controller.h"
 #include "audio_display.h"
 
 

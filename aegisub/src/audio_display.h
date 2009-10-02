@@ -35,9 +35,6 @@
 ///
 
 
-#pragma once
-
-
 ///////////
 // Headers
 #ifndef AGI_PRE
@@ -48,9 +45,10 @@
 #include <wx/window.h>
 #endif
 
-#include "audio_player_manager.h"
-#include "audio_provider_manager.h"
-#include "audio_controller.h"
+
+#ifndef AGI_AUDIO_CONTROLLER_INCLUDED
+#error You must include "audio_controller.h" before "audio_display.h"
+#endif
 
 
 //////////////

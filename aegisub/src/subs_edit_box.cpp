@@ -48,6 +48,7 @@
 #include "ass_file.h"
 #include "ass_override.h"
 #include "ass_style.h"
+#include "audio_controller.h"
 #include "audio_display.h"
 #include "dialog_colorpicker.h"
 #include "dialog_search_replace.h"

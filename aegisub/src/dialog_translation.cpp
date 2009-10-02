@@ -45,6 +45,7 @@
 
 #include "ass_dialogue.h"
 #include "ass_file.h"
+#include "audio_controller.h"
 #include "audio_display.h"
 #include "dialog_translation.h"
 #include "frame_main.h"

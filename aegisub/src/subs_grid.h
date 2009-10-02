@@ -49,9 +49,6 @@
 #include <wx/wx.h>
 #endif
 
-#include "audio_box.h"
-#include "audio_display.h"
-#include "audio_provider_manager.h"
 #include "base_grid.h"
 
 
