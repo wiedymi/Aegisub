@@ -66,6 +66,9 @@ void AudioController::OpenAudio(const wxString &url)
 {
 	CloseAudio();
 
+	if (!url)
+		throw Aegisub::InternalError(_T("AudioController::OpenAudio() was passed an empty string. This must not happen."));
+
 	wxString path_part;
 	AudioProvider *new_provider = 0;
 
