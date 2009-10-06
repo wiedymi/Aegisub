@@ -44,6 +44,8 @@
 #include "audio_controller.h"
 #include "include/aegisub/audio_provider.h"
 #include "include/aegisub/audio_player.h"
+#include "audio_provider_manager.h"
+#include "audio_player_manager.h"
 #include "audio_provider_dummy.h"
 
 
@@ -67,7 +69,7 @@ void AudioController::OpenAudio(const wxString &url)
 	CloseAudio();
 
 	if (!url)
-		throw Aegisub::InternalError(_T("AudioController::OpenAudio() was passed an empty string. This must not happen."));
+		throw Aegisub::InternalError(_T("AudioController::OpenAudio() was passed an empty string. This must not happen."), 0);
 
 	wxString path_part;
 	AudioProvider *new_provider = 0;
@@ -133,7 +135,27 @@ void AudioController::OpenAudio(const wxString &url)
 			throw Aegisub::AudioOpenError(
 				_T("Failed opening audio file (parsing as plain filename)"),
 				&(Aegisub::FileNotFoundError(url)));
+		provider = AudioProviderFactoryManager::GetAudioProvider(url);
 	}
+
+	try
+	{
+		player = AudioPlayerFactoryManager::GetAudioPlayer();
+		player->SetProvider(provider);
+		player->OpenStream();
+	}
+	catch (...)
+	{
+		delete player;
+		delete provider;
+		player = 0;
+		provider = 0;
+		throw;
+	}
+
+	PlayToEnd(0);
+
+	/// @todo Tell listeners about this.
 }
 
 
@@ -177,18 +199,27 @@ void AudioController::RemoveListener(AudioControllerEventListener *listener)
 void AudioController::PlayRange(const AudioController::SampleRange &range)
 {
 	if (!IsAudioOpen()) return;
+
+	player->Play(range.begin(), range.length());
+	playback_mode = PM_Range;
 }
 
 
 void AudioController::PlayToEnd(int64_t start_sample)
 {
 	if (!IsAudioOpen()) return;
+
+	player->Play(start_sample, provider->GetNumSamples()-start_sample);
+	playback_mode = PM_ToEnd;
 }
 
 
 void AudioController::Stop()
 {
 	if (!IsAudioOpen()) return;
+
+	player->Stop();
+	playback_mode = PM_NotPlaying;
 }
 
 
@@ -202,13 +233,16 @@ void AudioController::ChangePlaybackEnd(int64_t end_sample)
 {
 	if (!IsAudioOpen()) return;
 	if (playback_mode != PM_Range) return;
+
+	player->SetEndPosition(end_sample);
 }
 
 
 int64_t AudioController::GetPlaybackPosition()
 {
 	if (!IsPlaying()) return 0;
-	return 0;
+
+	return player->GetCurrentPosition();
 }
 
 
