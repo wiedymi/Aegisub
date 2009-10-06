@@ -1419,7 +1419,8 @@ bool FrameMain::LoadList(wxArrayString list) {
 		blockVideoLoad = false;
 		LoadVideo(video);
 	}
-	audioController->OpenAudio(audio);
+	if (!audio.IsEmpty())
+		audioController->OpenAudio(audio);
 
 	// Result
 	return ((subs != _T("")) || (audio != _T("")) || (video != _T("")));
