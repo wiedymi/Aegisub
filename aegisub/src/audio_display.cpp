@@ -67,36 +67,6 @@ AudioDisplay::~AudioDisplay()
 }
 
 
-void AudioDisplay::OnAudioOpen(AudioProvider *provider)
-{
-}
-
-
-void AudioDisplay::OnAudioClose()
-{
-}
-
-
-void AudioDisplay::OnMarkersMoved()
-{
-}
-
-
-void AudioDisplay::OnSelectionChanges()
-{
-}
-
-
-void AudioDisplay::OnPlaybackPosition(int64_t sample_position)
-{
-}
-
-
-void AudioDisplay::OnPlaybackStop()
-{
-}
-
-
 
 //void AudioDisplay::UpdateImage(bool weak)
 

@@ -43,6 +43,7 @@
 #include <wx/stattext.h>
 #endif
 
+#include "audio_controller.h"
 #include "audio_box.h"
 #include "audio_provider_manager.h"
 #include "dialog_video_details.h"

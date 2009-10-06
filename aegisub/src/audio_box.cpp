@@ -49,8 +49,8 @@
 #endif
 
 #include "include/aegisub/audio_player.h"
-#include "audio_box.h"
 #include "audio_controller.h"
+#include "audio_box.h"
 #include "audio_display.h"
 #include "audio_karaoke.h"
 #include "frame_main.h"
@@ -254,33 +254,6 @@ AudioBox::~AudioBox() {
 	VolumeBar->PopEventHandler(true);
 }
 
-
-
-/// @brief Set file 
-/// @param file      
-/// @param FromVideo 
-/// @return 
-///
-void AudioBox::SetFile(wxString file,bool FromVideo) {
-	wxLogDebug(_T("AudioBox::SetFile(file=%s, FromVideo=%d)"), file.c_str(), FromVideo?1:0);
-	loaded = false;
-
-	if (FromVideo) {
-		audioDisplay->SetFromVideo();
-		loaded = audioDisplay->loaded;
-		audioName = _T("?video");
-	}
-
-	else {
-		audioDisplay->SetFile(file);
-		if (file != _T("")) loaded = audioDisplay->loaded;
-		audioName = file;
-	}
-
-	wxLogDebug(_T("AudioBox::SetFile: setting up accelerators in frameMain"));
-	frameMain->SetAccelerators();
-	wxLogDebug(_T("AudioBox::SetFile: returning"));
-}
 
 
 ///////////////
@@ -754,6 +727,37 @@ void AudioBox::OnLeadOut(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
 	audioDisplay->AddLead(false,true);
 }
+
+
+void AudioBox::OnAudioOpen(AudioProvider *provider)
+{
+}
+
+
+void AudioBox::OnAudioClose()
+{
+}
+
+
+void AudioBox::OnMarkersMoved()
+{
+}
+
+
+void AudioBox::OnSelectionChanges()
+{
+}
+
+
+void AudioBox::OnPlaybackPosition(int64_t sample_position)
+{
+}
+
+
+void AudioBox::OnPlaybackStop()
+{
+}
+
 
 
 //////////////////////////////////////////

@@ -54,6 +54,10 @@
 #include <wx/tglbtn.h>
 #endif
 
+#ifndef AGI_AUDIO_CONTROLLER_INCLUDED
+#error You must include "audio_controller.h" before "audio_box.h"
+#endif
+
 
 //////////////
 // Prototypes
@@ -65,15 +69,9 @@ class ToggleBitmap;
 
 
 
-/// DOCME
 /// @class AudioBox
-/// @brief DOCME
-///
-/// DOCME
-class AudioBox : public wxPanel {
-	friend class AudioDisplay;
-
-private:
+/// @brief Panel with audio playback and timing controls, also containing an AudioDisplay
+class AudioBox : public wxPanel, private AudioControllerEventListener {
 
 	/// DOCME
 	wxScrollBar *audioScroll;
@@ -174,6 +172,17 @@ private:
 	void OnSpectrumMode(wxCommandEvent &event);
 	void OnNextLineCommit(wxCommandEvent &event);
 
+
+private:
+	// AudioControllerEventListener implementation
+	virtual void OnAudioOpen(AudioProvider *provider);
+	virtual void OnAudioClose();
+	virtual void OnMarkersMoved();
+	virtual void OnSelectionChanges();
+	virtual void OnPlaybackPosition(int64_t sample_position);
+	virtual void OnPlaybackStop();
+
+
 public:
 
 	/// DOCME
@@ -200,7 +209,6 @@ public:
 	AudioBox(wxWindow *parent);
 	~AudioBox();
 
-	void SetFile(wxString file,bool FromVideo);
 	void SetKaraokeButtons();
 
 	DECLARE_EVENT_TABLE()

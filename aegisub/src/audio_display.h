@@ -71,7 +71,7 @@ class wxScrollBar;
 /// @brief Control that displays audio and lets the user create selections
 ///
 /// Everyone hates this class.
-class AudioDisplay: public wxWindow, private AudioControllerEventListener {
+class AudioDisplay: public wxWindow {
 private:
 
 	/// The audio renderer manager
@@ -96,15 +96,6 @@ private:
 	void OnSize(wxSizeEvent &event);
 	void OnKeyDown(wxKeyEvent &event);
 
-
-private:
-	// AudioControllerEventListener implementation
-	virtual void OnAudioOpen(AudioProvider *provider);
-	virtual void OnAudioClose();
-	virtual void OnMarkersMoved();
-	virtual void OnSelectionChanges();
-	virtual void OnPlaybackPosition(int64_t sample_position);
-	virtual void OnPlaybackStop();
 
 public:
 	// Here's all kinds of stuff other parts depend on
