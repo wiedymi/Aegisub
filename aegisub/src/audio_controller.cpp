@@ -49,6 +49,12 @@
 #include "audio_provider_dummy.h"
 
 
+/// Type of the audio controller event listener container in AudioController
+typedef std::set<AudioControllerEventListener *> ListenerSet;
+
+/// Macro to iterate event listeners in AudioController implementation
+#define ALL_LISTENERS(listener) for (ListenerSet::iterator listener = listeners.begin(); listener != listeners.end(); ++listener)
+
 
 AudioController::AudioController()
 : provider(0)
@@ -156,6 +162,10 @@ void AudioController::OpenAudio(const wxString &url)
 	PlayToEnd(0);
 
 	/// @todo Tell listeners about this.
+	ALL_LISTENERS(l)
+	{
+		(*l)->OnAudioOpen(provider);
+	}
 }
 
 
@@ -167,7 +177,11 @@ void AudioController::CloseAudio()
 	delete provider;
 	player = 0;
 	provider = 0;
-	/// @todo tell all listeners about this
+
+	ALL_LISTENERS(l)
+	{
+		(*l)->OnAudioClose();
+	}
 }
 
 
@@ -202,6 +216,11 @@ void AudioController::PlayRange(const AudioController::SampleRange &range)
 
 	player->Play(range.begin(), range.length());
 	playback_mode = PM_Range;
+
+	ALL_LISTENERS(l)
+	{
+		(*l)->OnPlaybackPosition(range.begin());
+	}
 }
 
 
@@ -211,6 +230,11 @@ void AudioController::PlayToEnd(int64_t start_sample)
 
 	player->Play(start_sample, provider->GetNumSamples()-start_sample);
 	playback_mode = PM_ToEnd;
+
+	ALL_LISTENERS(l)
+	{
+		(*l)->OnPlaybackPosition(start_sample);
+	}
 }
 
 
@@ -220,6 +244,11 @@ void AudioController::Stop()
 
 	player->Stop();
 	playback_mode = PM_NotPlaying;
+
+	ALL_LISTENERS(l)
+	{
+		(*l)->OnPlaybackStop();
+	}
 }
 
 
