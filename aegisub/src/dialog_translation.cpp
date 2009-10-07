@@ -133,7 +133,8 @@ DialogTranslation::DialogTranslation (wxWindow *parent,AssFile *_subs,SubtitlesG
 	wxButton *PlayVideoButton = new wxButton(this,BUTTON_TRANS_PLAY_VIDEO,_("Play Video"));
 	wxButton *PlayAudioButton = new wxButton(this,BUTTON_TRANS_PLAY_AUDIO,_("Play Audio"));
 	PlayVideoButton->Enable(video->IsLoaded());
-	PlayAudioButton->Enable(audio->loaded);
+	/// @todo Reinstate this when the audio context is made reachable from here
+	//PlayAudioButton->Enable(audio->loaded);
 	ToolSizer->Add(PlayAudioButton,0,wxALL,5);
 	ToolSizer->Add(PlayVideoButton,0,wxLEFT | wxRIGHT | wxBOTTOM,5);
 
@@ -410,10 +411,13 @@ void DialogTranslation::OnTransBoxKey(wxKeyEvent &event) {
 
 	// Play audio
 	if (Hotkeys.IsPressed(_T("Translation Assistant Play Audio"))) {
+		/// @todo Reinstate this when the audio controller is made reachable from here
+		/*
 		if (audio->loaded) {
 			audio->Play(current->Start.GetMS(),current->End.GetMS());
 			TransText->SetFocus();
 		}
+		*/
 		return;
 	}
 

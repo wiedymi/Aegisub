@@ -297,7 +297,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	// View menu
 	else if (curMenu == viewMenu) {
 		// Flags
-		bool aud = audioBox->audioDisplay->loaded;
+		bool aud = audioController->IsAudioOpen();
 		bool vid = VideoContext::Get()->IsLoaded();
 
 		// Set states
@@ -1967,7 +1967,7 @@ void FrameMain::OnPickAssociations(wxCommandEvent &event) {
 /// @return 
 ///
 void FrameMain::OnViewStandard (wxCommandEvent &event) {
-	if (!audioBox->audioDisplay->loaded || !VideoContext::Get()->IsLoaded()) return;
+	if (!audioController->IsAudioOpen() || !VideoContext::Get()->IsLoaded()) return;
 	SetDisplayMode(1,1);
 }
 
@@ -1989,7 +1989,7 @@ void FrameMain::OnViewVideo (wxCommandEvent &event) {
 /// @return 
 ///
 void FrameMain::OnViewAudio (wxCommandEvent &event) {
-	if (!audioBox->audioDisplay->loaded) return;
+	if (!audioController->IsAudioOpen()) return;
 	SetDisplayMode(0,1);
 }
 

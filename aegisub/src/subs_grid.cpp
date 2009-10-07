@@ -211,7 +211,7 @@ void SubtitlesGrid::OnPopupMenu(bool alternate) {
 		menu.AppendSeparator();
 
 		//Make audio clip
-		state = parentFrame->audioBox->audioDisplay->loaded==true;
+		state = parentFrame->audioController->IsAudioOpen()==true;
 		menu.Append(MENU_AUDIOCLIP,_("Create audio clip"),_("Create an audio clip of the selected line"))->Enable(state);
 		menu.AppendSeparator();
 

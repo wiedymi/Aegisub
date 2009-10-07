@@ -1158,9 +1158,12 @@ void BaseGrid::OnKeyPress(wxKeyEvent &event) {
 	}
 
 	// Other events, send to audio display
+	/// @todo Reinstate this, or make a better solution, when audio is getting stabler again
+	/*
 	if (VideoContext::Get()->audio->loaded) {
 		VideoContext::Get()->audio->GetEventHandler()->ProcessEvent(event);
 	}
+	*/
 	else event.Skip();
 }
 

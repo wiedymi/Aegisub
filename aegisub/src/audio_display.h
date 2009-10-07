@@ -110,16 +110,6 @@ public:
 	// video_context.cpp 178 183
 	bool temporary;
 
-	/// Is any audio loaded?
-	// video_context.cpp 382
-	// dialog_translation.cpp 135 412
-	// frame_main_events.cpp 296 1967 1989
-	// dialog_styling_assistant.cpp 276 456
-	// frame_main.cpp 1348
-	// base_grid.cpp 1158
-	// subs_grid.cpp 206
-	bool loaded;
-
 	/// Current start something in milliseconds
 	// frame_main_events.cpp  2035 2045
 	int curStartMS;

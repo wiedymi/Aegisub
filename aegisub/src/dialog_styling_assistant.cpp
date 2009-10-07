@@ -275,7 +275,8 @@ void DialogStyling::OnActivate(wxActivateEvent &event) {
 	}
 	// Enable/disable play video/audio buttons
 	PlayVideoButton->Enable(video->IsLoaded());
-	PlayAudioButton->Enable(audio->loaded);
+	/// @todo Reinstate this when the audio controller is made reachable from here
+	//PlayAudioButton->Enable(audio->loaded);
 	// Update grid
 	if (grid->ass != AssFile::top)
 		grid->LoadFromAss(AssFile::top,false,true);
@@ -455,9 +456,12 @@ void StyleEditBox::OnKeyDown(wxKeyEvent &event) {
 
 	// Play audio
 	if (Hotkeys.IsPressed(_T("Styling Assistant Play Audio"))) {
+		/// @todo Reinstate this when the audio controller is made reachable from here
+		/*
 		if (diag->audio->loaded) {
 			diag->audio->Play(diag->line->Start.GetMS(),diag->line->End.GetMS());
 		}
+		*/
 		return;
 	}
 

@@ -1320,7 +1320,7 @@ void FrameMain::SetAccelerators() {
 
 	// Medusa
 	bool medusaPlay = Options.AsBool(_T("Audio Medusa Timing Hotkeys"));
-	if (medusaPlay && audioBox->audioDisplay->loaded) {
+	if (medusaPlay && audioController->IsAudioOpen()) {
 		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Play"),Medusa_Play));
 		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Stop"),Medusa_Stop));
 		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Play Before"),Medusa_Play_Before));

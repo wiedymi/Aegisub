@@ -385,11 +385,14 @@ void VideoContext::UpdateDisplays(bool full) {
 	}
 
 	// Update audio display
+	/// @todo Reinstate this when the audio controller is accessible to the video context
+	/*
 	if (audio && audio->loaded && audio->IsShownOnScreen()) {
 		if (Options.AsBool(_T("Audio Draw Video Position"))) {
 			audio->UpdateImage(false);
 		}
 	}
+	*/
 }
 
 
