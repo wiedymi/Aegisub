@@ -61,6 +61,44 @@
 #include "tooltip_manager.h"
 
 
+enum AudioBoxControlIDs {
+	Audio_Scrollbar = 1600,
+	Audio_Horizontal_Zoom,
+	Audio_Vertical_Zoom,
+	Audio_Volume,
+	Audio_Sash,
+	Audio_Vertical_Link,
+	Audio_Button_Play,
+	Audio_Button_Stop,
+	Audio_Button_Prev,
+	Audio_Button_Next,
+	Audio_Button_Play_500ms_Before,
+	Audio_Button_Play_500ms_After,
+	Audio_Button_Play_500ms_First,
+	Audio_Button_Play_500ms_Last,
+	Audio_Button_Play_Row,
+	Audio_Button_Play_To_End,
+	Audio_Button_Commit,
+	Audio_Button_Karaoke,
+	Audio_Button_Goto,
+
+	Audio_Button_Join,		/// Karaoke -> Enter join mode.
+	Audio_Button_Split,		/// Karaoke -> Enter split mode.
+	Audio_Button_Accept,	/// Karaoke -> Split/Join mode -> Accept.
+	Audio_Button_Cancel,	/// KAraoke -> Split/Join mode -> Cancel.
+
+	Audio_Button_Leadin,
+	Audio_Button_Leadout,
+
+	Audio_Check_AutoCommit,
+	Audio_Check_NextCommit,
+	Audio_Check_AutoGoto,
+	Audio_Check_Medusa,
+	Audio_Check_Spectrum
+};
+
+
+
 /// @brief Constructor 
 /// @param parent 
 ///
@@ -73,7 +111,6 @@ wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISE
 
 	// Sash and Display
 	audioScroll = new wxScrollBar(this,Audio_Scrollbar);
-	audioScroll->PushEventHandler(new FocusEvent());
 	audioScroll->SetToolTip(_("Seek bar"));
 	Sash = new wxSashWindow(this,Audio_Sash,wxDefaultPosition,wxDefaultSize,wxCLIP_CHILDREN | wxSW_3DBORDER);
 	sashSizer = new wxBoxSizer(wxVERTICAL);
@@ -91,13 +128,10 @@ wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISE
 
 	// Zoom
 	HorizontalZoom = new wxSlider(this,Audio_Horizontal_Zoom,50,0,100,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH);
-	HorizontalZoom->PushEventHandler(new FocusEvent());
 	HorizontalZoom->SetToolTip(_("Horizontal zoom"));
 	VerticalZoom = new wxSlider(this,Audio_Vertical_Zoom,50,0,100,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH|wxSL_INVERSE);
-	VerticalZoom->PushEventHandler(new FocusEvent());
 	VerticalZoom->SetToolTip(_("Vertical zoom"));
 	VolumeBar = new wxSlider(this,Audio_Volume,50,0,100,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH|wxSL_INVERSE);
-	VolumeBar->PushEventHandler(new FocusEvent());
 	VolumeBar->SetToolTip(_("Audio Volume"));
 	bool link = Options.AsBool(_T("Audio Link"));
 	if (link) {
@@ -758,19 +792,3 @@ void AudioBox::OnPlaybackStop()
 {
 }
 
-
-
-//////////////////////////////////////////
-// Focus event handling for the scrollbar
-BEGIN_EVENT_TABLE(FocusEvent,wxEvtHandler)
-	EVT_SET_FOCUS(FocusEvent::OnSetFocus)
-END_EVENT_TABLE()
-
-
-/// @brief DOCME
-/// @param event 
-///
-void FocusEvent::OnSetFocus(wxFocusEvent &event) {
-	wxWindow *previous = event.GetWindow();
-	if (previous) previous->SetFocus();
-}
