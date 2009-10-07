@@ -142,7 +142,7 @@ void RAMAudioProvider::Clear() {
 /// @param start 
 /// @param count 
 ///
-void RAMAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) {
+void RAMAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) const {
 	// Requested beyond the length of audio
 	if (start+count > num_samples) {
 		int64_t oldcount = count;

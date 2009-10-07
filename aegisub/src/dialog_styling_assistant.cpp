@@ -74,8 +74,8 @@ wxDialog (parent, -1, _("Styling assistant"), wxDefaultPosition, wxDefaultSize, 
 
 	// Variables
 	grid = _grid;
-	audio = VideoContext::Get()->audio->box->audioDisplay;
-	video = video->Get();
+	audio = VideoContext::Get()->audio;
+	video = VideoContext::Get();
 	needCommit = false;
 	linen = -1;
 
@@ -387,7 +387,9 @@ void DialogStyling::OnPlayVideoButton(wxCommandEvent &event) {
 /// @param event 
 ///
 void DialogStyling::OnPlayAudioButton(wxCommandEvent &event) {
-	audio->Play(line->Start.GetMS(),line->End.GetMS());
+	audio->PlayRange(AudioController::SampleRange(
+		audio->SamplesFromMilliseconds(line->Start.GetMS()),
+		audio->SamplesFromMilliseconds(line->End.GetMS())));
 	TypeBox->SetFocus();
 }
 

@@ -77,7 +77,7 @@ StreamAudioProvider::~StreamAudioProvider() {
 /// @param start 
 /// @param count 
 ///
-void StreamAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) {
+void StreamAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) const {
 	// Write
 	int64_t left = count;
 	int written = 0;

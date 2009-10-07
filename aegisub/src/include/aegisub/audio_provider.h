@@ -88,15 +88,15 @@ public:
 	AudioProvider();
 	virtual ~AudioProvider();
 
-	virtual wxString GetFilename();
-	virtual void GetAudio(void *buf, int64_t start, int64_t count)=0;
-	void GetAudioWithVolume(void *buf, int64_t start, int64_t count, double volume);
+	virtual wxString GetFilename() const;
+	virtual void GetAudio(void *buf, int64_t start, int64_t count) const = 0;
+	void GetAudioWithVolume(void *buf, int64_t start, int64_t count, double volume) const;
 
-	int64_t GetNumSamples();
-	int GetSampleRate();
-	int GetBytesPerSample();
-	int GetChannels();
-	virtual bool AreSamplesNativeEndian() = 0;
+	int64_t GetNumSamples() const;
+	int GetSampleRate() const;
+	int GetBytesPerSample() const;
+	int GetChannels() const;
+	virtual bool AreSamplesNativeEndian() const = 0;
 
 	void GetWaveForm(int *min,int *peak,int64_t start,int w,int h,int samples,float scale);
 };

@@ -54,13 +54,13 @@ private:
 
 
 	/// DOCME
-	char FFMSErrMsg[1024];
+	mutable char FFMSErrMsg[1024];
 
 	/// DOCME
-	unsigned MsgSize;
+	mutable unsigned MsgSize;
 
 	/// DOCME
-	wxString ErrorMsg;
+	mutable wxString ErrorMsg;
 
 
 	/// DOCME
@@ -77,9 +77,9 @@ public:
 	/// @brief // FFMS always delivers samples in machine endian
 	/// @return 
 	///
-	bool AreSamplesNativeEndian() { return true; }
+	bool AreSamplesNativeEndian() const { return true; }
 
-	virtual void GetAudio(void *buf, int64_t start, int64_t count);
+	virtual void GetAudio(void *buf, int64_t start, int64_t count) const;
 
 };
 

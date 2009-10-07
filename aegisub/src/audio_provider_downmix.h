@@ -59,9 +59,9 @@ public:
 
 	/// @brief // Downmixing requires samples to be native endian beforehand
 	///
-	bool AreSamplesNativeEndian() { return true; }
+	bool AreSamplesNativeEndian() const { return true; }
 
-	void GetAudio(void *buf, int64_t start, int64_t count);
+	void GetAudio(void *buf, int64_t start, int64_t count) const;
 
 };
 

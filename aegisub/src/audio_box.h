@@ -73,6 +73,9 @@ class ToggleBitmap;
 /// @brief Panel with audio playback and timing controls, also containing an AudioDisplay
 class AudioBox : public wxPanel, private AudioControllerEventListener {
 
+	/// The audio display in the box
+	AudioDisplay *audioDisplay;
+
 	/// DOCME
 	wxScrollBar *audioScroll;
 
@@ -178,15 +181,15 @@ private:
 	virtual void OnAudioOpen(AudioProvider *provider);
 	virtual void OnAudioClose();
 	virtual void OnMarkersMoved();
-	virtual void OnSelectionChanges();
+	virtual void OnSelectionChanged();
 	virtual void OnPlaybackPosition(int64_t sample_position);
 	virtual void OnPlaybackStop();
 
 
 public:
 
-	/// DOCME
-	AudioDisplay *audioDisplay;
+	/// The controller controlling this audio box
+	AudioController *controller;
 
 	/// DOCME
 	AudioKaraoke *audioKaraoke;
@@ -198,12 +201,9 @@ public:
 	FrameMain *frameMain;
 
 	/// DOCME
-	wxString audioName;
-
-	/// DOCME
 	bool karaokeMode;
 
-	AudioBox(wxWindow *parent);
+	AudioBox(wxWindow *parent, AudioController *controller);
 	~AudioBox();
 
 	void SetKaraokeButtons();

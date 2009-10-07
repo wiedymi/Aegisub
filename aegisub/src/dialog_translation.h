@@ -54,6 +54,7 @@ class AssDialogue;
 class SubtitlesGrid;
 class AudioDisplay;
 class VideoContext;
+class AudioController;
 
 
 /// DOCME
@@ -65,7 +66,7 @@ class DialogTranslation : public wxDialog {
 private:
 
 	/// DOCME
-	AudioDisplay *audio;
+	AudioController *audio;
 
 	/// DOCME
 	VideoContext *video;

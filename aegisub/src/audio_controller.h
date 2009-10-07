@@ -75,25 +75,6 @@ class AudioControllerEventListener;
 /// by a controller. If some operation that isn't possible in the existing design is needed, the
 /// controller should be extended in some way to allow it.
 class AudioController {
-
-	/// A list of audio displays managed by this controller
-	std::set<AudioControllerEventListener *> listeners;
-
-	/// The audio output object
-	AudioPlayer *player;
-
-	/// The audio provider
-	AudioProvider *provider;
-
-
-	enum PlaybackMode {
-		PM_NotPlaying,
-		PM_Range,
-		PM_ToEnd
-	};
-	PlaybackMode playback_mode;
-
-
 public:
 
 	/// @class SampleRange
@@ -131,6 +112,30 @@ public:
 		/// Get the index of one past the last sample in the range
 		int64_t end() const { return _end; }
 	};
+
+
+private:
+
+	/// A list of audio displays managed by this controller
+	std::set<AudioControllerEventListener *> listeners;
+
+	/// The audio output object
+	AudioPlayer *player;
+
+	/// The audio provider
+	AudioProvider *provider;
+
+
+	enum PlaybackMode {
+		PM_NotPlaying,
+		PM_Range,
+		PM_ToEnd
+	};
+	/// The current playback mode
+	PlaybackMode playback_mode;
+
+	/// The current audio selection
+	SampleRange selection;
 
 
 public:
@@ -208,6 +213,30 @@ public:
 	/// Returns 0 if playback is stopped. The return value is only approximate.
 	int64_t GetPlaybackPosition();
 
+	/// @brief If playing, restart playback from the specified position
+	/// @param new_position Sample index to restart playback from
+	///
+	/// This function can be used to re-synchronise audio playback to another source that
+	/// might not be able to keep up with the full speed, such as video playback in high
+	/// resolution or with complex subtitles.
+	///
+	/// This function only does something if audio is already playing.
+	void ResyncPlaybackPosition(int64_t new_position);
+
+
+	/// @brief Get the current audio selection
+	/// @return An immutable SampleRange object
+	SampleRange GetSelection() const { return selection; }
+
+	/// @brief Change the current audio selection
+	/// @param newsel The new selection to use
+	void SetSelection(const SampleRange &newsel);
+
+
+	/// @brief Return the current audio provider
+	/// @return A const pointer to the current audio provider
+	const AudioProvider * GetAudioProvider() const;
+
 
 	/// @brief Convert a count of audio samples to a time in milliseconds
 	/// @param samples Sample count to convert
@@ -236,7 +265,7 @@ public:
 	virtual void OnMarkersMoved() = 0;
 
 	/// The selection was changed
-	virtual void OnSelectionChanges() = 0;
+	virtual void OnSelectionChanged() = 0;
 
 	/// Playback is in progress and ths current position was updated
 	virtual void OnPlaybackPosition(int64_t sample_position) = 0;

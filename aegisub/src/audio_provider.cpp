@@ -83,7 +83,7 @@ AudioProvider::~AudioProvider() {
 /// @brief Get number of channels 
 /// @return 
 ///
-int AudioProvider::GetChannels() {
+int AudioProvider::GetChannels() const {
 	return channels;
 }
 
@@ -92,7 +92,7 @@ int AudioProvider::GetChannels() {
 /// @brief Get number of samples 
 /// @return 
 ///
-int64_t AudioProvider::GetNumSamples() {
+int64_t AudioProvider::GetNumSamples() const {
 	return num_samples;
 }
 
@@ -101,7 +101,7 @@ int64_t AudioProvider::GetNumSamples() {
 /// @brief Get sample rate 
 /// @return 
 ///
-int AudioProvider::GetSampleRate() {
+int AudioProvider::GetSampleRate() const {
 	return sample_rate;
 }
 
@@ -110,7 +110,7 @@ int AudioProvider::GetSampleRate() {
 /// @brief Get bytes per sample 
 /// @return 
 ///
-int AudioProvider::GetBytesPerSample() {
+int AudioProvider::GetBytesPerSample() const {
 	return bytes_per_sample;
 }
 
@@ -119,7 +119,7 @@ int AudioProvider::GetBytesPerSample() {
 /// @brief Get filename 
 /// @return 
 ///
-wxString AudioProvider::GetFilename() {
+wxString AudioProvider::GetFilename() const {
 	return filename;
 }
 
@@ -205,7 +205,7 @@ void AudioProvider::GetWaveForm(int *min,int *peak,int64_t start,int w,int h,int
 /// @param volume 
 /// @return 
 ///
-void AudioProvider::GetAudioWithVolume(void *buf, int64_t start, int64_t count, double volume) {
+void AudioProvider::GetAudioWithVolume(void *buf, int64_t start, int64_t count, double volume) const {
 	try {
 		GetAudio(buf,start,count);
 	}

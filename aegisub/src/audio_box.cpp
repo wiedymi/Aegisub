@@ -102,9 +102,12 @@ enum AudioBoxControlIDs {
 /// @brief Constructor 
 /// @param parent 
 ///
-AudioBox::AudioBox(wxWindow *parent) :
-wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISED)
+AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
+: wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISED)
+, controller(_controller)
 {
+	controller->AddListener(this);
+
 	// Setup
 	karaokeMode = false;
 
@@ -280,11 +283,9 @@ wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISE
 
 /// @brief Destructor 
 ///
-AudioBox::~AudioBox() {
-	audioScroll->PopEventHandler(true);
-	HorizontalZoom->PopEventHandler(true);
-	VerticalZoom->PopEventHandler(true);
-	VolumeBar->PopEventHandler(true);
+AudioBox::~AudioBox()
+{
+	controller->RemoveListener(this);
 }
 
 
@@ -777,7 +778,7 @@ void AudioBox::OnMarkersMoved()
 }
 
 
-void AudioBox::OnSelectionChanges()
+void AudioBox::OnSelectionChanged()
 {
 }
 

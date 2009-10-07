@@ -79,7 +79,7 @@ DialogTranslation::DialogTranslation (wxWindow *parent,AssFile *_subs,SubtitlesG
 	subs = _subs;
 	grid = _grid;
 	audio = VideoContext::Get()->audio;
-	video = video->Get();
+	video = VideoContext::Get();
 
 	// Translation controls
 	OrigText = new ScintillaTextCtrl(this,TEXT_ORIGINAL,_T(""),wxDefaultPosition,wxSize(320,80));
@@ -447,7 +447,9 @@ void DialogTranslation::OnPlayVideoButton(wxCommandEvent &event) {
 /// @param event 
 ///
 void DialogTranslation::OnPlayAudioButton(wxCommandEvent &event) {
-	audio->Play(current->Start.GetMS(),current->End.GetMS());
+	audio->PlayRange(AudioController::SampleRange(
+		audio->SamplesFromMilliseconds(current->GetStartMS()),
+		audio->SamplesFromMilliseconds(current->GetEndMS())));
 	TransText->SetFocus();
 }
 

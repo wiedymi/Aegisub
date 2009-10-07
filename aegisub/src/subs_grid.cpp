@@ -731,8 +731,8 @@ void SubtitlesGrid::OnRecombine(wxCommandEvent &event) {
 ///
 void SubtitlesGrid::OnAudioClip(wxCommandEvent &event) {
 	int64_t num_samples,start=0,end=0,temp;
-	AudioDisplay *audioDisplay = parentFrame->audioBox->audioDisplay;
-	AudioProvider *provider = audioDisplay->provider;
+	AudioController *audioController = parentFrame->audioController;
+	const AudioProvider *provider = audioController->GetAudioProvider();
 	AssDialogue *cur;
 	wxArrayInt sel = GetSelection();
 
@@ -741,9 +741,9 @@ void SubtitlesGrid::OnAudioClip(wxCommandEvent &event) {
 	for(unsigned int i=0;i!=sel.GetCount();i++) {
 		cur = GetDialogue(sel[i]);
 		
-		temp = audioDisplay->GetSampleAtMS(cur->Start.GetMS());
+		temp = audioController->SamplesFromMilliseconds(cur->GetStartMS());
 		start = (i==0||temp<start)?temp:start;
-		temp = audioDisplay->GetSampleAtMS(cur->End.GetMS());
+		temp = audioController->SamplesFromMilliseconds(cur->GetEndMS());
 		end = (i==0||temp>end)?temp:end;
 	}
 

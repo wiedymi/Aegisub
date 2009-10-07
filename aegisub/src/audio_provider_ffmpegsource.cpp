@@ -232,7 +232,7 @@ void FFmpegSourceAudioProvider::Close() {
 /// @param Start 
 /// @param Count 
 ///
-void FFmpegSourceAudioProvider::GetAudio(void *Buf, int64_t Start, int64_t Count) {
+void FFmpegSourceAudioProvider::GetAudio(void *Buf, int64_t Start, int64_t Count) const {
 	if (FFMS_GetAudio(AudioSource, Buf, Start, Count, FFMSErrMsg, MsgSize)) {
 		ErrorMsg.Append(wxString::Format(_T("Failed to get audio samples: %s"), FFMSErrMsg));
 		throw ErrorMsg;

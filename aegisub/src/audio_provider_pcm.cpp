@@ -152,7 +152,7 @@ PCMAudioProvider::~PCMAudioProvider()
 /// @param range_length 
 /// @return 
 ///
-char * PCMAudioProvider::EnsureRangeAccessible(int64_t range_start, int64_t range_length)
+char * PCMAudioProvider::EnsureRangeAccessible(int64_t range_start, int64_t range_length) const
 {
 	if (range_start + range_length > file_size) {
 		throw _T("PCM audio provider: Attempted to map beyond end of file");
@@ -231,13 +231,13 @@ char * PCMAudioProvider::EnsureRangeAccessible(int64_t range_start, int64_t rang
 /// @param start 
 /// @param count 
 ///
-void PCMAudioProvider::GetAudio(void *buf, int64_t start, int64_t count)
+void PCMAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) const
 {
 	// Read blocks from the file
 	size_t index = 0;
 	while (count > 0 && index < index_points.size()) {
 		// Check if this index contains the samples we're looking for
-		IndexPoint &ip = index_points[index];
+		const IndexPoint &ip = index_points[index];
 		if (ip.start_sample <= start && ip.start_sample+ip.num_samples > start) {
 
 			// How many samples we can maximum take from this block
@@ -434,7 +434,7 @@ public:
 	/// @brief DOCME
 	/// @return 
 	///
-	bool AreSamplesNativeEndian()
+	bool AreSamplesNativeEndian() const
 	{
 		// 8 bit samples don't consider endianness
 		if (bytes_per_sample < 2) return true;
@@ -655,7 +655,7 @@ public:
 	/// @brief DOCME
 	/// @return 
 	///
-	bool AreSamplesNativeEndian()
+	bool AreSamplesNativeEndian() const
 	{
 		// 8 bit samples don't consider endianness
 		if (bytes_per_sample < 2) return true;

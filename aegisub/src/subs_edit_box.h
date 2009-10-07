@@ -61,6 +61,7 @@ class SubsEditBox;
 class AudioDisplay;
 class HiliModTextCtrl;
 class wxStyledTextCtrl;
+class AudioController;
 
 
 
@@ -238,7 +239,7 @@ public:
 	int linen;
 
 	/// DOCME
-	AudioDisplay *audio;
+	AudioController *audio;
 
 	/// DOCME
 	SubsTextEditCtrl *TextEdit;

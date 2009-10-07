@@ -77,6 +77,7 @@ class VideoProvider;
 class VideoDisplay;
 class SubtitlesProvider;
 class VideoContextThread;
+class AudioController;
 
 
 
@@ -236,8 +237,8 @@ public:
 	/// DOCME
 	AssDialogue *curLine;
 
-	/// DOCME
-	AudioDisplay *audio;
+	/// The audio controller for this video context
+	AudioController *audio;
 
 	VideoContext();
 	~VideoContext();

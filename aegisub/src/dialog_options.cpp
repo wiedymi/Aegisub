@@ -989,12 +989,16 @@ void DialogOptions::WriteToOptions(bool justApply) {
 		// Audio
 		if (audioReload) {
 			FrameMain *frame = (FrameMain*) GetParent();
-			frame->audioBox->audioDisplay->Reload();
+			wxString audio_url = frame->audioController->GetAudioURL();
+			frame->audioController->CloseAudio();
+			if (!audio_url.IsEmpty())
+				frame->audioController->OpenAudio(audio_url);
 		}
 		else if (audio) {
 			FrameMain *frame = (FrameMain*) GetParent();
-			frame->audioBox->audioDisplay->RecreateImage();
-			frame->audioBox->audioDisplay->Refresh();
+			/// @todo Reinstate this when audio gets more stable
+			//frame->audioBox->audioDisplay->RecreateImage();
+			//frame->audioBox->audioDisplay->Refresh();
 		}
 	}
 }

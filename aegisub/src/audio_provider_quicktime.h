@@ -69,10 +69,10 @@ private:
 
 
 	/// DOCME
-	OSErr qt_err;			// quicktime error code
+	mutable OSErr qt_err;			// quicktime error code
 
 	/// DOCME
-	OSStatus qt_status;		// another quicktime error code
+	mutable OSStatus qt_status;		// another quicktime error code
 
 	/// DOCME
 	wxString errmsg;		// aegisub error messages
@@ -88,9 +88,9 @@ public:
 	/// @brief DOCME
 	/// @return 
 	///
-	bool AreSamplesNativeEndian() { return true; }
+	bool AreSamplesNativeEndian() const { return true; }
 
-	virtual void GetAudio(void *buf, int64_t start, int64_t count);
+	virtual void GetAudio(void *buf, int64_t start, int64_t count) const;
 };
 
 

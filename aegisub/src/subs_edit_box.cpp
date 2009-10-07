@@ -297,7 +297,8 @@ void SubsEditBox::Update (bool timeOnly,bool weak) {
 			}
 
 			// Audio
-			if (!weak) audio->SetDialogue(grid,curdiag,linen);
+			/// @todo Reinstate this when audio gets more stable
+			//if (!weak) audio->SetDialogue(grid,curdiag,linen);
 
 			// Video
 			VideoContext::Get()->curLine = curdiag;
@@ -799,7 +800,8 @@ void SubsEditBox::CommitTimes(bool start,bool end,bool fromStart,bool commit) {
 		Duration->Update();
 		grid->ass->FlagAsModified(_("modify times"));
 		grid->CommitChanges();
-		audio->SetDialogue(grid,grid->GetDialogue(sel[0]),sel[0]);
+		/// @todo Reinstate this when audio gets more stable
+		//audio->SetDialogue(grid,grid->GetDialogue(sel[0]),sel[0]);
 		VideoContext::Get()->UpdateDisplays(false);
 	}
 }
@@ -1052,7 +1054,8 @@ void SubsEditBox::CommitText(bool weak) {
 		// Update audio
 		if (!weak) {
 			grid->Refresh(false);
-			audio->SetDialogue(grid,cur,linen);
+			/// @todo Reinstate this when audio gets more stable
+			//audio->SetDialogue(grid,cur,linen);
 		}
 	}
 }

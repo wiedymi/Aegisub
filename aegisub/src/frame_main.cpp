@@ -620,14 +620,14 @@ void FrameMain::InitContents() {
 
 	// Audio area
 	StartupLog(_T("Create audio box"));
-	audioBox = new AudioBox(Panel);
+	audioBox = new AudioBox(Panel, audioController);
 	audioBox->frameMain = this;
-	VideoContext::Get()->audio = audioBox->audioDisplay;
+	VideoContext::Get()->audio = audioController;
 
 	// Top sizer
 	StartupLog(_T("Create subtitle editing box"));
 	EditBox = new SubsEditBox(Panel,SubsBox);
-	EditBox->audio = audioBox->audioDisplay;
+	EditBox->audio = audioController;
 	StartupLog(_T("Arrange controls in sizers"));
 	ToolSizer = new wxBoxSizer(wxVERTICAL);
 	ToolSizer->Add(audioBox,0,wxEXPAND | wxBOTTOM,5);
@@ -986,13 +986,13 @@ void FrameMain::SynchronizeProject(bool fromSubs) {
 		wxString curSubsVideo = DecodeRelativePath(subs->GetScriptInfo(_T("Video File")),AssFile::top->filename);
 		wxString curSubsVFR = DecodeRelativePath(subs->GetScriptInfo(_T("VFR File")),AssFile::top->filename);
 		wxString curSubsKeyframes = DecodeRelativePath(subs->GetScriptInfo(_T("Keyframes File")),AssFile::top->filename);
-		wxString curSubsAudio = DecodeRelativePath(subs->GetScriptInfo(_T("Audio File")),AssFile::top->filename);
+		wxString curSubsAudio = DecodeRelativePath(subs->GetScriptInfo(_T("Audio URI")),AssFile::top->filename);
 		wxString AutoScriptString = subs->GetScriptInfo(_T("Automation Scripts"));
 
 		// Check if there is anything to change
 		int autoLoadMode = Options.AsInt(_T("Autoload linked files"));
 		bool hasToLoad = false;
-		if (curSubsAudio != audioBox->audioName ||
+		if (curSubsAudio != audioController->GetAudioURL() ||
 			curSubsVFR != VFR_Output.GetFilename() ||
 			curSubsVideo != VideoContext::Get()->videoName ||
 			curSubsKeyframes != VideoContext::Get()->GetKeyFramesName()
@@ -1094,7 +1094,7 @@ void FrameMain::SynchronizeProject(bool fromSubs) {
 		}
 		
 		// Store audio data
-		subs->SetScriptInfo(_T("Audio File"),MakeRelativePath(audioBox->audioName,AssFile::top->filename));
+		subs->SetScriptInfo(_T("Audio URI"),MakeRelativePath(audioController->GetAudioURL(),AssFile::top->filename));
 
 		// Store video data
 		subs->SetScriptInfo(_T("Video File"),MakeRelativePath(VideoContext::Get()->videoName,AssFile::top->filename));

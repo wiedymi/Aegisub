@@ -168,7 +168,7 @@ void QuickTimeAudioProvider::LoadAudio(wxString filename) {
 /// @param start 
 /// @param count 
 ///
-void QuickTimeAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) {
+void QuickTimeAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) const {
 	TimeRecord trec;
 	trec.scale		= GetMovieTimeScale(movie);
 	trec.base		= NULL;

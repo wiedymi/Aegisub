@@ -71,23 +71,23 @@ private:
 
 
 	/// DOCME
-	std::list<BufferChunk*> buffer;
+	mutable std::list<BufferChunk*> buffer;
 
 	/// DOCME
-	int startPos;
+	mutable int startPos;
 
 	/// DOCME
-	int endPos;
+	mutable int endPos;
 
 	/// DOCME
-	int bufLen;
+	mutable int bufLen;
 
 
 	/// DOCME
-	int buffered;
+	mutable int buffered;
 
 	/// DOCME
-	bool hasBuf;
+	mutable bool hasBuf;
 
 public:
 	StreamAudioProvider();
@@ -99,7 +99,7 @@ public:
 	// The method is left out to make it break compilation in case it does
 	// get used again, so it can get a review and stuff.
 
-	void GetAudio(void *buf, int64_t start, int64_t count);
+	void GetAudio(void *buf, int64_t start, int64_t count) const;
 	void Append(void *buf, int64_t count);
 	void SetParams(int channels,int rate,int bps);
 };

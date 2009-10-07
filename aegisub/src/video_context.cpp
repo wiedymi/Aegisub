@@ -180,15 +180,6 @@ void VideoContext::Reset() {
 	KeyFrames.Clear();
 	keyFramesLoaded = false;
 
-	// Remove temporary audio provider
-	if (audio && audio->temporary) {
-		delete audio->provider;
-		audio->provider = NULL;
-		delete audio->player;
-		audio->player = NULL;
-		audio->temporary = false;
-	}
-
 	// Remove video data
 	loaded = false;
 	frame_n = 0;
@@ -682,7 +673,7 @@ void VideoContext::Play() {
 	endFrame = -1;
 
 	// Start playing audio
-	audio->Play(VFR_Output.GetTimeAtFrame(startFrame),-1);
+	audio->PlayToEnd(audio->SamplesFromMilliseconds(VFR_Output.GetTimeAtFrame(startFrame)));
 
 	//audio->Play will override this if we put it before, so put it after.
 	isPlaying = true;
@@ -704,12 +695,14 @@ void VideoContext::PlayLine() {
 	if (!curline) return;
 
 	// Start playing audio
-	audio->Play(curline->Start.GetMS(),curline->End.GetMS());
+	audio->PlayRange(AudioController::SampleRange(
+		audio->SamplesFromMilliseconds(curline->GetStartMS()),
+		audio->SamplesFromMilliseconds(curline->GetEndMS())));
 
 	// Set variables
 	isPlaying = true;
-	startFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true);
-	endFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false);
+	startFrame = VFR_Output.GetFrameAtTime(curline->GetStartMS(),true);
+	endFrame = VFR_Output.GetFrameAtTime(curline->GetEndMS(),false);
 
 	// Jump to start
 	playNextFrame = startFrame;
@@ -773,7 +766,13 @@ void VideoContext::OnPlayTimer(wxTimerEvent &event) {
 	if (nextFrame == frame_n) return;
 
 	// Next frame is before or over 2 frames ahead, so force audio resync
-	if (audio->player && keepAudioSync && (nextFrame < frame_n || nextFrame > frame_n + 2)) audio->player->SetCurrentPosition(audio->GetSampleAtMS(VFR_Output.GetTimeAtFrame(nextFrame)));
+	if (audio->IsPlaying() &&
+		keepAudioSync &&
+		(nextFrame < frame_n || nextFrame > frame_n + 2))
+	{
+		audio->ResyncPlaybackPosition(audio->SamplesFromMilliseconds(
+			VFR_Output.GetTimeAtFrame(nextFrame)));
+	}
 
 	// Jump to next frame
 	playNextFrame = nextFrame;
@@ -781,13 +780,13 @@ void VideoContext::OnPlayTimer(wxTimerEvent &event) {
 	JumpToFrame(nextFrame);
 
 	// Sync audio
-	if (keepAudioSync && nextFrame % 10 == 0 && audio && audio->provider && audio->player) {
-		int64_t audPos = audio->GetSampleAtMS(VFR_Output.GetTimeAtFrame(nextFrame));
-		int64_t curPos = audio->player->GetCurrentPosition();
+	if (keepAudioSync && nextFrame % 10 == 0 && audio->IsPlaying()) {
+		int64_t audPos = audio->SamplesFromMilliseconds(VFR_Output.GetTimeAtFrame(nextFrame));
+		int64_t curPos = audio->GetPlaybackPosition();
 		int delta = int(audPos-curPos);
 		if (delta < 0) delta = -delta;
-		int maxDelta = audio->provider->GetSampleRate();
-		if (delta > maxDelta) audio->player->SetCurrentPosition(audPos);
+		int maxDelta = audio->SamplesFromMilliseconds(1000);
+		if (delta > maxDelta) audio->ResyncPlaybackPosition(audPos);
 	}
 }
 

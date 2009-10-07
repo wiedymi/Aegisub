@@ -550,7 +550,8 @@ void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
 	wxString key = _T("Recent Keyframes #") + wxString::Format(_T("%i"),number+1);
 	KeyFrameFile::Load(Options.AsText(key));
 	videoBox->videoSlider->Refresh();
-	audioBox->audioDisplay->Update();
+	/// @todo Reinstate this when the audio controller can handle keyframes
+	//audioBox->audioDisplay->Update();
 	Refresh();
 }
 
@@ -917,7 +918,8 @@ void FrameMain::OnOpenKeyframes (wxCommandEvent &event) {
 	// Load
 	KeyFrameFile::Load(filename);
 	videoBox->videoSlider->Refresh();
-	audioBox->audioDisplay->Update();
+	/// @todo Reinstate this when the audio controller can handle keyframes
+	//audioBox->audioDisplay->Update();
 	Refresh();
 }
 
@@ -929,7 +931,8 @@ void FrameMain::OnOpenKeyframes (wxCommandEvent &event) {
 void FrameMain::OnCloseKeyframes (wxCommandEvent &event) {
 	VideoContext::Get()->CloseOverKeyFrames();
 	videoBox->videoSlider->Refresh();
-	audioBox->audioDisplay->Update();
+	/// @todo Reinstate this when the audio controller can handle keyframes
+	//audioBox->audioDisplay->Update();
 	Refresh();
 }
 
@@ -1605,7 +1608,7 @@ void FrameMain::OnSetARCustom (wxCommandEvent &event) {
 void FrameMain::OnCloseWindow (wxCloseEvent &event) {
 	// Stop audio and video
 	VideoContext::Get()->Stop();
-	audioBox->audioDisplay->Stop();
+	audioController->Stop();
 
 	// Ask user if he wants to save first
 	bool canVeto = event.CanVeto();
@@ -1790,7 +1793,8 @@ void FrameMain::OnStatusClear(wxTimerEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnKeyDown(wxKeyEvent &event) {
-	audioBox->audioDisplay->GetEventHandler()->ProcessEvent(event);
+	/// @todo Figure out a better way to send keys to the audio display
+	//audioBox->audioDisplay->GetEventHandler()->ProcessEvent(event);
 	event.Skip();
 }
 
@@ -2009,8 +2013,7 @@ void FrameMain::OnViewSubs (wxCommandEvent &event) {
 ///
 void FrameMain::OnMedusaPlay(wxCommandEvent &event) {
 	int start=0,end=0;
-	audioBox->audioDisplay->GetTimesSelection(start,end);
-	audioBox->audioDisplay->Play(start,end);
+	audioController->PlayRange(audioController->GetSelection());
 }
 
 /// @brief DOCME
@@ -2020,14 +2023,15 @@ void FrameMain::OnMedusaStop(wxCommandEvent &event) {
 	// Playing, stop
 	if (audioController->IsPlaying()) {
 		audioController->Stop();
-		audioBox->audioDisplay->Refresh();
+		//audioBox->audioDisplay->Refresh();
 	}
 
 	// Otherwise, play the last 500 ms
 	else {
-		int	start=0,end=0;
-		audioBox->audioDisplay->GetTimesSelection(start,end);
-		audioBox->audioDisplay->Play(end-500,end);
+		AudioController::SampleRange sel(audioController->GetSelection());
+		audioController->PlayRange(AudioController::SampleRange(
+			sel.end() - audioController->SamplesFromMilliseconds(500),
+			sel.end()));;
 	}
 }
 
@@ -2035,79 +2039,88 @@ void FrameMain::OnMedusaStop(wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnMedusaShiftStartForward(wxCommandEvent &event) {
-	audioBox->audioDisplay->curStartMS += 10;
-	audioBox->audioDisplay->Update();
-	audioBox->audioDisplay->wxWindow::Update();
-	audioBox->audioDisplay->UpdateTimeEditCtrls();
+	AudioController::SampleRange newsel(
+		audioController->GetSelection(),
+		audioController->SamplesFromMilliseconds(10),
+		0);
+	audioController->SetSelection(newsel);
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaShiftStartBack(wxCommandEvent &event) {
-	audioBox->audioDisplay->curStartMS -= 10;
-	audioBox->audioDisplay->Update();
-	audioBox->audioDisplay->wxWindow::Update();
-	audioBox->audioDisplay->UpdateTimeEditCtrls();
+	AudioController::SampleRange newsel(
+		audioController->GetSelection(),
+		-audioController->SamplesFromMilliseconds(10),
+		0);
+	audioController->SetSelection(newsel);
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaShiftEndForward(wxCommandEvent &event) {
-	audioBox->audioDisplay->curEndMS += 10;
-	audioBox->audioDisplay->Update();
-	audioBox->audioDisplay->wxWindow::Update();
-	audioBox->audioDisplay->UpdateTimeEditCtrls();
+	AudioController::SampleRange newsel(
+		audioController->GetSelection(),
+		0,
+		audioController->SamplesFromMilliseconds(10));
+	audioController->SetSelection(newsel);
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaShiftEndBack(wxCommandEvent &event) {
-	audioBox->audioDisplay->curEndMS -= 10;
-	audioBox->audioDisplay->Update();
-	audioBox->audioDisplay->wxWindow::Update();
-	audioBox->audioDisplay->UpdateTimeEditCtrls();
+	AudioController::SampleRange newsel(
+		audioController->GetSelection(),
+		0,
+		-audioController->SamplesFromMilliseconds(10));
+	audioController->SetSelection(newsel);
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaPlayBefore(wxCommandEvent &event) {
-	int start=0,end=0;
-	audioBox->audioDisplay->GetTimesSelection(start,end);
-	audioBox->audioDisplay->Play(start-500,start);
+		AudioController::SampleRange sel(audioController->GetSelection());
+		audioController->PlayRange(AudioController::SampleRange(
+			sel.begin() - audioController->SamplesFromMilliseconds(500),
+			sel.begin()));;
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaPlayAfter(wxCommandEvent &event) {
-	int start=0,end=0;
-	audioBox->audioDisplay->GetTimesSelection(start,end);
-	audioBox->audioDisplay->Play(end,end+500);
+		AudioController::SampleRange sel(audioController->GetSelection());
+		audioController->PlayRange(AudioController::SampleRange(
+			sel.end(),
+			sel.end() + audioController->SamplesFromMilliseconds(500)));;
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaNext(wxCommandEvent &event) {
-	audioBox->audioDisplay->Next(false);
+	/// @todo Figure out how to handle this in the audio controller
+	//audioBox->audioDisplay->Next(false);
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaPrev(wxCommandEvent &event) {
-	audioBox->audioDisplay->Prev(false);
+	/// @todo Figure out how to handle this in the audio controller
+	//audioBox->audioDisplay->Prev(false);
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaEnter(wxCommandEvent &event) {
-	audioBox->audioDisplay->CommitChanges(true);
+	/// @todo Figure out how to handle this in the audio controller
+	//audioBox->audioDisplay->CommitChanges(true);
 }
 
 

@@ -60,6 +60,7 @@ AudioController::AudioController()
 : provider(0)
 , player(0)
 , playback_mode(PM_NotPlaying)
+, selection(0, 0)
 {
 }
 
@@ -272,6 +273,31 @@ int64_t AudioController::GetPlaybackPosition()
 	if (!IsPlaying()) return 0;
 
 	return player->GetCurrentPosition();
+}
+
+
+void AudioController::ResyncPlaybackPosition(int64_t new_position)
+{
+	if (!IsPlaying()) return;
+
+	player->SetCurrentPosition(new_position);
+}
+
+
+const AudioProvider * AudioController::GetAudioProvider() const
+{
+	return provider;
+}
+
+
+void AudioController::SetSelection(const SampleRange &newsel)
+{
+	selection = newsel;
+
+	ALL_LISTENERS(l)
+	{
+		(*l)->OnSelectionChanged();
+	}
 }
 
 
