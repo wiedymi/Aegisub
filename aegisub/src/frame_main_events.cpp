@@ -365,7 +365,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 
 	// Audio menu
 	else if (curMenu == audioMenu) {
-		bool state = audioBox->loaded;
+		bool state = audioController->IsAudioOpen();
 		bool vidstate = VideoContext::Get()->IsLoaded();
 
 		MenuBar->Enable(Menu_Audio_Open_From_Video,vidstate);

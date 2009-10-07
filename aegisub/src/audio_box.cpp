@@ -106,7 +106,6 @@ AudioBox::AudioBox(wxWindow *parent) :
 wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISED)
 {
 	// Setup
-	loaded = false;
 	karaokeMode = false;
 
 	// Sash and Display

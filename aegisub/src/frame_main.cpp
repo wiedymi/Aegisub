@@ -885,7 +885,7 @@ void FrameMain::SetDisplayMode(int _showVid,int _showAudio) {
 	// Automatic
 	if (_showVid == -1) _showVid = (VideoContext::Get()->IsLoaded() && !detachedVideo) ? 1 : 0;
 	else if (_showVid == -2) _showVid = showVideo?1:0;
-	if (_showAudio == -1) _showAudio = audioBox->loaded ? 1 : 0;
+	if (_showAudio == -1) _showAudio = audioController->IsAudioOpen() ? 1 : 0;
 	else if (_showAudio == -2) _showAudio = showAudio?1:0;
 
 	// See if anything changed

@@ -201,9 +201,6 @@ public:
 	wxString audioName;
 
 	/// DOCME
-	bool loaded;
-
-	/// DOCME
 	bool karaokeMode;
 
 	AudioBox(wxWindow *parent);
