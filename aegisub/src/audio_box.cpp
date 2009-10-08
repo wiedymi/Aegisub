@@ -114,14 +114,7 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	// Sash and Display
 	audioScroll = new wxScrollBar(this,Audio_Scrollbar);
 	audioScroll->SetToolTip(_("Seek bar"));
-	Sash = new wxSashWindow(this,Audio_Sash,wxDefaultPosition,wxDefaultSize,wxCLIP_CHILDREN | wxSW_3DBORDER);
-	sashSizer = new wxBoxSizer(wxVERTICAL);
-	audioDisplay = new AudioDisplay(Sash);
-	sashSizer->Add(audioDisplay,1,wxEXPAND,0);
-	Sash->SetSizer(sashSizer);
-	Sash->SetSashVisible(wxSASH_BOTTOM,true);
-	//Sash->SetSashBorder(wxSASH_BOTTOM,true);
-	Sash->SetMinimumSizeY(50);
+	audioDisplay = new AudioDisplay(this);
 	audioDisplay->ScrollBar = audioScroll;
 	audioDisplay->box = this;
 	int _w,_h;
@@ -147,7 +140,7 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	// Display sizer
 	DisplaySizer = new wxBoxSizer(wxVERTICAL);
 	//DisplaySizer->Add(audioDisplay,1,wxEXPAND,0);
-	DisplaySizer->Add(Sash,0,wxEXPAND,0);
+	DisplaySizer->Add(audioDisplay,0,wxEXPAND,0);
 	DisplaySizer->Add(audioScroll,0,wxEXPAND,0);
 
 	// VertVol sider
@@ -297,7 +290,6 @@ BEGIN_EVENT_TABLE(AudioBox,wxPanel)
 	EVT_COMMAND_SCROLL(Audio_Horizontal_Zoom, AudioBox::OnHorizontalZoom)
 	EVT_COMMAND_SCROLL(Audio_Vertical_Zoom, AudioBox::OnVerticalZoom)
 	EVT_COMMAND_SCROLL(Audio_Volume, AudioBox::OnVolume)
-	EVT_SASH_DRAGGED(Audio_Sash,AudioBox::OnSash)
 
 	EVT_BUTTON(Audio_Button_Play, AudioBox::OnPlaySelection)
 	EVT_BUTTON(Audio_Button_Play_Row, AudioBox::OnPlayDialogue)
@@ -394,56 +386,6 @@ void AudioBox::OnVerticalLink(wxCommandEvent &event) {
 
 	Options.SetBool(_T("Audio Link"),VerticalLink->GetValue());
 	Options.Save();
-}
-
-
-
-/// @brief Sash 
-/// @param event 
-/// @return 
-///
-void AudioBox::OnSash(wxSashEvent& event) {
-	// OK?
-	if (event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE) return;
-
-	// Recursion guard
-	static wxRecursionGuardFlag inside;
-	wxRecursionGuard guard(inside);
-	if (guard.IsInside()) {
-		return;
-	}
-	
-	// Get size
-	wxRect newSize = event.GetDragRect();
-	int w = newSize.GetWidth();
-	int h = newSize.GetHeight();
-	if (h < 50) h = 50;
-	int oldh = audioDisplay->GetSize().GetHeight();
-	if (oldh == h) return;
-
-	// Resize
-	audioDisplay->SetSizeHints(w,h,-1,h);
-	audioDisplay->SetSize(w,h);
-	sashSizer->Layout();
-	Sash->GetParent()->Layout();
-
-	// Store new size
-	Options.SetInt(_T("Audio Display Height"),h);
-	Options.Save();
-
-	// Fix layout
-	frameMain->Freeze();
-	DisplaySizer->Layout();
-	//TopSizer->Layout();
-	//MainSizer->Layout();
-	Layout();
-	frameMain->ToolSizer->Layout();
-	frameMain->MainSizer->Layout();
-	frameMain->Layout();
-	frameMain->Refresh();
-	frameMain->Thaw();
-
-	//event.Skip();
 }
 
 
@@ -765,30 +707,36 @@ void AudioBox::OnLeadOut(wxCommandEvent &event) {
 
 void AudioBox::OnAudioOpen(AudioProvider *provider)
 {
+	/// @todo have audio display init contents
 }
 
 
 void AudioBox::OnAudioClose()
 {
+	/// @todo clean up audio display
 }
 
 
 void AudioBox::OnMarkersMoved()
 {
+	// ?
 }
 
 
 void AudioBox::OnSelectionChanged()
 {
+	// ?
 }
 
 
 void AudioBox::OnPlaybackPosition(int64_t sample_position)
 {
+	// ?
 }
 
 
 void AudioBox::OnPlaybackStop()
 {
+	// ?
 }
 

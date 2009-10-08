@@ -46,6 +46,7 @@
 #include <wx/filename.h>
 #endif
 
+#include "audio_controller.h"
 #include "audio_provider_hd.h"
 #include "dialog_progress.h"
 #include "frame_main.h"

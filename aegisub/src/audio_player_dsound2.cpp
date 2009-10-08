@@ -47,9 +47,10 @@
 #include <process.h>
 #include <dsound.h>
 
+#include "audio_controller.h"
 #include "audio_player_dsound2.h"
-#include "frame_main.h"
 #include "include/aegisub/audio_provider.h"
+#include "frame_main.h"
 #include "main.h"
 #include "options.h"
 #include "utils.h"

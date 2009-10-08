@@ -148,6 +148,7 @@ FrameMain::FrameMain (wxArrayString args)
 
 	// Contexts and controllers
 	audioController = new AudioController;
+	audioController->AddListener(this);
 
 	// Create menu and tool bars
 	StartupLog(_T("Apply saved Maximized state"));
@@ -245,6 +246,8 @@ FrameMain::FrameMain (wxArrayString args)
 /// @brief FrameMain destructor 
 ///
 FrameMain::~FrameMain () {
+	VideoContext::Get()->SetVideo(_T(""));
+	audioController->CloseAudio();
 	DeInitContents();
 	delete audioController;
 #ifdef WITH_AUTOMATION
@@ -594,22 +597,18 @@ void FrameMain::InitContents() {
 	StartupLog(_T("Create background panel"));
 	Panel = new wxPanel(this,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL | wxCLIP_CHILDREN);
 
-	// Initialize sizers
-	StartupLog(_T("Create main sizers"));
-	MainSizer = new wxBoxSizer(wxVERTICAL);
-	TopSizer = new wxBoxSizer(wxHORIZONTAL);
-	BottomSizer = new wxBoxSizer(wxHORIZONTAL);
-
 	// Video area;
 	StartupLog(_T("Create video box"));
 	videoBox = new VideoBox(Panel, false);
-	TopSizer->Add(videoBox,0,wxEXPAND,0);
 	videoBox->videoDisplay->zoomBox = ZoomBox;
+	VideoContext::Get()->audio = audioController;
+	wxBoxSizer *videoSizer = new wxBoxSizer(wxVERTICAL);
+	videoSizer->Add(videoBox, 0, wxEXPAND);
+	videoSizer->AddStretchSpacer(1);
 
 	// Subtitles area
 	StartupLog(_T("Create subtitles grid"));
 	SubsBox = new SubtitlesGrid(this,Panel,-1,wxDefaultPosition,wxSize(600,100),wxWANTS_CHARS | wxSUNKEN_BORDER,_T("Subs grid"));
-	BottomSizer->Add(SubsBox,1,wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,0);
 	StartupLog(_T("Reset undo stack"));
 	AssFile::StackReset();
 	videoBox->videoSlider->grid = SubsBox;
@@ -618,27 +617,36 @@ void FrameMain::InitContents() {
 	videoBox->videoDisplay->SetZoomPos(Options.AsInt(_T("Video Default Zoom")));
 	Search.grid = SubsBox;
 
+	// Tools area
+	StartupLog(_T("Create tool area splitter window"));
+	audioSash = new wxSashWindow(Panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxCLIP_CHILDREN);
+	wxBoxSizer *audioSashSizer = new wxBoxSizer(wxHORIZONTAL);
+	audioSash->SetSashVisible(wxSASH_BOTTOM, true);
+
 	// Audio area
 	StartupLog(_T("Create audio box"));
-	audioBox = new AudioBox(Panel, audioController);
+	audioBox = new AudioBox(audioSash, audioController);
 	audioBox->frameMain = this;
-	VideoContext::Get()->audio = audioController;
+	audioSashSizer->Add(audioBox);
+	audioSash->SetSizer(audioSashSizer);
 
-	// Top sizer
+	// Editing area
 	StartupLog(_T("Create subtitle editing box"));
 	EditBox = new SubsEditBox(Panel,SubsBox);
 	EditBox->audio = audioController;
-	StartupLog(_T("Arrange controls in sizers"));
-	ToolSizer = new wxBoxSizer(wxVERTICAL);
-	ToolSizer->Add(audioBox,0,wxEXPAND | wxBOTTOM,5);
-	ToolSizer->Add(EditBox,1,wxEXPAND,5);
-	TopSizer->Add(ToolSizer,1,wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,5);
 
 	// Set sizers/hints
 	StartupLog(_T("Arrange main sizers"));
+	ToolsSizer = new wxBoxSizer(wxVERTICAL);
+	ToolsSizer->Add(audioSash, 1, wxEXPAND);
+	ToolsSizer->Add(EditBox, 0, wxEXPAND);
+	TopSizer = new wxBoxSizer(wxHORIZONTAL);
+	TopSizer->Add(videoSizer, 0, wxEXPAND, 0);
+	TopSizer->Add(ToolsSizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 5);
+	MainSizer = new wxBoxSizer(wxVERTICAL);
 	MainSizer->Add(new wxStaticLine(Panel),0,wxEXPAND | wxALL,0);
 	MainSizer->Add(TopSizer,0,wxEXPAND | wxALL,0);
-	MainSizer->Add(BottomSizer,1,wxEXPAND | wxALL,0);
+	MainSizer->Add(SubsBox,1,wxEXPAND | wxALL,0);
 	Panel->SetSizer(MainSizer);
 	//MainSizer->SetSizeHints(Panel);
 	//SetSizer(MainSizer);
@@ -663,6 +671,7 @@ void FrameMain::DeInitContents() {
 	AssFile::StackReset();
 	delete AssFile::top;
 	delete EditBox;
+	delete audioBox;
 	delete videoBox;
 	HelpButton::ClearPages();
 }
@@ -898,8 +907,8 @@ void FrameMain::SetDisplayMode(int _showVid,int _showAudio) {
 	VideoContext::Get()->Stop();
 
 	// Set display
-	TopSizer->Show(videoBox,showVideo,true);
-	ToolSizer->Show(audioBox,showAudio,true);
+	TopSizer->Show(videoBox, showVideo, true);
+	ToolsSizer->Show(audioSash, showAudio, true);
 
 	// Update
 	UpdateToolbar();

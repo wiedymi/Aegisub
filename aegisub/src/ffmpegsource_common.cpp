@@ -46,6 +46,7 @@
 #include <wx/choicdlg.h> // Keep this last so wxUSE_CHOICEDLG is set.
 #endif
 
+#include "audio_controller.h"
 #include "ffmpegsource_common.h"
 #include "frame_main.h"
 #include "main.h"

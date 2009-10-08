@@ -49,8 +49,14 @@
 #include <wx/menu.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
+#include <wx/sashwin.h>
 #include <wx/timer.h>
 #endif
+
+#ifndef AGI_AUDIO_CONTROLLER_INCLUDED
+#error You must include "audio_controller.h" before "frame_main.h"
+#endif
+
 
 
 ////////////////////
@@ -77,7 +83,7 @@ namespace Automation4 { class FeatureMacro; class ScriptManager; };
 /// @brief DOCME
 ///
 /// DOCME
-class FrameMain: public wxFrame {
+class FrameMain: public wxFrame, private AudioControllerEventListener {
 	friend class AegisubFileDropTarget;
 	friend class AegisubApp;
 	friend class SubtitlesGrid;
@@ -329,18 +335,32 @@ private:
 	void RebuildRecentList(wxString listName,wxMenu *menu,int startID);
 	void SynchronizeProject(bool FromSubs=false);
 
+
+private:
+	// AudioControllerEventListener implementation
+	virtual void OnAudioOpen(AudioProvider *provider);
+	virtual void OnAudioClose();
+	virtual void OnMarkersMoved();
+	virtual void OnSelectionChanged();
+	virtual void OnPlaybackPosition(int64_t sample_position);
+	virtual void OnPlaybackStop();
+
+
 public:
 
-	/// DOCME
+	/// The subtitle editing area
 	SubtitlesGrid *SubsBox;
 
-	/// DOCME
+	/// The subtitle editing textbox
 	SubsEditBox *EditBox;
 
-	/// DOCME
+	/// Sash for resizing the audio area
+	wxSashWindow *audioSash;
+
+	/// The audio area
 	AudioBox *audioBox;
 
-	/// DOCME
+	/// The video area
 	VideoBox *videoBox;
 
 	/// DOCME
@@ -353,17 +373,15 @@ public:
 	AudioController *audioController;
 
 
-	/// DOCME
+	/// Arranges things from top to bottom in the window
 	wxBoxSizer *MainSizer;
 
-	/// DOCME
+	/// Arranges video box and tool box from left to right
 	wxBoxSizer *TopSizer;
 
-	/// DOCME
-	wxBoxSizer *BottomSizer;
+	/// Arranges audio and editing areas top to bottom
+	wxBoxSizer *ToolsSizer;
 
-	/// DOCME
-	wxBoxSizer *ToolSizer;
 
 	FrameMain (wxArrayString args);
 	~FrameMain ();

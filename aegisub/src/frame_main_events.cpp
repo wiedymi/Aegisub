@@ -2012,7 +2012,6 @@ void FrameMain::OnViewSubs (wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnMedusaPlay(wxCommandEvent &event) {
-	int start=0,end=0;
 	audioController->PlayRange(audioController->GetSelection());
 }
 
@@ -2023,7 +2022,6 @@ void FrameMain::OnMedusaStop(wxCommandEvent &event) {
 	// Playing, stop
 	if (audioController->IsPlaying()) {
 		audioController->Stop();
-		//audioBox->audioDisplay->Refresh();
 	}
 
 	// Otherwise, play the last 500 ms
@@ -2123,4 +2121,39 @@ void FrameMain::OnMedusaEnter(wxCommandEvent &event) {
 	//audioBox->audioDisplay->CommitChanges(true);
 }
 
+
+void FrameMain::OnAudioOpen(AudioProvider *provider)
+{
+	SetDisplayMode(-2, 1);
+}
+
+
+void FrameMain::OnAudioClose()
+{
+	SetDisplayMode(-2, 0);
+}
+
+
+void FrameMain::OnMarkersMoved()
+{
+	// do nothing
+}
+
+
+void FrameMain::OnSelectionChanged()
+{
+	// do nothing
+}
+
+
+void FrameMain::OnPlaybackPosition(int64_t sample_position)
+{
+	// do nothing
+}
+
+
+void FrameMain::OnPlaybackStop()
+{
+	// do nothing
+}
 

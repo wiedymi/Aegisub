@@ -101,9 +101,6 @@ class AudioBox : public wxPanel, private AudioControllerEventListener {
 	wxSizer *DisplaySizer;
 
 	/// DOCME
-	wxSashWindow *Sash;
-
-	/// DOCME
 	ToggleBitmap *VerticalLink;
 
 	/// Karaoke box sizer
@@ -147,7 +144,6 @@ class AudioBox : public wxPanel, private AudioControllerEventListener {
 	void OnVerticalZoom(wxScrollEvent &event);
 	void OnVolume(wxScrollEvent &event);
 	void OnVerticalLink(wxCommandEvent &event);
-	void OnSash(wxSashEvent &event);
 
 	void OnPlaySelection(wxCommandEvent &event);
 	void OnPlayDialogue(wxCommandEvent &event);
