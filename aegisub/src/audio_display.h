@@ -106,23 +106,10 @@ public:
 	// audio_karaoke.cpp 667 715 927
 	bool NeedCommit;
 
-	/// Is the audio provider a temporary one (linked to the video provider)?
-	// video_context.cpp 178 183
-	bool temporary;
-
-	/// Current start something in milliseconds
-	// frame_main_events.cpp  2035 2045
-	int curStartMS;
-
-	/// Current end something in milliseconds
-	// frame_main_events.cpp 2055 2065
-	int curEndMS;
-
 
 	/// Do a commit
-	// audio_karaoke.cpp 928
-	// audio_box.cpp 568
-	// frame_main_events.cpp 2107
+	// audio_karaoke.cpp 931
+	// audio_box.cpp 501
 	void CommitChanges(bool) { }
 	void CommitChanges() { }
 
@@ -130,53 +117,11 @@ public:
 	// audio_box.cpp 346
 	void SetScale(float) { }
 
-	/// Get the selection start and end times
-	// audio_box.cpp 445 502 514 526 540 554
-	// frame_main_events.cpp 2009 2026 2076 2085
-	void GetTimesSelection(int &, int &) { }
-
-	/// Start playback
-	// audio_box.cpp 446 459 503 515 529 543 555
-	// video_context.cpp 689 711
-	// dialog_translation.cpp 413 445
-	// frame_main_events.cpp 2010 2027 2077 2086
-	// dialog_styling_assistant.cpp 387 457
-	void Play(int, int) { }
-
-	/// Get the stored start and end times for the current dialogue line
-	// audio_box.cpp 457
-	void GetTimesDialogue(int &, int &) { }
-
-	/// Set the selection start and end
-	// audio_box.cpp 458
-	void SetSelection(int, int) { }
-
-	/// Stop playback
-	// audio_box.cpp 469 479 490
-	// video_context.cpp 738
-	// frame_main_events.cpp 1605 2019
-	void Stop() { }
-
-	/// Switch to the next line (or syllable if in karaoke mode)
-	// audio_box.cpp 480
-	// frame_main_events.cpp 2093
-	void Next(bool) { }
-	void Next() { }
-
-	/// Switch to the previous line (or syllable if in karaoke mode)
-	// audio_box.cpp 491
-	// frame_main_events.cpp 2100
-	void Prev(bool) { }
-	void Prev() { }
-
 	/// Switch dialogue line
-	// subs_edit_box.cpp 298 798 1051
 	// audio_box.cpp 588 596
-	void SetDialogue(SubtitlesGrid *, AssDialogue *, int) { }
 	void SetDialogue() { }
 
 	/// Update image back buffer
-	// video_context.cpp 384
 	// audio_box.cpp 729
 	void UpdateImage(bool) { }
 
@@ -188,35 +133,6 @@ public:
 	// audio_box.cpp 741 750
 	void AddLead(bool, bool) { }
 
-	/// Get the sample number for the time in milliseconds
-	// video_context.cpp 780 789
-	// subs_grid.cpp 736 738
-	int GetSampleAtMS(int) { return 0; }
-
-	/// Push selection times to time edit controls
-	// frame_main_events.cpp 2038 2048 2058 2068
-	void UpdateTimeEditCtrls() { }
-
-	/// Reloads the audio provider
-	// dialog_options.cpp 1002
-	void Reload() { }
-
-	/// Recreates the back buffer image
-	// dialog_options.cpp 1006
-	void RecreateImage() { }
-
-	/// Scrolls or something to the position given in some measure
-	// audio_box.cpp 324
-	void SetPosition(int) { }
-
-	/// Attempts to load the current video as an audio file
-	// audio_box.cpp 264
-	void SetFromVideo() { }
-
-	/// Loads audio from the given file
-	// audio_box.cpp 270
-	void SetFile(const wxString &) { }
-
 	/// Set horizontal zoom level in percent of the total audio length
 	// audio_box.cpp 333
 	void SetSamplesPercent(int) { }
@@ -225,13 +141,7 @@ public:
 	/// Karaoke control and controller
 	AudioKaraoke *karaoke;
 
-	/// Audio provider, owned unless temporary
-	// video_context.cpp 179 180 788 793
-	// subs_grid.cpp 727
-	AudioProvider *provider;
-
 	/// The containing audio box
-	// dialog_styling_assistant.cpp 75
 	AudioBox *box;
 
 
