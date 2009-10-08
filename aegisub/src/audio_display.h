@@ -121,10 +121,6 @@ public:
 	// audio_box.cpp 588 596
 	void SetDialogue() { }
 
-	/// Update image back buffer
-	// audio_box.cpp 729
-	void UpdateImage(bool) { }
-
 	/// Ensure the current dialogue line is visible to the user
 	// audio_box.cpp 673
 	void MakeDialogueVisible(bool) { }

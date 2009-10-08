@@ -128,13 +128,7 @@ class AudioBox : public wxPanel, private AudioControllerEventListener {
 	ToggleBitmap *NextCommit;
 
 	/// DOCME
-	ToggleBitmap *MedusaMode;
-
-	/// DOCME
 	ToggleBitmap *AutoCommit;
-
-	/// DOCME
-	ToggleBitmap *SpectrumMode;
 
 	void OnHorizontalZoom(wxScrollEvent &event);
 	void OnVerticalZoom(wxScrollEvent &event);
@@ -163,8 +157,6 @@ class AudioBox : public wxPanel, private AudioControllerEventListener {
 
 	void OnAutoGoto(wxCommandEvent &event);
 	void OnAutoCommit(wxCommandEvent &event);
-	void OnMedusaMode(wxCommandEvent &event);
-	void OnSpectrumMode(wxCommandEvent &event);
 	void OnNextLineCommit(wxCommandEvent &event);
 
 

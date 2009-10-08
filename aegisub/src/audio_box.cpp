@@ -210,14 +210,6 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	AutoScroll->SetToolTip(_("Auto scrolls audio display to selected line"));
 	AutoScroll->SetValue(Options.AsBool(_T("Audio Autoscroll")));
 	ButtonSizer->Add(AutoScroll,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
-	SpectrumMode = new ToggleBitmap(this,Audio_Check_Spectrum,GETIMAGE(toggle_audio_spectrum_24),wxSize(30,-1));
-	SpectrumMode->SetToolTip(_("Spectrum analyzer mode"));
-	SpectrumMode->SetValue(Options.AsBool(_T("Audio Spectrum")));
-	ButtonSizer->Add(SpectrumMode,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
-	MedusaMode = new ToggleBitmap(this,Audio_Check_Medusa,GETIMAGE(toggle_audio_medusa_24),wxSize(30,-1));
-	MedusaMode->SetToolTip(_("Enable Medusa-Style Timing Shortcuts"));
-	MedusaMode->SetValue(Options.AsBool(_T("Audio Medusa Timing Hotkeys")));
-	ButtonSizer->Add(MedusaMode,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
 	ButtonSizer->AddStretchSpacer(1);
 
 	// Karaoke sizer
@@ -304,8 +296,6 @@ BEGIN_EVENT_TABLE(AudioBox,wxPanel)
 	EVT_TOGGLEBUTTON(Audio_Vertical_Link, AudioBox::OnVerticalLink)
 	EVT_TOGGLEBUTTON(Audio_Button_Karaoke, AudioBox::OnKaraoke)
 	EVT_TOGGLEBUTTON(Audio_Check_AutoGoto,AudioBox::OnAutoGoto)
-	EVT_TOGGLEBUTTON(Audio_Check_Medusa,AudioBox::OnMedusaMode)
-	EVT_TOGGLEBUTTON(Audio_Check_Spectrum,AudioBox::OnSpectrumMode)
 	EVT_TOGGLEBUTTON(Audio_Check_AutoCommit,AudioBox::OnAutoCommit)
 	EVT_TOGGLEBUTTON(Audio_Check_NextCommit,AudioBox::OnNextLineCommit)
 END_EVENT_TABLE()
@@ -641,28 +631,24 @@ void AudioBox::OnNextLineCommit(wxCommandEvent &event) {
 
 
 
-/// @brief Medusa Mode 
-/// @param event 
-///
+/// @todo Put global audio hotkeys toggling into the menu bar
+/*
 void AudioBox::OnMedusaMode(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
 	Options.SetBool(_T("Audio Medusa Timing Hotkeys"),MedusaMode->GetValue());
 	Options.Save();
 	frameMain->SetAccelerators();
 }
+*/
 
 
-
-/// @brief Spectrum Analyzer Mode 
-/// @param event 
-///
+/// @todo Put spectrum mode toggling into the menu bar
+/*
 void AudioBox::OnSpectrumMode(wxCommandEvent &event) {
-	Options.SetBool(_T("Audio Spectrum"),SpectrumMode->GetValue());
-	Options.Save();
-	audioDisplay->UpdateImage(false);
-	audioDisplay->SetFocus();
-	audioDisplay->Refresh(false);
+	//Options.SetBool(_T("Audio Spectrum"),SpectrumMode->GetValue());
+	//Options.Save();
 }
+*/
 
 
 
