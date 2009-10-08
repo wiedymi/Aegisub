@@ -43,19 +43,15 @@
 #include "audio_display.h"
 
 
-#ifdef __WXMAC__
-# define AudioDisplayWindowStyle wxWANTS_CHARS
-#else
-# define AudioDisplayWindowStyle wxSUNKEN_BORDER | wxWANTS_CHARS
-#endif
-
-
 /// @brief Constructor 
 /// @param parent 
 ///
 AudioDisplay::AudioDisplay(wxWindow *parent)
-: wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, AudioDisplayWindowStyle)
+: wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS)
 {
+	SetMinClientSize(wxSize(-1, 70));
+	//SetBackgroundStyle(wxBG_STYLE_CUSTOM); // intended to be wxBG_STYLE_PAINT but that doesn't exist for me
+	SetBackgroundColour(*wxBLACK);
 }
 
 
