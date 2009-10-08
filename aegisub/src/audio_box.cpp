@@ -60,6 +60,10 @@
 #include "toggle_bitmap.h"
 #include "tooltip_manager.h"
 
+// Stuff defines "min" and "max" as macros and breaks std::min and std::max in the process
+#undef min
+#undef max
+
 
 enum AudioBoxControlIDs {
 	Audio_Scrollbar = 1600,
@@ -349,7 +353,7 @@ void AudioBox::OnVerticalZoom(wxScrollEvent &event) {
 	float value = pow(float(pos)/50.0f,3);
 	audioDisplay->SetScale(value);
 	if (VerticalLink->GetValue()) {
-		audioDisplay->player->SetVolume(value);
+		controller->SetVolume(value);
 		VolumeBar->SetValue(pos);
 	}
 }
@@ -364,7 +368,7 @@ void AudioBox::OnVolume(wxScrollEvent &event) {
 		int pos = event.GetPosition();
 		if (pos < 1) pos = 1;
 		if (pos > 100) pos = 100;
-		audioDisplay->player->SetVolume(pow(float(pos)/50.0f,3));
+		controller->SetVolume(pow(float(pos)/50.0f,3));
 	}
 }
 
@@ -379,7 +383,7 @@ void AudioBox::OnVerticalLink(wxCommandEvent &event) {
 	if (pos > 100) pos = 100;
 	float value = pow(float(pos)/50.0f,3);
 	if (VerticalLink->GetValue()) {
-		audioDisplay->player->SetVolume(value);
+		controller->SetVolume(value);
 		VolumeBar->SetValue(pos);
 	}
 	VolumeBar->Enable(!VerticalLink->GetValue());
@@ -394,10 +398,7 @@ void AudioBox::OnVerticalLink(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlaySelection(wxCommandEvent &event) {
-	int start=0,end=0;
-	audioDisplay->SetFocus();
-	audioDisplay->GetTimesSelection(start,end);
-	audioDisplay->Play(start,end);
+	controller->PlayRange(controller->GetSelection());
 }
 
 
@@ -407,10 +408,12 @@ void AudioBox::OnPlaySelection(wxCommandEvent &event) {
 ///
 void AudioBox::OnPlayDialogue(wxCommandEvent &event) {
 	int start=0,end=0;
-	audioDisplay->SetFocus();
-	audioDisplay->GetTimesDialogue(start,end);
-	audioDisplay->SetSelection(start, end);
-	audioDisplay->Play(start,end);
+	/// @todo Figure out where this current line stored times obtaining should be
+	//audioDisplay->GetTimesDialogue(start,end);
+	controller->SetSelection(AudioController::SampleRange(
+		controller->SamplesFromMilliseconds(start),
+		controller->SamplesFromMilliseconds(end)));
+	controller->PlayRange(controller->GetSelection());
 }
 
 
@@ -419,8 +422,7 @@ void AudioBox::OnPlayDialogue(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnStop(wxCommandEvent &event) {
-	audioDisplay->SetFocus();
-	audioDisplay->Stop();
+	controller->Stop();
 }
 
 
@@ -429,9 +431,10 @@ void AudioBox::OnStop(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnNext(wxCommandEvent &event) {
-	audioDisplay->SetFocus();
-	audioDisplay->Stop();
-	audioDisplay->Next();
+	/// @todo Remodel this
+	//audioDisplay->SetFocus();
+	//audioDisplay->Stop();
+	//audioDisplay->Next();
 }
 
 
@@ -440,9 +443,10 @@ void AudioBox::OnNext(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPrev(wxCommandEvent &event) {
-	audioDisplay->SetFocus();
-	audioDisplay->Stop();
-	audioDisplay->Prev();
+	/// @todo Remodel this
+	//audioDisplay->SetFocus();
+	//audioDisplay->Stop();
+	//audioDisplay->Prev();
 }
 
 
@@ -451,10 +455,10 @@ void AudioBox::OnPrev(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlay500Before(wxCommandEvent &event) {
-	int start=0,end=0;
-	audioDisplay->SetFocus();
-	audioDisplay->GetTimesSelection(start,end);
-	audioDisplay->Play(start-500,start);
+	AudioController::SampleRange times(controller->GetSelection());
+	controller->PlayRange(AudioController::SampleRange(
+		times.begin() - controller->SamplesFromMilliseconds(500),
+		times.begin()));
 }
 
 
@@ -463,10 +467,10 @@ void AudioBox::OnPlay500Before(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlay500After(wxCommandEvent &event) {
-	int start=0,end=0;
-	audioDisplay->SetFocus();
-	audioDisplay->GetTimesSelection(start,end);
-	audioDisplay->Play(end,end+500);
+	AudioController::SampleRange times(controller->GetSelection());
+	controller->PlayRange(AudioController::SampleRange(
+		times.end(),
+		times.end() + controller->SamplesFromMilliseconds(500)));
 }
 
 
@@ -475,12 +479,12 @@ void AudioBox::OnPlay500After(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlay500First(wxCommandEvent &event) {
-	int start=0,end=0;
-	audioDisplay->SetFocus();
-	audioDisplay->GetTimesSelection(start,end);
-	int endp = start+500;
-	if (endp > end) endp = end;
-	audioDisplay->Play(start,endp);
+	AudioController::SampleRange times(controller->GetSelection());
+	controller->PlayRange(AudioController::SampleRange(
+		times.begin(),
+		times.begin() + std::min(
+			controller->SamplesFromMilliseconds(500),
+			times.length())));
 }
 
 
@@ -489,12 +493,12 @@ void AudioBox::OnPlay500First(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlay500Last(wxCommandEvent &event) {
-	int start=0,end=0;
-	audioDisplay->SetFocus();
-	audioDisplay->GetTimesSelection(start,end);
-	int startp = end-500;
-	if (startp < start) startp = start;
-	audioDisplay->Play(startp,end);
+	AudioController::SampleRange times(controller->GetSelection());
+	controller->PlayRange(AudioController::SampleRange(
+		times.end() - std::min(
+			controller->SamplesFromMilliseconds(500),
+			times.length()),
+		times.end()));
 }
 
 
@@ -503,10 +507,7 @@ void AudioBox::OnPlay500Last(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlayToEnd(wxCommandEvent &event) {
-	int start=0,end=0;
-	audioDisplay->SetFocus();
-	audioDisplay->GetTimesSelection(start,end);
-	audioDisplay->Play(start,-1);
+	controller->PlayToEnd(controller->GetSelection().begin());
 }
 
 

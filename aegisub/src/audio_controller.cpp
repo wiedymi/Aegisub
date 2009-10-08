@@ -160,8 +160,6 @@ void AudioController::OpenAudio(const wxString &url)
 		throw;
 	}
 
-	PlayToEnd(0);
-
 	/// @todo Tell listeners about this.
 	ALL_LISTENERS(l)
 	{
@@ -284,12 +282,6 @@ void AudioController::ResyncPlaybackPosition(int64_t new_position)
 }
 
 
-const AudioProvider * AudioController::GetAudioProvider() const
-{
-	return provider;
-}
-
-
 void AudioController::SetSelection(const SampleRange &newsel)
 {
 	selection = newsel;
@@ -298,6 +290,20 @@ void AudioController::SetSelection(const SampleRange &newsel)
 	{
 		(*l)->OnSelectionChanged();
 	}
+}
+
+
+double AudioController::GetVolume() const
+{
+	if (!IsAudioOpen()) return 1.0;
+	return player->GetVolume();
+}
+
+
+void AudioController::SetVolume(double volume)
+{
+	if (!IsAudioOpen()) return;
+	player->SetVolume(volume);
 }
 
 

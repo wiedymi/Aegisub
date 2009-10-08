@@ -233,9 +233,18 @@ public:
 	void SetSelection(const SampleRange &newsel);
 
 
+	/// @brief Get the playback audio volume
+	/// @return The amplification factor for the audio
+	double GetVolume() const;
+
+	/// @brief Set the playback audio volume
+	/// @param volume The new amplification factor for the audio
+	void SetVolume(double volume);
+
+
 	/// @brief Return the current audio provider
 	/// @return A const pointer to the current audio provider
-	const AudioProvider * GetAudioProvider() const;
+	const AudioProvider * GetAudioProvider() const { return provider; }
 
 
 	/// @brief Convert a count of audio samples to a time in milliseconds
