@@ -116,14 +116,8 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	karaokeMode = false;
 
 	// Sash and Display
-	audioScroll = new wxScrollBar(this,Audio_Scrollbar);
-	audioScroll->SetToolTip(_("Seek bar"));
 	audioDisplay = new AudioDisplay(this);
-	audioDisplay->ScrollBar = audioScroll;
 	audioDisplay->box = this;
-	int _w,_h;
-	audioDisplay->GetSize(&_w,&_h);
-	audioDisplay->SetSizeHints(-1,_h,-1,_h);
 
 	// Zoom
 	HorizontalZoom = new wxSlider(this,Audio_Horizontal_Zoom,50,0,100,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH);
@@ -141,12 +135,6 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	VerticalLink->SetToolTip(_("Link vertical zoom and volume sliders"));
 	VerticalLink->SetValue(link);
 
-	// Display sizer
-	DisplaySizer = new wxBoxSizer(wxVERTICAL);
-	//DisplaySizer->Add(audioDisplay,1,wxEXPAND,0);
-	DisplaySizer->Add(audioDisplay,0,wxEXPAND,0);
-	DisplaySizer->Add(audioScroll,0,wxEXPAND,0);
-
 	// VertVol sider
 	wxSizer *VertVol = new wxBoxSizer(wxHORIZONTAL);
 	VertVol->Add(VerticalZoom,1,wxEXPAND,0);
@@ -157,7 +145,7 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 
 	// Top sizer
 	TopSizer = new wxBoxSizer(wxHORIZONTAL);
-	TopSizer->Add(DisplaySizer,1,wxEXPAND,0);
+	TopSizer->Add(audioDisplay,1,wxEXPAND|wxALL,3);
 	TopSizer->Add(HorizontalZoom,0,wxEXPAND,0);
 	TopSizer->Add(VertVolArea,0,wxEXPAND,0);
 
@@ -268,9 +256,9 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	// Main sizer
 	MainSizer = new wxBoxSizer(wxVERTICAL);
 	MainSizer->Add(TopSizer,0,wxEXPAND,0);
-	MainSizer->Add(ButtonSizer,0,wxEXPAND,0);
-	MainSizer->Add(new wxStaticLine(this),0,wxEXPAND|wxTOP|wxBOTTOM,2);
-	MainSizer->Add(karaokeSizer,0,wxEXPAND,0);
+	MainSizer->Add(ButtonSizer,0,wxEXPAND|wxBOTTOM,3);
+	//MainSizer->Add(new wxStaticLine(this),0,wxEXPAND|wxTOP|wxBOTTOM,2);
+	MainSizer->Add(karaokeSizer,0,wxEXPAND|wxBOTTOM,3);
 	//MainSizer->SetSizeHints(this);
 	SetSizer(MainSizer);
 
@@ -290,7 +278,6 @@ AudioBox::~AudioBox()
 ///////////////
 // Event table
 BEGIN_EVENT_TABLE(AudioBox,wxPanel)
-	EVT_COMMAND_SCROLL(Audio_Scrollbar, AudioBox::OnScrollbar)
 	EVT_COMMAND_SCROLL(Audio_Horizontal_Zoom, AudioBox::OnHorizontalZoom)
 	EVT_COMMAND_SCROLL(Audio_Vertical_Zoom, AudioBox::OnVerticalZoom)
 	EVT_COMMAND_SCROLL(Audio_Volume, AudioBox::OnVolume)
@@ -322,15 +309,6 @@ BEGIN_EVENT_TABLE(AudioBox,wxPanel)
 	EVT_TOGGLEBUTTON(Audio_Check_AutoCommit,AudioBox::OnAutoCommit)
 	EVT_TOGGLEBUTTON(Audio_Check_NextCommit,AudioBox::OnNextLineCommit)
 END_EVENT_TABLE()
-
-
-
-/// @brief Scrollbar changed 
-/// @param event 
-///
-void AudioBox::OnScrollbar(wxScrollEvent &event) {
-	audioDisplay->SetPosition(event.GetPosition()*12);
-}
 
 
 

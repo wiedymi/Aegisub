@@ -77,9 +77,6 @@ class AudioBox : public wxPanel, private AudioControllerEventListener {
 	AudioDisplay *audioDisplay;
 
 	/// DOCME
-	wxScrollBar *audioScroll;
-
-	/// DOCME
 	wxSlider *HorizontalZoom;
 
 	/// DOCME
@@ -139,7 +136,6 @@ class AudioBox : public wxPanel, private AudioControllerEventListener {
 	/// DOCME
 	ToggleBitmap *SpectrumMode;
 
-	void OnScrollbar(wxScrollEvent &event);
 	void OnHorizontalZoom(wxScrollEvent &event);
 	void OnVerticalZoom(wxScrollEvent &event);
 	void OnVolume(wxScrollEvent &event);

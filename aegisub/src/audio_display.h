@@ -230,22 +230,9 @@ public:
 	// subs_grid.cpp 727
 	AudioProvider *provider;
 
-	/// Audio player, owned
-	// audio_box.cpp 348 363 378
-	// video_context.cpp 181 182 780 788 790 794
-	// frame_main_events.cpp 2018
-	AudioPlayer *player;
-
-	/// When triggered, updates playback position
-	wxTimer UpdateTimer;
-
-	/// The audio box
+	/// The containing audio box
 	// dialog_styling_assistant.cpp 75
 	AudioBox *box;
-
-	/// Scroll bar used to scroll the view
-	// audio_box.cpp 81
-	wxScrollBar *ScrollBar;
 
 
 public:
