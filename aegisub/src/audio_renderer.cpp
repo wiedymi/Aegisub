@@ -193,13 +193,15 @@ wxBitmap AudioRenderer::GetCachedBitmap(int i, bool selected)
 	assert(bmp);
 	if (created)
 	{
-		//renderer->Render(*bmp, i*cache_bitmap_width, selected);
-		wxLogDebug(_T("Create audio cache bitmap %d (cache=%d)"), i, selected?1:0);
+		wxLogDebug(_T("Create audio cache bitmap %d (selected=%d)"), i, selected?1:0);
+		renderer->Render(*bmp, i*cache_bitmap_width, selected);
+		/*
 		wxMemoryDC dc(*bmp);
 		wxColour col(i<<3|i<<5, i<<7|i<<1, i<<4);
 		dc.SetBrush(wxBrush(col));
 		dc.SetPen(wxPen(col));
 		dc.DrawRectangle(0, 0, cache_bitmap_width, pixel_height);
+		*/
 	}
 
 	assert(bmp->IsOk());

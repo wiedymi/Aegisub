@@ -88,9 +88,8 @@ public:
 	/// The pixel format is assumed to be the same as that in the palette.
 	inline void map(float val, unsigned char *pixel)
 	{
-		// This is going to be *slow* in builds with asserts enabled!
-		assert(val >= 0.0);
-		assert(val <= 1.0);
+		if (val < 0.0) val = 0.0;
+		if (val > 1.0) val = 1.0;
 		// Find the colour in the palette
 		unsigned char *color = palette + ((int)(val*factor) * 4);
 		// Copy to the destination

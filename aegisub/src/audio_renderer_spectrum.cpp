@@ -209,6 +209,8 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 {
 	assert(cache);
 	assert(block);
+	assert(fft_scratch);
+	assert(audio_scratch);
 
 	int64_t first_sample = ((int64_t)block_index) << derivation_dist;
 	provider->GetAudio(audio_scratch, first_sample, 2 << derivation_size);
@@ -218,9 +220,9 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 	float *fft_imag = fft_scratch + (4 << derivation_size);
 
 	// Convert audio data to float range [-1;+1)
-	for (size_t si = 2<<derivation_size; si > 0; --si)
+	for (size_t si = 0; si < (size_t)(2<<derivation_size); ++si)
 	{
-		*fft_input++ = (float)(*audio_scratch++) / 32768.f;
+		fft_input[si] = (float)(audio_scratch[si]) / 32768.f;
 	}
 	fft_input = fft_scratch;
 
@@ -229,8 +231,10 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 
 	for (size_t si = 1<<derivation_size; si > 0; --si)
 	{
-		// with x in range [0;1], log10(x*9+1) will also be in range [0;1]
-		*block++ = log10( sqrt(*fft_real * *fft_real + *fft_imag * *fft_imag) * 9 / sqrt(2.) + 1);
+		// With x in range [0;1], log10(x*9+1) will also be in range [0;1],
+		// although the FFT output can apparently get greater magnitudes than 1
+		// despite the input being limited to [-1;+1).
+		*block++ = log10( sqrt(*fft_real * *fft_real + *fft_imag * *fft_imag) * 9 + 1 );
 		fft_real++; fft_imag++;
 	}
 }
@@ -271,7 +275,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 
 		// Prepare bitmap writing
 		wxNativePixelData::Iterator p = pixels.GetPixels();
-		p.MoveTo(pixels, ax - start, 0);
+		p.MoveTo(pixels, ax - start, imgheight-1);
 
 		// Scale up or down vertically?
 		if (imgheight > 1<<derivation_size)
@@ -286,7 +290,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 				float val = (1-frac)*sample1 + frac*sample2;
 				pal->map(val, &color.r);
 				p.Red() = color.r; p.Green() = color.g; p.Blue() = color.b;
-				p.OffsetY(pixels, 1);
+				p.OffsetY(pixels, -1);
 			}
 		}
 		else
@@ -301,7 +305,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 					if (power[samp] > maxval) maxval = power[samp];
 				pal->map(maxval, &color.r);
 				p.Red() = color.r; p.Green() = color.g; p.Blue() = color.b;
-				p.OffsetY(pixels, 1);
+				p.OffsetY(pixels, -1);
 			}
 		}
 	}
