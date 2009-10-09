@@ -44,6 +44,7 @@
 #include "block_cache.h"
 #include "audio_renderer.h"
 #include "audio_renderer_spectrum.h"
+#include "options.h"
 
 
 /// @brief Constructor 
@@ -1126,6 +1127,7 @@ void AudioDisplay::OnAudioOpen(AudioProvider *_provider)
 {
 	provider = _provider;
 	audio_renderer->SetAudioProvider(provider);
+	audio_renderer->SetCacheMaxSize(Options.AsInt(_T("Audio Spectrum Memory Max")) * 1024 * 1024);
 	Refresh();
 }
 
