@@ -71,7 +71,7 @@ class wxScrollBar;
 /// @brief Control that displays audio and lets the user create selections
 ///
 /// Everyone hates this class.
-class AudioDisplay: public wxWindow {
+class AudioDisplay: public wxWindow, private AudioControllerEventListener {
 private:
 
 	/// The audio renderer manager
@@ -79,6 +79,12 @@ private:
 
 	/// The renderer for audio spectrums
 	AudioSpectrumRenderer *audio_spectrum_renderer;
+
+	/// Our current audio provider
+	AudioProvider *provider;
+
+	/// The controller managing us
+	AudioController *controller;
 
 
 	/// Leftmost pixel in the vitual audio image being displayed
@@ -91,10 +97,40 @@ private:
 	float scale_amplitude;
 
 
+	struct {
+		/// Absolute pixel position of the playback position marker
+		int64_t playback_pos;
+	}
+	markers;
+
+
+	struct {
+		/// True if the selection has changed since the last redraw;
+		bool changed;
+
+		/// Absolute pixel position of the selection start
+		int64_t start;
+
+		/// Length of selection in pixels, <=0 and there's no selection
+		int64_t length;
+	}
+	selection;
+
+
 	void OnPaint(wxPaintEvent &event);
 	void OnMouseEvent(wxMouseEvent &event);
 	void OnSize(wxSizeEvent &event);
 	void OnKeyDown(wxKeyEvent &event);
+
+
+private:
+	// AudioControllerEventListener implementation
+	virtual void OnAudioOpen(AudioProvider *provider);
+	virtual void OnAudioClose();
+	virtual void OnMarkersMoved();
+	virtual void OnSelectionChanged();
+	virtual void OnPlaybackPosition(int64_t sample_position);
+	virtual void OnPlaybackStop();
 
 
 public:
@@ -143,7 +179,7 @@ public:
 
 public:
 
-	AudioDisplay(wxWindow *parent);
+	AudioDisplay(wxWindow *parent, AudioController *controller);
 	~AudioDisplay();
 
 	DECLARE_EVENT_TABLE()

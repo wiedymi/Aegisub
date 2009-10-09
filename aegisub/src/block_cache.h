@@ -41,6 +41,8 @@
 #include <vector>
 #endif
 
+#define AGI_BLOCK_CACHE_INCLUDED 1
+
 
 /// @class BasicDataBlockFactory
 /// @brief Simple factory for allocating blocks for DataBlockCache

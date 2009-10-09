@@ -71,7 +71,7 @@ class ToggleBitmap;
 
 /// @class AudioBox
 /// @brief Panel with audio playback and timing controls, also containing an AudioDisplay
-class AudioBox : public wxPanel, private AudioControllerEventListener {
+class AudioBox : public wxPanel {
 
 	/// The audio display in the box
 	AudioDisplay *audioDisplay;
@@ -158,16 +158,6 @@ class AudioBox : public wxPanel, private AudioControllerEventListener {
 	void OnAutoGoto(wxCommandEvent &event);
 	void OnAutoCommit(wxCommandEvent &event);
 	void OnNextLineCommit(wxCommandEvent &event);
-
-
-private:
-	// AudioControllerEventListener implementation
-	virtual void OnAudioOpen(AudioProvider *provider);
-	virtual void OnAudioClose();
-	virtual void OnMarkersMoved();
-	virtual void OnSelectionChanged();
-	virtual void OnPlaybackPosition(int64_t sample_position);
-	virtual void OnPlaybackStop();
 
 
 public:

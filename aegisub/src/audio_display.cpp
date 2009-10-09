@@ -41,14 +41,31 @@
 
 #include "audio_controller.h"
 #include "audio_display.h"
+#include "block_cache.h"
+#include "audio_renderer.h"
+#include "audio_renderer_spectrum.h"
 
 
 /// @brief Constructor 
 /// @param parent 
 ///
-AudioDisplay::AudioDisplay(wxWindow *parent)
+AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 : wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS)
+, controller(_controller)
 {
+	audio_renderer = new AudioRenderer;
+	audio_spectrum_renderer = new AudioSpectrumRenderer;
+
+	scroll_left = 0;
+	pixel_samples = 1000;
+	scale_amplitude = 1.0;
+
+	controller->AddListener(this);
+
+	audio_renderer->SetRenderer(audio_spectrum_renderer);
+	audio_renderer->SetSamplesPerPixel(pixel_samples);
+	audio_renderer->SetAmplitudeScale(scale_amplitude);
+
 	SetMinClientSize(wxSize(-1, 70));
 	//SetBackgroundStyle(wxBG_STYLE_CUSTOM); // intended to be wxBG_STYLE_PAINT but that doesn't exist for me
 	SetBackgroundColour(*wxBLACK);
@@ -60,6 +77,10 @@ AudioDisplay::AudioDisplay(wxWindow *parent)
 ///
 AudioDisplay::~AudioDisplay()
 {
+	delete audio_renderer;
+	delete audio_spectrum_renderer;
+
+	controller->RemoveListener(this);
 }
 
 
@@ -897,8 +918,11 @@ END_EVENT_TABLE()
 /// @param event 
 /// @return 
 ///
-void AudioDisplay::OnPaint(wxPaintEvent& event) {
+void AudioDisplay::OnPaint(wxPaintEvent& event)
+{
 	wxPaintDC dc(this);
+
+	//audio_renderer->Render(dc, wxPoint(1, 1), scroll_left, GetClientSize().GetWidth()-2, false);
 }
 
 
@@ -907,15 +931,20 @@ void AudioDisplay::OnPaint(wxPaintEvent& event) {
 /// @param event 
 /// @return 
 ///
-void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
+void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
+{
 }
 
 
 
-/// @brief Size event 
-/// @param event 
+/// @brief The audio display was resized
+/// @param event Event data
 ///
-void AudioDisplay::OnSize(wxSizeEvent &event) {
+/// Tell our renderer about the new size and repaint ourselves.
+void AudioDisplay::OnSize(wxSizeEvent &event)
+{
+	/// @todo This is wrong, the height for the renderer is smaller than the client height.
+	audio_renderer->SetHeight(GetClientSize().GetHeight()-2);
 }
 
 
@@ -1090,3 +1119,43 @@ void AudioDisplay::OnKeyDown(wxKeyEvent &event) {
 	*/
 }
 
+
+
+void AudioDisplay::OnAudioOpen(AudioProvider *_provider)
+{
+	provider = _provider;
+	audio_renderer->SetAudioProvider(provider);
+	Refresh();
+}
+
+
+void AudioDisplay::OnAudioClose()
+{
+	OnAudioOpen(0);
+}
+
+
+void AudioDisplay::OnMarkersMoved()
+{
+	Refresh();
+}
+
+
+void AudioDisplay::OnSelectionChanged()
+{
+	Refresh();
+}
+
+
+void AudioDisplay::OnPlaybackPosition(int64_t sample_position)
+{
+	markers.playback_pos = sample_position / pixel_samples;
+	Refresh();
+}
+
+
+void AudioDisplay::OnPlaybackStop()
+{
+	markers.playback_pos = -1;
+	Refresh();
+}

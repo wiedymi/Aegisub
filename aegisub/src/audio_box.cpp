@@ -110,13 +110,11 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 : wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISED)
 , controller(_controller)
 {
-	controller->AddListener(this);
-
 	// Setup
 	karaokeMode = false;
 
 	// Sash and Display
-	audioDisplay = new AudioDisplay(this);
+	audioDisplay = new AudioDisplay(this, controller);
 	audioDisplay->box = this;
 
 	// Zoom
@@ -264,7 +262,6 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 ///
 AudioBox::~AudioBox()
 {
-	controller->RemoveListener(this);
 }
 
 
@@ -663,41 +660,5 @@ void AudioBox::OnLeadIn(wxCommandEvent &event) {
 void AudioBox::OnLeadOut(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
 	audioDisplay->AddLead(false,true);
-}
-
-
-void AudioBox::OnAudioOpen(AudioProvider *provider)
-{
-	/// @todo have audio display init contents
-}
-
-
-void AudioBox::OnAudioClose()
-{
-	/// @todo clean up audio display
-}
-
-
-void AudioBox::OnMarkersMoved()
-{
-	// ?
-}
-
-
-void AudioBox::OnSelectionChanged()
-{
-	// ?
-}
-
-
-void AudioBox::OnPlaybackPosition(int64_t sample_position)
-{
-	// ?
-}
-
-
-void AudioBox::OnPlaybackStop()
-{
-	// ?
 }
 

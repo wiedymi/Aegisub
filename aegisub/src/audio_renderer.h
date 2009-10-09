@@ -52,6 +52,11 @@ class AudioRendererBitmapProvider;
 class AudioRenderer;
 
 
+#ifndef AGI_BLOCK_CACHE_INCLUDED
+#error You much include "block_cache.h" before "audio_renderer.h"
+#endif
+
+
 
 /// @class AudioRendererBitmapCacheBitmapFactory
 /// @brief Produces wxBitmap objects for DataBlockCache storage for the audio renderer
