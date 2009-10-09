@@ -101,7 +101,7 @@ struct AudioSpectrumCacheBlockFactory {
 	/// The filling is delegated to the spectrum renderer
 	float *ProduceBlock(size_t i)
 	{
-		float *res = new float[spectrum->derivation_size];
+		float *res = new float[1<<spectrum->derivation_size];
 		spectrum->FillBlock(i, res);
 		return res;
 	}
@@ -117,7 +117,7 @@ struct AudioSpectrumCacheBlockFactory {
 	/// @return The size in bytes of a spectrum cache block
 	size_t GetBlockSize() const
 	{
-		return sizeof(float) * spectrum->derivation_size;
+		return sizeof(float) << spectrum->derivation_size;
 	}
 };
 
@@ -169,15 +169,15 @@ void AudioSpectrumRenderer::RecreateCache()
 
 	if (provider)
 	{
-		size_t block_count = (size_t)((provider->GetNumSamples() + derivation_dist - 1) / derivation_dist);
+		size_t block_count = (size_t)((provider->GetNumSamples() + (size_t)(1<<derivation_dist) - 1) >> derivation_dist);
 		cache = new AudioSpectrumCache(block_count, this);
 
 		// Allocate scratch for 6x the derivation size:
 		// 2x for the input sample data
 		// 2x for the real part of the output
 		// 2x for the imaginary part of the output
-		fft_scratch = new float[derivation_size * 6];
-		audio_scratch = new int16_t[derivation_size * 2];
+		fft_scratch = new float[6<<derivation_size];
+		audio_scratch = new int16_t[2<<derivation_size];
 	}
 }
 
@@ -193,14 +193,14 @@ void AudioSpectrumRenderer::SetResolution(size_t _derivation_size, size_t _deriv
 	if (derivation_dist != _derivation_dist)
 	{
 		derivation_dist = _derivation_dist;
-		RecreateCache();
+		if (cache)
+			cache->Age(0);
 	}
 
 	if (derivation_size != _derivation_size)
 	{
 		derivation_size = _derivation_size;
-		if (cache)
-			cache->Age(0);
+		RecreateCache();
 	}
 }
 
@@ -211,13 +211,13 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 	assert(block);
 
 	int64_t first_sample = ((int64_t)block_index) << derivation_dist;
-	provider->GetAudio(audio_scratch, first_sample, derivation_size*2);
+	provider->GetAudio(audio_scratch, first_sample, 2 << derivation_size);
 
 	float *fft_input = fft_scratch;
-	float *fft_real = fft_scratch + 2*derivation_size;
-	float *fft_imag = fft_scratch + 4*derivation_size;
+	float *fft_real = fft_scratch + (2 << derivation_size);
+	float *fft_imag = fft_scratch + (4 << derivation_size);
 
-	// Convert audio data to float range [-1;+1]
+	// Convert audio data to float range [-1;+1)
 	for (size_t si = 2<<derivation_size; si > 0; --si)
 	{
 		*fft_input++ = (float)(*audio_scratch++) / 32768.f;
@@ -242,7 +242,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 		return;
 
 	assert(bmp.IsOk());
-	assert(bmp.GetDepth() == 32);
+	assert(bmp.GetDepth() == 24);
 
 	int end = start + bmp.GetWidth();
 
@@ -260,13 +260,13 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 
 	/// @todo Make minband and maxband configurable
 	int minband = 0;
-	int maxband = derivation_size;
+	int maxband = 1 << derivation_size;
 
 	// ax = absolute x, absolute to the virtual spectrum bitmap
-	for (int ax = start; ax <= end; ++ax)
+	for (int ax = start; ax < end; ++ax)
 	{
 		// Derived audio data
-		size_t block_index = (size_t)(ax * pixel_samples) / derivation_dist;
+		size_t block_index = (size_t)(ax * pixel_samples) >> derivation_dist;
 		float *power = cache->Get(block_index);
 
 		// Prepare bitmap writing
