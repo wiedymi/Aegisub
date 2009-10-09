@@ -57,12 +57,12 @@
 void AudioSpectrumColorMap::InitIcyBlue_Normal()
 {
 	unsigned char *palptr = palette;
-	for (size_t i = 0; i < factor; ++i)
+	for (size_t i = 0; i <= factor; ++i)
 	{
 		float t = (float)i / (factor-1);
 		int H = (int)(255 * (1.5 - t) / 2);
 		int S = (int)(255 * (0.5 + t/2));
-		int L = std::min(255, (int)(255 * 2 * i));
+		int L = std::min(255, (int)(255 * 2 * t));
 		hsl_to_rgb(H, S, L, palptr + 0, palptr + 1, palptr + 2);
 		palptr += 4;
 	}
@@ -72,12 +72,12 @@ void AudioSpectrumColorMap::InitIcyBlue_Normal()
 void AudioSpectrumColorMap::InitIcyBlue_Selected()
 {
 	unsigned char *palptr = palette;
-	for (size_t i = 0; i < factor; ++i)
+	for (size_t i = 0; i <= factor; ++i)
 	{
 		float t = (float)i / (factor-1);
 		int H = (int)(255 * (1.5 - t) / 2);
 		int S = (int)(255 * (0.5 + t/2));
-		int L = std::min(255, (int)(255 * (3 * i/2 + 0.25)));
+		int L = std::min(255, (int)(255 * (3 * t/2 + 0.25)));
 		hsl_to_rgb(H, S, L, palptr + 0, palptr + 1, palptr + 2);
 		palptr += 4;
 	}
