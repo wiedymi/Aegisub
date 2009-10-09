@@ -55,7 +55,7 @@ AudioRendererBitmapCacheBitmapFactory::AudioRendererBitmapCacheBitmapFactory(Aud
 wxBitmap *AudioRendererBitmapCacheBitmapFactory::ProduceBlock(int i)
 {
 	(void)i;
-	return new wxBitmap(renderer->cache_bitmap_width, renderer->pixel_height, 32);
+	return new wxBitmap(renderer->cache_bitmap_width, renderer->pixel_height, 24);
 }
 
 
@@ -67,7 +67,7 @@ void AudioRendererBitmapCacheBitmapFactory::DisposeBlock(wxBitmap *bmp)
 
 size_t AudioRendererBitmapCacheBitmapFactory::GetBlockSize() const
 {
-	return sizeof(wxBitmap) + renderer->cache_bitmap_width * renderer->pixel_height * 4;
+	return sizeof(wxBitmap) + renderer->cache_bitmap_width * renderer->pixel_height * 3;
 }
 
 
@@ -193,7 +193,13 @@ wxBitmap AudioRenderer::GetCachedBitmap(int i, bool selected)
 	assert(bmp);
 	if (created)
 	{
-		renderer->Render(*bmp, i*cache_bitmap_width, selected);
+		//renderer->Render(*bmp, i*cache_bitmap_width, selected);
+		wxLogDebug(_T("Create audio cache bitmap %d (cache=%d)"), i, selected?1:0);
+		wxMemoryDC dc(*bmp);
+		wxBrush brush(wxColour(i<<3|i<<5, i<<7|i<<1, i<<4));
+		dc.SetBrush(brush);
+		dc.SetPen(wxNullPen);
+		dc.DrawRectangle(0, 0, cache_bitmap_width, pixel_height);
 	}
 
 	assert(bmp->IsOk());
@@ -205,8 +211,6 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 {
 	assert(start >= 0);
 	assert(length >= 0);
-
-	assert(start >= 0);
 
 	if (!provider) return;
 	if (!renderer) return;
