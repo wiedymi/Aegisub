@@ -50,7 +50,7 @@
 /// @param parent 
 ///
 AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
-: wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS)
+: wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS|wxBORDER_SIMPLE)
 , controller(_controller)
 {
 	audio_renderer = new AudioRenderer;
@@ -922,7 +922,7 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 {
 	wxPaintDC dc(this);
 
-	audio_renderer->Render(dc, wxPoint(1, 1), scroll_left, GetClientSize().GetWidth()-2, false);
+	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, GetClientSize().GetWidth(), false);
 }
 
 
@@ -945,7 +945,7 @@ void AudioDisplay::OnSize(wxSizeEvent &event)
 {
 	/// @todo This is wrong, the height for the renderer is smaller than the client height.
 	// Specifically, take scrollbar and timeline into account, as well as border around things.
-	audio_renderer->SetHeight(GetClientSize().GetHeight()-2);
+	audio_renderer->SetHeight(GetClientSize().GetHeight());
 }
 
 
