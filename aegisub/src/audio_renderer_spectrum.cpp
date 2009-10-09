@@ -230,7 +230,7 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 	for (size_t si = 1<<derivation_size; si > 0; --si)
 	{
 		// with x in range [0;1], log10(x*9+1) will also be in range [0;1]
-		*block++ = log10( sqrt(*fft_real * *fft_real + *fft_imag * *fft_imag) * 9 + 1);
+		*block++ = log10( sqrt(*fft_real * *fft_real + *fft_imag * *fft_imag) * 9 / sqrt(2.) + 1);
 		fft_real++; fft_imag++;
 	}
 }
