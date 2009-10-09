@@ -229,12 +229,14 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 	FFT fft;
 	fft.Transform(2<<derivation_size, fft_input, fft_real, fft_imag);
 
+	float scale_factor = 9 / sqrt((float)(2<<derivation_size));
+
 	for (size_t si = 1<<derivation_size; si > 0; --si)
 	{
 		// With x in range [0;1], log10(x*9+1) will also be in range [0;1],
 		// although the FFT output can apparently get greater magnitudes than 1
 		// despite the input being limited to [-1;+1).
-		*block++ = log10( sqrt(*fft_real * *fft_real + *fft_imag * *fft_imag) * 9 + 1 );
+		*block++ = log10( sqrt(*fft_real * *fft_real + *fft_imag * *fft_imag) * scale_factor + 1 );
 		fft_real++; fft_imag++;
 	}
 }
@@ -288,7 +290,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 				float sample2 = power[(int)ceil(ideal)+minband];
 				float frac = ideal - floor(ideal);
 				float val = (1-frac)*sample1 + frac*sample2;
-				pal->map(val, &color.r);
+				pal->map(val*amplitude_scale, &color.r);
 				p.Red() = color.r; p.Green() = color.g; p.Blue() = color.b;
 				p.OffsetY(pixels, -1);
 			}
@@ -303,7 +305,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 				float maxval = 0;
 				for (int samp = sample1; samp <= sample2; samp++)
 					if (power[samp] > maxval) maxval = power[samp];
-				pal->map(maxval, &color.r);
+				pal->map(maxval*amplitude_scale, &color.r);
 				p.Red() = color.r; p.Green() = color.g; p.Blue() = color.b;
 				p.OffsetY(pixels, -1);
 			}
