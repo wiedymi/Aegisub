@@ -90,6 +90,9 @@ private:
 	/// Leftmost pixel in the vitual audio image being displayed
 	int scroll_left;
 
+	/// Total width of the audio in pixels
+	int pixel_audio_width;
+
 	/// Horizontal zoom measured in audio samples per pixel
 	int pixel_samples;
 
@@ -181,6 +184,8 @@ public:
 
 	AudioDisplay(wxWindow *parent, AudioController *controller);
 	~AudioDisplay();
+
+	void ScrollBy(int pixel_amount);
 
 	DECLARE_EVENT_TABLE()
 };

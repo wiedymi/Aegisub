@@ -44,7 +44,13 @@
 #include "block_cache.h"
 #include "audio_renderer.h"
 #include "audio_renderer_spectrum.h"
+#include "include/aegisub/audio_provider.h"
 #include "options.h"
+
+
+
+static const int SCROLLBAR_HEIGHT = 6;
+
 
 
 /// @brief Constructor 
@@ -58,6 +64,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 	audio_spectrum_renderer = new AudioSpectrumRenderer;
 
 	scroll_left = 0;
+	pixel_audio_width = 0;
 	pixel_samples = 1000;
 	scale_amplitude = 1.0;
 
@@ -82,6 +89,27 @@ AudioDisplay::~AudioDisplay()
 	delete audio_spectrum_renderer;
 
 	controller->RemoveListener(this);
+}
+
+
+/// @brief Scroll the audio display
+/// @param pixel_amount Number of pixels to scroll the view
+///
+/// A positive amount moves the display to the right, making later parts of the audio visible.
+void AudioDisplay::ScrollBy(int pixel_amount)
+{
+	int new_scroll = scroll_left + pixel_amount;
+
+	if (new_scroll < 0)
+		new_scroll = 0;
+	if (new_scroll + GetClientRect().GetWidth() >= pixel_audio_width)
+		new_scroll = pixel_audio_width - GetClientRect().GetWidth();
+
+	if (new_scroll != scroll_left)
+	{
+		scroll_left = new_scroll;
+		Refresh();
+	}
 }
 
 
@@ -928,12 +956,47 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 
 
 
-/// @brief Mouse event 
-/// @param event 
-/// @return 
-///
+/// @brief Handle mouse input
+/// @param event Event data
 void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 {
+	// Check for mouse wheel scrolling
+	if (event.GetWheelRotation() != 0)
+	{
+		// First check if the cursor is inside or outside the display.
+		// If it's outside, we want to send the event to the control it's over instead.
+		/// @todo Factor this into a reusable function
+		{
+			wxWindow *targetwindow = wxFindWindowAtPoint(event.GetPosition());
+			if (targetwindow && targetwindow != this)
+			{
+				targetwindow->GetEventHandler()->ProcessEvent(event);
+				event.Skip(false);
+				return;
+			}
+		}
+
+		bool zoom = event.ShiftDown();
+		if (Options.AsBool(_T("Audio Wheel Default To Zoom"))) zoom = !zoom;
+
+		if (!zoom)
+		{
+			int amount = event.GetWheelRotation();
+			// If the user did a horizontal scroll the amount should be inverted
+			// for it to be natural.
+			if (event.GetWheelAxis() == 1) amount = -amount;
+
+			ScrollBy(amount);
+		}
+		else
+		{
+		}
+
+		// Scroll event processed
+		return;
+	}
+
+	event.Skip();
 }
 
 
@@ -1126,8 +1189,19 @@ void AudioDisplay::OnKeyDown(wxKeyEvent &event) {
 void AudioDisplay::OnAudioOpen(AudioProvider *_provider)
 {
 	provider = _provider;
+
+	if (provider)
+	{
+		pixel_audio_width = provider->GetNumSamples() / pixel_samples + 1;
+	}
+	else
+	{
+		pixel_audio_width = 0;
+	}
+
 	audio_renderer->SetAudioProvider(provider);
 	audio_renderer->SetCacheMaxSize(Options.AsInt(_T("Audio Spectrum Memory Max")) * 1024 * 1024);
+
 	Refresh();
 }
 
