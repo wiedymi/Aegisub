@@ -37,6 +37,7 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <wx/image.h>
 #include <wx/rawbmp.h>
 #include <algorithm>
 #endif
@@ -257,12 +258,12 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 	assert(end >= 0);
 	assert(end >= start);
 
-	wxNativePixelData pixels(bmp);
-	int imgheight = bmp.GetHeight();
+	// Prepare an image buffer to write
+	wxImage img(bmp.GetSize());
+	unsigned char *imgdata = img.GetData();
+	ptrdiff_t stride = img.GetWidth()*3;
+	int imgheight = img.GetHeight();
 
-	struct {
-		uint8_t r, g, b, a;
-	} color;
 	AudioSpectrumColorMap *pal = selected ? &colors_selected : &colors_normal;
 
 	/// @todo Make minband and maxband configurable
@@ -277,8 +278,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 		float *power = cache->Get(block_index);
 
 		// Prepare bitmap writing
-		wxNativePixelData::Iterator p = pixels.GetPixels();
-		p.MoveTo(pixels, ax - start, imgheight-1);
+		unsigned char *px = imgdata + (imgheight-1) * stride + (ax - start) * 3;
 
 		// Scale up or down vertically?
 		if (imgheight > 1<<derivation_size)
@@ -291,9 +291,8 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 				float sample2 = power[(int)ceil(ideal)+minband];
 				float frac = ideal - floor(ideal);
 				float val = (1-frac)*sample1 + frac*sample2;
-				pal->map(val*amplitude_scale, &color.r);
-				p.Red() = color.r; p.Green() = color.g; p.Blue() = color.b;
-				p.OffsetY(pixels, -1);
+				pal->map(val*amplitude_scale, px);
+				px -= stride;
 			}
 		}
 		else
@@ -306,12 +305,15 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 				float maxval = 0;
 				for (int samp = sample1; samp <= sample2; samp++)
 					if (power[samp] > maxval) maxval = power[samp];
-				pal->map(maxval*amplitude_scale, &color.r);
-				p.Red() = color.r; p.Green() = color.g; p.Blue() = color.b;
-				p.OffsetY(pixels, -1);
+				pal->map(maxval*amplitude_scale, px);
+				px -= stride;
 			}
 		}
 	}
+
+	wxBitmap tmpbmp(img, 24);
+	wxMemoryDC targetdc(bmp);
+	targetdc.DrawBitmap(tmpbmp, 0, 0);
 }
 
 
