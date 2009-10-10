@@ -255,7 +255,7 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 			origin.x += cache_bitmap_width-firstbitmapoffset;
 		}
 
-		for (int i = 1; i < lastbitmap; ++i)
+		for (int i = firstbitmap+1; i < lastbitmap; ++i)
 		{
 			bmp = GetCachedBitmap(i, selected);
 			wxMemoryDC bmpdc(bmp);
