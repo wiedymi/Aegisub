@@ -311,7 +311,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 		}
 	}
 
-	wxBitmap tmpbmp(img, 24);
+	wxBitmap tmpbmp(img);
 	wxMemoryDC targetdc(bmp);
 	targetdc.DrawBitmap(tmpbmp, 0, 0);
 }
