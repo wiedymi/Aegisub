@@ -39,6 +39,7 @@
 
 ///////////
 // Headers
+#include "audio_controller.h"
 #include "audio_player_manager.h"
 #include "audio_player_oss.h"
 #include "audio_provider_manager.h"

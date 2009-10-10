@@ -127,7 +127,8 @@ class AudioSpectrumCache
 	: public DataBlockCache<float, 10, AudioSpectrumCacheBlockFactory> {
 public:
 	AudioSpectrumCache(size_t block_count, AudioSpectrumRenderer *renderer)
-		: DataBlockCache(block_count, AudioSpectrumCacheBlockFactory(renderer))
+		: DataBlockCache<float, 10, AudioSpectrumCacheBlockFactory>(
+			block_count, AudioSpectrumCacheBlockFactory(renderer))
 	{
 	}
 };
