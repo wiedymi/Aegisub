@@ -286,6 +286,8 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 			// Interpolate
 			for (int y = 0; y < imgheight; ++y)
 			{
+				assert(px >= imgdata);
+				assert(px < imgdata + imgheight*stride);
 				float ideal = (float)(y+1.)/imgheight * (maxband-minband) + minband;
 				float sample1 = power[(int)floor(ideal)+minband];
 				float sample2 = power[(int)ceil(ideal)+minband];
@@ -300,6 +302,8 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 			// Pick greatest
 			for (int y = 0; y < imgheight; ++y)
 			{
+				assert(px >= imgdata);
+				assert(px < imgdata + imgheight*stride);
 				int sample1 = std::max(0, maxband * y/imgheight + minband);
 				int sample2 = std::min((1<<derivation_size)-1, maxband * (y+1)/imgheight + minband);
 				float maxval = 0;

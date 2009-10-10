@@ -92,8 +92,16 @@ public:
 		if (val > 1.0) val = 1.0;
 		// Find the colour in the palette
 		unsigned char *color = palette + ((int)(val*factor) * 4);
-		// Copy to the destination
-		*(uint32_t*)(pixel) = *(uint32_t*)(color);
+		// Copy to the destination.
+		// Has to be done one byte at a time since we're writing RGB and not RGBX or RGBA
+		// data, and we otherwise write past the end of the pixel we're writing, possibly
+		// hitting adjacent memory blocks or just overwriting the start of the following
+		// scanline in the image.
+		// As the image is 24 bpp, 3 of every 4 uint32_t writes would  be unaligned anyway.
+		pixel[0] = color[0];
+		pixel[1] = color[1];
+		pixel[2] = color[2];
+		//*(uint32_t*)(pixel) = *(uint32_t*)(color);
 	}
 };
 
