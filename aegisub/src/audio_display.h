@@ -64,6 +64,37 @@ class SubtitlesGrid;
 class AssDialogue;
 class wxScrollBar;
 
+// Helper classes used in implementation of the audio display
+class AudioDisplayScrollbar;
+class AudioDisplayTimeline;
+
+
+
+/// @class AudioDisplayInteractionObject
+/// @brief Interface for objects on the audio display that can respond to mouse events
+class AudioDisplayInteractionObject {
+public:
+	/// @brief The user is interacting with the object using the mouse
+	/// @param event Mouse event data
+	/// @return True to take mouse capture, false to release mouse capture
+	///
+	/// Assuming no object has the mouse capture, the audio display uses other methods
+	/// in the object implementing this interface to deterine whether a mouse event
+	/// should go to the object. If the mouse event goes to the object, this method
+	/// is called.
+	///
+	/// If this method returns true, the audio display takes the mouse capture and
+	/// stores a pointer to the AudioDisplayInteractionObject interface for the object
+	/// and redirects the next mouse event to that object.
+	///
+	/// If the object that has the mouse capture returns false from this method, the
+	/// capture is released and regular processing is done for the next event.
+	///
+	/// If the object does not have mouse capture and returns false from this method,
+	/// no capture is taken or released and regular processing is done for the next
+	/// mouse event.
+	virtual bool OnMouseEvent(wxMouseEvent &event) = 0;
+};
 
 
 
@@ -85,6 +116,16 @@ private:
 
 	/// The controller managing us
 	AudioController *controller;
+
+
+	/// Scrollbar helper object
+	AudioDisplayScrollbar *scrollbar;
+
+
+	/// Current object on display being dragged, if any
+	AudioDisplayInteractionObject *dragged_object;
+	/// Change the dragged object and update mouse capture
+	void SetDraggedObject(AudioDisplayInteractionObject *new_obj);
 
 
 	/// Leftmost pixel in the vitual audio image being displayed
@@ -128,6 +169,7 @@ private:
 	void OnMouseEvent(wxMouseEvent &event);
 	void OnSize(wxSizeEvent &event);
 	void OnKeyDown(wxKeyEvent &event);
+	void OnFocus(wxFocusEvent &event);
 
 
 private:
@@ -194,6 +236,46 @@ public:
 	///
 	/// A positive amount moves the display to the right, making later parts of the audio visible.
 	void ScrollBy(int pixel_amount);
+
+	/// @brief Scroll the audio display
+	/// @param pixel_position Absolute pixel to put at left edge of the audio display
+	///
+	/// This is the principal scrolling function. All other scrolling functions eventually
+	/// call this function to perform the actual scrolling.
+	void ScrollPixelToLeft(int pixel_position);
+
+	/// @brief Scroll the audio display
+	/// @param pixel_position Absolute pixel to put in center of the audio display
+	void ScrollPixelToCenter(int pixel_position);
+
+	/// @brief Scroll the audio display
+	/// @param sample_position Audio sample to put at left edge of the audio display
+	void ScrollSampleToLeft(int64_t sample_position);
+
+	/// @brief Scroll the audio display
+	/// @param sample_position Audio sample to put in center of the audio display
+	void ScrollSampleToCenter(int64_t sample_position);
+
+	/// @brief Scroll the audio display
+	/// @param range Range of audio samples to ensure is in view
+	///
+	/// If the entire range is already visible inside the display, nothing is scrolled. If
+	/// just one of the two endpoints is visible, the display is scrolled such that the
+	/// visible endpoint stays in view but more of the rest of the range becomes visible.
+	///
+	/// If the entire range fits inside the display, the display is centered over the range.
+	/// For this calculation, the display is considered smaller by some margins, see below.
+	///
+	/// If the range does not fit within the display with margins subtracted, the start of 
+	/// the range is ensured visible and as much of the rest of the range is brought into
+	/// view.
+	///
+	/// For the purpose of this function, a 5 percent margin is assumed at each end of the
+	/// audio display such that a range endpoint that is ensured to be in view never gets
+	/// closer to the edge of the display than the margin. The edge that is not ensured to
+	/// be in view might be outside of view or might be closer to the display edge than the
+	/// margin.
+	void ScrollSampleRangeInView(const AudioController::SampleRange &range);
 
 
 	/// @brief Change the zoom level

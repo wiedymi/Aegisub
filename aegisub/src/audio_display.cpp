@@ -52,7 +52,128 @@
 #undef max
 
 
-static const int SCROLLBAR_HEIGHT = 6;
+class AudioDisplayScrollbar : public AudioDisplayInteractionObject {
+	static const int height = 7;
+
+	wxRect bounds;
+	wxRect thumb;
+
+	bool dragging;   // user is dragging with the primary mouse button
+
+	int data_length; // total amount of data in control
+	int page_length; // amount of data in one page
+	int position;    // first item displayed
+
+	AudioDisplay *display;
+
+	// Recalculate thumb bounds from position and length data
+	void RecalculateThumb()
+	{
+		thumb.width = std::max((height+1)/2, bounds.width * page_length / data_length);
+		thumb.height = height;
+		thumb.x = bounds.width * position / data_length;
+		thumb.y = bounds.y;
+	}
+
+public:
+
+	AudioDisplayScrollbar(AudioDisplay *_display)
+		: dragging(false)
+		, data_length(1)
+		, page_length(1)
+		, position(0)
+		, display(_display)
+	{
+	}
+
+	// The audio display has changed size
+	void SetDisplaySize(const wxSize &display_size)
+	{
+		bounds.x = 0;
+		bounds.y = display_size.y - height;
+		bounds.width = display_size.x;
+		bounds.height = height;
+
+		RecalculateThumb();
+	}
+
+
+	const wxRect & GetBounds() const
+	{
+		return bounds;
+	}
+
+	int GetPosition() const
+	{
+		return position;
+	}
+
+	int SetPosition(int new_position)
+	{
+		// These two conditionals can't be swapped, otherwise the position can become
+		// negative if the entire data is shorter than one page.
+		if (new_position + page_length >= data_length)
+			new_position = data_length - page_length - 1;
+		if (new_position < 0)
+			new_position = 0;
+
+		// This check is required to avoid mutual recursion with the display
+		if (new_position != position)
+		{
+			position = new_position;
+			RecalculateThumb();
+			display->ScrollPixelToLeft(position);
+		}
+
+		return position;
+	}
+
+	void ChangeLengths(int new_data_length, int new_page_length)
+	{
+		data_length = new_data_length;
+		page_length = new_page_length;
+
+		RecalculateThumb();
+	}
+
+	bool OnMouseEvent(wxMouseEvent &event)
+	{
+		if (event.LeftIsDown())
+		{
+			const int thumb_left = event.GetPosition().x - thumb.width/2;
+			const int data_length_less_page = data_length - page_length;
+			const int shaft_length_less_thumb = bounds.width - thumb.width;
+
+			SetPosition(data_length_less_page * thumb_left / shaft_length_less_thumb);
+
+			dragging = true;
+		}
+		else if (event.LeftUp())
+		{
+			dragging = false;
+		}
+
+		return dragging;
+	}
+
+	void Paint(wxDC &dc, bool has_focus)
+	{
+		wxColour light(48, 255, 96);
+		wxColour dark(0, 64, 48);
+
+		if (has_focus)
+		{
+			light.Set(64, 255, 128);
+			dark.Set(0, 128, 64);
+		}
+
+		dc.SetPen(wxPen(light));
+		dc.SetBrush(wxBrush(dark));
+		dc.DrawRectangle(bounds);
+		dc.SetBrush(wxBrush(light));
+		dc.DrawRectangle(thumb);
+	}
+};
 
 
 
@@ -64,6 +185,8 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 , controller(_controller)
 , provider(0)
 {
+	scrollbar = new AudioDisplayScrollbar(this);
+
 	audio_renderer = new AudioRenderer;
 	audio_spectrum_renderer = new AudioSpectrumRenderer;
 
@@ -91,25 +214,33 @@ AudioDisplay::~AudioDisplay()
 	delete audio_renderer;
 	delete audio_spectrum_renderer;
 
+	delete scrollbar;
+
 	controller->RemoveListener(this);
 }
 
 
 void AudioDisplay::ScrollBy(int pixel_amount)
 {
-	int new_scroll = scroll_left + pixel_amount;
+	ScrollPixelToLeft(scroll_left + pixel_amount);
+}
 
+
+void AudioDisplay::ScrollPixelToLeft(int pixel_position)
+{
 	const int client_width = GetClientRect().GetWidth();
 
-	if (new_scroll < 0 || client_width >= pixel_audio_width)
-		new_scroll = 0;
-	if (new_scroll + client_width >= pixel_audio_width &&
-		pixel_audio_width > client_width)
-		new_scroll = pixel_audio_width - client_width;
+	if (pixel_position + client_width >= pixel_audio_width)
+		pixel_position = pixel_audio_width - client_width;
+	if (pixel_position < 0)
+		pixel_position = 0;
 
-	if (new_scroll != scroll_left)
+	// This check is required to avoid needless redraws, but more importantly to
+	// avoid mutual recursion with the scrollbar.
+	if (pixel_position != scroll_left)
 	{
-		scroll_left = new_scroll;
+		scroll_left = pixel_position;
+		scrollbar->SetPosition(scroll_left);
 		Refresh();
 	}
 }
@@ -138,7 +269,9 @@ void AudioDisplay::SetZoomLevel(int new_zoom_level)
 		if (provider)
 			pixel_audio_width = provider->GetNumSamples() / pixel_samples + 1;
 		else
-			pixel_audio_width = 0;
+			pixel_audio_width = 1;
+
+		scrollbar->ChangeLengths(pixel_audio_width, GetClientSize().GetWidth());
 
 		Refresh();
 	}
@@ -185,7 +318,7 @@ int AudioDisplay::GetZoomLevelFactor(int level)
 }
 
 
-
+#pragma region Old code
 //void AudioDisplay::UpdateImage(bool weak)
 
 
@@ -993,6 +1126,7 @@ void AudioDisplay::CommitChanges (bool nextLine) {
 	Update();
 	wxLogDebug(_T("AudioDisplay::CommitChanges: returning"));
 }*/
+#pragma endregion
 
 
 
@@ -1003,6 +1137,8 @@ BEGIN_EVENT_TABLE(AudioDisplay, wxWindow)
     EVT_PAINT(AudioDisplay::OnPaint)
 	EVT_SIZE(AudioDisplay::OnSize)
 	EVT_KEY_DOWN(AudioDisplay::OnKeyDown)
+	EVT_SET_FOCUS(AudioDisplay::OnFocus)
+	EVT_KILL_FOCUS(AudioDisplay::OnFocus)
 END_EVENT_TABLE()
 
 
@@ -1027,22 +1163,18 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 
 	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, client_width, false);
 
-	// Draw scrollbar
-	{
-		int scrollbar_top = client_height - SCROLLBAR_HEIGHT;
-		// The thumb should be large enough for the user to hit it
-		int thumb_width = std::max(SCROLLBAR_HEIGHT-1, client_width * client_width / pixel_audio_width);
-		// Lots of magic in this?
-		int thumb_left = (client_width - thumb_width) * scroll_left / (pixel_audio_width - client_width);
+	scrollbar->Paint(dc, HasFocus());
+}
 
-		wxColour light(48, 255, 96);
-		wxColour dark(0, 64, 48);
-		dc.SetPen(wxPen(light));
-		dc.SetBrush(wxBrush(dark));
-		dc.DrawRectangle(0, scrollbar_top, client_width, SCROLLBAR_HEIGHT);
-		dc.SetBrush(wxBrush(light));
-		dc.DrawRectangle(thumb_left, scrollbar_top, thumb_width, SCROLLBAR_HEIGHT);
-	}
+
+void AudioDisplay::SetDraggedObject(AudioDisplayInteractionObject *new_obj)
+{
+	dragged_object = new_obj;
+
+	if (dragged_object && !HasCapture())
+		CaptureMouse();
+	else if (!dragged_object && HasCapture())
+		ReleaseMouse();
 }
 
 
@@ -1087,7 +1219,32 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 		return;
 	}
 
-	event.Skip();
+	if (event.IsButton())
+		SetFocus();
+
+	// Handle any ongoing drag
+	if (dragged_object && HasCapture())
+	{
+		if (!dragged_object->OnMouseEvent(event))
+			SetDraggedObject(0);
+		return;
+	}
+	else
+	{
+		// Something is wrong, we might have lost capture somehow.
+		// Fix state and pretend it didn't happen.
+		SetDraggedObject(0);
+	}
+
+	wxPoint mousepos = event.GetPosition();
+
+	// Check for scrollbar action
+	if (scrollbar->GetBounds().Contains(mousepos))
+	{
+		if (scrollbar->OnMouseEvent(event))
+			SetDraggedObject(scrollbar);
+		return;
+	}
 }
 
 
@@ -1098,13 +1255,23 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 /// Tell our renderer about the new size and repaint ourselves.
 void AudioDisplay::OnSize(wxSizeEvent &event)
 {
-	/// @todo This is wrong, the height for the renderer is smaller than the client height.
-	// Specifically, take scrollbar and timeline into account, as well as border around things.
-	int height = GetClientSize().GetHeight();
-	height -= SCROLLBAR_HEIGHT;
-	audio_renderer->SetHeight(height);
+	wxSize size = GetClientSize();
+
+	scrollbar->SetDisplaySize(size);
+
+	int audio_height = size.GetHeight();
+	audio_height -= scrollbar->GetBounds().GetHeight();
+	audio_renderer->SetHeight(audio_height);
 
 	Refresh();
+}
+
+
+/// @brief The audio display received or lost input focus
+void AudioDisplay::OnFocus(wxFocusEvent &event)
+{
+	// The scrollbar indicates focus so repaint that
+	RefreshRect(scrollbar->GetBounds());
 }
 
 
@@ -1112,6 +1279,7 @@ void AudioDisplay::OnSize(wxSizeEvent &event)
 /// @param event 
 ///
 void AudioDisplay::OnKeyDown(wxKeyEvent &event) {
+#pragma region Old code
 	/*
 	int key = event.GetKeyCode();
 #ifdef __APPLE__
@@ -1277,6 +1445,7 @@ void AudioDisplay::OnKeyDown(wxKeyEvent &event) {
 		else UpdateImage(true);
 	}
 	*/
+#pragma endregion
 }
 
 
