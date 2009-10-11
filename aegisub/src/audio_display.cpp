@@ -53,7 +53,7 @@
 
 
 class AudioDisplayScrollbar : public AudioDisplayInteractionObject {
-	static const int height = 7;
+	static const int height = 10;
 
 	wxRect bounds;
 	wxRect thumb;
@@ -93,6 +93,7 @@ public:
 		bounds.y = display_size.y - height;
 		bounds.width = display_size.x;
 		bounds.height = height;
+		page_length = display_size.x;
 
 		RecalculateThumb();
 	}
