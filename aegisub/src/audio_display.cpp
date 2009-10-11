@@ -48,6 +48,9 @@
 #include "options.h"
 
 
+#undef min
+#undef max
+
 
 static const int SCROLLBAR_HEIGHT = 6;
 
@@ -75,8 +78,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 	audio_renderer->SetAmplitudeScale(scale_amplitude);
 
 	SetMinClientSize(wxSize(-1, 70));
-	//SetBackgroundStyle(wxBG_STYLE_CUSTOM); // intended to be wxBG_STYLE_PAINT but that doesn't exist for me
-	SetBackgroundColour(*wxBLACK);
+	SetBackgroundStyle(wxBG_STYLE_CUSTOM); // intended to be wxBG_STYLE_PAINT but that doesn't exist for me
 }
 
 
@@ -951,7 +953,27 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 {
 	wxPaintDC dc(this);
 
+	int client_width, client_height;
+	GetClientSize(&client_width, &client_height);
+
 	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, GetClientSize().GetWidth(), false);
+
+	// Draw scrollbar
+	{
+		int scrollbar_top = client_height - SCROLLBAR_HEIGHT;
+		// The thumb should be large enough for the user to hit it
+		int thumb_width = std::max(SCROLLBAR_HEIGHT-1, client_width * client_width / pixel_audio_width);
+		// Lots of magic in this?
+		int thumb_left = (client_width - thumb_width) * scroll_left / (pixel_audio_width - client_width);
+
+		wxColour light(48, 255, 96);
+		wxColour dark(0, 64, 48);
+		dc.SetPen(wxPen(light));
+		dc.SetBrush(wxBrush(dark));
+		dc.DrawRectangle(0, scrollbar_top, client_width, SCROLLBAR_HEIGHT);
+		dc.SetBrush(wxBrush(light));
+		dc.DrawRectangle(thumb_left, scrollbar_top, thumb_width, SCROLLBAR_HEIGHT);
+	}
 }
 
 
@@ -1009,7 +1031,9 @@ void AudioDisplay::OnSize(wxSizeEvent &event)
 {
 	/// @todo This is wrong, the height for the renderer is smaller than the client height.
 	// Specifically, take scrollbar and timeline into account, as well as border around things.
-	audio_renderer->SetHeight(GetClientSize().GetHeight());
+	int height = GetClientSize().GetHeight();
+	height -= SCROLLBAR_HEIGHT;
+	audio_renderer->SetHeight(height);
 }
 
 
