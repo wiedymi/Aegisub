@@ -62,20 +62,21 @@ static const int SCROLLBAR_HEIGHT = 6;
 AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 : wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS|wxBORDER_SIMPLE)
 , controller(_controller)
+, provider(0)
 {
 	audio_renderer = new AudioRenderer;
 	audio_spectrum_renderer = new AudioSpectrumRenderer;
 
 	scroll_left = 0;
 	pixel_audio_width = 0;
-	pixel_samples = 1000;
 	scale_amplitude = 1.0;
+
+	audio_renderer->SetRenderer(audio_spectrum_renderer);
+	audio_renderer->SetAmplitudeScale(scale_amplitude);
 
 	controller->AddListener(this);
 
-	audio_renderer->SetRenderer(audio_spectrum_renderer);
-	audio_renderer->SetSamplesPerPixel(pixel_samples);
-	audio_renderer->SetAmplitudeScale(scale_amplitude);
+	SetZoomLevel(0);
 
 	SetMinClientSize(wxSize(-1, 70));
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM); // intended to be wxBG_STYLE_PAINT but that doesn't exist for me
@@ -94,24 +95,93 @@ AudioDisplay::~AudioDisplay()
 }
 
 
-/// @brief Scroll the audio display
-/// @param pixel_amount Number of pixels to scroll the view
-///
-/// A positive amount moves the display to the right, making later parts of the audio visible.
 void AudioDisplay::ScrollBy(int pixel_amount)
 {
 	int new_scroll = scroll_left + pixel_amount;
 
-	if (new_scroll < 0)
+	const int client_width = GetClientRect().GetWidth();
+
+	if (new_scroll < 0 || client_width >= pixel_audio_width)
 		new_scroll = 0;
-	if (new_scroll + GetClientRect().GetWidth() >= pixel_audio_width)
-		new_scroll = pixel_audio_width - GetClientRect().GetWidth();
+	if (new_scroll + client_width >= pixel_audio_width &&
+		pixel_audio_width > client_width)
+		new_scroll = pixel_audio_width - client_width;
 
 	if (new_scroll != scroll_left)
 	{
 		scroll_left = new_scroll;
 		Refresh();
 	}
+}
+
+
+void AudioDisplay::SetZoomLevel(int new_zoom_level)
+{
+	zoom_level = new_zoom_level;
+
+	if (!provider)
+		return;
+
+	const int samples_per_second = provider ? provider->GetSampleRate() : 48000;
+	const int base_pixels_per_second = 50; /// @todo Make this customisable
+	const int base_samples_per_pixel = samples_per_second / base_pixels_per_second;
+
+	const int factor = GetZoomLevelFactor(zoom_level);
+
+	const int new_samples_per_pixel = std::max(1, 100 * base_samples_per_pixel / factor);
+
+	if (pixel_samples != new_samples_per_pixel)
+	{
+		pixel_samples = new_samples_per_pixel;
+		audio_renderer->SetSamplesPerPixel(pixel_samples);
+
+		if (provider)
+			pixel_audio_width = provider->GetNumSamples() / pixel_samples + 1;
+		else
+			pixel_audio_width = 0;
+
+		Refresh();
+	}
+}
+
+
+int AudioDisplay::GetZoomLevel() const
+{
+	return zoom_level;
+}
+
+
+wxString AudioDisplay::GetZoomLevelDescription(int level) const
+{
+	const int factor = GetZoomLevelFactor(level);
+	const int base_pixels_per_second = 50; /// @todo Make this customisable along with the above
+	const int second_pixels = 100 * base_pixels_per_second / factor;
+
+	return wxString::Format(_("%d%%, %d pixel/second"), factor, second_pixels);
+}
+
+
+int AudioDisplay::GetZoomLevelFactor(int level)
+{
+	int factor = 100;
+
+	if (level > 0)
+	{
+		factor += 25 * level;
+	}
+	else if (level < 0)
+	{
+		if (level >= -5)
+			factor += 10 * level;
+		else if (level >= -11)
+			factor = 50 + (level+5) * 5;
+		else
+			factor = 20 + level + 11;
+		if (factor <= 0)
+			factor = 1;
+	}
+
+	return factor;
 }
 
 
@@ -561,14 +631,6 @@ void AudioDisplay::DrawWaveform(wxDC &dc,bool weak) {
 
 
 
-/// @brief Draw spectrum analyzer 
-/// @param finaldc The DC to draw to.
-/// @param weak    False if the visible portion of the display has changed.
-//void AudioDisplay::DrawSpectrum(wxDC &finaldc,bool weak);
-
-
-
-
 /// @brief Load from file 
 /// @param file 
 /// @return 
@@ -953,10 +1015,17 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 {
 	wxPaintDC dc(this);
 
+	if (!provider)
+	{
+		dc.SetBackground(*wxBLACK_BRUSH);
+		dc.Clear();
+		return;
+	}
+
 	int client_width, client_height;
 	GetClientSize(&client_width, &client_height);
 
-	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, GetClientSize().GetWidth(), false);
+	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, client_width, false);
 
 	// Draw scrollbar
 	{
@@ -1216,17 +1285,10 @@ void AudioDisplay::OnAudioOpen(AudioProvider *_provider)
 {
 	provider = _provider;
 
-	if (provider)
-	{
-		pixel_audio_width = provider->GetNumSamples() / pixel_samples + 1;
-	}
-	else
-	{
-		pixel_audio_width = 0;
-	}
-
 	audio_renderer->SetAudioProvider(provider);
 	audio_renderer->SetCacheMaxSize(Options.AsInt(_T("Audio Spectrum Memory Max")) * 1024 * 1024);
+
+	SetZoomLevel(zoom_level);
 
 	Refresh();
 }

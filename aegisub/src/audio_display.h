@@ -100,6 +100,10 @@ private:
 	float scale_amplitude;
 
 
+	/// Zoom level given as a number, see SetZoomLevel for details
+	int zoom_level;
+
+
 	struct {
 		/// Absolute pixel position of the playback position marker
 		int64_t playback_pos;
@@ -185,7 +189,48 @@ public:
 	AudioDisplay(wxWindow *parent, AudioController *controller);
 	~AudioDisplay();
 
+	/// @brief Scroll the audio display
+	/// @param pixel_amount Number of pixels to scroll the view
+	///
+	/// A positive amount moves the display to the right, making later parts of the audio visible.
 	void ScrollBy(int pixel_amount);
+
+
+	/// @brief Change the zoom level
+	/// @param new_zoom_level The new zoom level to use
+	///
+	/// A zoom level of 0 is the default zoom level, all other levels are based on this.
+	/// Negative zoom levels zoom out, positive zoom in.
+	///
+	/// The zoom levels generally go from +30 to -30. It is possible to zoom in more than
+	/// +30 
+	void SetZoomLevel(int new_zoom_level);
+
+	/// @brief Get the zoom level
+	/// @return The zoom level
+	///
+	/// See SetZoomLevel for a description of zoom levels.
+	int GetZoomLevel() const;
+
+	/// @brief Get a textual description of a zoom level
+	/// @param level The zoom level to describe
+	/// @return A translated string describing a zoom level
+	///
+	/// The zoom level description can tell the user details about how much audio is
+	/// actually displayed.
+	wxString GetZoomLevelDescription(int level) const;
+
+	/// @brief Get the zoom factor in percent for a zoom level
+	/// @param level The zoom level to get the factor of
+	/// @return The zoom factor in percent
+	///
+	/// Positive: 125, 150, 175, 200, 225, ...
+	///
+	/// Negative: 90, 80, 70, 60, 50, 45, 40, 35, 30, 25, 20, 19, 18, 17, ..., 1
+	///
+	/// Too negative numbers get clamped.
+	static int GetZoomLevelFactor(int level);
+
 
 	DECLARE_EVENT_TABLE()
 };

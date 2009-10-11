@@ -172,6 +172,9 @@ public:
 	/// @param selected Whether to use the alternate colour scheme
 	void Render(wxBitmap &bmp, int start, bool selected);
 
+	/// @brief Render blank area
+	void RenderBlank(wxDC &dc, const wxRect &rect, bool selected);
+
 	/// @brief Set the derivation resolution
 	/// @param derivation_size Binary logarithm of number of samples to use in deriving frequency-power data
 	/// @param derivation_dist Binary logarithm of number of samples between the start of derivations

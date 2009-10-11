@@ -114,6 +114,8 @@ class AudioRenderer {
 	AudioRendererBitmapCache bitmaps_normal;
 	/// Cached bitmaps for marked (selected) audio ranges
 	AudioRendererBitmapCache bitmaps_selected;
+	/// Number of blocks in the bitmap caches
+	size_t cache_numblocks;
 	/// The maximum allowed size of the cache, in bytes
 	size_t cache_maxsize;
 
@@ -297,6 +299,15 @@ public:
 	/// Deriving classes must implement this method. The bitmap in bmp holds
 	/// the width and height to render.
 	virtual void Render(wxBitmap &bmp, int start, bool selected) = 0;
+
+	/// @brief Blank audio rendering function
+	/// @param dc       The device context to render to
+	/// @param rect     The rectangle to fill with the image of blank audio
+	/// @param selected Whether to render as being selected or not
+	///
+	/// Deriving classes must implement this method. The rectangle has the height
+	/// of the entire canvas the audio is being rendered in.
+	virtual void RenderBlank(wxDC &dc, const wxRect &rect, bool selected) = 0;
 
 	/// @brief Change audio provider
 	/// @param provider Audio provider to change to

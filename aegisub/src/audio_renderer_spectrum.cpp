@@ -321,6 +321,20 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 }
 
 
+void AudioSpectrumRenderer::RenderBlank(wxDC &dc, const wxRect &rect, bool selected)
+{
+	// Get the colour of silence
+	AudioSpectrumColorMap *pal = selected ? &colors_selected : &colors_normal;
+	unsigned char color_raw[4];
+	pal->map(0.0, color_raw);
+	wxColour col(color_raw[0], color_raw[1], color_raw[2]);
+
+	dc.SetBrush(wxBrush(col));
+	dc.SetPen(wxPen(col));
+	dc.DrawRectangle(rect);
+}
+
+
 void AudioSpectrumRenderer::AgeCache(size_t max_size)
 {
 	if (cache)

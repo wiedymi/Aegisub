@@ -118,7 +118,7 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	audioDisplay->box = this;
 
 	// Zoom
-	HorizontalZoom = new wxSlider(this,Audio_Horizontal_Zoom,50,0,100,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH);
+	HorizontalZoom = new wxSlider(this,Audio_Horizontal_Zoom,0,-50,30,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH);
 	HorizontalZoom->SetToolTip(_("Horizontal zoom"));
 	VerticalZoom = new wxSlider(this,Audio_Vertical_Zoom,50,0,100,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH|wxSL_INVERSE);
 	VerticalZoom->SetToolTip(_("Vertical zoom"));
@@ -305,7 +305,9 @@ END_EVENT_TABLE()
 /// @param event 
 ///
 void AudioBox::OnHorizontalZoom(wxScrollEvent &event) {
-	audioDisplay->SetSamplesPercent(event.GetPosition());
+	// Negate the value, we want zoom out to be on bottom and zoom in on top,
+	// but the control doesn't want negative on bottom and positive on top.
+	audioDisplay->SetZoomLevel(-event.GetPosition());
 }
 
 

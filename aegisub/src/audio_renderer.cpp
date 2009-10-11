@@ -173,9 +173,10 @@ void AudioRenderer::ResetBlockCount()
 {
 	if (provider)
 	{
-		size_t num_bitmaps = (size_t)((provider->GetNumSamples() + pixel_samples - 1) / pixel_samples);
-		bitmaps_normal.SetBlockCount(num_bitmaps);
-		bitmaps_selected.SetBlockCount(num_bitmaps);
+		size_t rendered_width = (size_t)((provider->GetNumSamples() + pixel_samples - 1) / pixel_samples);
+		cache_numblocks = rendered_width / cache_bitmap_width;
+		bitmaps_normal.SetBlockCount(cache_numblocks);
+		bitmaps_selected.SetBlockCount(cache_numblocks);
 	}
 }
 
@@ -228,20 +229,37 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 	// How many columns of the last bitmap to use
 	int lastbitmapoffset = end % cache_bitmap_width;
 
-	// Two basic cases now: Either firstbitmap is the same as lastbitmap, or they're different.
+	// Check if we need to render any blank audio past the last bitmap from cache,
+	// this happens if we're asked to render more audio than the provider has.
+	if (lastbitmap >= (int)cache_numblocks)
+	{
+		lastbitmap = cache_numblocks - 1;
+		lastbitmapoffset = cache_bitmap_width;
+
+		if (firstbitmap > lastbitmap)
+			firstbitmap = lastbitmap;
+	}
+
+	// Three basic cases now:
+	//  * Either we're just rendering blank audio,
+	//  * Or there is exactly one bitmap to render,
+	//  * Or there is more than one bitmap to render.
 
 	// origin is passed by value because we'll be using it as a local var to keep track
 	// of rendering progress!
 
+	if (end / cache_bitmap_width >= (int)cache_numblocks)
+	{
+		// Do nothing, the blank audio rendering will happen later
+	}
 	if (firstbitmap == lastbitmap)
 	{
-		// These better be the same: The first to the last column of the single bitmap
-		// to use should equal the length of the area to render.
-		assert(lastbitmapoffset - firstbitmapoffset == length);
-
+		const int renderwidth = lastbitmapoffset - firstbitmapoffset;
 		wxBitmap bmp = GetCachedBitmap(firstbitmap, selected);
 		wxMemoryDC bmpdc(bmp);
-		dc.Blit(origin, wxSize(length, pixel_height), &bmpdc, wxPoint(firstbitmapoffset, 0));
+		dc.Blit(origin, wxSize(renderwidth, pixel_height),
+			&bmpdc, wxPoint(firstbitmapoffset, 0));
+		origin.x += renderwidth;
 	}
 	else
 	{
@@ -267,7 +285,14 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 			bmp = GetCachedBitmap(lastbitmap, selected);
 			wxMemoryDC bmpdc(bmp);
 			dc.Blit(origin, wxSize(lastbitmapoffset+1, pixel_height), &bmpdc, wxPoint(0, 0));
+			origin.x += lastbitmapoffset+1;
 		}
+	}
+
+	// Now render blank audio from origin to end
+	if (origin.x < end)
+	{
+		renderer->RenderBlank(dc, wxRect(origin.x-1, origin.y, end-origin.x-1, pixel_height), selected);
 	}
 
 	if (selected)
@@ -302,7 +327,7 @@ void AudioRendererBitmapProvider::SetSamplesPerPixel(int _pixel_samples)
 	if (pixel_samples == _pixel_samples) return;
 
 	pixel_samples = _pixel_samples;
-
+	
 	OnSetSamplesPerPixel();
 }
 
