@@ -108,6 +108,8 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 
 	EVT_KEY_DOWN(FrameMain::OnKeyDown)
 
+	EVT_SASH_DRAGGED(Main_AudioSash, FrameMain::OnAudioBoxResize)
+
 	EVT_MENU_OPEN(FrameMain::OnMenuOpen)
 	EVT_MENU_RANGE(Menu_File_Recent,Menu_File_Recent+99, FrameMain::OnOpenRecentSubs)
 	EVT_MENU_RANGE(Menu_Video_Recent,Menu_Video_Recent+99, FrameMain::OnOpenRecentVideo)
@@ -2119,6 +2121,22 @@ void FrameMain::OnMedusaPrev(wxCommandEvent &event) {
 void FrameMain::OnMedusaEnter(wxCommandEvent &event) {
 	/// @todo Figure out how to handle this in the audio controller
 	//audioBox->audioDisplay->CommitChanges(true);
+}
+
+
+void FrameMain::OnAudioBoxResize(wxSashEvent &event)
+{
+	if (event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE)
+		return;
+
+	wxRect rect = event.GetDragRect();
+
+	if (rect.GetHeight() < audioSash->GetMinimumSizeY())
+		rect.SetHeight(audioSash->GetMinimumSizeY());
+
+	audioBox->SetMinSize(wxSize(-1, rect.GetHeight()));
+	Panel->Layout();
+	Refresh();
 }
 
 

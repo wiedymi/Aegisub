@@ -200,6 +200,8 @@ private:
 	void OnVideoPlay(wxCommandEvent &event);
 	void OnKeyDown(wxKeyEvent &event);
 
+	void OnAudioBoxResize(wxSashEvent &event);
+
 	void OnOpenRecentSubs (wxCommandEvent &event);
 	void OnOpenRecentVideo (wxCommandEvent &event);
 	void OnOpenRecentAudio (wxCommandEvent &event);
@@ -728,6 +730,10 @@ enum {
 
 	/// DOCME
 	StatusClear_Timer,
+
+
+	/// Id for the audio box resizing sash
+	Main_AudioSash,
 
 
 	/// DOCME

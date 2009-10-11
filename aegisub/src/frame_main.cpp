@@ -619,7 +619,7 @@ void FrameMain::InitContents() {
 
 	// Tools area
 	StartupLog(_T("Create tool area splitter window"));
-	audioSash = new wxSashWindow(Panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxCLIP_CHILDREN);
+	audioSash = new wxSashWindow(Panel, Main_AudioSash, wxDefaultPosition, wxDefaultSize, wxSW_3D|wxCLIP_CHILDREN);
 	wxBoxSizer *audioSashSizer = new wxBoxSizer(wxHORIZONTAL);
 	audioSash->SetSashVisible(wxSASH_BOTTOM, true);
 
@@ -627,8 +627,10 @@ void FrameMain::InitContents() {
 	StartupLog(_T("Create audio box"));
 	audioBox = new AudioBox(audioSash, audioController);
 	audioBox->frameMain = this;
-	audioSashSizer->Add(audioBox);
+	audioSashSizer->Add(audioBox, 1, wxEXPAND);
 	audioSash->SetSizer(audioSashSizer);
+	audioBox->Fit();
+	audioSash->SetMinimumSizeY(audioBox->GetSize().GetHeight());
 
 	// Editing area
 	StartupLog(_T("Create subtitle editing box"));

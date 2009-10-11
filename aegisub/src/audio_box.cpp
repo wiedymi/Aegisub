@@ -245,7 +245,7 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 
 	// Main sizer
 	MainSizer = new wxBoxSizer(wxVERTICAL);
-	MainSizer->Add(TopSizer,0,wxEXPAND|wxALL,3);
+	MainSizer->Add(TopSizer,1,wxEXPAND|wxALL,3);
 	MainSizer->Add(ButtonSizer,0,wxEXPAND|wxBOTTOM|wxLEFT|wxRIGHT,3);
 	//MainSizer->Add(new wxStaticLine(this),0,wxEXPAND|wxTOP|wxBOTTOM,2);
 	MainSizer->Add(karaokeSizer,0,wxEXPAND|wxBOTTOM|wxLEFT|wxRIGHT,3);

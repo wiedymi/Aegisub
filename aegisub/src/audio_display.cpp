@@ -1034,6 +1034,8 @@ void AudioDisplay::OnSize(wxSizeEvent &event)
 	int height = GetClientSize().GetHeight();
 	height -= SCROLLBAR_HEIGHT;
 	audio_renderer->SetHeight(height);
+
+	Refresh();
 }
 
 
