@@ -352,6 +352,7 @@ public:
 		int next_scale_mark_pos;
 		int last_text_right = -1;
 		int last_hour = -1, last_minute = -1;
+		if (num_samples / samplerate < 3600) last_hour = 0; // Trick to only show hours if audio is longer than 1 hour
 		do {
 			next_scale_mark_pos = (int)(next_scale_mark * scale_minor_divisor / samples_per_pixel) - pixel_left;
 			bool mark_is_major = next_scale_mark % scale_major_modulo == 0;
