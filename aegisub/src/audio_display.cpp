@@ -1410,10 +1410,32 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	int client_width, client_height;
 	GetClientSize(&client_width, &client_height);
 
-	scrollbar->Paint(dc, HasFocus());
-	timeline->Paint(dc);
+	wxRect audio_bounds(0, 0, client_width, audio_height);
+	const wxRect &scrollbar_bounds = scrollbar->GetBounds();
+	const wxRect &timeline_bounds = timeline->GetBounds();
+	bool redraw_scrollbar = false;
+	bool redraw_timeline = false;
 
-	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, client_width, false);
+	wxRegionIterator region(GetUpdateRegion());
+	while (region)
+	{
+		wxRect updrect = region.GetRect();
+
+		redraw_scrollbar |= scrollbar_bounds.Intersects(updrect);
+		redraw_timeline |= timeline_bounds.Intersects(updrect);
+
+		if (audio_bounds.Intersects(updrect))
+		{
+			audio_renderer->Render(dc, wxPoint(updrect.x, 0), scroll_left+updrect.x, updrect.width, false);
+		}
+
+		region++;
+	}
+
+	if (redraw_scrollbar)
+		scrollbar->Paint(dc, HasFocus());
+	if (redraw_timeline)
+		timeline->Paint(dc);
 
 	int rel_playback_pos = playback_pos - scroll_left;
 	if (rel_playback_pos >= 0 && rel_playback_pos < client_width)
