@@ -253,31 +253,31 @@ public:
 		// Pixels per second
 		double px_sec = (double)samplerate / (double)samples_per_pixel;
 
-		if (px_sec > 10000) {
+		if (px_sec > 3000) {
 			scale_minor = Sc_Millisecond;
 			scale_minor_divisor = (double)samplerate / 1000;
 			scale_major_modulo = 10;
-		} else if (px_sec > 1000) {
+		} else if (px_sec > 300) {
 			scale_minor = Sc_Centisecond;
 			scale_minor_divisor = (double)samplerate / 100;
 			scale_major_modulo = 10;
-		} else if (px_sec > 100) {
+		} else if (px_sec > 30) {
 			scale_minor = Sc_Decisecond;
 			scale_minor_divisor = (double)samplerate / 10;
 			scale_major_modulo = 10;
-		} else if (px_sec > 10) {
+		} else if (px_sec > 3) {
 			scale_minor = Sc_Second;
 			scale_minor_divisor = (double)samplerate;
 			scale_major_modulo = 10;
-		} else if (px_sec > 1) {
+		} else if (px_sec > 1.0/3.0) {
 			scale_minor = Sc_Decasecond;
 			scale_minor_divisor = (double)samplerate * 10;
 			scale_major_modulo = 6;
-		} else if (px_sec > 1.0/6.0) {
+		} else if (px_sec > 1.0/9.0) {
 			scale_minor = Sc_Minute;
 			scale_minor_divisor = (double)samplerate * 60;
 			scale_major_modulo = 10;
-		} else if (px_sec > 1.0/60.0) {
+		} else if (px_sec > 1.0/90.0) {
 			scale_minor = Sc_Decaminute;
 			scale_minor_divisor = (double)samplerate * 600;
 			scale_major_modulo = 6;
@@ -341,14 +341,17 @@ public:
 		dc.SetTextBackground(dark);
 		dc.SetTextForeground(light);
 
+		// Figure out the first scale mark to show
 		int64_t sample_left = pixel_left * samples_per_pixel;
 		int next_scale_mark = (int)(sample_left / scale_minor_divisor);
 		if (next_scale_mark * scale_minor_divisor < sample_left)
 			next_scale_mark += 1;
 		assert(next_scale_mark * scale_minor_divisor >= sample_left);
-		int last_text_left = 0;
-		
+
+		// Draw scale marks
 		int next_scale_mark_pos;
+		int last_text_right = -1;
+		int last_hour = -1, last_minute = -1;
 		do {
 			next_scale_mark_pos = (int)(next_scale_mark * scale_minor_divisor / samples_per_pixel) - pixel_left;
 			bool mark_is_major = next_scale_mark % scale_major_modulo == 0;
@@ -357,6 +360,43 @@ public:
 				dc.DrawLine(next_scale_mark_pos, bounds.y, next_scale_mark_pos, bounds.y+5);
 			else
 				dc.DrawLine(next_scale_mark_pos, bounds.y, next_scale_mark_pos, bounds.y+3);
+
+			// Print time labels on major scale marks
+			if (mark_is_major && next_scale_mark_pos > last_text_right)
+			{
+				double mark_time = next_scale_mark * scale_minor_divisor / samplerate;
+				int mark_hour = (int)(mark_time / 3600);
+				int mark_minute = (int)(mark_time / 60) % 60;
+				double mark_second = mark_time - mark_hour*3600 - mark_minute*60;
+
+				wxString time_string;
+				bool changed_hour = mark_hour != last_hour;
+				bool changed_minute = mark_minute != last_minute;
+
+				if (changed_hour)
+				{
+					time_string = wxString::Format(_T("%d:%02d:"), mark_hour, mark_minute);
+					last_hour = mark_hour;
+					last_minute = mark_minute;
+				}
+				else if (changed_minute)
+				{
+					time_string = wxString::Format(_T("%d:"), mark_minute);
+					last_minute = mark_minute;
+				}
+				if (scale_minor >= Sc_Decisecond)
+					time_string += wxString::Format(_T("%02d"), (int)mark_second);
+				else if (scale_minor == Sc_Centisecond)
+					time_string += wxString::Format(_T("%02.1f"), mark_second);
+				else
+					time_string += wxString::Format(_T("%02.2f"), mark_second);
+
+				int tw, th;
+				dc.GetTextExtent(time_string, &tw, &th);
+				last_text_right = next_scale_mark_pos + tw;
+
+				dc.DrawText(time_string, next_scale_mark_pos, bounds.y+5);
+			}
 
 			next_scale_mark += 1;
 
