@@ -178,6 +178,119 @@ public:
 
 
 
+class AudioDisplayTimeline : public AudioDisplayInteractionObject {
+	int64_t num_samples;
+	int samplerate;
+	int samples_per_pixel;
+	int pixel_left;
+
+	wxRect bounds;
+
+	wxPoint drag_lastpos;
+	bool dragging;
+
+	AudioDisplay *display;
+
+public:
+
+	AudioDisplayTimeline(AudioDisplay *_display)
+		: num_samples(0)
+		, samplerate(44100)
+		, samples_per_pixel(1)
+		, pixel_left(0)
+		, display(_display)
+		, dragging(false)
+	{
+	}
+
+	int GetHeight() const
+	{
+		int width, height;
+		display->GetTextExtent(_T("0123456789:."), &width, &height);
+		return height + 4;
+	}
+
+	void SetDisplaySize(const wxSize &display_size)
+	{
+		// The size is without anything that goes below the timeline (like scrollbar)
+		bounds.width = display_size.x;
+		bounds.height = GetHeight();
+		bounds.x = 0;
+		bounds.y = display_size.y - bounds.height;
+	}
+
+	const wxRect & GetBounds() const
+	{
+		return bounds;
+	}
+
+	void ChangeAudio(int64_t new_length, int new_samplerate)
+	{
+		num_samples = new_length;
+		samplerate = new_samplerate;
+	}
+
+	void ChangeZoom(int new_pixel_samples)
+	{
+		samples_per_pixel = new_pixel_samples;
+	}
+
+	void SetPosition(int new_pixel_left)
+	{
+		if (new_pixel_left < 0)
+			new_pixel_left = 0;
+
+		if (new_pixel_left != pixel_left)
+		{
+			pixel_left = new_pixel_left;
+			display->ScrollPixelToLeft(pixel_left);
+		}
+
+	}
+
+	bool OnMouseEvent(wxMouseEvent &event)
+	{
+		if (event.LeftDown())
+		{
+			drag_lastpos = event.GetPosition();
+			dragging = true;
+		}
+		else if (event.LeftIsDown())
+		{
+			SetPosition(pixel_left - event.GetPosition().x + drag_lastpos.x);
+
+			drag_lastpos = event.GetPosition();
+			dragging = true;
+		}
+		else if (event.LeftUp())
+		{
+			dragging = false;
+		}
+
+		return dragging;
+	}
+
+	void Paint(wxDC &dc)
+	{
+		wxColour light(48, 255, 96);
+		wxColour dark(0, 64, 32);
+
+		dc.SetPen(wxPen(dark));
+		dc.SetBrush(wxBrush(dark));
+		dc.DrawRectangle(bounds);
+
+		dc.SetPen(wxPen(light));
+		dc.DrawLine(bounds.x, bounds.y, bounds.x+bounds.width, bounds.y);
+
+		dc.SetTextBackground(dark);
+		dc.SetTextForeground(light);
+		dc.DrawText(_T("This is the timeline"), bounds.x+2, bounds.y+4);
+	}
+};
+
+
+
+
 /// @brief Constructor 
 /// @param parent 
 ///
@@ -187,6 +300,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 , provider(0)
 {
 	scrollbar = new AudioDisplayScrollbar(this);
+	timeline = new AudioDisplayTimeline(this);
 
 	audio_renderer = new AudioRenderer;
 	audio_spectrum_renderer = new AudioSpectrumRenderer;
@@ -215,6 +329,7 @@ AudioDisplay::~AudioDisplay()
 	delete audio_renderer;
 	delete audio_spectrum_renderer;
 
+	delete timeline;
 	delete scrollbar;
 
 	controller->RemoveListener(this);
@@ -242,6 +357,7 @@ void AudioDisplay::ScrollPixelToLeft(int pixel_position)
 	{
 		scroll_left = pixel_position;
 		scrollbar->SetPosition(scroll_left);
+		timeline->SetPosition(scroll_left);
 		Refresh();
 	}
 }
@@ -273,6 +389,7 @@ void AudioDisplay::SetZoomLevel(int new_zoom_level)
 			pixel_audio_width = 1;
 
 		scrollbar->ChangeLengths(pixel_audio_width, GetClientSize().GetWidth());
+		timeline->ChangeZoom(pixel_samples);
 
 		Refresh();
 	}
@@ -1162,9 +1279,10 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	int client_width, client_height;
 	GetClientSize(&client_width, &client_height);
 
-	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, client_width, false);
-
 	scrollbar->Paint(dc, HasFocus());
+	timeline->Paint(dc);
+
+	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, client_width, false);
 }
 
 
@@ -1246,6 +1364,14 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 			SetDraggedObject(scrollbar);
 		return;
 	}
+
+	// Check for timeline action
+	if (timeline->GetBounds().Contains(mousepos))
+	{
+		if (timeline->OnMouseEvent(event))
+			SetDraggedObject(timeline);
+		return;
+	}
 }
 
 
@@ -1259,9 +1385,11 @@ void AudioDisplay::OnSize(wxSizeEvent &event)
 	wxSize size = GetClientSize();
 
 	scrollbar->SetDisplaySize(size);
+	timeline->SetDisplaySize(wxSize(size.x, scrollbar->GetBounds().y));
 
 	int audio_height = size.GetHeight();
 	audio_height -= scrollbar->GetBounds().GetHeight();
+	audio_height -= timeline->GetHeight();
 	audio_renderer->SetHeight(audio_height);
 
 	Refresh();

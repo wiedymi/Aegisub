@@ -67,6 +67,7 @@ class wxScrollBar;
 // Helper classes used in implementation of the audio display
 class AudioDisplayScrollbar;
 class AudioDisplayTimeline;
+class AudioDisplaySelection;
 
 
 
@@ -120,6 +121,9 @@ private:
 
 	/// Scrollbar helper object
 	AudioDisplayScrollbar *scrollbar;
+
+	/// Timeline helper object
+	AudioDisplayTimeline *timeline;
 
 
 	/// Current object on display being dragged, if any
