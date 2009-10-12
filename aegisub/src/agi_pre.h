@@ -187,6 +187,7 @@
 #include <wx/mstream.h>
 #include <wx/notebook.h>
 #include <wx/panel.h>
+#include <wx/power.h>
 #include <wx/radiobox.h>
 #include <wx/radiobut.h>
 #include <wx/rawbmp.h>

@@ -40,6 +40,7 @@
 #include <wx/event.h>
 #include <wx/string.h>
 #include <wx/timer.h>
+#include <wx/power.h>
 
 #include "include/aegisub/exception.h"
 #endif
@@ -145,6 +146,12 @@ private:
 
 	/// Event handler for the playback timer
 	void OnPlaybackTimer(wxTimerEvent &event);
+
+
+	/// Handle computer going into suspend mode by stopping audio and closing device
+	void OnComputerSuspending(wxPowerEvent &event);
+	/// Handle computer resuming from suspend by re-opening the audio device
+	void OnComputerResuming(wxPowerEvent &event);
 
 
 public:

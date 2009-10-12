@@ -64,6 +64,8 @@ AudioController::AudioController()
 , playback_timer(this)
 {
 	Connect(playback_timer.GetId(), wxEVT_TIMER, (wxObjectEventFunction)&AudioController::OnPlaybackTimer);
+	Connect(wxEVT_POWER_SUSPENDED, (wxObjectEventFunction)&AudioController::OnComputerSuspending);
+	Connect(wxEVT_POWER_RESUME, (wxObjectEventFunction)&AudioController::OnComputerResuming);
 }
 
 
@@ -79,6 +81,19 @@ void AudioController::OnPlaybackTimer(wxTimerEvent &event)
 	{
 		(*l)->OnPlaybackPosition(player->GetCurrentPosition());
 	}
+}
+
+
+void AudioController::OnComputerSuspending(wxPowerEvent &event)
+{
+	Stop();
+	player->CloseStream();
+}
+
+
+void AudioController::OnComputerResuming(wxPowerEvent &event)
+{
+	player->OpenStream();
 }
 
 
