@@ -1412,6 +1412,10 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	timeline->Paint(dc);
 
 	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, client_width, false);
+
+	wxColor playback_cursor_color = Options.AsColour(_T("Audio Play Cursor"));
+	dc.SetPen(wxPen(playback_cursor_color));
+	dc.DrawLine(playback_pos-scroll_left, 0, playback_pos-scroll_left, audio_height);
 }
 
 
@@ -1516,7 +1520,7 @@ void AudioDisplay::OnSize(wxSizeEvent &event)
 	scrollbar->SetDisplaySize(size);
 	timeline->SetDisplaySize(wxSize(size.x, scrollbar->GetBounds().y));
 
-	int audio_height = size.GetHeight();
+	audio_height = size.GetHeight();
 	audio_height -= scrollbar->GetBounds().GetHeight();
 	audio_height -= timeline->GetHeight();
 	audio_renderer->SetHeight(audio_height);
@@ -1741,13 +1745,15 @@ void AudioDisplay::OnSelectionChanged()
 
 void AudioDisplay::OnPlaybackPosition(int64_t sample_position)
 {
-	markers.playback_pos = sample_position / pixel_samples;
-	Refresh();
+	int old_pos = playback_pos;
+	playback_pos = sample_position / pixel_samples;
+
+	RefreshRect(wxRect(old_pos - scroll_left - 2, 0, 5, audio_height));
+	RefreshRect(wxRect(playback_pos - scroll_left - 2, 0, 5, audio_height));
 }
 
 
 void AudioDisplay::OnPlaybackStop()
 {
-	markers.playback_pos = -1;
-	Refresh();
+	OnPlaybackPosition(-1);
 }

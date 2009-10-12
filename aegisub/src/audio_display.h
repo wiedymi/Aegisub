@@ -144,16 +144,16 @@ private:
 	/// Amplitude scaling ("vertical zoom") as a factor, 1.0 is neutral
 	float scale_amplitude;
 
+	// Height of main audio area in pixels
+	int audio_height;
+
 
 	/// Zoom level given as a number, see SetZoomLevel for details
 	int zoom_level;
 
 
-	struct {
-		/// Absolute pixel position of the playback position marker
-		int64_t playback_pos;
-	}
-	markers;
+	/// Absolute pixel position of the playback position marker
+	int playback_pos;
 
 
 	struct {

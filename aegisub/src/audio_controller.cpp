@@ -61,13 +61,24 @@ AudioController::AudioController()
 , player(0)
 , playback_mode(PM_NotPlaying)
 , selection(0, 0)
+, playback_timer(this)
 {
+	Connect(playback_timer.GetId(), wxEVT_TIMER, (wxObjectEventFunction)&AudioController::OnPlaybackTimer);
 }
 
 
 AudioController::~AudioController()
 {
 	CloseAudio();
+}
+
+
+void AudioController::OnPlaybackTimer(wxTimerEvent &event)
+{
+	ALL_LISTENERS(l)
+	{
+		(*l)->OnPlaybackPosition(player->GetCurrentPosition());
+	}
 }
 
 
@@ -215,6 +226,7 @@ void AudioController::PlayRange(const AudioController::SampleRange &range)
 
 	player->Play(range.begin(), range.length());
 	playback_mode = PM_Range;
+	playback_timer.Start(20);
 
 	ALL_LISTENERS(l)
 	{
@@ -229,6 +241,7 @@ void AudioController::PlayToEnd(int64_t start_sample)
 
 	player->Play(start_sample, provider->GetNumSamples()-start_sample);
 	playback_mode = PM_ToEnd;
+	playback_timer.Start(50);
 
 	ALL_LISTENERS(l)
 	{
@@ -243,6 +256,7 @@ void AudioController::Stop()
 
 	player->Stop();
 	playback_mode = PM_NotPlaying;
+	playback_timer.Stop();
 
 	ALL_LISTENERS(l)
 	{

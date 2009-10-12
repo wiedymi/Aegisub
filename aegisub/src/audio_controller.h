@@ -37,7 +37,9 @@
 #ifndef AGI_PRE
 #include <stdint.h>
 #include <assert.h>
+#include <wx/event.h>
 #include <wx/string.h>
+#include <wx/timer.h>
 
 #include "include/aegisub/exception.h"
 #endif
@@ -74,7 +76,7 @@ class AudioControllerEventListener;
 /// There is not supposed to be a way to get direct access to the audio providers or players owned
 /// by a controller. If some operation that isn't possible in the existing design is needed, the
 /// controller should be extended in some way to allow it.
-class AudioController {
+class AudioController : public wxEvtHandler {
 public:
 
 	/// @class SampleRange
@@ -136,6 +138,13 @@ private:
 
 	/// The current audio selection
 	SampleRange selection;
+
+
+	/// Timer used for playback position updates
+	wxTimer playback_timer;
+
+	/// Event handler for the playback timer
+	void OnPlaybackTimer(wxTimerEvent &event);
 
 
 public:
