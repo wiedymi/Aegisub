@@ -424,6 +424,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 
 	scroll_left = 0;
 	pixel_audio_width = 0;
+	playback_pos = -1;
 	scale_amplitude = 1.0;
 
 	audio_renderer->SetRenderer(audio_spectrum_renderer);
@@ -1414,9 +1415,13 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 
 	audio_renderer->Render(dc, wxPoint(0, 0), scroll_left, client_width, false);
 
-	wxColor playback_cursor_color = Options.AsColour(_T("Audio Play Cursor"));
-	dc.SetPen(wxPen(playback_cursor_color));
-	dc.DrawLine(playback_pos-scroll_left, 0, playback_pos-scroll_left, audio_height);
+	int rel_playback_pos = playback_pos - scroll_left;
+	if (rel_playback_pos >= 0 && rel_playback_pos < client_width)
+	{
+		wxColor playback_cursor_color = Options.AsColour(_T("Audio Play Cursor"));
+		dc.SetPen(wxPen(playback_cursor_color));
+		dc.DrawLine(rel_playback_pos, 0, rel_playback_pos, audio_height);
+	}
 }
 
 
