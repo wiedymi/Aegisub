@@ -320,7 +320,7 @@ void AudioBox::OnVerticalZoom(wxScrollEvent &event) {
 	if (pos < 1) pos = 1;
 	if (pos > 100) pos = 100;
 	float value = pow(float(pos)/50.0f,3);
-	audioDisplay->SetScale(value);
+	audioDisplay->SetAmplitudeScale(value);
 	if (VerticalLink->GetValue()) {
 		controller->SetVolume(value);
 		VolumeBar->SetValue(pos);

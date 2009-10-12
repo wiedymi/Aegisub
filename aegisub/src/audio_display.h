@@ -202,9 +202,6 @@ public:
 	void CommitChanges(bool) { }
 	void CommitChanges() { }
 
-	/// Set amplitude scaling
-	// audio_box.cpp 346
-	void SetScale(float) { }
 
 	/// Switch dialogue line
 	// audio_box.cpp 588 596
@@ -316,6 +313,15 @@ public:
 	///
 	/// Too negative numbers get clamped.
 	static int GetZoomLevelFactor(int level);
+
+
+	/// @brief Set amplitude scale factor
+	/// @param scale New amplitude scale factor, 1.0 is no scaling
+	void SetAmplitudeScale(float scale);
+
+	/// @brief Get amplitude scale factor
+	/// @return The amplitude scaling factor
+	float GetAmplitudeScale() const;
 
 
 	DECLARE_EVENT_TABLE()

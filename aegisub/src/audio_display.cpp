@@ -552,6 +552,19 @@ int AudioDisplay::GetZoomLevelFactor(int level)
 }
 
 
+void AudioDisplay::SetAmplitudeScale(float scale)
+{
+	audio_renderer->SetAmplitudeScale(scale);
+	Refresh();
+}
+
+
+float AudioDisplay::GetAmplitudeScale() const
+{
+	return audio_renderer->GetAmplitudeScale();
+}
+
+
 #pragma region Old code
 //void AudioDisplay::UpdateImage(bool weak)
 
