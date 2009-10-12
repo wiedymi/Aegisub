@@ -256,7 +256,7 @@ void AudioController::PlayToEnd(int64_t start_sample)
 
 	player->Play(start_sample, provider->GetNumSamples()-start_sample);
 	playback_mode = PM_ToEnd;
-	playback_timer.Start(50);
+	playback_timer.Start(20);
 
 	ALL_LISTENERS(l)
 	{

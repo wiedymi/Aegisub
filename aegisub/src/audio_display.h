@@ -232,6 +232,7 @@ public:
 	AudioDisplay(wxWindow *parent, AudioController *controller);
 	~AudioDisplay();
 
+
 	/// @brief Scroll the audio display
 	/// @param pixel_amount Number of pixels to scroll the view
 	///
@@ -322,6 +323,13 @@ public:
 	/// @brief Get amplitude scale factor
 	/// @return The amplitude scaling factor
 	float GetAmplitudeScale() const;
+
+
+	/// @brief Reload all rendering settings from Options and reset caches
+	///
+	/// This can be called if some rendering quality settings have been changed in Options
+	/// and need to be reloaded to take effect.
+	void ReloadRenderingSettings();
 
 
 	DECLARE_EVENT_TABLE()

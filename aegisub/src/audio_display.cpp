@@ -434,6 +434,8 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 
 	SetZoomLevel(0);
 
+	ReloadRenderingSettings();
+
 	SetMinClientSize(wxSize(-1, 70));
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM); // intended to be wxBG_STYLE_PAINT but that doesn't exist for me
 }
@@ -470,7 +472,7 @@ void AudioDisplay::ScrollPixelToLeft(int pixel_position)
 		pixel_position = 0;
 
 	// This check is required to avoid needless redraws, but more importantly to
-	// avoid mutual recursion with the scrollbar.
+	// avoid mutual recursion with the scrollbar and timeline.
 	if (pixel_position != scroll_left)
 	{
 		scroll_left = pixel_position;
@@ -564,6 +566,25 @@ void AudioDisplay::SetAmplitudeScale(float scale)
 float AudioDisplay::GetAmplitudeScale() const
 {
 	return audio_renderer->GetAmplitudeScale();
+}
+
+
+void AudioDisplay::ReloadRenderingSettings()
+{
+	int spectrum_quality = Options.AsInt(_T("Audio Spectrum Quality"));
+	if (spectrum_quality < 0) spectrum_quality = 0;
+	if (spectrum_quality > 5) spectrum_quality = 5;
+
+	// Quality indexes:        0  1  2  3   4   5
+	int spectrum_width[]    = {8, 9, 9, 9, 10, 11};
+	int spectrum_distance[] = {8, 8, 7, 6,  6,  5};
+
+	audio_spectrum_renderer->SetResolution(
+		spectrum_width[spectrum_quality],
+		spectrum_distance[spectrum_quality]);
+	audio_renderer->Invalidate();
+
+	Refresh();
 }
 
 
@@ -1426,7 +1447,7 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 
 		if (audio_bounds.Intersects(updrect))
 		{
-			audio_renderer->Render(dc, wxPoint(updrect.x, 0), scroll_left+updrect.x, updrect.width, false);
+			audio_renderer->Render(dc, wxPoint(updrect.x, 0), scroll_left+updrect.x, updrect.width+1, false);
 		}
 
 		region++;
@@ -1440,8 +1461,8 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	int rel_playback_pos = playback_pos - scroll_left;
 	if (rel_playback_pos >= 0 && rel_playback_pos < client_width)
 	{
-		wxColor playback_cursor_color = Options.AsColour(_T("Audio Play Cursor"));
-		dc.SetPen(wxPen(playback_cursor_color));
+		dc.SetPen(wxPen(*wxWHITE));
+		dc.SetLogicalFunction(wxINVERT);
 		dc.DrawLine(rel_playback_pos, 0, rel_playback_pos, audio_height);
 	}
 }
