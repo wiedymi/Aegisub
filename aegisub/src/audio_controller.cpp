@@ -64,8 +64,11 @@ AudioController::AudioController()
 , playback_timer(this)
 {
 	Connect(playback_timer.GetId(), wxEVT_TIMER, (wxObjectEventFunction)&AudioController::OnPlaybackTimer);
+
+#ifdef wxHAS_POWER_EVENTS
 	Connect(wxEVT_POWER_SUSPENDED, (wxObjectEventFunction)&AudioController::OnComputerSuspending);
 	Connect(wxEVT_POWER_RESUME, (wxObjectEventFunction)&AudioController::OnComputerResuming);
+#endif
 }
 
 
@@ -84,6 +87,7 @@ void AudioController::OnPlaybackTimer(wxTimerEvent &event)
 }
 
 
+#ifdef wxHAS_POWER_EVENTS
 void AudioController::OnComputerSuspending(wxPowerEvent &event)
 {
 	Stop();
@@ -95,6 +99,7 @@ void AudioController::OnComputerResuming(wxPowerEvent &event)
 {
 	player->OpenStream();
 }
+#endif
 
 
 void AudioController::OpenAudio(const wxString &url)

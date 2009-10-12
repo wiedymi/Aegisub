@@ -148,10 +148,12 @@ private:
 	void OnPlaybackTimer(wxTimerEvent &event);
 
 
+#ifdef wxHAS_POWER_EVENTS
 	/// Handle computer going into suspend mode by stopping audio and closing device
 	void OnComputerSuspending(wxPowerEvent &event);
 	/// Handle computer resuming from suspend by re-opening the audio device
 	void OnComputerResuming(wxPowerEvent &event);
+#endif
 
 
 public:
