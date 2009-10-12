@@ -1797,8 +1797,11 @@ void AudioDisplay::OnPlaybackPosition(int64_t sample_position)
 	int old_pos = playback_pos;
 	playback_pos = sample_position / pixel_samples;
 
-	RefreshRect(wxRect(old_pos - scroll_left - 2, 0, 5, audio_height));
-	RefreshRect(wxRect(playback_pos - scroll_left - 2, 0, 5, audio_height));
+	if (playback_pos != old_pos)
+	{
+		RefreshRect(wxRect(old_pos - scroll_left - 2, 0, 5, audio_height));
+		RefreshRect(wxRect(playback_pos - scroll_left - 2, 0, 5, audio_height));
+	}
 }
 
 
