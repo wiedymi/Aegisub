@@ -189,6 +189,22 @@ class AudioDisplayTimeline : public AudioDisplayInteractionObject {
 	wxPoint drag_lastpos;
 	bool dragging;
 
+	enum Scale {
+		Sc_Millisecond,
+		Sc_Centisecond,
+		Sc_Decisecond,
+		Sc_Second,
+		Sc_Decasecond,
+		Sc_Minute,
+		Sc_Decaminute,
+		Sc_Hour,
+		Sc_Decahour, // If anyone needs this they should reconsider their project
+		Sc_MAX = Sc_Decahour
+	};
+	Scale scale_minor;
+	int scale_major_modulo; // If minor_scale_mark_index % scale_major_modulo == 0 the mark is a major mark
+	double scale_minor_divisor; // Absolute scale-mark index multiplied by this number gives sample index for scale mark
+
 	AudioDisplay *display;
 
 public:
@@ -233,6 +249,43 @@ public:
 	void ChangeZoom(int new_pixel_samples)
 	{
 		samples_per_pixel = new_pixel_samples;
+
+		// Pixels per second
+		double px_sec = (double)samplerate / (double)samples_per_pixel;
+
+		if (px_sec > 10000) {
+			scale_minor = Sc_Millisecond;
+			scale_minor_divisor = (double)samplerate / 1000;
+			scale_major_modulo = 10;
+		} else if (px_sec > 1000) {
+			scale_minor = Sc_Centisecond;
+			scale_minor_divisor = (double)samplerate / 100;
+			scale_major_modulo = 10;
+		} else if (px_sec > 100) {
+			scale_minor = Sc_Decisecond;
+			scale_minor_divisor = (double)samplerate / 10;
+			scale_major_modulo = 10;
+		} else if (px_sec > 10) {
+			scale_minor = Sc_Second;
+			scale_minor_divisor = (double)samplerate;
+			scale_major_modulo = 10;
+		} else if (px_sec > 1) {
+			scale_minor = Sc_Decasecond;
+			scale_minor_divisor = (double)samplerate * 10;
+			scale_major_modulo = 6;
+		} else if (px_sec > 1.0/6.0) {
+			scale_minor = Sc_Minute;
+			scale_minor_divisor = (double)samplerate * 60;
+			scale_major_modulo = 10;
+		} else if (px_sec > 1.0/60.0) {
+			scale_minor = Sc_Decaminute;
+			scale_minor_divisor = (double)samplerate * 600;
+			scale_major_modulo = 6;
+		} else {
+			scale_minor = Sc_Hour;
+			scale_minor_divisor = (double)samplerate * 3600;
+			scale_major_modulo = 10;
+		}
 	}
 
 	void SetPosition(int new_pixel_left)
@@ -275,16 +328,39 @@ public:
 		wxColour light(48, 255, 96);
 		wxColour dark(0, 64, 32);
 
+		// Background
 		dc.SetPen(wxPen(dark));
 		dc.SetBrush(wxBrush(dark));
 		dc.DrawRectangle(bounds);
 
+		// Top line
 		dc.SetPen(wxPen(light));
 		dc.DrawLine(bounds.x, bounds.y, bounds.x+bounds.width, bounds.y);
 
+		// Prepare for writing text
 		dc.SetTextBackground(dark);
 		dc.SetTextForeground(light);
-		dc.DrawText(_T("This is the timeline"), bounds.x+2, bounds.y+4);
+
+		int64_t sample_left = pixel_left * samples_per_pixel;
+		int next_scale_mark = (int)(sample_left / scale_minor_divisor);
+		if (next_scale_mark * scale_minor_divisor < sample_left)
+			next_scale_mark += 1;
+		assert(next_scale_mark * scale_minor_divisor >= sample_left);
+		int last_text_left = 0;
+		
+		int next_scale_mark_pos;
+		do {
+			next_scale_mark_pos = (int)(next_scale_mark * scale_minor_divisor / samples_per_pixel) - pixel_left;
+			bool mark_is_major = next_scale_mark % scale_major_modulo == 0;
+
+			if (mark_is_major)
+				dc.DrawLine(next_scale_mark_pos, bounds.y, next_scale_mark_pos, bounds.y+5);
+			else
+				dc.DrawLine(next_scale_mark_pos, bounds.y, next_scale_mark_pos, bounds.y+3);
+
+			next_scale_mark += 1;
+
+		} while (next_scale_mark_pos < bounds.width);
 	}
 };
 
