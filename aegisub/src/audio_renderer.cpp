@@ -194,7 +194,6 @@ wxBitmap AudioRenderer::GetCachedBitmap(int i, bool selected)
 	assert(bmp);
 	if (created)
 	{
-		wxLogDebug(_T("Create audio cache bitmap %d (selected=%d)"), i, selected?1:0);
 		renderer->Render(*bmp, i*cache_bitmap_width, selected);
 		/*
 		wxMemoryDC dc(*bmp);
@@ -220,6 +219,8 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 
 	// Last absolute pixel strip to render
 	int end = start + length - 1;
+	// Last X coordinate to render on
+	int lastx = origin.x + length - 1;
 	// Figure out which range of bitmaps are required
 	int firstbitmap = start / cache_bitmap_width;
 	// And the offset in it to start its use at
@@ -267,6 +268,7 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 
 		{
 			bmp = GetCachedBitmap(firstbitmap, selected);
+			// Can't use dc.DrawBitmap here because we need to clip the bitmap
 			wxMemoryDC bmpdc(bmp);
 			dc.Blit(origin, wxSize(cache_bitmap_width-firstbitmapoffset, pixel_height),
 				&bmpdc, wxPoint(firstbitmapoffset, 0));
@@ -276,13 +278,15 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 		for (int i = firstbitmap+1; i < lastbitmap; ++i)
 		{
 			bmp = GetCachedBitmap(i, selected);
-			wxMemoryDC bmpdc(bmp);
-			dc.Blit(origin, wxSize(cache_bitmap_width, pixel_height), &bmpdc, wxPoint(0, 0));
+			dc.DrawBitmap(bmp, origin);
+			//wxMemoryDC bmpdc(bmp);
+			//dc.Blit(origin, wxSize(cache_bitmap_width, pixel_height), &bmpdc, wxPoint(0, 0));
 			origin.x += cache_bitmap_width;
 		}
 
 		{
 			bmp = GetCachedBitmap(lastbitmap, selected);
+			// We also need clipping here
 			wxMemoryDC bmpdc(bmp);
 			dc.Blit(origin, wxSize(lastbitmapoffset+1, pixel_height), &bmpdc, wxPoint(0, 0));
 			origin.x += lastbitmapoffset+1;
@@ -290,9 +294,9 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 	}
 
 	// Now render blank audio from origin to end
-	if (origin.x < end)
+	if (origin.x < lastx)
 	{
-		renderer->RenderBlank(dc, wxRect(origin.x-1, origin.y, end-origin.x-1, pixel_height), selected);
+		renderer->RenderBlank(dc, wxRect(origin.x-1, origin.y, lastx-origin.x, pixel_height), selected);
 	}
 
 	if (selected)

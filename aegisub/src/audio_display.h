@@ -150,23 +150,12 @@ private:
 
 	/// Zoom level given as a number, see SetZoomLevel for details
 	int zoom_level;
+	// Mouse wheel zoom accumulator
+	int mouse_zoom_accum;
 
 
 	/// Absolute pixel position of the playback position marker
 	int playback_pos;
-
-
-	struct {
-		/// True if the selection has changed since the last redraw;
-		bool changed;
-
-		/// Absolute pixel position of the selection start
-		int64_t start;
-
-		/// Length of selection in pixels, <=0 and there's no selection
-		int64_t length;
-	}
-	selection;
 
 
 	void OnPaint(wxPaintEvent &event);

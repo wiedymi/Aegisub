@@ -438,6 +438,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 
 	SetMinClientSize(wxSize(-1, 70));
 	SetBackgroundStyle(wxBG_STYLE_CUSTOM); // intended to be wxBG_STYLE_PAINT but that doesn't exist for me
+	SetThemeEnabled(false);
 }
 
 
@@ -1437,6 +1438,10 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	bool redraw_scrollbar = false;
 	bool redraw_timeline = false;
 
+	AudioController::SampleRange sel_samples(controller->GetSelection());
+	int selection_start = (int)(sel_samples.begin() / pixel_samples);
+	int selection_end = (int)(sel_samples.end() / pixel_samples);
+
 	wxRegionIterator region(GetUpdateRegion());
 	while (region)
 	{
@@ -1447,7 +1452,37 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 
 		if (audio_bounds.Intersects(updrect))
 		{
-			audio_renderer->Render(dc, wxPoint(updrect.x, 0), scroll_left+updrect.x, updrect.width+1, false);
+			int p1, p2, p3, p4;
+			// p1 -> p2 = before selection
+			// p2 -> p3 = in selection
+			// p3 -> p4 = after selection
+			p1 = scroll_left + updrect.x;
+			p2 = selection_start;
+			p3 = selection_end;
+			p4 = p1 + updrect.width;
+
+			int x = updrect.x;
+
+			if (p1 < p2)
+			{
+				int start = p1;
+				int end = std::min(p2, p4);
+				audio_renderer->Render(dc, wxPoint(x, 0), start, end-start, false);
+				x += end - start;
+			}
+			if (p4 > p2 && p1 < p3)
+			{
+				int start = std::max(p1, p2);
+				int end = std::min(p3, p4);
+				audio_renderer->Render(dc, wxPoint(x, 0), start, end-start, true);
+				x += end - start;
+			}
+			if (p4 > p3)
+			{
+				int start = std::max(p1, p3);
+				int end = p4;
+				audio_renderer->Render(dc, wxPoint(x, 0), start, end-start, false);
+			}
 		}
 
 		region++;
@@ -1500,20 +1535,29 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 			}
 		}
 
-		bool zoom = event.ShiftDown();
+		bool zoom = event.CmdDown();
 		if (Options.AsBool(_T("Audio Wheel Default To Zoom"))) zoom = !zoom;
 
 		if (!zoom)
 		{
-			int amount = event.GetWheelRotation();
+			int amount = -event.GetWheelRotation();
 			// If the user did a horizontal scroll the amount should be inverted
 			// for it to be natural.
 			if (event.GetWheelAxis() == 1) amount = -amount;
 
+			// Reset any accumulated zoom
+			mouse_zoom_accum = 0;
+
 			ScrollBy(amount);
 		}
-		else
+		else if (event.GetWheelAxis() == 0)
 		{
+			mouse_zoom_accum += event.GetWheelRotation();
+			int zoom_delta = mouse_zoom_accum / event.GetWheelDelta();
+			mouse_zoom_accum %= event.GetWheelDelta();
+			SetZoomLevel(GetZoomLevel() + zoom_delta);
+			/// @todo This has to update the trackbar in the audio box... maybe move handling mouse zoom to
+			/// the audio box instead to avoid messing with friend classes?
 		}
 
 		// Scroll event processed
@@ -1552,6 +1596,32 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 	{
 		if (timeline->OnMouseEvent(event))
 			SetDraggedObject(timeline);
+		return;
+	}
+
+	// Fake selection changing code for test purposes.
+	// These two left/right button handlers should send the event to the controller instead
+	// of trying to determine a new calculation themselves. It might be that there's no
+	// meaningful clicking operations to change selections etc. in current mode.
+	if (event.LeftDown())
+	{
+		AudioController::SampleRange cursel(controller->GetSelection());
+		int64_t newstart = (scroll_left + mousepos.x) * pixel_samples;
+		int64_t newend = cursel.end();
+		if (newstart > newend)
+			std::swap(newstart, newend);
+		controller->SetSelection(AudioController::SampleRange(newstart, newend));
+		return;
+	}
+
+	if (event.RightDown())
+	{
+		AudioController::SampleRange cursel(controller->GetSelection());
+		int64_t newstart = cursel.begin();
+		int64_t newend = (scroll_left + mousepos.x) * pixel_samples;
+		if (newstart > newend)
+			std::swap(newstart, newend);
+		controller->SetSelection(AudioController::SampleRange(newstart, newend));
 		return;
 	}
 }
