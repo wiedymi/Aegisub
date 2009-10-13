@@ -64,6 +64,9 @@ class AudioDisplayScrollbar : public AudioDisplayInteractionObject {
 	int page_length; // amount of data in one page
 	int position;    // first item displayed
 
+	int sel_start;   // first data item in selection
+	int sel_length;  // number of data items in selection
+
 	AudioDisplay *display;
 
 	// Recalculate thumb bounds from position and length data
@@ -82,6 +85,8 @@ public:
 		, data_length(1)
 		, page_length(1)
 		, position(0)
+		, sel_start(-1)
+		, sel_length(0)
 		, display(_display)
 	{
 	}
@@ -129,6 +134,12 @@ public:
 		return position;
 	}
 
+	void SetSelection(int new_start, int new_length)
+	{
+		sel_start = new_start;
+		sel_length = new_length;
+	}
+
 	void ChangeLengths(int new_data_length, int new_page_length)
 	{
 		data_length = new_data_length;
@@ -161,16 +172,37 @@ public:
 	{
 		wxColour light(48, 255, 96);
 		wxColour dark(0, 64, 48);
+		wxColour sel(96, 64, 64);
 
 		if (has_focus)
 		{
 			light.Set(64, 255, 128);
 			dark.Set(0, 128, 64);
+			wxColour sel(96, 128, 64);
 		}
 
 		dc.SetPen(wxPen(light));
 		dc.SetBrush(wxBrush(dark));
 		dc.DrawRectangle(bounds);
+
+		if (sel_length > 0 && sel_start >= 0)
+		{
+			wxRect r;
+			r.x = sel_start * bounds.width / data_length;
+			r.y = bounds.y;
+			r.width = sel_length * bounds.width / data_length;
+			r.height = bounds.height;
+
+			dc.SetPen(wxPen(sel));
+			dc.SetBrush(wxBrush(sel));
+			dc.DrawRectangle(r);
+		}
+
+		dc.SetPen(wxPen(light));
+		dc.SetBrush(*wxTRANSPARENT_BRUSH);
+		dc.DrawRectangle(bounds);
+
+		dc.SetPen(wxPen(light));
 		dc.SetBrush(wxBrush(light));
 		dc.DrawRectangle(thumb);
 	}
@@ -1858,6 +1890,9 @@ void AudioDisplay::OnMarkersMoved()
 
 void AudioDisplay::OnSelectionChanged()
 {
+	AudioController::SampleRange sel(controller->GetSelection());
+	scrollbar->SetSelection(sel.begin() / pixel_samples, sel.length() / pixel_samples);
+
 	Refresh();
 }
 
