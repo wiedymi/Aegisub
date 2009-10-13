@@ -80,9 +80,21 @@ AudioController::~AudioController()
 
 void AudioController::OnPlaybackTimer(wxTimerEvent &event)
 {
-	ALL_LISTENERS(l)
+	int64_t pos = player->GetCurrentPosition();
+
+	if (!player->IsPlaying() ||
+		(playback_mode != PM_ToEnd && pos >= player->GetEndPosition()+200))
 	{
-		(*l)->OnPlaybackPosition(player->GetCurrentPosition());
+		// The +200 is to allow the player to end the sound output cleanly, otherwise a popping
+		// artifact can sometimes be heard.
+		Stop();
+	}
+	else
+	{
+		ALL_LISTENERS(l)
+		{
+			(*l)->OnPlaybackPosition(pos);
+		}
 	}
 }
 
