@@ -144,7 +144,10 @@ private:
 	/// Amplitude scaling ("vertical zoom") as a factor, 1.0 is neutral
 	float scale_amplitude;
 
-	// Height of main audio area in pixels
+	/// Top of the main audio area in pixels
+	int audio_top;
+
+	/// Height of main audio area in pixels
 	int audio_height;
 
 

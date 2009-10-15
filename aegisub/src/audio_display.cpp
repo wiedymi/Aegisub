@@ -264,7 +264,7 @@ public:
 		bounds.width = display_size.x;
 		bounds.height = GetHeight();
 		bounds.x = 0;
-		bounds.y = display_size.y - bounds.height;
+		bounds.y = 0;
 	}
 
 	const wxRect & GetBounds() const
@@ -360,6 +360,8 @@ public:
 		wxColour light(48, 255, 96);
 		wxColour dark(0, 64, 32);
 
+		int bottom = bounds.y + bounds.height;
+
 		// Background
 		dc.SetPen(wxPen(dark));
 		dc.SetBrush(wxBrush(dark));
@@ -367,7 +369,7 @@ public:
 
 		// Top line
 		dc.SetPen(wxPen(light));
-		dc.DrawLine(bounds.x, bounds.y, bounds.x+bounds.width, bounds.y);
+		dc.DrawLine(bounds.x, bottom-1, bounds.x+bounds.width, bottom-1);
 
 		// Prepare for writing text
 		dc.SetTextBackground(dark);
@@ -390,9 +392,9 @@ public:
 			bool mark_is_major = next_scale_mark % scale_major_modulo == 0;
 
 			if (mark_is_major)
-				dc.DrawLine(next_scale_mark_pos, bounds.y, next_scale_mark_pos, bounds.y+5);
+				dc.DrawLine(next_scale_mark_pos, bottom-6, next_scale_mark_pos, bottom);
 			else
-				dc.DrawLine(next_scale_mark_pos, bounds.y, next_scale_mark_pos, bounds.y+3);
+				dc.DrawLine(next_scale_mark_pos, bottom-4, next_scale_mark_pos, bottom);
 
 			// Print time labels on major scale marks
 			if (mark_is_major && next_scale_mark_pos > last_text_right)
@@ -428,7 +430,7 @@ public:
 				dc.GetTextExtent(time_string, &tw, &th);
 				last_text_right = next_scale_mark_pos + tw;
 
-				dc.DrawText(time_string, next_scale_mark_pos, bounds.y+5);
+				dc.DrawText(time_string, next_scale_mark_pos, 0);
 			}
 
 			next_scale_mark += 1;
@@ -1464,7 +1466,7 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	int client_width, client_height;
 	GetClientSize(&client_width, &client_height);
 
-	wxRect audio_bounds(0, 0, client_width, audio_height);
+	wxRect audio_bounds(0, audio_top, client_width, audio_height);
 	const wxRect &scrollbar_bounds = scrollbar->GetBounds();
 	const wxRect &timeline_bounds = timeline->GetBounds();
 	bool redraw_scrollbar = false;
@@ -1499,21 +1501,21 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 			{
 				int start = p1;
 				int end = std::min(p2, p4);
-				audio_renderer->Render(dc, wxPoint(x, 0), start, end-start, false);
+				audio_renderer->Render(dc, wxPoint(x, audio_top), start, end-start, false);
 				x += end - start;
 			}
 			if (p4 > p2 && p1 < p3)
 			{
 				int start = std::max(p1, p2);
 				int end = std::min(p3, p4);
-				audio_renderer->Render(dc, wxPoint(x, 0), start, end-start, true);
+				audio_renderer->Render(dc, wxPoint(x, audio_top), start, end-start, true);
 				x += end - start;
 			}
 			if (p4 > p3)
 			{
 				int start = std::max(p1, p3);
 				int end = p4;
-				audio_renderer->Render(dc, wxPoint(x, 0), start, end-start, false);
+				audio_renderer->Render(dc, wxPoint(x, audio_top), start, end-start, false);
 			}
 		}
 
@@ -1530,7 +1532,7 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	{
 		dc.SetPen(wxPen(*wxWHITE));
 		dc.SetLogicalFunction(wxINVERT);
-		dc.DrawLine(rel_playback_pos, 0, rel_playback_pos, audio_height);
+		dc.DrawLine(rel_playback_pos, audio_top, rel_playback_pos, audio_top+audio_height);
 	}
 }
 
@@ -1675,6 +1677,8 @@ void AudioDisplay::OnSize(wxSizeEvent &event)
 	audio_height -= scrollbar->GetBounds().GetHeight();
 	audio_height -= timeline->GetHeight();
 	audio_renderer->SetHeight(audio_height);
+
+	audio_top = timeline->GetHeight();
 
 	Refresh();
 }
