@@ -170,15 +170,15 @@ public:
 
 	void Paint(wxDC &dc, bool has_focus)
 	{
-		wxColour light(48, 255, 96);
-		wxColour dark(0, 64, 48);
-		wxColour sel(96, 64, 64);
+		wxColour light(89, 145, 220);
+		wxColour dark(8, 4, 13);
+		wxColour sel(65, 34, 103);
 
 		if (has_focus)
 		{
-			light.Set(64, 255, 128);
-			dark.Set(0, 128, 64);
-			wxColour sel(96, 128, 64);
+			light.Set(205, 240, 226);
+			//dark.Set(0, 128, 64);
+			sel.Set(82, 107, 213);
 		}
 
 		dc.SetPen(wxPen(light));
@@ -357,8 +357,8 @@ public:
 
 	void Paint(wxDC &dc)
 	{
-		wxColour light(48, 255, 96);
-		wxColour dark(0, 64, 32);
+		wxColour light(89, 145, 220);
+		wxColour dark(8, 4, 13);
 
 		int bottom = bounds.y + bounds.height;
 
