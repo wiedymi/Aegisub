@@ -35,11 +35,13 @@
 
 
 #ifndef AGI_PRE
+#include <vector>
 #include <stdint.h>
 #include <assert.h>
 #include <wx/event.h>
 #include <wx/string.h>
 #include <wx/timer.h>
+#include <wx/pen.h>
 #include <wx/power.h>
 
 #include "include/aegisub/exception.h"
@@ -50,12 +52,16 @@
 #define AGI_AUDIO_CONTROLLER_INCLUDED 1
 
 
-class AudioDisplay;
 class AudioPlayer;
 class AudioProvider;
 
 // Declared below
 class AudioControllerEventListener;
+class AudioTimingController;
+class AudioMarker;
+
+
+typedef std::vector<AudioMarker*> AudioMarkerVector;
 
 
 /// @class AudioController
@@ -250,6 +256,13 @@ public:
 	/// @param newsel The new selection to use
 	void SetSelection(const SampleRange &newsel);
 
+	/// @brief Get all static markers inside a range
+	/// @param range   The sample range to retrieve markers for
+	/// @param markers Vector to fill found markers into
+	///
+	/// The markers retrieved are static markers the user can't interact with.
+	void GetMarkers(const SampleRange &range, AudioMarkerVector &markers) const;
+
 
 	/// @brief Get the playback audio volume
 	/// @return The amplification factor for the audio
@@ -279,7 +292,7 @@ public:
 
 
 /// @class AudioControllerEventListener
-/// @brief Abstract interface for 
+/// @brief Abstract interface for objects that want audio events
 class AudioControllerEventListener {
 public:
 	/// A new audio stream was opened (and any previously open was closed)
@@ -300,6 +313,106 @@ public:
 	/// Playback has stopped
 	virtual void OnPlaybackStop() = 0;
 };
+
+
+
+/// @class AudioTimingController
+/// @brief Base class for objects controlling audio timing
+///
+/// There is just one active audio timing controller at a time per audio controller.
+/// The timing controller manages the timing mode and supplies markers that can be
+/// manupulated to the audio display, as well as the current selection.
+///
+/// The timing controller must then be sent the marker drag events as well as clicks
+/// in empty areas of the audio display.
+class AudioTimingController {
+public:
+	/// @brief Get all markers inside a given range
+	/// @param range   Range of samples to get markers for
+	/// @param markers Vector to fill with marker information
+	///
+	/// The markers are filled into the vector sorted by time. Existing contents of the vector
+	/// is not changed.
+	virtual void GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &markers) const = 0;
+
+	/// @brief Get any warning message to show in the audio display
+	/// @return The warning message to show, may be empty if there is none
+	virtual wxString GetWarningMessage() const = 0;
+
+	/// @brief Go to next timing unit
+	/// 
+	/// Advances the timing controller cursor to the next timing unit, for example the next dialogue
+	/// line or the next karaoke syllable.
+	virtual void Next() = 0;
+
+	/// @brief Go to the previous timing unit
+	///
+	/// Rewinds the timing controller to the previous timing unit.
+	virtual void Prev() = 0;
+
+	/// @brief Commit all changes
+	///
+	/// Stores all changes permanently.
+	virtual void Commit() = 0;
+
+	/// @brief Revert all changes
+	///
+	/// Revert all changes to the last committed state.
+	virtual void Revert() = 0;
+
+	/// @brief The user pressed the left button down at an empty place in the audio
+	/// @param sample The audio sample index the user clicked
+	/// @return An audio marker or 0. If a marker is returned and the user starts dragging
+	/// the mouse after pressing down the button, the returned marker is being dragged.
+	virtual AudioMarker * OnLeftClick(int64_t sample) = 0;
+
+	/// @brief The user pressed the right button down at an empty place in the audio
+	/// @param sample The audio sample index the user clicked
+	/// @return An audio marker or 0. If a marker is returned and the user starts dragging
+	/// the mouse after pressing down the button, the returned marker is being dragged.
+	virtual AudioMarker * OnRightClick(int64_t sample) = 0;
+
+	/// @brief The user dragged a timing marker
+	/// @param marker       The marker being dragged
+	/// @param new_position Sample position the marker was dragged to
+	virtual void OnMarkerDrag(AudioMarker *marker, int64_t new_position) = 0;
+};
+
+
+
+/// @class AudioMarker
+/// @brief A marker on the audio display
+class AudioMarker {
+public:
+
+	/// Describe which directions a marker has feet in
+	enum FeetStyle {
+		Feet_None = 0,
+		Feet_Left,
+		Feet_Right,
+		Feet_Both // Conveniently Feet_Left|Feet_Right
+	};
+
+	/// @brief Get the marker's position
+	/// @return The marker's position in samples
+	virtual int64_t GetPosition() const = 0;
+
+	/// @brief Get the marker's drawing style
+	/// @return A pen object describing the marker's drawing style
+	virtual wxPen GetStyle() const = 0;
+
+	/// @brief Get the marker's feet style
+	/// @return The marker's feet style
+	virtual FeetStyle GetFeet() const = 0;
+
+	/// @brief Retrieve whether draggable markers can snap to this marker when they're close
+	/// @return True if draggable markers can snap to this marker, otherwise false
+	///
+	/// Even if the marker being dragged returns false from this method it can still snap during
+	/// dragging. The snappable property only applies to the snap-to marker, not the snapping one.
+	virtual bool CanSnap() const = 0;
+};
+
 
 
 namespace Aegisub {

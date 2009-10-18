@@ -339,6 +339,12 @@ void AudioController::SetSelection(const SampleRange &newsel)
 }
 
 
+void AudioController::GetMarkers(const SampleRange &range, AudioMarkerVector &markers) const
+{
+	/// @todo Find all sources of markers
+}
+
+
 double AudioController::GetVolume() const
 {
 	if (!IsAudioOpen()) return 1.0;
