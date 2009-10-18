@@ -177,7 +177,6 @@ public:
 		if (has_focus)
 		{
 			light.Set(205, 240, 226);
-			//dark.Set(0, 128, 64);
 			sel.Set(82, 107, 213);
 		}
 
@@ -607,6 +606,10 @@ float AudioDisplay::GetAmplitudeScale() const
 void AudioDisplay::ReloadRenderingSettings()
 {
 	int spectrum_quality = Options.AsInt(_T("Audio Spectrum Quality"));
+#ifdef WITH_FFTW
+	// FFTW is so fast we can afford to upgrade quality by two levels
+	spectrum_quality += 2;
+#endif
 	if (spectrum_quality < 0) spectrum_quality = 0;
 	if (spectrum_quality > 5) spectrum_quality = 5;
 
