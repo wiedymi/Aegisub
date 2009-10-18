@@ -38,6 +38,10 @@
 
 #include <stdint.h>
 
+#ifdef WITH_FFTW
+#include <fftw3.h>
+#endif
+
 
 
 /// @class AudioSpectrumColorMap
@@ -154,9 +158,19 @@ class AudioSpectrumRenderer : public AudioRendererBitmapProvider {
 	/// @param[out] block       Address to write the data to
 	void FillBlock(size_t block_index, float *block);
 
+#ifdef WITH_FFTW
+	/// FFTW plan data
+	fftw_plan dft_plan;
+	/// Pre-allocated input array for FFTW
+	double *dft_input;
+	/// Pre-allocated output array for FFTW
+	fftw_complex *dft_output;
+#else
 	/// Pre-allocated scratch area for doing FFT derivations
 	float *fft_scratch;
-	/// Pre-allocates scratch area for storing raw audio data
+#endif
+
+	/// Pre-allocated scratch area for storing raw audio data
 	int16_t *audio_scratch;
 
 public:

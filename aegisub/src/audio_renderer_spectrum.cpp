@@ -46,8 +46,13 @@
 #include "include/aegisub/audio_provider.h"
 #include "audio_renderer.h"
 #include "audio_renderer_spectrum.h"
-#include "fft.h"
 #include "colorspace.h"
+
+#ifdef WITH_FFTW
+#include <fftw3.h>
+#else
+#include "fft.h"
+#endif
 
 
 // Something is defining "min" and "max" macros, and they interfere with using std::min and std::max
@@ -144,8 +149,14 @@ AudioSpectrumRenderer::AudioSpectrumRenderer()
 , colors_selected(12)
 , derivation_size(8)
 , derivation_dist(8)
-, fft_scratch(0)
 , audio_scratch(0)
+#ifdef WITH_FFTW
+, dft_plan(0)
+, dft_input(0)
+, dft_output(0)
+#else
+, fft_scratch(0)
+#endif
 {
 	colors_normal.InitIcyBlue_Normal();
 	colors_selected.InitIcyBlue_Selected();
@@ -154,31 +165,51 @@ AudioSpectrumRenderer::AudioSpectrumRenderer()
 
 AudioSpectrumRenderer::~AudioSpectrumRenderer()
 {
-	delete cache;
-	delete[] fft_scratch;
-	delete[] audio_scratch;
+	// This sequence will clean up
+	provider = 0;
+	RecreateCache();
 }
 
 
 void AudioSpectrumRenderer::RecreateCache()
 {
 	delete cache;
-	delete[] fft_scratch;
 	delete[] audio_scratch;
 	cache = 0;
-	fft_scratch = 0;
 	audio_scratch = 0;
+
+#ifdef WITH_FFTW
+	if (dft_plan)
+	{
+		fftw_destroy_plan(dft_plan);
+		fftw_free(dft_input);
+		fftw_free(dft_output);
+	}
+#else
+	delete[] fft_scratch;
+	fft_scratch = 0;
+#endif
 
 	if (provider)
 	{
 		size_t block_count = (size_t)((provider->GetNumSamples() + (size_t)(1<<derivation_dist) - 1) >> derivation_dist);
 		cache = new AudioSpectrumCache(block_count, this);
 
+#ifdef WITH_FFTW
+		dft_input = (double*)fftw_malloc(sizeof(double) * (2<<derivation_size));
+		dft_output = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * (2<<derivation_size));
+		dft_plan = fftw_plan_dft_r2c_1d(
+			2<<derivation_size,
+			dft_input,
+			dft_output,
+			FFTW_MEASURE);
+#else
 		// Allocate scratch for 6x the derivation size:
 		// 2x for the input sample data
 		// 2x for the real part of the output
 		// 2x for the imaginary part of the output
 		fft_scratch = new float[6<<derivation_size];
+#endif
 		audio_scratch = new int16_t[2<<derivation_size];
 	}
 }
@@ -211,12 +242,28 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 {
 	assert(cache);
 	assert(block);
-	assert(fft_scratch);
-	assert(audio_scratch);
 
 	int64_t first_sample = ((int64_t)block_index) << derivation_dist;
 	provider->GetAudio(audio_scratch, first_sample, 2 << derivation_size);
 
+#ifdef WITH_FFTW
+	// Convert audio data to float range [-1;+1)
+	for (size_t si = 0; si < (size_t)(2<<derivation_size); ++si)
+	{
+		dft_input[si] = (float)(audio_scratch[si]) / 32768.f;
+	}
+
+	fftw_execute(dft_plan);
+
+	float scale_factor = 9 / sqrt((float)(2<<derivation_size));
+
+	fftw_complex *o = dft_output;
+	for (size_t si = 1<<derivation_size; si > 0; --si)
+	{
+		*block++ = log10( sqrt(o[0][0] * o[0][0] + o[0][1] * o[0][1]) * scale_factor + 1 );
+		o++;
+	}
+#else
 	float *fft_input = fft_scratch;
 	float *fft_real = fft_scratch + (2 << derivation_size);
 	float *fft_imag = fft_scratch + (4 << derivation_size);
@@ -241,6 +288,7 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 		*block++ = log10( sqrt(*fft_real * *fft_real + *fft_imag * *fft_imag) * scale_factor + 1 );
 		fft_real++; fft_imag++;
 	}
+#endif
 }
 
 
