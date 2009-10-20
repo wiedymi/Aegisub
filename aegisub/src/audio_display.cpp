@@ -39,6 +39,12 @@
 // Headers
 #include "config.h"
 
+#ifndef AGI_PRE
+#include <algorithm>
+
+#include <wx/dcclient.h>
+#endif
+
 #include "audio_controller.h"
 #include "audio_display.h"
 #include "block_cache.h"

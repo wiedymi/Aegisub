@@ -37,9 +37,11 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <algorithm>
+
 #include <wx/image.h>
 #include <wx/rawbmp.h>
-#include <algorithm>
+#include <wx/dcmemory.h>
 #endif
 
 #include "block_cache.h"

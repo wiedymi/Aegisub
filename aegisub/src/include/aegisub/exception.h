@@ -35,6 +35,9 @@
 ///
 
 
+#pragma once
+
+
 #ifndef AGI_PRE
 #include <wx/string.h>
 #endif
