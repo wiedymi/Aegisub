@@ -62,6 +62,7 @@ typedef std::set<AudioControllerTimingEventListener *> TimingEventListenerSet;
 
 AudioController::AudioController()
 : provider(0)
+, timing_mode(0)
 , player(0)
 , playback_mode(PM_NotPlaying)
 , selection(0, 0)
@@ -113,7 +114,8 @@ void AudioController::OnComputerSuspending(wxPowerEvent &event)
 
 void AudioController::OnComputerResuming(wxPowerEvent &event)
 {
-	player->OpenStream();
+	if (provider)
+		player->OpenStream();
 }
 #endif
 
@@ -244,6 +246,7 @@ wxString AudioController::GetAudioURL() const
 }
 
 
+
 void AudioController::AddAudioListener(AudioControllerAudioEventListener *listener)
 {
 	audio_event_listeners.insert(listener);
@@ -266,6 +269,7 @@ void AudioController::RemoveTimingListener(AudioControllerTimingEventListener *l
 {
 	timing_event_listeners.erase(listener);
 }
+
 
 
 void AudioController::PlayRange(const AudioController::SampleRange &range)
