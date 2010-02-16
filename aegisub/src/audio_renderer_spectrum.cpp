@@ -109,7 +109,7 @@ struct AudioSpectrumCacheBlockFactory {
 	/// The filling is delegated to the spectrum renderer
 	float *ProduceBlock(size_t i)
 	{
-		float *res = new float[1<<spectrum->derivation_size];
+		float *res = new float[((size_t)1)<<spectrum->derivation_size];
 		spectrum->FillBlock(i, res);
 		return res;
 	}
