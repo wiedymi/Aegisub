@@ -1489,6 +1489,15 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	int selection_start = (int)(sel_samples.begin() / pixel_samples);
 	int selection_end = (int)(sel_samples.end() / pixel_samples);
 
+	// Draw the tracking cursor first, to avoid it ever disappearing, because that
+	// causes optical flicker. It looks better to have two cursors momentarily than
+	// having no cursor momentarily.
+	if (track_cursor_pos >= 0)
+	{
+		wxDCPenChanger penchanger(dc, wxPen(*wxWHITE));
+		dc.DrawLine(track_cursor_pos-scroll_left, audio_top, track_cursor_pos-scroll_left, audio_top+audio_height);
+	}
+
 	wxRegionIterator region(GetUpdateRegion());
 	while (region)
 	{
@@ -1508,12 +1517,10 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 			p3 = selection_end;
 			p4 = p1 + updrect.width;
 
-			int x = updrect.x;
-
 			struct subregion {
-				int x, w;
+				int x1, x2;
 				bool selected;
-				subregion(int x1, int x2, bool selected) : x(x1), w(x2-x1), selected(selected) { }
+				subregion(int x1, int x2, bool selected) : x1(x1), x2(x2), selected(selected) { }
 			};
 			std::vector<subregion> subregions;
 
@@ -1524,11 +1531,25 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 			if (p4 > p3)
 				subregions.push_back(subregion(std::max(p1, p3), p4, false));
 
+			int x = updrect.x;
+
 			for (std::vector<subregion>::iterator sr = subregions.begin(); sr != subregions.end(); ++sr)
 			{
-				audio_renderer->Render(dc, wxPoint(x, audio_top), sr->x, sr->w, sr->selected);
-				/// @todo split up rendering if we intersect with the track cursor, maybe also markers?
-				x += sr->w;
+				// Check if the track cursor is inside this redraw region and draw around it, to avoid overdraw
+				if (track_cursor_pos >= sr->x1 && track_cursor_pos < sr->x2)
+				{
+					int tcp_x = track_cursor_pos - sr->x1;
+					if (tcp_x > 0)
+						audio_renderer->Render(dc, wxPoint(x, audio_top), sr->x1, tcp_x, sr->selected);
+					if (track_cursor_pos < sr->x2 - 1)
+						audio_renderer->Render(dc, wxPoint(x+tcp_x+1, audio_top), track_cursor_pos+1, sr->x2-track_cursor_pos-1, sr->selected);
+				}
+				else
+				{
+					audio_renderer->Render(dc, wxPoint(x, audio_top), sr->x1, sr->x2 - sr->x1, sr->selected);
+				}
+
+				x += sr->x2 - sr->x1;
 			}
 		}
 
@@ -1539,16 +1560,6 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 		scrollbar->Paint(dc, HasFocus());
 	if (redraw_timeline)
 		timeline->Paint(dc);
-
-	/// @todo Draw tracking cursor, merge this into update region drawing and
-	///       prevent overdraw for less flicker on Windows.
-	int rel_track_pos = track_cursor_pos - scroll_left;
-	if (rel_track_pos >= 0 && rel_track_pos < client_width)
-	{
-		dc.SetPen(wxPen(*wxWHITE));
-		dc.SetLogicalFunction(wxINVERT);
-		dc.DrawLine(rel_track_pos, audio_top, rel_track_pos, audio_top+audio_height);
-	}
 }
 
 
@@ -1567,11 +1578,11 @@ void AudioDisplay::SetTrackCursor(int new_pos, bool show_time)
 {
 	if (new_pos != track_cursor_pos)
 	{
-		// One extra pixel on each side so the drawing code can be a bit simpler
-		RefreshRect(wxRect(track_cursor_pos - scroll_left - 1, audio_top, 3, audio_height));
-		RefreshRect(wxRect(new_pos - scroll_left - 1, audio_top, 3, audio_height));
-
+		int old_pos = track_cursor_pos;
 		track_cursor_pos = new_pos;
+
+		RefreshRect(wxRect(old_pos - scroll_left - 0, audio_top, 1, audio_height));
+		RefreshRect(wxRect(new_pos - scroll_left - 0, audio_top, 1, audio_height));
 
 		AssTime new_label_time;
 		new_label_time.SetMS(track_cursor_pos * pixel_samples);

@@ -212,15 +212,15 @@ wxBitmap AudioRenderer::GetCachedBitmap(int i, bool selected)
 void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool selected)
 {
 	assert(start >= 0);
-	assert(length >= 0);
+	assert(length > 0);
 
 	if (!provider) return;
 	if (!renderer) return;
 
-	// Last absolute pixel strip to render
-	int end = start + length - 1;
-	// Last X coordinate to render on
-	int lastx = origin.x + length - 1;
+	// One past last absolute pixel strip to render
+	int end = start + length;
+	// One past last X coordinate to render on
+	int lastx = origin.x + length;
 	// Figure out which range of bitmaps are required
 	int firstbitmap = start / cache_bitmap_width;
 	// And the offset in it to start its use at
@@ -279,8 +279,6 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 		{
 			bmp = GetCachedBitmap(i, selected);
 			dc.DrawBitmap(bmp, origin);
-			//wxMemoryDC bmpdc(bmp);
-			//dc.Blit(origin, wxSize(cache_bitmap_width, pixel_height), &bmpdc, wxPoint(0, 0));
 			origin.x += cache_bitmap_width;
 		}
 
