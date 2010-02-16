@@ -49,11 +49,15 @@
 #include "audio_provider_dummy.h"
 
 
-/// Type of the audio controller event listener container in AudioController
-typedef std::set<AudioControllerEventListener *> ListenerSet;
+/// Type of the audio event listener container in AudioController
+typedef std::set<AudioControllerAudioEventListener *> AudioEventListenerSet;
+/// Type of the timing event listener container in AudioController
+typedef std::set<AudioControllerTimingEventListener *> TimingEventListenerSet;
 
-/// Macro to iterate event listeners in AudioController implementation
-#define ALL_LISTENERS(listener) for (ListenerSet::iterator listener = listeners.begin(); listener != listeners.end(); ++listener)
+/// Macro to iterate audio event listeners in AudioController implementation
+#define AUDIO_LISTENERS(listener) for (AudioEventListenerSet::iterator listener = audio_event_listeners.begin(); listener != audio_event_listeners.end(); ++listener)
+/// Macro to iterate audio event listeners in AudioController implementation
+#define TIMING_LISTENERS(listener) for (TimingEventListenerSet::iterator listener = timing_event_listeners.begin(); listener != timing_event_listeners.end(); ++listener)
 
 
 AudioController::AudioController()
@@ -91,7 +95,7 @@ void AudioController::OnPlaybackTimer(wxTimerEvent &event)
 	}
 	else
 	{
-		ALL_LISTENERS(l)
+		AUDIO_LISTENERS(l)
 		{
 			(*l)->OnPlaybackPosition(pos);
 		}
@@ -203,8 +207,8 @@ void AudioController::OpenAudio(const wxString &url)
 		throw;
 	}
 
-	/// @todo Tell listeners about this.
-	ALL_LISTENERS(l)
+	// Tell listeners about this.
+	AUDIO_LISTENERS(l)
 	{
 		(*l)->OnAudioOpen(provider);
 	}
@@ -220,7 +224,7 @@ void AudioController::CloseAudio()
 	player = 0;
 	provider = 0;
 
-	ALL_LISTENERS(l)
+	AUDIO_LISTENERS(l)
 	{
 		(*l)->OnAudioClose();
 	}
@@ -240,15 +244,27 @@ wxString AudioController::GetAudioURL() const
 }
 
 
-void AudioController::AddListener(AudioControllerEventListener *listener)
+void AudioController::AddAudioListener(AudioControllerAudioEventListener *listener)
 {
-	listeners.insert(listener);
+	audio_event_listeners.insert(listener);
 }
 
 
-void AudioController::RemoveListener(AudioControllerEventListener *listener)
+void AudioController::RemoveAudioListener(AudioControllerAudioEventListener *listener)
 {
-	listeners.erase(listener);
+	audio_event_listeners.erase(listener);
+}
+
+
+void AudioController::AddTimingListener(AudioControllerTimingEventListener *listener)
+{
+	timing_event_listeners.insert(listener);
+}
+
+
+void AudioController::RemoveTimingListener(AudioControllerTimingEventListener *listener)
+{
+	timing_event_listeners.erase(listener);
 }
 
 
@@ -260,7 +276,7 @@ void AudioController::PlayRange(const AudioController::SampleRange &range)
 	playback_mode = PM_Range;
 	playback_timer.Start(20);
 
-	ALL_LISTENERS(l)
+	AUDIO_LISTENERS(l)
 	{
 		(*l)->OnPlaybackPosition(range.begin());
 	}
@@ -275,7 +291,7 @@ void AudioController::PlayToEnd(int64_t start_sample)
 	playback_mode = PM_ToEnd;
 	playback_timer.Start(20);
 
-	ALL_LISTENERS(l)
+	AUDIO_LISTENERS(l)
 	{
 		(*l)->OnPlaybackPosition(start_sample);
 	}
@@ -290,7 +306,7 @@ void AudioController::Stop()
 	playback_mode = PM_NotPlaying;
 	playback_timer.Stop();
 
-	ALL_LISTENERS(l)
+	AUDIO_LISTENERS(l)
 	{
 		(*l)->OnPlaybackStop();
 	}
@@ -331,8 +347,10 @@ void AudioController::ResyncPlaybackPosition(int64_t new_position)
 void AudioController::SetSelection(const SampleRange &newsel)
 {
 	selection = newsel;
+	
+	/// @todo This affects playback end time in some circumstances... which?
 
-	ALL_LISTENERS(l)
+	TIMING_LISTENERS(l)
 	{
 		(*l)->OnSelectionChanged();
 	}

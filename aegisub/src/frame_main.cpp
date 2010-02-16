@@ -145,7 +145,7 @@ FrameMain::FrameMain (wxArrayString args)
 
 	// Contexts and controllers
 	audioController = new AudioController;
-	audioController->AddListener(this);
+	audioController->AddAudioListener(this);
 
 	// Create menu and tool bars
 	StartupLog(_T("Apply saved Maximized state"));

@@ -103,7 +103,7 @@ public:
 /// @brief Control that displays audio and lets the user create selections
 ///
 /// Everyone hates this class.
-class AudioDisplay: public wxWindow, private AudioControllerEventListener {
+class AudioDisplay: public wxWindow, private AudioControllerAudioEventListener, private AudioControllerTimingEventListener {
 private:
 
 	/// The audio renderer manager
@@ -169,13 +169,16 @@ private:
 
 
 private:
-	// AudioControllerEventListener implementation
+	// AudioControllerAudioEventListener implementation
 	virtual void OnAudioOpen(AudioProvider *provider);
 	virtual void OnAudioClose();
-	virtual void OnMarkersMoved();
-	virtual void OnSelectionChanged();
 	virtual void OnPlaybackPosition(int64_t sample_position);
 	virtual void OnPlaybackStop();
+
+	// AudioControllerTimingEventListener implementation
+	virtual void OnMarkersMoved();
+	virtual void OnSelectionChanged();
+	virtual void OnTimingControllerChanged();
 
 
 public:

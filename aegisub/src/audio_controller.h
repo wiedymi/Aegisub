@@ -56,7 +56,8 @@ class AudioPlayer;
 class AudioProvider;
 
 // Declared below
-class AudioControllerEventListener;
+class AudioControllerAudioEventListener;
+class AudioControllerTimingEventListener;
 class AudioTimingController;
 class AudioMarker;
 
@@ -125,14 +126,20 @@ public:
 
 private:
 
-	/// A list of audio displays managed by this controller
-	std::set<AudioControllerEventListener *> listeners;
+	/// Listeners for audio-related events
+	std::set<AudioControllerAudioEventListener *> audio_event_listeners;
+
+	/// Listeners for timing-related events
+	std::set<AudioControllerTimingEventListener *> timing_event_listeners;
 
 	/// The audio output object
 	AudioPlayer *player;
 
 	/// The audio provider
 	AudioProvider *provider;
+
+	/// The current timing mode, if any; owned by the audio controller
+	AudioTimingController *timing_mode;
 
 
 	enum PlaybackMode {
@@ -193,12 +200,20 @@ public:
 
 
 	/// @brief Add an audio event listener
-	/// @param display The listener to add
-	void AddListener(AudioControllerEventListener *listener);
+	/// @param listener The listener to add
+	void AddAudioListener(AudioControllerAudioEventListener *listener);
 
 	/// @brief Remove an audio event listener
-	/// @param display The listener to remove
-	void RemoveListener(AudioControllerEventListener *listener);
+	/// @param listener The listener to remove
+	void RemoveAudioListener(AudioControllerAudioEventListener *listener);
+
+	/// @brief Add a timing event listener
+	/// @param listener The listener to add
+	void AddTimingListener(AudioControllerTimingEventListener *listener);
+
+	/// @brief Remove a timing event listener
+	/// @param listener The listener to remove
+	void RemoveTimingListener(AudioControllerTimingEventListener *listener);
 
 
 	/// @brief Start or restart audio playback, playing a range
@@ -278,6 +293,17 @@ public:
 	const AudioProvider * GetAudioProvider() const { return provider; }
 
 
+	/// @brief Return the current timing controller
+	/// @return The current timing controller or 0
+	AudioTimingController * GetTimingController() const { return timing_mode; }
+
+	/// @brief Change the current timing controller
+	/// @param new_mode The new timing controller or 0. This may be the same object as
+	/// the current timing controller, to signal that the timing controller has changed
+	/// the object being timed, eg. changed to a new dialogue line.
+	void SetTimingController(AudioTimingController *new_mode);
+
+
 	/// @brief Convert a count of audio samples to a time in milliseconds
 	/// @param samples Sample count to convert
 	/// @return The number of milliseconds equivalent to the sample-count, rounded down
@@ -291,9 +317,9 @@ public:
 
 
 
-/// @class AudioControllerEventListener
+/// @class AudioControllerAudioEventListener
 /// @brief Abstract interface for objects that want audio events
-class AudioControllerEventListener {
+class AudioControllerAudioEventListener {
 public:
 	/// A new audio stream was opened (and any previously open was closed)
 	virtual void OnAudioOpen(AudioProvider *) = 0;
@@ -301,17 +327,26 @@ public:
 	/// The current audio stream was closed
 	virtual void OnAudioClose() = 0;
 
+	/// Playback is in progress and ths current position was updated
+	virtual void OnPlaybackPosition(int64_t sample_position) = 0;
+
+	/// Playback has stopped
+	virtual void OnPlaybackStop() = 0;
+};
+
+
+/// @class AudioControllerTimingEventListener
+/// @brief Abstract interface for objects that want audio timing events
+class AudioControllerTimingEventListener {
+public:
 	/// One or more moveable markers were moved
 	virtual void OnMarkersMoved() = 0;
 
 	/// The selection was changed
 	virtual void OnSelectionChanged() = 0;
 
-	/// Playback is in progress and ths current position was updated
-	virtual void OnPlaybackPosition(int64_t sample_position) = 0;
-
-	/// Playback has stopped
-	virtual void OnPlaybackStop() = 0;
+	/// The timing controller was replaced
+	virtual void OnTimingControllerChanged() = 0;
 };
 
 

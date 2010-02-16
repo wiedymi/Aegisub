@@ -83,7 +83,7 @@ namespace Automation4 { class FeatureMacro; class ScriptManager; };
 /// @brief DOCME
 ///
 /// DOCME
-class FrameMain: public wxFrame, private AudioControllerEventListener {
+class FrameMain: public wxFrame, private AudioControllerAudioEventListener {
 	friend class AegisubFileDropTarget;
 	friend class AegisubApp;
 	friend class SubtitlesGrid;
@@ -335,11 +335,9 @@ private:
 
 
 private:
-	// AudioControllerEventListener implementation
+	// AudioControllerAudioEventListener implementation
 	virtual void OnAudioOpen(AudioProvider *provider);
 	virtual void OnAudioClose();
-	virtual void OnMarkersMoved();
-	virtual void OnSelectionChanged();
 	virtual void OnPlaybackPosition(int64_t sample_position);
 	virtual void OnPlaybackStop();
 

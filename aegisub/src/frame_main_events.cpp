@@ -2142,18 +2142,6 @@ void FrameMain::OnAudioClose()
 }
 
 
-void FrameMain::OnMarkersMoved()
-{
-	// do nothing
-}
-
-
-void FrameMain::OnSelectionChanged()
-{
-	// do nothing
-}
-
-
 void FrameMain::OnPlaybackPosition(int64_t sample_position)
 {
 	// do nothing

@@ -469,7 +469,8 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 	audio_renderer->SetRenderer(audio_spectrum_renderer);
 	audio_renderer->SetAmplitudeScale(scale_amplitude);
 
-	controller->AddListener(this);
+	controller->AddAudioListener(this);
+	controller->AddTimingListener(this);
 
 	SetZoomLevel(0);
 
@@ -492,7 +493,8 @@ AudioDisplay::~AudioDisplay()
 	delete timeline;
 	delete scrollbar;
 
-	controller->RemoveListener(this);
+	controller->RemoveAudioListener(this);
+	controller->RemoveTimingListener(this);
 }
 
 
@@ -1895,21 +1897,6 @@ void AudioDisplay::OnAudioClose()
 }
 
 
-void AudioDisplay::OnMarkersMoved()
-{
-	Refresh();
-}
-
-
-void AudioDisplay::OnSelectionChanged()
-{
-	AudioController::SampleRange sel(controller->GetSelection());
-	scrollbar->SetSelection(sel.begin() / pixel_samples, sel.length() / pixel_samples);
-
-	Refresh();
-}
-
-
 void AudioDisplay::OnPlaybackPosition(int64_t sample_position)
 {
 	int old_pos = playback_pos;
@@ -1927,3 +1914,25 @@ void AudioDisplay::OnPlaybackStop()
 {
 	OnPlaybackPosition(-1);
 }
+
+
+void AudioDisplay::OnMarkersMoved()
+{
+	Refresh();
+}
+
+
+void AudioDisplay::OnSelectionChanged()
+{
+	AudioController::SampleRange sel(controller->GetSelection());
+	scrollbar->SetSelection(sel.begin() / pixel_samples, sel.length() / pixel_samples);
+
+	Refresh();
+}
+
+
+void AudioDisplay::OnTimingControllerChanged()
+{
+	/// @todo Do something about the new timing controller
+}
+
