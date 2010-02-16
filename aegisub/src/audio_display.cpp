@@ -1978,7 +1978,7 @@ void AudioDisplay::OnSelectionChanged()
 	AudioController::SampleRange sel(controller->GetSelection());
 	scrollbar->SetSelection(sel.begin() / pixel_samples, sel.length() / pixel_samples);
 
-	Refresh();
+	RefreshRect(wxRect(0, audio_top, GetClientSize().GetX(), audio_height));
 }
 
 
