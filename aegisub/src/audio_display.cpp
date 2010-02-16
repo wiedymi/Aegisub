@@ -45,6 +45,7 @@
 #include <wx/dcclient.h>
 #endif
 
+#include "ass_time.h"
 #include "audio_controller.h"
 #include "audio_display.h"
 #include "block_cache.h"
@@ -463,8 +464,9 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 
 	scroll_left = 0;
 	pixel_audio_width = 0;
-	playback_pos = -1;
 	scale_amplitude = 1.0;
+
+	track_cursor_pos = -1;
 
 	audio_renderer->SetRenderer(audio_spectrum_renderer);
 	audio_renderer->SetAmplitudeScale(scale_amplitude);
@@ -1538,12 +1540,14 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	if (redraw_timeline)
 		timeline->Paint(dc);
 
-	int rel_playback_pos = playback_pos - scroll_left;
-	if (rel_playback_pos >= 0 && rel_playback_pos < client_width)
+	/// @todo Draw tracking cursor, merge this into update region drawing and
+	///       prevent overdraw for less flicker on Windows.
+	int rel_track_pos = track_cursor_pos - scroll_left;
+	if (rel_track_pos >= 0 && rel_track_pos < client_width)
 	{
 		dc.SetPen(wxPen(*wxWHITE));
 		dc.SetLogicalFunction(wxINVERT);
-		dc.DrawLine(rel_playback_pos, audio_top, rel_playback_pos, audio_top+audio_height);
+		dc.DrawLine(rel_track_pos, audio_top, rel_track_pos, audio_top+audio_height);
 	}
 }
 
@@ -1556,6 +1560,30 @@ void AudioDisplay::SetDraggedObject(AudioDisplayInteractionObject *new_obj)
 		CaptureMouse();
 	else if (!dragged_object && HasCapture())
 		ReleaseMouse();
+}
+
+
+void AudioDisplay::SetTrackCursor(int new_pos, bool show_time)
+{
+	if (new_pos != track_cursor_pos)
+	{
+		// One extra pixel on each side so the drawing code can be a bit simpler
+		RefreshRect(wxRect(track_cursor_pos - scroll_left - 1, audio_top, 3, audio_height));
+		RefreshRect(wxRect(new_pos - scroll_left - 1, audio_top, 3, audio_height));
+
+		track_cursor_pos = new_pos;
+
+		AssTime new_label_time;
+		new_label_time.SetMS(track_cursor_pos * pixel_samples);
+		track_cursor_label = new_label_time.GetASSFormated();
+		/// @todo Figure out a sensible way to handle the label bounding rect
+	}
+}
+
+
+void AudioDisplay::RemoveTrackCursor()
+{
+	SetTrackCursor(-1, false);
 }
 
 
@@ -1616,7 +1644,10 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 	if (dragged_object && HasCapture())
 	{
 		if (!dragged_object->OnMouseEvent(event))
+		{
 			SetDraggedObject(0);
+			SetCursor(wxNullCursor);
+		}
 		return;
 	}
 	else
@@ -1624,6 +1655,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 		// Something is wrong, we might have lost capture somehow.
 		// Fix state and pretend it didn't happen.
 		SetDraggedObject(0);
+		SetCursor(wxNullCursor);
 	}
 
 	wxPoint mousepos = event.GetPosition();
@@ -1631,6 +1663,8 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 	// Check for scrollbar action
 	if (scrollbar->GetBounds().Contains(mousepos))
 	{
+		if (!controller->IsPlaying())
+			RemoveTrackCursor();
 		if (scrollbar->OnMouseEvent(event))
 			SetDraggedObject(scrollbar);
 		return;
@@ -1639,16 +1673,40 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 	// Check for timeline action
 	if (timeline->GetBounds().Contains(mousepos))
 	{
+		SetCursor(wxCursor(wxCURSOR_SIZEWE));
+		if (!controller->IsPlaying())
+			RemoveTrackCursor();
 		if (timeline->OnMouseEvent(event))
 			SetDraggedObject(timeline);
 		return;
+	}
+
+	AudioTimingController *timing = controller->GetTimingController();
+
+	// Not scrollbar, not timeline, no button action
+	if (event.Moving())
+	{
+		if (timing)
+		{
+			int64_t samplepos = (scroll_left + mousepos.x) * pixel_samples;
+
+			if (timing->IsNearbyMarker(samplepos, pixel_samples*3))
+				SetCursor(wxCursor(wxCURSOR_SIZEWE));
+			else
+				SetCursor(wxNullCursor);
+		}
+
+		if (!controller->IsPlaying())
+			SetTrackCursor(scroll_left + mousepos.x, true);
+		else
+			RemoveTrackCursor();
 	}
 
 	// Fake selection changing code for test purposes.
 	// These two left/right button handlers should send the event to the controller instead
 	// of trying to determine a new calculation themselves. It might be that there's no
 	// meaningful clicking operations to change selections etc. in current mode.
-	if (event.LeftDown())
+	if (event.LeftIsDown())
 	{
 		AudioController::SampleRange cursel(controller->GetSelection());
 		int64_t newstart = (scroll_left + mousepos.x) * pixel_samples;
@@ -1659,7 +1717,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 		return;
 	}
 
-	if (event.RightDown())
+	if (event.RightIsDown())
 	{
 		AudioController::SampleRange cursel(controller->GetSelection());
 		int64_t newstart = cursel.begin();
@@ -1899,20 +1957,13 @@ void AudioDisplay::OnAudioClose()
 
 void AudioDisplay::OnPlaybackPosition(int64_t sample_position)
 {
-	int old_pos = playback_pos;
-	playback_pos = sample_position / pixel_samples;
-
-	if (playback_pos != old_pos)
-	{
-		RefreshRect(wxRect(old_pos - scroll_left - 2, 0, 5, audio_height));
-		RefreshRect(wxRect(playback_pos - scroll_left - 2, 0, 5, audio_height));
-	}
+	SetTrackCursor(sample_position / pixel_samples, false);
 }
 
 
 void AudioDisplay::OnPlaybackStop()
 {
-	OnPlaybackPosition(-1);
+	RemoveTrackCursor();
 }
 
 
@@ -1933,6 +1984,6 @@ void AudioDisplay::OnSelectionChanged()
 
 void AudioDisplay::OnTimingControllerChanged()
 {
-	/// @todo Do something about the new timing controller
+	/// @todo Do something about the new timing controller?
 }
 

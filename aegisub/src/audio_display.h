@@ -157,8 +157,18 @@ private:
 	int mouse_zoom_accum;
 
 
-	/// Absolute pixel position of the playback position marker
-	int playback_pos;
+	/// Absolute pixel position of the tracking cursor (mouse or playback)
+	int track_cursor_pos;
+	/// Display timestamp by tracking cursor?
+	wxString track_cursor_label;
+	/// Bounding rectangle for tracking time display
+	wxRect track_cursor_label_rect;
+	/// @brief Move the tracking cursor
+	/// @param new_pos   New absolute pixel position of the tracking cursor
+	/// @param show_time Display timestamp by the tracking cursor?
+	void SetTrackCursor(int new_pos, bool show_time);
+	/// @brief Remove the tracking cursor from the display
+	void RemoveTrackCursor();
 
 
 	void OnPaint(wxPaintEvent &event);

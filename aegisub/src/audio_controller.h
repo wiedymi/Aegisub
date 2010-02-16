@@ -374,6 +374,13 @@ public:
 	/// @return The warning message to show, may be empty if there is none
 	virtual wxString GetWarningMessage() const = 0;
 
+	/// @brief Does this timing mode have labels on the audio display?
+	/// @return True if this timing mode needs labels on the audio display.
+	///
+	/// This is labels for things such as karaoke syllables. When labels are required, some vertical
+	/// space is set off for them in the drawing of the audio display.
+	virtual bool HasLabels() const = 0;
+
 	/// @brief Go to next timing unit
 	/// 
 	/// Advances the timing controller cursor to the next timing unit, for example the next dialogue
@@ -395,17 +402,27 @@ public:
 	/// Revert all changes to the last committed state.
 	virtual void Revert() = 0;
 
+	/// @brief Determine if a position is close to a draggable marker
+	/// @param sample      The audio sample index to test
+	/// @param sensitivity Distance in samples to consider markers as nearby
+	/// @return True if a marker is close by the given sample, as defined by sensitivity
+	///
+	/// This is solely for hit-testing against draggable markers, for controlling the mouse cursor.
+	virtual bool IsNearbyMarker(int64_t sample, int sensitivity) const = 0;
+
 	/// @brief The user pressed the left button down at an empty place in the audio
-	/// @param sample The audio sample index the user clicked
+	/// @param sample      The audio sample index the user clicked
+	/// @param sensitivity Distance in samples to consider existing markers
 	/// @return An audio marker or 0. If a marker is returned and the user starts dragging
 	/// the mouse after pressing down the button, the returned marker is being dragged.
-	virtual AudioMarker * OnLeftClick(int64_t sample) = 0;
+	virtual AudioMarker * OnLeftClick(int64_t sample, int sensitivity) = 0;
 
 	/// @brief The user pressed the right button down at an empty place in the audio
-	/// @param sample The audio sample index the user clicked
+	/// @param sample      The audio sample index the user clicked
+	/// @param sensitivity Distance in samples to consider existing markers
 	/// @return An audio marker or 0. If a marker is returned and the user starts dragging
 	/// the mouse after pressing down the button, the returned marker is being dragged.
-	virtual AudioMarker * OnRightClick(int64_t sample) = 0;
+	virtual AudioMarker * OnRightClick(int64_t sample, int sensitivity) = 0;
 
 	/// @brief The user dragged a timing marker
 	/// @param marker       The marker being dragged
