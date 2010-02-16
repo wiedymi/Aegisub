@@ -1510,25 +1510,25 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 
 			int x = updrect.x;
 
+			struct subregion {
+				int x, w;
+				bool selected;
+				subregion(int x1, int x2, bool selected) : x(x1), w(x2-x1), selected(selected) { }
+			};
+			std::vector<subregion> subregions;
+
 			if (p1 < p2)
-			{
-				int start = p1;
-				int end = std::min(p2, p4);
-				audio_renderer->Render(dc, wxPoint(x, audio_top), start, end-start, false);
-				x += end - start;
-			}
+				subregions.push_back(subregion(p1, std::min(p2, p4), false));
 			if (p4 > p2 && p1 < p3)
-			{
-				int start = std::max(p1, p2);
-				int end = std::min(p3, p4);
-				audio_renderer->Render(dc, wxPoint(x, audio_top), start, end-start, true);
-				x += end - start;
-			}
+				subregions.push_back(subregion(std::max(p1, p2), std::min(p3, p4), true));
 			if (p4 > p3)
+				subregions.push_back(subregion(std::max(p1, p3), p4, false));
+
+			for (std::vector<subregion>::iterator sr = subregions.begin(); sr != subregions.end(); ++sr)
 			{
-				int start = std::max(p1, p3);
-				int end = p4;
-				audio_renderer->Render(dc, wxPoint(x, audio_top), start, end-start, false);
+				audio_renderer->Render(dc, wxPoint(x, audio_top), sr->x, sr->w, sr->selected);
+				/// @todo split up rendering if we intersect with the track cursor, maybe also markers?
+				x += sr->w;
 			}
 		}
 
