@@ -1,4 +1,4 @@
-// Copyright (c) 2009, Niels Martin Hansen
+// Copyright (c) 2009-2010, Niels Martin Hansen
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without

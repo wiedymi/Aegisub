@@ -1,5 +1,5 @@
-// Copyright (c) 2005, 2006, Rodrigo Braz Monteiro
-// Copyright (c) 2006, 2007, 2009, Niels Martin Hansen
+// Copyright (c) 2005-2006, Rodrigo Braz Monteiro
+// Copyright (c) 2006-2010, Niels Martin Hansen
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
