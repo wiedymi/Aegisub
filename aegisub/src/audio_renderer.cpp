@@ -44,6 +44,9 @@
 #include "audio_renderer.h"
 #include "include/aegisub/audio_provider.h"
 
+#undef min
+#undef max
+
 
 AudioRendererBitmapCacheBitmapFactory::AudioRendererBitmapCacheBitmapFactory(AudioRenderer *_renderer)
 {
@@ -77,7 +80,8 @@ AudioRenderer::AudioRenderer()
 : cache_bitmap_width(32) // arbitrary value for now
 , bitmaps_normal(256, AudioRendererBitmapCacheBitmapFactory(this))
 , bitmaps_selected(256, AudioRendererBitmapCacheBitmapFactory(this))
-, cache_maxsize(0)
+, cache_bitmap_maxsize(0)
+, cache_renderer_maxsize(0)
 , renderer(0)
 , provider(0)
 {
@@ -165,7 +169,12 @@ void AudioRenderer::SetAudioProvider(AudioProvider *_provider)
 
 void AudioRenderer::SetCacheMaxSize(size_t max_size)
 {
-	cache_maxsize = max_size;
+	// Limit the bitmap cache sizes to 16 MB hard, to avoid the risk of exhausting
+	// system bitmap object resources and similar. Experimenting shows that 16 MB
+	// bitmap cache should be plenty even if working with a one hour audio clip.
+	cache_bitmap_maxsize = std::min(max_size/8, (size_t)0x1000000);
+	// The renderer gets whatever is left.
+	cache_renderer_maxsize = max_size - 2*cache_bitmap_maxsize;
 }
 
 
@@ -195,13 +204,6 @@ wxBitmap AudioRenderer::GetCachedBitmap(int i, bool selected)
 	if (created)
 	{
 		renderer->Render(*bmp, i*cache_bitmap_width, selected);
-		/*
-		wxMemoryDC dc(*bmp);
-		wxColour col(i<<3|i<<5, i<<7|i<<1, i<<4);
-		dc.SetBrush(wxBrush(col));
-		dc.SetPen(wxPen(col));
-		dc.DrawRectangle(0, 0, cache_bitmap_width, pixel_height);
-		*/
 	}
 
 	assert(bmp->IsOk());
@@ -298,10 +300,10 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 	}
 
 	if (selected)
-		bitmaps_selected.Age(cache_maxsize / 8);
+		bitmaps_selected.Age(cache_bitmap_maxsize);
 	else
-		bitmaps_normal.Age(cache_maxsize / 8);
-	renderer->AgeCache(3 * cache_maxsize / 4);
+		bitmaps_normal.Age(cache_bitmap_maxsize);
+	renderer->AgeCache(cache_renderer_maxsize);
 }
 
 

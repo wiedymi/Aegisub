@@ -116,8 +116,10 @@ class AudioRenderer {
 	AudioRendererBitmapCache bitmaps_selected;
 	/// Number of blocks in the bitmap caches
 	size_t cache_numblocks;
-	/// The maximum allowed size of the cache, in bytes
-	size_t cache_maxsize;
+	/// The maximum allowed size of each bitmap cache, in bytes
+	size_t cache_bitmap_maxsize;
+	/// The maximum allowed size of the renderer's cache, in bytes
+	size_t cache_renderer_maxsize;
 
 	/// Actual renderer for bitmaps
 	AudioRendererBitmapProvider *renderer;
