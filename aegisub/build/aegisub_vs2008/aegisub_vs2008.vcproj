@@ -1828,6 +1828,14 @@
 				RelativePath="..\..\src\audio_renderer_spectrum.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\audio_timing.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio_timing_dialogue.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Video UI"

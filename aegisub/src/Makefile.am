@@ -209,6 +209,7 @@ aegisub_2_2_SOURCES = \
 	audio_provider_stream.cpp \
 	audio_renderer.cpp \
 	audio_renderer_spectrum.cpp \
+	audio_timing_dialogue.cpp \
 	auto4_base.cpp \
 	avisynth_wrap.cpp \
 	base_grid.cpp \
