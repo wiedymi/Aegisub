@@ -162,19 +162,22 @@ void AudioMarkerDialogueTiming::SetPosition(int64_t new_position)
 
 	if (other)
 	{
+		/// @todo Make this depend on configuration
+		wxPen style_left = wxPen(*wxRED, 2);
+		wxPen style_right = wxPen(*wxBLUE, 2);
 		if (position < other->position)
 		{
-			feet = Feet_Right; // feet pointing inside
-			style = wxPen(*wxRED); /// @todo Make this depend on configuration
+			feet = Feet_Right;
+			other->feet = Feet_Left;
+			style = style_left;
+			other->style = style_right;
 		}
-		else if (position == other->position)
-		{
-			feet = Feet_None;
-		}
-		else
+		else if (position > other->position)
 		{
 			feet = Feet_Left;
-			style = wxPen(*wxBLUE);
+			other->feet = Feet_Right;
+			style = style_right;
+			other->style = style_left;
 		}
 	}
 }

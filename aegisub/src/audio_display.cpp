@@ -1600,6 +1600,41 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 
 				x += sr->x2 - sr->x1;
 			}
+
+			// Draw markers on top of it all
+			AudioMarkerVector markers;
+			const int foot_size = 6;
+			AudioController::SampleRange updrectsamples(
+				(updrect.x+scroll_left-foot_size)*pixel_samples,
+				(updrect.x+updrect.width+scroll_left+foot_size)*pixel_samples);
+			controller->GetMarkers(updrectsamples, markers);
+			if (controller->GetTimingController())
+				controller->GetTimingController()->GetMarkers(updrectsamples, markers);
+			wxDCPenChanger pen_retainer(dc, wxPen());
+			wxDCBrushChanger brush_retainer(dc, wxBrush());
+			for (AudioMarkerVector::iterator marker_i = markers.begin(); marker_i != markers.end(); ++marker_i)
+			{
+				const AudioMarker *marker = *marker_i;
+				dc.SetPen(marker->GetStyle());
+				int marker_x = marker->GetPosition() / pixel_samples - scroll_left;
+				dc.DrawLine(marker_x, audio_top, marker_x, audio_top+audio_height);
+				dc.SetBrush(wxBrush(marker->GetStyle().GetColour()));
+				dc.SetPen(*wxTRANSPARENT_PEN);
+				if (marker->GetFeet() & AudioMarker::Feet_Left)
+				{
+					wxPoint foot_top[3] = { wxPoint(-foot_size, 0), wxPoint(0, 0), wxPoint(0, foot_size) };
+					wxPoint foot_bot[3] = { wxPoint(-foot_size, 0), wxPoint(0, -foot_size), wxPoint(0, 0) };
+					dc.DrawPolygon(3, foot_top, marker_x, audio_top);
+					dc.DrawPolygon(3, foot_bot, marker_x, audio_top+audio_height);
+				}
+				if (marker->GetFeet() & AudioMarker::Feet_Right)
+				{
+					wxPoint foot_top[3] = { wxPoint(foot_size, 0), wxPoint(0, 0), wxPoint(0, foot_size) };
+					wxPoint foot_bot[3] = { wxPoint(foot_size, 0), wxPoint(0, -foot_size), wxPoint(0, 0) };
+					dc.DrawPolygon(3, foot_top, marker_x, audio_top);
+					dc.DrawPolygon(3, foot_bot, marker_x, audio_top+audio_height);
+				}
+			}
 		}
 
 		region++;
