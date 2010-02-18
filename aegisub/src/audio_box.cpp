@@ -115,7 +115,6 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 
 	// Sash and Display
 	audioDisplay = new AudioDisplay(this, controller);
-	audioDisplay->box = this;
 
 	// Zoom
 	HorizontalZoom = new wxSlider(this,Audio_Horizontal_Zoom,0,-50,30,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH);
@@ -240,7 +239,6 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	audioKaraoke = new AudioKaraoke(this);
 	audioKaraoke->box = this;
 	audioKaraoke->display = audioDisplay;
-	audioDisplay->karaoke = audioKaraoke;
 	karaokeSizer->Add(audioKaraoke,1,wxEXPAND,0);
 
 	// Main sizer

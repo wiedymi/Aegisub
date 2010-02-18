@@ -227,13 +227,6 @@ public:
 	void AddLead(bool, bool) { }
 
 
-	/// Karaoke control and controller
-	AudioKaraoke *karaoke;
-
-	/// The containing audio box
-	AudioBox *box;
-
-
 public:
 
 	AudioDisplay(wxWindow *parent, AudioController *controller);

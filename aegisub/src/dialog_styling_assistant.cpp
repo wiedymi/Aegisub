@@ -48,7 +48,6 @@
 #include "ass_style.h"
 #include "audio_controller.h"
 #include "audio_box.h"
-#include "audio_display.h"
 #include "dialog_styling_assistant.h"
 #include "frame_main.h"
 #include "help_button.h"

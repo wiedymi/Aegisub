@@ -64,7 +64,6 @@
 #include "ass_style.h"
 #include "ass_time.h"
 #include "audio_controller.h"
-#include "audio_display.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "subs_edit_box.h"

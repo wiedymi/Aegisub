@@ -53,7 +53,6 @@
 #include "ass_style.h"
 #include "include/aegisub/audio_provider.h"
 #include "audio_controller.h"
-#include "audio_display.h"
 #include "audio_box.h"
 #include "charset_conv.h"
 #include "dialog_paste_over.h"

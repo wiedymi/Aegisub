@@ -53,7 +53,6 @@
 #include "ass_file.h"
 #include "audio_controller.h"
 #include "audio_box.h"
-#include "audio_display.h"
 #ifdef WITH_AUTOMATION
 #include "auto4_base.h"
 #endif
