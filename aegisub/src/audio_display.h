@@ -96,6 +96,11 @@ public:
 	/// no capture is taken or released and regular processing is done for the next
 	/// mouse event.
 	virtual bool OnMouseEvent(wxMouseEvent &event) = 0;
+
+	/// @brief Destructor
+	///
+	/// Empty virtual destructor for the cases that need it.
+	virtual ~AudioDisplayInteractionObject() { }
 };
 
 

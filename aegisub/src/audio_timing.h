@@ -32,3 +32,14 @@
 /// @file audio_timing.h
 /// @brief Construction-functions for timing controller objects
 /// @ingroup audio_ui
+
+
+
+class AudioTimingController;
+class AudioController;
+
+
+/// @brief Create a standard dialogue audio timing controller
+/// @param audio_controller The audio controller to own the timing controller
+AudioTimingController *CreateDialogueTimingController(AudioController *audio_controller);
+

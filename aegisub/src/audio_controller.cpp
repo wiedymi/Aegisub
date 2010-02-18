@@ -47,6 +47,7 @@
 #include "audio_provider_manager.h"
 #include "audio_player_manager.h"
 #include "audio_provider_dummy.h"
+#include "audio_timing.h"
 
 
 /// Type of the audio event listener container in AudioController
@@ -62,13 +63,16 @@ typedef std::set<AudioControllerTimingEventListener *> TimingEventListenerSet;
 
 AudioController::AudioController()
 : provider(0)
-, timing_mode(0)
+, timing_controller(0)
 , player(0)
 , playback_mode(PM_NotPlaying)
 , selection(0, 0)
 , playback_timer(this)
 {
 	Connect(playback_timer.GetId(), wxEVT_TIMER, (wxObjectEventFunction)&AudioController::OnPlaybackTimer);
+
+	/// @todo Get rid of this after making sure timing controller basics work!
+	SetTimingController(CreateDialogueTimingController(this));
 
 #ifdef wxHAS_POWER_EVENTS
 	Connect(wxEVT_POWER_SUSPENDED, (wxObjectEventFunction)&AudioController::OnComputerSuspending);
@@ -268,6 +272,19 @@ void AudioController::AddTimingListener(AudioControllerTimingEventListener *list
 void AudioController::RemoveTimingListener(AudioControllerTimingEventListener *listener)
 {
 	timing_event_listeners.erase(listener);
+}
+
+
+
+void AudioController::SetTimingController(AudioTimingController *new_controller)
+{
+	delete timing_controller;
+	timing_controller = new_controller;
+
+	TIMING_LISTENERS(l)
+	{
+		(*l)->OnTimingControllerChanged();
+	}
 }
 
 

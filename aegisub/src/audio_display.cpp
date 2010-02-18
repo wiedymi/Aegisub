@@ -99,6 +99,10 @@ public:
 	{
 	}
 
+	virtual ~AudioDisplayScrollbar()
+	{
+	}
+
 	// The audio display has changed size
 	void SetDisplaySize(const wxSize &display_size)
 	{
@@ -255,6 +259,10 @@ public:
 		, pixel_left(0)
 		, display(_display)
 		, dragging(false)
+	{
+	}
+
+	virtual ~AudioDisplayTimeline()
 	{
 	}
 
@@ -448,6 +456,45 @@ public:
 
 
 
+class AudioMarkerInteractionObject : public AudioDisplayInteractionObject {
+	// Object-pair being intracted with
+	AudioMarker *marker;
+	AudioTimingController *timing_controller;
+	// From the audio display
+	int scroll_left;
+	int pixel_samples;
+	// Mouse button used to initiate the drag
+	wxMouseButton button_used;
+
+public:
+	AudioMarkerInteractionObject(AudioMarker *marker, AudioTimingController *timing_controller, int scroll_left, int pixel_samples, wxMouseButton button_used)
+		: marker(marker)
+		, timing_controller(timing_controller)
+		, scroll_left(scroll_left)
+		, pixel_samples(pixel_samples)
+		, button_used(button_used)
+	{
+	}
+
+	virtual ~AudioMarkerInteractionObject()
+	{
+	}
+
+	virtual bool OnMouseEvent(wxMouseEvent &event)
+	{
+		if (event.Dragging())
+		{
+			int64_t sample_pos = (scroll_left + event.GetPosition().x) * pixel_samples;
+			timing_controller->OnMarkerDrag(marker, sample_pos);
+		}
+
+		// We lose the marker drag if the button used to initiate it goes up
+		return !event.ButtonUp(button_used);
+	}
+};
+
+
+
 
 /// @brief Constructor 
 /// @param parent 
@@ -456,6 +503,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 : wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS|wxBORDER_SIMPLE)
 , controller(_controller)
 , provider(0)
+, dragged_object(0)
 {
 	scrollbar = new AudioDisplayScrollbar(this);
 	timeline = new AudioDisplayTimeline(this);
@@ -1566,6 +1614,12 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 
 void AudioDisplay::SetDraggedObject(AudioDisplayInteractionObject *new_obj)
 {
+	// Special case for audio markers being dragged: they use a temporary wrapper object
+	// which must be deleted when it is no longer used.
+	AudioMarkerInteractionObject *dragged_marker = dynamic_cast<AudioMarkerInteractionObject*>(dragged_object);
+	if (dragged_marker)
+		delete dragged_marker;
+
 	dragged_object = new_obj;
 
 	if (dragged_object && !HasCapture())
@@ -1694,6 +1748,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 	}
 
 	AudioTimingController *timing = controller->GetTimingController();
+	int drag_sensitivity = pixel_samples*3; /// @todo Make this depend on configuration
 
 	// Not scrollbar, not timeline, no button action
 	if (event.Moving())
@@ -1702,7 +1757,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 		{
 			int64_t samplepos = (scroll_left + mousepos.x) * pixel_samples;
 
-			if (timing->IsNearbyMarker(samplepos, pixel_samples*3))
+			if (timing->IsNearbyMarker(samplepos, drag_sensitivity))
 				SetCursor(wxCursor(wxCURSOR_SIZEWE));
 			else
 				SetCursor(wxNullCursor);
@@ -1714,31 +1769,39 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 			RemoveTrackCursor();
 	}
 
-	// Fake selection changing code for test purposes.
-	// These two left/right button handlers should send the event to the controller instead
-	// of trying to determine a new calculation themselves. It might be that there's no
-	// meaningful clicking operations to change selections etc. in current mode.
-	if (event.LeftIsDown())
+	if (event.LeftDown() && timing)
 	{
-		AudioController::SampleRange cursel(controller->GetSelection());
-		int64_t newstart = (scroll_left + mousepos.x) * pixel_samples;
-		int64_t newend = cursel.end();
-		if (newstart > newend)
-			std::swap(newstart, newend);
-		controller->SetSelection(AudioController::SampleRange(newstart, newend));
-		return;
+		int64_t samplepos = (scroll_left + mousepos.x) * pixel_samples;
+		AudioMarker *marker = timing->OnLeftClick(samplepos, drag_sensitivity);
+
+		if (marker)
+		{
+			RemoveTrackCursor();
+			SetDraggedObject(new AudioMarkerInteractionObject(
+				marker, timing,
+				scroll_left, pixel_samples,
+				wxMOUSE_BTN_LEFT));
+			return;
+		}
 	}
 
-	if (event.RightIsDown())
+	if (event.RightDown() && timing)
 	{
-		AudioController::SampleRange cursel(controller->GetSelection());
-		int64_t newstart = cursel.begin();
-		int64_t newend = (scroll_left + mousepos.x) * pixel_samples;
-		if (newstart > newend)
-			std::swap(newstart, newend);
-		controller->SetSelection(AudioController::SampleRange(newstart, newend));
-		return;
+		int64_t samplepos = (scroll_left + mousepos.x) * pixel_samples;
+		AudioMarker *marker = timing->OnRightClick(samplepos, drag_sensitivity);
+
+		if (marker)
+		{
+			RemoveTrackCursor();
+			SetDraggedObject(new AudioMarkerInteractionObject(
+				marker, timing,
+				scroll_left, pixel_samples,
+				wxMOUSE_BTN_RIGHT));
+			return;
+		}
 	}
+
+	/// @todo Handle middle click to seek video
 }
 
 

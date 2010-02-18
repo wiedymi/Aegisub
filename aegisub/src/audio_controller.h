@@ -62,7 +62,7 @@ class AudioTimingController;
 class AudioMarker;
 
 
-typedef std::vector<AudioMarker*> AudioMarkerVector;
+typedef std::vector<const AudioMarker*> AudioMarkerVector;
 
 
 /// @class AudioController
@@ -121,6 +121,9 @@ public:
 		int64_t begin() const { return _begin; }
 		/// Get the index of one past the last sample in the range
 		int64_t end() const { return _end; }
+
+		/// Determine whether the range contains a given sample index
+		bool contains(int64_t sample) const { return sample >= begin() && sample < end(); }
 	};
 
 
@@ -139,7 +142,7 @@ private:
 	AudioProvider *provider;
 
 	/// The current timing mode, if any; owned by the audio controller
-	AudioTimingController *timing_mode;
+	AudioTimingController *timing_controller;
 
 
 	enum PlaybackMode {
@@ -276,6 +279,7 @@ public:
 	/// @param markers Vector to fill found markers into
 	///
 	/// The markers retrieved are static markers the user can't interact with.
+	/// Markers for user interaction are obtained through the timing controller.
 	void GetMarkers(const SampleRange &range, AudioMarkerVector &markers) const;
 
 
@@ -295,13 +299,13 @@ public:
 
 	/// @brief Return the current timing controller
 	/// @return The current timing controller or 0
-	AudioTimingController * GetTimingController() const { return timing_mode; }
+	AudioTimingController * GetTimingController() const { return timing_controller; }
 
 	/// @brief Change the current timing controller
 	/// @param new_mode The new timing controller or 0. This may be the same object as
 	/// the current timing controller, to signal that the timing controller has changed
 	/// the object being timed, eg. changed to a new dialogue line.
-	void SetTimingController(AudioTimingController *new_mode);
+	void SetTimingController(AudioTimingController *new_controller);
 
 
 	/// @brief Convert a count of audio samples to a time in milliseconds
@@ -428,6 +432,11 @@ public:
 	/// @param marker       The marker being dragged
 	/// @param new_position Sample position the marker was dragged to
 	virtual void OnMarkerDrag(AudioMarker *marker, int64_t new_position) = 0;
+
+	/// @brief Destructor
+	///
+	/// Does nothing in the base class, only present for virtual destruction.
+	virtual ~AudioTimingController() { }
 };
 
 

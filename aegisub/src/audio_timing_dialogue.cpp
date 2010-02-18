@@ -44,9 +44,21 @@
 
 
 
+/// @class AudioMarkerDialogueTiming
+/// @brief AudioMarker implementation for AudioTimingControllerDialogue
+///
+/// Audio marker intended to live in pairs of two, taking styles depending
+/// on which marker in the pair is to the left and which is to the right.
 class AudioMarkerDialogueTiming : public AudioMarker {
+	/// The other marker for the dialogue line's pair
+	AudioMarkerDialogueTiming *other;
+
+	/// Current sample position of this marker
 	int64_t position;
+
+	/// Draw style for the marker
 	wxPen style;
+	/// Foot style for the marker
 	FeetStyle feet;
 
 public:
@@ -57,11 +69,32 @@ public:
 	virtual bool CanSnap() const { return true; }
 
 public:
-	/// @brief Change the marker to have "start marker" style
-	void SetAsStart();
-	/// @brief Change the marker to have "end marker" style
-	void SetAsEnd();
+	// Specific interface
+
+	/// @brief Move the marker to a new position
+	/// @param new_position The position to move the marker to, in audio samples
+	///
+	/// If the marker moves to the opposite side of the ohter marker in the pair,
+	/// the styles of the two markers will be changed to match the new start/end
+	/// relationship of them.
+	void SetPosition(int64_t new_position);
+
+
+	/// @brief Constructor
+	///
+	/// Initialises the fields to default values.
+	AudioMarkerDialogueTiming();
+
+
+	/// @brief Initialise a pair of dialogue markers to be a pair
+	/// @param marker1 The first marker in the pair to make
+	/// @param marker2 The second marker in the pair to make
+	///
+	/// This checks that the markers aren't already part of a pair, and then sets their
+	/// "other" field. Positions and styles aren't affected.
+	static void InitPair(AudioMarkerDialogueTiming *marker1, AudioMarkerDialogueTiming *marker2);
 };
+
 
 
 /// @class AudioTimingControllerDialogue
@@ -77,14 +110,23 @@ public:
 /// Another later expansion will be to affect the timing of multiple selected
 /// lines at the same time, if they e.g. have end1==start2.
 class AudioTimingControllerDialogue : public AudioTimingController {
-	/// Start marker of the active line
-	AudioMarkerDialogueTiming *marker_start;
-	/// End marker of the active line
-	AudioMarkerDialogueTiming *marker_end;
+	/// Start and end markers for the active line
+	AudioMarkerDialogueTiming markers[2];
+
+	/// Get the leftmost of the markers
+	AudioMarkerDialogueTiming *GetLeftMarker();
+	/// Get the rightmost of the markers
+	AudioMarkerDialogueTiming *GetRightMarker();
+
+	/// The owning audio controller
+	AudioController *audio_controller;
+
+	/// Update the audio controller's selection
+	void UpdateSelection();
 
 public:
 	// AudioTimingController interface
-	virtual void GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &markers) const;
+	virtual void GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &out_markers) const;
 	virtual wxString GetWarningMessage() const;
 	virtual bool HasLabels() const;
 	virtual void Next();
@@ -95,12 +137,99 @@ public:
 	virtual AudioMarker * OnLeftClick(int64_t sample, int sensitivity);
 	virtual AudioMarker * OnRightClick(int64_t sample, int sensitivity);
 	virtual void OnMarkerDrag(AudioMarker *marker, int64_t new_position);
+
+public:
+	// Specific interface
+
+	/// @brief Constructor
+	AudioTimingControllerDialogue(AudioController *audio_controller);
 };
 
 
 
-void AudioTimingControllerDialogue::GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &markers) const
+AudioTimingController *CreateDialogueTimingController(AudioController *audio_controller)
 {
+	return new AudioTimingControllerDialogue(audio_controller);
+}
+
+
+
+// AudioMarkerDialogueTiming
+
+void AudioMarkerDialogueTiming::SetPosition(int64_t new_position)
+{
+	position = new_position;
+
+	if (other)
+	{
+		if (position < other->position)
+		{
+			feet = Feet_Right; // feet pointing inside
+			style = wxPen(*wxRED); /// @todo Make this depend on configuration
+		}
+		else if (position == other->position)
+		{
+			feet = Feet_None;
+		}
+		else
+		{
+			feet = Feet_Left;
+			style = wxPen(*wxBLUE);
+		}
+	}
+}
+
+
+AudioMarkerDialogueTiming::AudioMarkerDialogueTiming()
+: other(0)
+, position(0)
+, feet(Feet_None)
+{
+	// Nothing more to do
+}
+
+
+void AudioMarkerDialogueTiming::InitPair(AudioMarkerDialogueTiming *marker1, AudioMarkerDialogueTiming *marker2)
+{
+	assert(marker1->other == 0);
+	assert(marker2->other == 0);
+
+	marker1->other = marker2;
+	marker2->other = marker1;
+}
+
+
+
+// AudioTimingControllerDialogue
+
+AudioTimingControllerDialogue::AudioTimingControllerDialogue(AudioController *audio_controller)
+: audio_controller(audio_controller)
+{
+	assert(audio_controller != 0);
+
+	AudioMarkerDialogueTiming::InitPair(&markers[0], &markers[1]);
+}
+
+
+AudioMarkerDialogueTiming *AudioTimingControllerDialogue::GetLeftMarker()
+{
+	return markers[0].GetPosition() < markers[1].GetPosition() ? &markers[0] : &markers[1];
+}
+
+
+AudioMarkerDialogueTiming *AudioTimingControllerDialogue::GetRightMarker()
+{
+	return markers[0].GetPosition() < markers[1].GetPosition() ? &markers[1] : &markers[0];
+}
+
+
+
+void AudioTimingControllerDialogue::GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &out_markers) const
+{
+	if (range.contains(markers[0].GetPosition()))
+		out_markers.push_back(&markers[0]);
+	if (range.contains(markers[1].GetPosition()))
+		out_markers.push_back(&markers[1]);
 }
 
 
@@ -121,49 +250,106 @@ bool AudioTimingControllerDialogue::HasLabels() const
 
 void AudioTimingControllerDialogue::Next()
 {
+	/// @todo Support walking among dialogue lines
 }
 
 
 
 void AudioTimingControllerDialogue::Prev()
 {
+	/// @todo Support walking among dialogue lines
 }
 
 
 
 void AudioTimingControllerDialogue::Commit()
 {
+	/// @todo Support working on actual dialogue lines
 }
 
 
 
 void AudioTimingControllerDialogue::Revert()
 {
+	/// @todo Support working on actual dialogue lines
 }
 
 
 
 bool AudioTimingControllerDialogue::IsNearbyMarker(int64_t sample, int sensitivity) const
 {
-	return false;
+	AudioController::SampleRange range(sample-sensitivity, sample+sensitivity);
+
+	return range.contains(markers[0].GetPosition()) || range.contains(markers[1].GetPosition());
 }
 
 
-
+template <typename T> T tabs(T x) { return x < 0 ? -x : x; }
 AudioMarker * AudioTimingControllerDialogue::OnLeftClick(int64_t sample, int sensitivity)
 {
-	return 0;
+	assert(sensitivity >= 0);
+
+	int64_t dist_l, dist_r;
+
+	AudioMarkerDialogueTiming *left = GetLeftMarker();
+	AudioMarkerDialogueTiming *right = GetRightMarker();
+
+	dist_l = tabs(left->GetPosition() - sample);
+	dist_r = tabs(right->GetPosition() - sample);
+
+	if (dist_l < dist_r && dist_l <= sensitivity)
+	{
+		// Clicked near the left marker:
+		// Insta-move it and start dragging it
+		left->SetPosition(sample);
+		UpdateSelection();
+		return left;
+	}
+
+	if (dist_r < dist_l && dist_r <= sensitivity)
+	{
+		// Clicked near the right marker:
+		// Only drag it. For insta-move, the user must right-click.
+		return right;
+	}
+
+	// Clicked far from either marker:
+	// Insta-set the left marker to the clicked position and return the right as the dragged one,
+	// such that if the user does start dragging, he will create a new selection from scratch
+	left->SetPosition(sample);
+	UpdateSelection();
+	return right;
 }
 
 
 
 AudioMarker * AudioTimingControllerDialogue::OnRightClick(int64_t sample, int sensitivity)
 {
-	return 0;
+	AudioMarkerDialogueTiming *right = GetRightMarker();
+	
+	right->SetPosition(sample);
+	UpdateSelection();
+	return right;
 }
 
 
 
 void AudioTimingControllerDialogue::OnMarkerDrag(AudioMarker *marker, int64_t new_position)
 {
+	assert(marker == &markers[0] || marker == &markers[1]);
+
+	static_cast<AudioMarkerDialogueTiming*>(marker)->SetPosition(new_position);
+
+	UpdateSelection();
 }
+
+
+
+void AudioTimingControllerDialogue::UpdateSelection()
+{
+	audio_controller->SetSelection(AudioController::SampleRange(
+		GetLeftMarker()->GetPosition(),
+		GetRightMarker()->GetPosition()));
+}
+
+
