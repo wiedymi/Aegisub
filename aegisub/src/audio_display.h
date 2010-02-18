@@ -181,10 +181,13 @@ private:
 	AudioController::SampleRange old_selection;
 
 
+	/// wxWidgets paint event
 	void OnPaint(wxPaintEvent &event);
+	/// wxWidgets mouse input event
 	void OnMouseEvent(wxMouseEvent &event);
+	/// wxWidgets control size changed event
 	void OnSize(wxSizeEvent &event);
-	void OnKeyDown(wxKeyEvent &event);
+	/// wxWidgets input focus changed event
 	void OnFocus(wxFocusEvent &event);
 
 
