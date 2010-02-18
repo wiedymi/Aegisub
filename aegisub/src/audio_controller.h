@@ -381,6 +381,12 @@ public:
 	/// @return The warning message to show, may be empty if there is none
 	virtual wxString GetWarningMessage() const = 0;
 
+	/// @brief Get the sample range the user is most likely to want to see for the current state
+	/// @return A sample range
+	///
+	/// This is used for "bring working area into view" operations.
+	virtual AudioController::SampleRange GetIdealVisibleSampleRange() const = 0;
+
 	/// @brief Does this timing mode have labels on the audio display?
 	/// @return True if this timing mode needs labels on the audio display.
 	///

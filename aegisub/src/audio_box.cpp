@@ -588,7 +588,8 @@ void AudioBox::OnAccept(wxCommandEvent &event) {
 ///
 void AudioBox::OnGoto(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
-	audioDisplay->MakeDialogueVisible(true);
+	if (controller->GetTimingController())
+		audioDisplay->ScrollSampleRangeInView(controller->GetTimingController()->GetIdealVisibleSampleRange());
 }
 
 

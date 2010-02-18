@@ -222,17 +222,9 @@ public:
 	// audio_box.cpp 588 596
 	void SetDialogue() { }
 
-	/// Ensure the current dialogue line is visible to the user
-	// audio_box.cpp 673
-	void MakeDialogueVisible(bool) { }
-
 	/// Add lead in and/or lead out
 	// audio_box.cpp 741 750
 	void AddLead(bool, bool) { }
-
-	/// Set horizontal zoom level in percent of the total audio length
-	// audio_box.cpp 333
-	void SetSamplesPercent(int) { }
 
 
 	/// Karaoke control and controller

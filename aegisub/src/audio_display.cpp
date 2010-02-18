@@ -496,9 +496,6 @@ public:
 
 
 
-/// @brief Constructor 
-/// @param parent 
-///
 AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 : wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS|wxBORDER_SIMPLE)
 , controller(_controller)
@@ -534,9 +531,6 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 }
 
 
-
-/// @brief Destructor 
-///
 AudioDisplay::~AudioDisplay()
 {
 	delete audio_renderer;
@@ -573,6 +567,66 @@ void AudioDisplay::ScrollPixelToLeft(int pixel_position)
 		scrollbar->SetPosition(scroll_left);
 		timeline->SetPosition(scroll_left);
 		Refresh();
+	}
+}
+
+
+void AudioDisplay::ScrollPixelToCenter(int pixel_position)
+{
+	ScrollPixelToLeft(pixel_position - GetClientRect().GetWidth()/2);
+}
+
+
+void AudioDisplay::ScrollSampleToLeft(int64_t sample_position)
+{
+	ScrollPixelToLeft(sample_position / pixel_samples);
+}
+
+
+void AudioDisplay::ScrollSampleToCenter(int64_t sample_position)
+{
+	ScrollPixelToCenter(sample_position / pixel_samples);
+}
+
+
+void AudioDisplay::ScrollSampleRangeInView(const AudioController::SampleRange &range)
+{
+	int client_width = GetClientRect().GetWidth();
+	int range_begin = range.begin() / pixel_samples;
+	int range_end = range.end() / pixel_samples;
+	int range_len = range_end - range_begin;
+
+	// Is everything already in view?
+	if (range_begin >= scroll_left && range_end <= scroll_left+client_width)
+		return;
+
+	// For the rest of the calculation, remove 5 % from each side of the client area.
+	// The leftadjust is the amount to subtract from the final scroll_left value.
+	int leftadjust = client_width / 20;
+	client_width = client_width * 9 / 10;
+
+	// The entire range can fit inside the view, center it
+	if (range_len < client_width)
+	{
+		ScrollPixelToLeft(range_begin - (client_width-range_len)/2 - leftadjust);
+	}
+
+	// Range doesn't fit in view and we're viewing a middle part of it, just leave it alone
+	else if (range_begin < scroll_left+leftadjust && range_end > scroll_left+leftadjust+client_width)
+	{
+		// nothing
+	}
+
+	// Right edge is in view, scroll it as far to the right as possible
+	else if (range_end >= scroll_left+leftadjust && range_end < scroll_left+leftadjust+client_width)
+	{
+		ScrollPixelToLeft(range_end - client_width - leftadjust);
+	}
+
+	// Nothing is in view or the left edge is in view, scroll left edge as far to the left as possible
+	else
+	{
+		ScrollPixelToLeft(range_begin - leftadjust);
 	}
 }
 

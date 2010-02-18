@@ -115,8 +115,10 @@ class AudioTimingControllerDialogue : public AudioTimingController {
 
 	/// Get the leftmost of the markers
 	AudioMarkerDialogueTiming *GetLeftMarker();
+	const AudioMarkerDialogueTiming *GetLeftMarker() const;
 	/// Get the rightmost of the markers
 	AudioMarkerDialogueTiming *GetRightMarker();
+	const AudioMarkerDialogueTiming *GetRightMarker() const;
 
 	/// The owning audio controller
 	AudioController *audio_controller;
@@ -128,6 +130,7 @@ public:
 	// AudioTimingController interface
 	virtual void GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &out_markers) const;
 	virtual wxString GetWarningMessage() const;
+	virtual AudioController::SampleRange GetIdealVisibleSampleRange() const;
 	virtual bool HasLabels() const;
 	virtual void Next();
 	virtual void Prev();
@@ -186,6 +189,7 @@ void AudioMarkerDialogueTiming::SetPosition(int64_t new_position)
 AudioMarkerDialogueTiming::AudioMarkerDialogueTiming()
 : other(0)
 , position(0)
+, style(*wxTRANSPARENT_PEN)
 , feet(Feet_None)
 {
 	// Nothing more to do
@@ -219,8 +223,17 @@ AudioMarkerDialogueTiming *AudioTimingControllerDialogue::GetLeftMarker()
 	return markers[0].GetPosition() < markers[1].GetPosition() ? &markers[0] : &markers[1];
 }
 
+const AudioMarkerDialogueTiming *AudioTimingControllerDialogue::GetLeftMarker() const
+{
+	return markers[0].GetPosition() < markers[1].GetPosition() ? &markers[0] : &markers[1];
+}
 
 AudioMarkerDialogueTiming *AudioTimingControllerDialogue::GetRightMarker()
+{
+	return markers[0].GetPosition() < markers[1].GetPosition() ? &markers[1] : &markers[0];
+}
+
+const AudioMarkerDialogueTiming *AudioTimingControllerDialogue::GetRightMarker() const
 {
 	return markers[0].GetPosition() < markers[1].GetPosition() ? &markers[1] : &markers[0];
 }
@@ -240,6 +253,15 @@ void AudioTimingControllerDialogue::GetMarkers(const AudioController::SampleRang
 wxString AudioTimingControllerDialogue::GetWarningMessage() const
 {
 	return wxString();
+}
+
+
+
+AudioController::SampleRange AudioTimingControllerDialogue::GetIdealVisibleSampleRange() const
+{
+	return AudioController::SampleRange(
+		GetLeftMarker()->GetPosition(),
+		GetRightMarker()->GetPosition());
 }
 
 
