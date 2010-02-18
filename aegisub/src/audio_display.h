@@ -177,6 +177,10 @@ private:
 	void RemoveTrackCursor();
 
 
+	/// Previous audio selection for optimising redraw when selection changes
+	AudioController::SampleRange old_selection;
+
+
 	void OnPaint(wxPaintEvent &event);
 	void OnMouseEvent(wxMouseEvent &event);
 	void OnSize(wxSizeEvent &event);

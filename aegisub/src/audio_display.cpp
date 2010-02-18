@@ -504,6 +504,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 , controller(_controller)
 , provider(0)
 , dragged_object(0)
+, old_selection(0, 0)
 {
 	scrollbar = new AudioDisplayScrollbar(this);
 	timeline = new AudioDisplayTimeline(this);
@@ -2088,12 +2089,30 @@ void AudioDisplay::OnSelectionChanged()
 	AudioController::SampleRange sel(controller->GetSelection());
 	scrollbar->SetSelection(sel.begin() / pixel_samples, sel.length() / pixel_samples);
 
-	RefreshRect(wxRect(0, audio_top, GetClientSize().GetX(), audio_height));
+	if (sel.overlaps(old_selection))
+	{
+		// Only redraw the parts of the selection that changed, to avoid flicker
+		int s1 = sel.begin() / pixel_samples - scroll_left;
+		int e1 = sel.end() / pixel_samples - scroll_left;
+		int s2 = old_selection.begin() / pixel_samples - scroll_left;
+		int e2 = old_selection.end() / pixel_samples - scroll_left;
+		if (s1 != s2)
+			RefreshRect(wxRect(std::min(s1, s2)-10, audio_top, abs(s1-s2)+20, audio_height));
+		if (e1 != e2)
+			RefreshRect(wxRect(std::min(e1, e2)-10, audio_top, abs(e1-e2)+20, audio_height));
+	}
+	else
+	{
+		RefreshRect(wxRect(0, audio_top, GetClientSize().GetX(), audio_height));
+	}
+
+	old_selection = sel;
 }
 
 
 void AudioDisplay::OnTimingControllerChanged()
 {
+	Refresh();
 	/// @todo Do something about the new timing controller?
 }
 

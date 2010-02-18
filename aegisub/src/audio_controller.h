@@ -124,6 +124,9 @@ public:
 
 		/// Determine whether the range contains a given sample index
 		bool contains(int64_t sample) const { return sample >= begin() && sample < end(); }
+
+		/// Determine whether there is an overlap between two ranges
+		bool overlaps(const SampleRange &other) const { return other.contains(_begin) || other.contains(_end); }
 	};
 
 
