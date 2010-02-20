@@ -48,6 +48,109 @@
 #include "audio_player_manager.h"
 #include "audio_provider_dummy.h"
 #include "audio_timing.h"
+#include "video_context.h"
+#include "vfr.h"
+
+
+#undef min
+#undef max
+
+
+
+class AudioMarkerKeyframe : public AudioMarker {
+	int64_t position;
+	static wxPen style;
+public:
+	AudioMarkerKeyframe(int64_t position) : position(position) { }
+	int64_t GetPosition() const { return position; }
+	FeetStyle GetFeet() const { return Feet_None; }
+	bool CanSnap() const { return true; }
+	wxPen GetStyle() const
+	{
+		if (!style.IsOk())
+			/// @todo Make this colour configurable
+			style = wxPen(wxColour(255,0,255), 1);
+		return style;
+	}
+	bool operator < (const AudioMarkerKeyframe &other) const { return position < other.position; }
+	operator int64_t() const { return position; }
+};
+bool operator < (int64_t a, const AudioMarkerKeyframe &b) { return a < b.GetPosition(); }
+bool operator < (const AudioMarkerKeyframe &a, int64_t b) { return a.GetPosition() < b; }
+wxPen AudioMarkerKeyframe::style;
+
+class AudioMarkerProviderKeyframes : public AudioMarkerProvider, private AudioControllerAudioEventListener {
+	// GetMarkers needs to be const but still needs to modify this state, which is really
+	// just a cache... use the mutable "hack".
+	mutable int last_keyframes_revision;
+	mutable std::vector<AudioMarkerKeyframe> keyframe_samples;
+	AudioController *controller;
+	int64_t samplerate;
+
+	void ReloadKeyframes() const
+	{
+		keyframe_samples.clear();
+
+		VideoContext *vc = VideoContext::Get();
+		if (!vc) return;
+
+		last_keyframes_revision = vc->GetKeyframesRevision();
+		const wxArrayInt &raw_keyframes = vc->GetKeyFrames();
+		keyframe_samples.reserve(raw_keyframes.size());
+		for (size_t i = 0; i < raw_keyframes.size(); ++i)
+		{
+			keyframe_samples.push_back(AudioMarkerKeyframe(
+				VFR_Output.GetTimeAtFrame(raw_keyframes[i], true) * samplerate / 1000));
+		}
+		std::sort(keyframe_samples.begin(), keyframe_samples.end());
+	}
+
+private:
+	// AudioControllerAudioEventListener implementation
+	virtual void OnAudioOpen(AudioProvider *provider)
+	{
+		samplerate = provider->GetSampleRate();
+		ReloadKeyframes();
+	}
+	virtual void OnAudioClose() { }
+	virtual void OnPlaybackPosition(int64_t sample_position) { }
+	virtual void OnPlaybackStop() { }
+
+public:
+	AudioMarkerProviderKeyframes(AudioController *controller)
+		: controller(controller)
+	{
+		// Assume that a video context with keyframes revision 0 never has keyframes loaded
+		last_keyframes_revision = 0;
+		samplerate = 44100;
+		controller->AddAudioListener(this);
+	}
+
+	virtual ~AudioMarkerProviderKeyframes()
+	{
+		controller->RemoveAudioListener(this);
+	}
+
+	void GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &out) const
+	{
+		VideoContext *vc = VideoContext::Get();
+		if (!vc) return;
+
+		// Re-read keyframe data if the revision number changed, the keyframe data probably did too
+		if (vc->GetKeyframesRevision() != last_keyframes_revision)
+			ReloadKeyframes();
+
+		// Find first and last keyframes inside the range
+		std::vector<AudioMarkerKeyframe>::iterator a = std::lower_bound(
+			keyframe_samples.begin(), keyframe_samples.end(), range.begin());
+		std::vector<AudioMarkerKeyframe>::iterator b = std::upper_bound(
+			keyframe_samples.begin(), keyframe_samples.end(), range.end());
+
+		// Place pointers to the markers in the output vector
+		for (; a != b; ++a)
+			out.push_back(&*a);
+	}
+};
 
 
 /// Type of the audio event listener container in AudioController
@@ -64,6 +167,7 @@ typedef std::set<AudioControllerTimingEventListener *> TimingEventListenerSet;
 AudioController::AudioController()
 : provider(0)
 , timing_controller(0)
+, keyframes_marker_provider(new AudioMarkerProviderKeyframes(this))
 , player(0)
 , playback_mode(PM_NotPlaying)
 , selection(0, 0)
@@ -381,6 +485,7 @@ void AudioController::SetSelection(const SampleRange &newsel)
 void AudioController::GetMarkers(const SampleRange &range, AudioMarkerVector &markers) const
 {
 	/// @todo Find all sources of markers
+	keyframes_marker_provider->GetMarkers(range, markers);
 }
 
 

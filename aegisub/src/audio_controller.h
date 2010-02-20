@@ -60,6 +60,7 @@ class AudioControllerAudioEventListener;
 class AudioControllerTimingEventListener;
 class AudioTimingController;
 class AudioMarker;
+class AudioMarkerProvider;
 
 
 typedef std::vector<const AudioMarker*> AudioMarkerVector;
@@ -146,6 +147,9 @@ private:
 
 	/// The current timing mode, if any; owned by the audio controller
 	AudioTimingController *timing_controller;
+
+	/// Provide keyframe data for audio displays
+	std::auto_ptr<AudioMarkerProvider> keyframes_marker_provider;
 
 
 	enum PlaybackMode {
@@ -481,6 +485,19 @@ public:
 	/// Even if the marker being dragged returns false from this method it can still snap during
 	/// dragging. The snappable property only applies to the snap-to marker, not the snapping one.
 	virtual bool CanSnap() const = 0;
+};
+
+
+
+/// @class AudioMarkerProvider
+/// @brief Abstract interface for audio marker providers
+class AudioMarkerProvider {
+public:
+	/// Virtual destructor, does nothing
+	virtual ~AudioMarkerProvider() { }
+
+	/// @brief Return markers in a sample range
+	virtual void GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &out) const = 0;
 };
 
 

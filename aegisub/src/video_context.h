@@ -144,6 +144,9 @@ private:
 	/// DOCME
 	wxString keyFramesFilename;
 
+	/// Revision counter for keyframes, when the set of keyframes is changed this number changes
+	int keyframesRevision;
+
 
 	/// DOCME
 	wxMutex playMutex;
@@ -358,12 +361,13 @@ public:
 	void PlayLine();
 	void Stop();
 
-	wxArrayInt GetKeyFrames();
+	const wxArrayInt & GetKeyFrames();
 	void SetKeyFrames(wxArrayInt frames);
 	void SetOverKeyFrames(wxArrayInt frames);
 	void CloseOverKeyFrames();
 	bool OverKeyFramesLoaded();
 	bool KeyFramesLoaded();
+	int GetKeyframesRevision() const { return keyframesRevision; }
 
 	/// @brief DOCME
 	/// @return 
