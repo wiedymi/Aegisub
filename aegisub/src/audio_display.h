@@ -56,6 +56,7 @@
 // Prototypes
 class AudioRenderer;
 class AudioSpectrumRenderer;
+class AudioWaveformRenderer;
 class AudioKaraoke;
 class AudioProvider;
 class AudioPlayer;
@@ -117,6 +118,9 @@ private:
 
 	/// The renderer for audio spectrums
 	AudioSpectrumRenderer *audio_spectrum_renderer;
+
+	/// The renderer for audio waveforms
+	AudioWaveformRenderer *audio_waveform_renderer;
 
 	/// Our current audio provider
 	AudioProvider *provider;

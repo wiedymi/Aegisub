@@ -47,11 +47,13 @@
 #endif
 
 #include "ass_time.h"
+#include "audio_colorscheme.h"
 #include "audio_controller.h"
 #include "audio_display.h"
 #include "block_cache.h"
 #include "audio_renderer.h"
 #include "audio_renderer_spectrum.h"
+#include "audio_renderer_waveform.h"
 #include "include/aegisub/audio_provider.h"
 #include "options.h"
 
@@ -508,6 +510,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 
 	audio_renderer = new AudioRenderer;
 	audio_spectrum_renderer = new AudioSpectrumRenderer;
+	audio_waveform_renderer = new AudioWaveformRenderer;
 
 	scroll_left = 0;
 	pixel_audio_width = 0;
@@ -515,18 +518,16 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 
 	track_cursor_pos = -1;
 
-	audio_renderer->SetRenderer(audio_spectrum_renderer);
-	audio_renderer->SetAmplitudeScale(scale_amplitude);
-
 	controller->AddAudioListener(this);
 	controller->AddTimingListener(this);
 
+	audio_renderer->SetAmplitudeScale(scale_amplitude);
 	SetZoomLevel(0);
 
 	ReloadRenderingSettings();
 
 	SetMinClientSize(wxSize(-1, 70));
-	SetBackgroundStyle(wxBG_STYLE_CUSTOM); // intended to be wxBG_STYLE_PAINT but that doesn't exist for me
+	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	SetThemeEnabled(false);
 }
 
@@ -535,6 +536,7 @@ AudioDisplay::~AudioDisplay()
 {
 	delete audio_renderer;
 	delete audio_spectrum_renderer;
+	delete audio_waveform_renderer;
 
 	delete timeline;
 	delete scrollbar;
@@ -734,6 +736,12 @@ void AudioDisplay::ReloadRenderingSettings()
 	audio_spectrum_renderer->SetResolution(
 		spectrum_width[spectrum_quality],
 		spectrum_distance[spectrum_quality]);
+
+	if (Options.AsBool(_T("Audio Spectrum")))
+		audio_renderer->SetRenderer(audio_spectrum_renderer);
+	else
+		audio_renderer->SetRenderer(audio_waveform_renderer);
+
 	audio_renderer->Invalidate();
 
 	Refresh();

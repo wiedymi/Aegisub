@@ -1789,6 +1789,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\audio_colorscheme.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio_colorscheme.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\audio_controller.cpp"
 				>
 			</File>
@@ -1826,6 +1834,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\audio_renderer_spectrum.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio_renderer_waveform.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio_renderer_waveform.h"
 				>
 			</File>
 			<File

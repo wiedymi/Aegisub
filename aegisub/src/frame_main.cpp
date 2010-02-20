@@ -528,6 +528,9 @@ void FrameMain::InitMenu() {
 	AppendBitmapMenuItem(audioMenu, Menu_Audio_Close, _("&Close Audio"), _("Closes the currently open audio file"), GETIMAGE(close_audio_menu_16));
 	wxMenuItem *RecentAudParent = new wxMenuItem(audioMenu, Menu_File_Recent_Auds_Parent, _("Recent"), _T(""), wxITEM_NORMAL, RecentAuds);
 	audioMenu->Append(RecentAudParent);
+	audioMenu->AppendSeparator();
+	audioMenu->Append(Menu_Audio_Spectrum, _("Spectrum display"), _("Display audio as a frequency-power spectrogrph"), wxITEM_RADIO);
+	audioMenu->Append(Menu_Audio_Waveform, _("Waveform display"), _("Display audio as a linear amplitude graph"), wxITEM_RADIO);
 #ifdef _DEBUG
 	audioMenu->AppendSeparator();
 	audioMenu->Append(Menu_Audio_Open_Dummy, _T("Open 2h30 Blank Audio"), _T("Open a 150 minutes blank audio clip, for debugging"));

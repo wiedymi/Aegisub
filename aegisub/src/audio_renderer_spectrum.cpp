@@ -46,9 +46,9 @@
 
 #include "block_cache.h"
 #include "include/aegisub/audio_provider.h"
+#include "audio_colorscheme.h"
 #include "audio_renderer.h"
 #include "audio_renderer_spectrum.h"
-#include "colorspace.h"
 
 #ifdef WITH_FFTW
 #include <fftw3.h>
@@ -60,36 +60,6 @@
 // Something is defining "min" and "max" macros, and they interfere with using std::min and std::max
 #undef min
 #undef max
-
-
-void AudioSpectrumColorMap::InitIcyBlue_Normal()
-{
-	unsigned char *palptr = palette;
-	for (size_t i = 0; i <= factor; ++i)
-	{
-		float t = (float)i / (factor-1);
-		int H = (int)(255 * (1.5 - t) / 2);
-		int S = (int)(255 * (0.5 + t/2));
-		int L = std::min(255, (int)(255 * 2 * t));
-		hsl_to_rgb(H, S, L, palptr + 0, palptr + 1, palptr + 2);
-		palptr += 4;
-	}
-}
-
-
-void AudioSpectrumColorMap::InitIcyBlue_Selected()
-{
-	unsigned char *palptr = palette;
-	for (size_t i = 0; i <= factor; ++i)
-	{
-		float t = (float)i / (factor-1);
-		int H = (int)(255 * (1.5 - t) / 2);
-		int S = (int)(255 * (0.5 + t/2));
-		int L = std::min(255, (int)(255 * (3 * t/2 + 0.25)));
-		hsl_to_rgb(H, S, L, palptr + 0, palptr + 1, palptr + 2);
-		palptr += 4;
-	}
-}
 
 
 
@@ -186,6 +156,9 @@ void AudioSpectrumRenderer::RecreateCache()
 		fftw_destroy_plan(dft_plan);
 		fftw_free(dft_input);
 		fftw_free(dft_output);
+		dft_plan = 0;
+		dft_input = 0;
+		dft_output = 0;
 	}
 #else
 	delete[] fft_scratch;
@@ -314,7 +287,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 	ptrdiff_t stride = img.GetWidth()*3;
 	int imgheight = img.GetHeight();
 
-	AudioSpectrumColorMap *pal = selected ? &colors_selected : &colors_normal;
+	AudioColorScheme *pal = selected ? &colors_selected : &colors_normal;
 
 	/// @todo Make minband and maxband configurable
 	int minband = 0;
@@ -374,7 +347,7 @@ void AudioSpectrumRenderer::Render(wxBitmap &bmp, int start, bool selected)
 void AudioSpectrumRenderer::RenderBlank(wxDC &dc, const wxRect &rect, bool selected)
 {
 	// Get the colour of silence
-	AudioSpectrumColorMap *pal = selected ? &colors_selected : &colors_normal;
+	AudioColorScheme *pal = selected ? &colors_selected : &colors_normal;
 	unsigned char color_raw[4];
 	pal->map(0.0, color_raw);
 	wxColour col(color_raw[0], color_raw[1], color_raw[2]);

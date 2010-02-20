@@ -196,6 +196,7 @@ aegisub_2_2_SOURCES = \
 	ass_style_storage.cpp \
 	ass_time.cpp \
 	audio_box.cpp \
+	audio_colorscheme.cpp \
 	audio_controller.cpp \
 	audio_display.cpp \
 	audio_karaoke.cpp \
@@ -209,6 +210,7 @@ aegisub_2_2_SOURCES = \
 	audio_provider_stream.cpp \
 	audio_renderer.cpp \
 	audio_renderer_spectrum.cpp \
+	audio_renderer_waveform.cpp \
 	audio_timing_dialogue.cpp \
 	auto4_base.cpp \
 	avisynth_wrap.cpp \

@@ -125,14 +125,14 @@ wxString AudioProvider::GetFilename() const {
 
 
 
-/// @brief Get waveform 
-/// @param min     
-/// @param peak    
-/// @param start   
-/// @param w       
-/// @param h       
-/// @param samples 
-/// @param scale   
+/// @brief Get peak data for waveform rendering
+/// @param min     [out] Minimum peak data
+/// @param peak    [out] Maximum peak data
+/// @param start   [in]  First sample to get peak data for
+/// @param w       [in]  How many data points to return
+/// @param h       [in]  Maximum value for returned peak data
+/// @param samples [in]  Number of samples to base each data point on
+/// @param scale   [in]  Scale factor for peak data
 ///
 void AudioProvider::GetWaveForm(int *min,int *peak,int64_t start,int w,int h,int samples,float scale) {
 	// Setup

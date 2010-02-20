@@ -53,6 +53,7 @@
 #include "ass_file.h"
 #include "audio_controller.h"
 #include "audio_box.h"
+#include "audio_display.h"
 #ifdef WITH_AUTOMATION
 #include "auto4_base.h"
 #endif
@@ -158,6 +159,8 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_MENU(Menu_Audio_Open_File, FrameMain::OnOpenAudio)
 	EVT_MENU(Menu_Audio_Open_From_Video, FrameMain::OnOpenAudioFromVideo)
 	EVT_MENU(Menu_Audio_Close, FrameMain::OnCloseAudio)	
+	EVT_MENU(Menu_Audio_Spectrum, FrameMain::OnAudioDisplayMode)
+	EVT_MENU(Menu_Audio_Waveform, FrameMain::OnAudioDisplayMode)
 #ifdef _DEBUG
 	EVT_MENU(Menu_Audio_Open_Dummy, FrameMain::OnOpenDummyAudio)
 	EVT_MENU(Menu_Audio_Open_Dummy_Noise, FrameMain::OnOpenDummyNoiseAudio)
@@ -370,6 +373,10 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 
 		MenuBar->Enable(Menu_Audio_Open_From_Video,vidstate);
 		MenuBar->Enable(Menu_Audio_Close,state);
+
+		bool spectrum_enabled = Options.AsBool(_T("Audio Spectrum"));
+		MenuBar->Check(Menu_Audio_Spectrum, spectrum_enabled);
+		MenuBar->Check(Menu_Audio_Waveform, !spectrum_enabled);
 
 		// Rebuild recent
 		RebuildRecentList(_T("Recent aud"),RecentAuds,Menu_Audio_Recent);
@@ -731,6 +738,15 @@ void FrameMain::OnOpenAudioFromVideo (wxCommandEvent& WXUNUSED(event)) {
 ///
 void FrameMain::OnCloseAudio (wxCommandEvent& WXUNUSED(event)) {
 	audioController->CloseAudio();
+}
+
+
+/// @brief Event handler for audio display renderer selection menu options
+/// @param event wxWidgets event object
+void FrameMain::OnAudioDisplayMode (wxCommandEvent &event) {
+	Options.SetBool(_T("Audio Spectrum"), event.GetId() == Menu_Audio_Spectrum);
+	Options.Save();
+	audioBox->audioDisplay->ReloadRenderingSettings();
 }
 
 #ifdef _DEBUG

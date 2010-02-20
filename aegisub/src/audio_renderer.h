@@ -291,7 +291,7 @@ public:
 	AudioRendererBitmapProvider() : provider(0), pixel_samples(0) { };
 
 	/// @brief Destructor
-	~AudioRendererBitmapProvider() { }
+	virtual ~AudioRendererBitmapProvider() { }
 
 	/// @brief Rendering function
 	/// @param bmp      Bitmap to render to

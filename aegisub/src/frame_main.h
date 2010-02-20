@@ -251,6 +251,7 @@ private:
 	void OnOpenAudio (wxCommandEvent &event);
 	void OnOpenAudioFromVideo (wxCommandEvent &event);
 	void OnCloseAudio (wxCommandEvent &event);
+	void OnAudioDisplayMode (wxCommandEvent &event);
 #ifdef _DEBUG
 	void OnOpenDummyAudio(wxCommandEvent &event);
 	void OnOpenDummyNoiseAudio(wxCommandEvent &event);
@@ -556,6 +557,9 @@ enum {
 
 	/// DOCME
 	Menu_Audio_Close,
+
+	Menu_Audio_Spectrum,
+	Menu_Audio_Waveform,
 #ifdef _DEBUG
 
 	/// DOCME
