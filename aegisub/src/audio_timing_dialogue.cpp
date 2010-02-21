@@ -39,8 +39,8 @@
 #include <wx/pen.h>
 #endif
 
-#include "audio_timing.h"
 #include "audio_controller.h"
+#include "audio_timing.h"
 
 
 
@@ -127,8 +127,10 @@ class AudioTimingControllerDialogue : public AudioTimingController {
 	void UpdateSelection();
 
 public:
-	// AudioTimingController interface
+	// AudioMarkerProvider interface
 	virtual void GetMarkers(const AudioController::SampleRange &range, AudioMarkerVector &out_markers) const;
+
+	// AudioTimingController interface
 	virtual wxString GetWarningMessage() const;
 	virtual AudioController::SampleRange GetIdealVisibleSampleRange() const;
 	virtual bool HasLabels() const;

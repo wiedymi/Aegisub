@@ -54,6 +54,7 @@
 #include "audio_renderer.h"
 #include "audio_renderer_spectrum.h"
 #include "audio_renderer_waveform.h"
+#include "audio_timing.h"
 #include "include/aegisub/audio_provider.h"
 #include "options.h"
 
@@ -467,6 +468,8 @@ class AudioMarkerInteractionObject : public AudioDisplayInteractionObject {
 	int pixel_samples;
 	// Mouse button used to initiate the drag
 	wxMouseButton button_used;
+	// Default to snapping to snappable markers
+	bool default_snap;
 
 public:
 	AudioMarkerInteractionObject(AudioMarker *marker, AudioTimingController *timing_controller, int scroll_left, int pixel_samples, wxMouseButton button_used)

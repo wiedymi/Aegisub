@@ -53,6 +53,7 @@
 #include "audio_box.h"
 #include "audio_display.h"
 #include "audio_karaoke.h"
+#include "audio_timing.h"
 #include "frame_main.h"
 #include "hotkeys.h"
 #include "libresrc/libresrc.h"
