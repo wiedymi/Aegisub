@@ -57,6 +57,7 @@
 #include "audio_timing.h"
 #include "include/aegisub/audio_provider.h"
 #include "options.h"
+#include "utils.h"
 
 
 #undef min
@@ -465,18 +466,26 @@ class AudioMarkerInteractionObject : public AudioDisplayInteractionObject {
 	AudioTimingController *timing_controller;
 	// Audio display drag is happening on
 	AudioDisplay *display;
+	// Audio controller managing it all
+	AudioController *controller;
 	// Mouse button used to initiate the drag
 	wxMouseButton button_used;
 	// Default to snapping to snappable markers
 	bool default_snap;
+	// Range in pixels to snap at
+	int snap_range;
 
 public:
-	AudioMarkerInteractionObject(AudioMarker *marker, AudioTimingController *timing_controller, AudioDisplay *display, wxMouseButton button_used)
+	AudioMarkerInteractionObject(AudioMarker *marker, AudioTimingController *timing_controller, AudioDisplay *display, AudioController *controller, wxMouseButton button_used)
 		: marker(marker)
 		, timing_controller(timing_controller)
 		, display(display)
+		, controller(controller)
 		, button_used(button_used)
 	{
+		/// @todo Make these configurable
+		snap_range = 5;
+		default_snap = false;
 	}
 
 	virtual ~AudioMarkerInteractionObject()
@@ -488,6 +497,30 @@ public:
 		if (event.Dragging())
 		{
 			int64_t sample_pos = display->SamplesFromRelativeX(event.GetPosition().x);
+
+			if (marker->CanSnap() && (default_snap != event.ShiftDown()))
+			{
+				AudioController::SampleRange snap_range(
+					display->SamplesFromRelativeX(event.GetPosition().x - snap_range),
+					display->SamplesFromRelativeX(event.GetPosition().x + snap_range));
+				const AudioMarker *snap_marker = 0;
+				AudioMarkerVector potential_snaps;
+				controller->GetMarkers(snap_range, potential_snaps);
+				for (AudioMarkerVector::iterator mi = potential_snaps.begin(); mi != potential_snaps.end(); ++mi)
+				{
+					if ((*mi)->CanSnap())
+					{
+						if (!snap_marker)
+							snap_marker = *mi;
+						else if (tabs((*mi)->GetPosition() - sample_pos) < tabs(snap_marker->GetPosition() - sample_pos))
+							snap_marker = *mi;
+					}
+				}
+
+				if (snap_marker)
+					sample_pos = snap_marker->GetPosition();
+			}
+
 			timing_controller->OnMarkerDrag(marker, sample_pos);
 		}
 
@@ -1055,7 +1088,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 		if (marker)
 		{
 			RemoveTrackCursor();
-			SetDraggedObject(new AudioMarkerInteractionObject(marker, timing, this, wxMOUSE_BTN_LEFT));
+			SetDraggedObject(new AudioMarkerInteractionObject(marker, timing, this, controller, wxMOUSE_BTN_LEFT));
 			return;
 		}
 	}
@@ -1068,7 +1101,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 		if (marker)
 		{
 			RemoveTrackCursor();
-			SetDraggedObject(new AudioMarkerInteractionObject(marker, timing, this, wxMOUSE_BTN_RIGHT));
+			SetDraggedObject(new AudioMarkerInteractionObject(marker, timing, this, controller, wxMOUSE_BTN_RIGHT));
 			return;
 		}
 	}
