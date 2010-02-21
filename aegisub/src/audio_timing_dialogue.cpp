@@ -41,6 +41,7 @@
 
 #include "audio_controller.h"
 #include "audio_timing.h"
+#include "utils.h"
 
 
 
@@ -311,7 +312,6 @@ bool AudioTimingControllerDialogue::IsNearbyMarker(int64_t sample, int sensitivi
 }
 
 
-template <typename T> T tabs(T x) { return x < 0 ? -x : x; }
 AudioMarker * AudioTimingControllerDialogue::OnLeftClick(int64_t sample, int sensitivity)
 {
 	assert(sensitivity >= 0);

@@ -80,6 +80,10 @@ wxIcon BitmapToIcon(wxBitmap bmp);
 void RestartAegisub();
 
 
+/// @brief Templated abs() function
+template <typename T> T tabs(T x) { return x < 0 ? -x : x; }
+
+
 //////////
 // Macros
 #ifndef MIN
