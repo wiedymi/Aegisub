@@ -339,6 +339,16 @@ public:
 	void ReloadRenderingSettings();
 
 
+	/// @brief Get a sample index from an X coordinate relative to current scroll
+	int64_t SamplesFromRelativeX(int x) const { return (scroll_left + x) * pixel_samples; }
+	/// @brief Get a sample index from an absolute X coordinate
+	int64_t SamplesFromAbsoluteX(int x) const { return x * pixel_samples; }
+	/// @brief Get an X coordinate relative to the current scroll from a sample index
+	int RelativeXFromSamples(int64_t samples) const { return samples/pixel_samples - scroll_left; }
+	/// @brief Get an absolute X coordinate from a sample index
+	int AbsoluteXFromSamples(int64_t samples) const { return samples/pixel_samples; }
+
+
 	DECLARE_EVENT_TABLE()
 };
 

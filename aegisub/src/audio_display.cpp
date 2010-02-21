@@ -463,20 +463,18 @@ class AudioMarkerInteractionObject : public AudioDisplayInteractionObject {
 	// Object-pair being intracted with
 	AudioMarker *marker;
 	AudioTimingController *timing_controller;
-	// From the audio display
-	int scroll_left;
-	int pixel_samples;
+	// Audio display drag is happening on
+	AudioDisplay *display;
 	// Mouse button used to initiate the drag
 	wxMouseButton button_used;
 	// Default to snapping to snappable markers
 	bool default_snap;
 
 public:
-	AudioMarkerInteractionObject(AudioMarker *marker, AudioTimingController *timing_controller, int scroll_left, int pixel_samples, wxMouseButton button_used)
+	AudioMarkerInteractionObject(AudioMarker *marker, AudioTimingController *timing_controller, AudioDisplay *display, wxMouseButton button_used)
 		: marker(marker)
 		, timing_controller(timing_controller)
-		, scroll_left(scroll_left)
-		, pixel_samples(pixel_samples)
+		, display(display)
 		, button_used(button_used)
 	{
 	}
@@ -489,7 +487,7 @@ public:
 	{
 		if (event.Dragging())
 		{
-			int64_t sample_pos = (scroll_left + event.GetPosition().x) * pixel_samples;
+			int64_t sample_pos = display->SamplesFromRelativeX(event.GetPosition().x);
 			timing_controller->OnMarkerDrag(marker, sample_pos);
 		}
 
@@ -584,21 +582,21 @@ void AudioDisplay::ScrollPixelToCenter(int pixel_position)
 
 void AudioDisplay::ScrollSampleToLeft(int64_t sample_position)
 {
-	ScrollPixelToLeft(sample_position / pixel_samples);
+	ScrollPixelToLeft(AbsoluteXFromSamples(sample_position));
 }
 
 
 void AudioDisplay::ScrollSampleToCenter(int64_t sample_position)
 {
-	ScrollPixelToCenter(sample_position / pixel_samples);
+	ScrollPixelToCenter(AbsoluteXFromSamples(sample_position));
 }
 
 
 void AudioDisplay::ScrollSampleRangeInView(const AudioController::SampleRange &range)
 {
 	int client_width = GetClientRect().GetWidth();
-	int range_begin = range.begin() / pixel_samples;
-	int range_end = range.end() / pixel_samples;
+	int range_begin = AbsoluteXFromSamples(range.begin());
+	int range_end = AbsoluteXFromSamples(range.end());
 	int range_len = range_end - range_begin;
 
 	// Is everything already in view?
@@ -783,8 +781,8 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	bool redraw_timeline = false;
 
 	AudioController::SampleRange sel_samples(controller->GetSelection());
-	int selection_start = (int)(sel_samples.begin() / pixel_samples);
-	int selection_end = (int)(sel_samples.end() / pixel_samples);
+	int selection_start = AbsoluteXFromSamples(sel_samples.begin());
+	int selection_end = AbsoluteXFromSamples(sel_samples.end());
 
 	// Draw the tracking cursor first, to avoid it ever disappearing, because that
 	// causes optical flicker. It looks better to have two cursors momentarily than
@@ -853,8 +851,8 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 			AudioMarkerVector markers;
 			const int foot_size = 6;
 			AudioController::SampleRange updrectsamples(
-				(updrect.x+scroll_left-foot_size)*pixel_samples,
-				(updrect.x+updrect.width+scroll_left+foot_size)*pixel_samples);
+				SamplesFromRelativeX(updrect.x - foot_size),
+				SamplesFromRelativeX(updrect.x + updrect.width + foot_size));
 			controller->GetMarkers(updrectsamples, markers);
 			if (controller->GetTimingController())
 				controller->GetTimingController()->GetMarkers(updrectsamples, markers);
@@ -864,7 +862,7 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 			{
 				const AudioMarker *marker = *marker_i;
 				dc.SetPen(marker->GetStyle());
-				int marker_x = marker->GetPosition() / pixel_samples - scroll_left;
+				int marker_x = RelativeXFromSamples(marker->GetPosition());
 				dc.DrawLine(marker_x, audio_top, marker_x, audio_top+audio_height);
 				dc.SetBrush(wxBrush(marker->GetStyle().GetColour()));
 				dc.SetPen(*wxTRANSPARENT_PEN);
@@ -923,7 +921,7 @@ void AudioDisplay::SetTrackCursor(int new_pos, bool show_time)
 		RefreshRect(wxRect(new_pos - scroll_left - 0, audio_top, 1, audio_height));
 
 		AssTime new_label_time;
-		new_label_time.SetMS(track_cursor_pos * pixel_samples);
+		new_label_time.SetMS(controller->MillisecondsFromSamples(track_cursor_pos));
 		track_cursor_label = new_label_time.GetASSFormated();
 		/// @todo Figure out a sensible way to handle the label bounding rect
 	}
@@ -1035,7 +1033,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 	{
 		if (timing)
 		{
-			int64_t samplepos = (scroll_left + mousepos.x) * pixel_samples;
+			int64_t samplepos = SamplesFromRelativeX(mousepos.x);
 
 			if (timing->IsNearbyMarker(samplepos, drag_sensitivity))
 				SetCursor(wxCursor(wxCURSOR_SIZEWE));
@@ -1051,32 +1049,26 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 
 	if (event.LeftDown() && timing)
 	{
-		int64_t samplepos = (scroll_left + mousepos.x) * pixel_samples;
+		int64_t samplepos = SamplesFromRelativeX(mousepos.x);
 		AudioMarker *marker = timing->OnLeftClick(samplepos, drag_sensitivity);
 
 		if (marker)
 		{
 			RemoveTrackCursor();
-			SetDraggedObject(new AudioMarkerInteractionObject(
-				marker, timing,
-				scroll_left, pixel_samples,
-				wxMOUSE_BTN_LEFT));
+			SetDraggedObject(new AudioMarkerInteractionObject(marker, timing, this, wxMOUSE_BTN_LEFT));
 			return;
 		}
 	}
 
 	if (event.RightDown() && timing)
 	{
-		int64_t samplepos = (scroll_left + mousepos.x) * pixel_samples;
+		int64_t samplepos = SamplesFromRelativeX(mousepos.x);
 		AudioMarker *marker = timing->OnRightClick(samplepos, drag_sensitivity);
 
 		if (marker)
 		{
 			RemoveTrackCursor();
-			SetDraggedObject(new AudioMarkerInteractionObject(
-				marker, timing,
-				scroll_left, pixel_samples,
-				wxMOUSE_BTN_RIGHT));
+			SetDraggedObject(new AudioMarkerInteractionObject(marker, timing, this, wxMOUSE_BTN_RIGHT));
 			return;
 		}
 	}
@@ -1132,7 +1124,7 @@ void AudioDisplay::OnAudioClose()
 
 void AudioDisplay::OnPlaybackPosition(int64_t sample_position)
 {
-	SetTrackCursor(sample_position / pixel_samples, false);
+	SetTrackCursor(AbsoluteXFromSamples(sample_position), false);
 }
 
 
@@ -1151,24 +1143,32 @@ void AudioDisplay::OnMarkersMoved()
 void AudioDisplay::OnSelectionChanged()
 {
 	AudioController::SampleRange sel(controller->GetSelection());
-	scrollbar->SetSelection(sel.begin() / pixel_samples, sel.length() / pixel_samples);
+	scrollbar->SetSelection(AbsoluteXFromSamples(sel.begin()), AbsoluteXFromSamples(sel.length()));
 
 	if (sel.overlaps(old_selection))
 	{
 		// Only redraw the parts of the selection that changed, to avoid flicker
-		int s1 = sel.begin() / pixel_samples - scroll_left;
-		int e1 = sel.end() / pixel_samples - scroll_left;
-		int s2 = old_selection.begin() / pixel_samples - scroll_left;
-		int e2 = old_selection.end() / pixel_samples - scroll_left;
+		int s1 = RelativeXFromSamples(sel.begin());
+		int e1 = RelativeXFromSamples(sel.end());
+		int s2 = RelativeXFromSamples(old_selection.begin());
+		int e2 = RelativeXFromSamples(old_selection.end());
 		if (s1 != s2)
-			RefreshRect(wxRect(std::min(s1, s2)-10, audio_top, abs(s1-s2)+20, audio_height));
+		{
+			wxRect r(std::min(s1, s2)-10, audio_top, abs(s1-s2)+20, audio_height);
+			RefreshRect(r);
+		}
 		if (e1 != e2)
-			RefreshRect(wxRect(std::min(e1, e2)-10, audio_top, abs(e1-e2)+20, audio_height));
+		{
+			wxRect r(std::min(e1, e2)-10, audio_top, abs(e1-e2)+20, audio_height);
+			RefreshRect(r);
+		}
 	}
 	else
 	{
 		RefreshRect(wxRect(0, audio_top, GetClientSize().GetX(), audio_height));
 	}
+
+	RefreshRect(scrollbar->GetBounds());
 
 	old_selection = sel;
 }
