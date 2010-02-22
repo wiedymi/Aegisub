@@ -165,10 +165,10 @@ typedef std::set<AudioControllerTimingEventListener *> TimingEventListenerSet;
 
 
 AudioController::AudioController()
-: provider(0)
+: player(0)
+, provider(0)
 , timing_controller(0)
 , keyframes_marker_provider(new AudioMarkerProviderKeyframes(this))
-, player(0)
 , playback_mode(PM_NotPlaying)
 , selection(0, 0)
 , playback_timer(this)
@@ -236,7 +236,6 @@ void AudioController::OpenAudio(const wxString &url)
 		throw Aegisub::InternalError(_T("AudioController::OpenAudio() was passed an empty string. This must not happen."), 0);
 
 	wxString path_part;
-	AudioProvider *new_provider = 0;
 
 	if (url.StartsWith(_T("dummy-audio:"), &path_part))
 	{
@@ -260,6 +259,7 @@ void AudioController::OpenAudio(const wxString &url)
 		 *       in every channel even if one would be LFE.
 		 * "ln", length of signal in samples. ln/sr gives signal length in seconds.
 		 */
+		 provider = new DummyAudioProvider(5*30*60*1000, true);
 	}
 	else if (url.StartsWith(_T("video-audio:"), &path_part))
 	{
@@ -296,9 +296,12 @@ void AudioController::OpenAudio(const wxString &url)
 		 */
 		wxFileName fn(url);
 		if (!fn.FileExists())
+		{
+			Aegisub::FileNotFoundError fnf(url);
 			throw Aegisub::AudioOpenError(
 				_T("Failed opening audio file (parsing as plain filename)"),
-				&(Aegisub::FileNotFoundError(url)));
+				&fnf);
+		}
 		provider = AudioProviderFactoryManager::GetAudioProvider(url);
 	}
 

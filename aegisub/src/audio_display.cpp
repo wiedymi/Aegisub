@@ -261,8 +261,8 @@ public:
 		, samplerate(44100)
 		, samples_per_pixel(1)
 		, pixel_left(0)
-		, display(_display)
 		, dragging(false)
+		, display(_display)
 	{
 	}
 
@@ -500,12 +500,12 @@ public:
 
 			if (marker->CanSnap() && (default_snap != event.ShiftDown()))
 			{
-				AudioController::SampleRange snap_range(
+				AudioController::SampleRange snap_sample_range(
 					display->SamplesFromRelativeX(event.GetPosition().x - snap_range),
 					display->SamplesFromRelativeX(event.GetPosition().x + snap_range));
 				const AudioMarker *snap_marker = 0;
 				AudioMarkerVector potential_snaps;
-				controller->GetMarkers(snap_range, potential_snaps);
+				controller->GetMarkers(snap_sample_range, potential_snaps);
 				for (AudioMarkerVector::iterator mi = potential_snaps.begin(); mi != potential_snaps.end(); ++mi)
 				{
 					if ((*mi)->CanSnap())
@@ -534,8 +534,8 @@ public:
 
 AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *_controller)
 : wxWindow(parent, -1, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS|wxBORDER_SIMPLE)
-, controller(_controller)
 , provider(0)
+, controller(_controller)
 , dragged_object(0)
 , old_selection(0, 0)
 {
@@ -792,6 +792,11 @@ BEGIN_EVENT_TABLE(AudioDisplay, wxWindow)
 END_EVENT_TABLE()
 
 
+struct RedrawSubregion {
+	int x1, x2;
+	bool selected;
+	RedrawSubregion(int x1, int x2, bool selected) : x1(x1), x2(x2), selected(selected) { }
+};
 
 void AudioDisplay::OnPaint(wxPaintEvent& event)
 {
@@ -845,23 +850,18 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 			p3 = selection_end;
 			p4 = p1 + updrect.width;
 
-			struct subregion {
-				int x1, x2;
-				bool selected;
-				subregion(int x1, int x2, bool selected) : x1(x1), x2(x2), selected(selected) { }
-			};
-			std::vector<subregion> subregions;
+			std::vector<RedrawSubregion> subregions;
 
 			if (p1 < p2)
-				subregions.push_back(subregion(p1, std::min(p2, p4), false));
+				subregions.push_back(RedrawSubregion(p1, std::min(p2, p4), false));
 			if (p4 > p2 && p1 < p3)
-				subregions.push_back(subregion(std::max(p1, p2), std::min(p3, p4), true));
+				subregions.push_back(RedrawSubregion(std::max(p1, p2), std::min(p3, p4), true));
 			if (p4 > p3)
-				subregions.push_back(subregion(std::max(p1, p3), p4, false));
+				subregions.push_back(RedrawSubregion(std::max(p1, p3), p4, false));
 
 			int x = updrect.x;
 
-			for (std::vector<subregion>::iterator sr = subregions.begin(); sr != subregions.end(); ++sr)
+			for (std::vector<RedrawSubregion>::iterator sr = subregions.begin(); sr != subregions.end(); ++sr)
 			{
 				// Check if the track cursor is inside this redraw region and draw around it, to avoid overdraw
 				if (track_cursor_pos >= sr->x1 && track_cursor_pos < sr->x2)
