@@ -43,6 +43,7 @@
 #ifndef AGI_PRE
 #include <algorithm>
 
+#include <wx/dcbuffer.h>
 #include <wx/dcclient.h>
 #endif
 
@@ -800,7 +801,7 @@ struct RedrawSubregion {
 
 void AudioDisplay::OnPaint(wxPaintEvent& event)
 {
-	wxPaintDC dc(this);
+	wxAutoBufferedPaintDC dc(this);
 
 	if (!provider)
 	{
@@ -821,15 +822,6 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	AudioController::SampleRange sel_samples(controller->GetSelection());
 	int selection_start = AbsoluteXFromSamples(sel_samples.begin());
 	int selection_end = AbsoluteXFromSamples(sel_samples.end());
-
-	// Draw the tracking cursor first, to avoid it ever disappearing, because that
-	// causes optical flicker. It looks better to have two cursors momentarily than
-	// having no cursor momentarily.
-	if (track_cursor_pos >= 0)
-	{
-		wxDCPenChanger penchanger(dc, wxPen(*wxWHITE));
-		dc.DrawLine(track_cursor_pos-scroll_left, audio_top, track_cursor_pos-scroll_left, audio_top+audio_height);
-	}
 
 	wxRegionIterator region(GetUpdateRegion());
 	while (region)
@@ -860,23 +852,9 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 				subregions.push_back(RedrawSubregion(std::max(p1, p3), p4, false));
 
 			int x = updrect.x;
-
 			for (std::vector<RedrawSubregion>::iterator sr = subregions.begin(); sr != subregions.end(); ++sr)
 			{
-				// Check if the track cursor is inside this redraw region and draw around it, to avoid overdraw
-				if (track_cursor_pos >= sr->x1 && track_cursor_pos < sr->x2)
-				{
-					int tcp_x = track_cursor_pos - sr->x1;
-					if (tcp_x > 0)
-						audio_renderer->Render(dc, wxPoint(x, audio_top), sr->x1, tcp_x, sr->selected);
-					if (track_cursor_pos < sr->x2 - 1)
-						audio_renderer->Render(dc, wxPoint(x+tcp_x+1, audio_top), track_cursor_pos+1, sr->x2-track_cursor_pos-1, sr->selected);
-				}
-				else
-				{
-					audio_renderer->Render(dc, wxPoint(x, audio_top), sr->x1, sr->x2 - sr->x1, sr->selected);
-				}
-
+				audio_renderer->Render(dc, wxPoint(x, audio_top), sr->x1, sr->x2 - sr->x1, sr->selected);
 				x += sr->x2 - sr->x1;
 			}
 
@@ -917,6 +895,13 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 		}
 
 		region++;
+	}
+
+	if (track_cursor_pos >= 0)
+	{
+		wxDCPenChanger penchanger(dc, wxPen(*wxWHITE));
+		dc.DrawLine(track_cursor_pos-scroll_left, audio_top, track_cursor_pos-scroll_left, audio_top+audio_height);
+		/// @todo Draw any text required by the track cursor
 	}
 
 	if (redraw_scrollbar)

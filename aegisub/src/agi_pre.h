@@ -146,6 +146,7 @@
 #include <wx/dataobj.h>
 #include <wx/datetime.h>
 #include <wx/dc.h>
+#include <wx/dcbuffer.h>
 #include <wx/dcclient.h>
 #include <wx/dcmemory.h>
 #include <wx/dcscreen.h>
