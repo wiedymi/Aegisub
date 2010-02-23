@@ -109,12 +109,12 @@ void AudioWaveformRenderer::RenderBlank(wxDC &dc, const wxRect &rect, bool selec
 
 	// Draw the line as background above and below, and line in the middle, to avoid
 	// overdraw flicker (the common theme in all of audio display direct drawing).
-	int halfheight = (rect.height - rect.y) / 2;
+	int halfheight = rect.height / 2;
 
 	dc.SetBrush(wxBrush(bg));
 	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.DrawRectangle(rect.x, rect.y, rect.width, halfheight);
-	dc.DrawRectangle(rect.x, halfheight + 1, rect.width, halfheight-1);
+	dc.DrawRectangle(rect.x, rect.y + halfheight + 1, rect.width, rect.height - halfheight - 1);
 
 	dc.SetPen(wxPen(line));
 	dc.DrawLine(rect.x, rect.y+halfheight, rect.x+rect.width, rect.y+halfheight);
