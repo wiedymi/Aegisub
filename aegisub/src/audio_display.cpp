@@ -412,9 +412,9 @@ public:
 			bool mark_is_major = next_scale_mark % scale_major_modulo == 0;
 
 			if (mark_is_major)
-				dc.DrawLine(next_scale_mark_pos, bottom-6, next_scale_mark_pos, bottom);
+				dc.DrawLine(next_scale_mark_pos, bottom-6, next_scale_mark_pos, bottom-1);
 			else
-				dc.DrawLine(next_scale_mark_pos, bottom-4, next_scale_mark_pos, bottom);
+				dc.DrawLine(next_scale_mark_pos, bottom-4, next_scale_mark_pos, bottom-1);
 
 			// Print time labels on major scale marks
 			if (mark_is_major && next_scale_mark_pos > last_text_right)
@@ -824,9 +824,13 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	int selection_end = AbsoluteXFromSamples(sel_samples.end());
 
 	wxRegionIterator region(GetUpdateRegion());
+	wxPoint client_org = GetClientAreaOrigin();
 	while (region)
 	{
 		wxRect updrect = region.GetRect();
+		// Work around wxMac issue, client border offsets update rectangles but does
+		// not affect drawing coordinates.
+		updrect.x += client_org.x; updrect.y += client_org.y;
 
 		redraw_scrollbar |= scrollbar_bounds.Intersects(updrect);
 		redraw_timeline |= timeline_bounds.Intersects(updrect);
@@ -996,6 +1000,14 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 		}
 
 		// Scroll event processed
+		return;
+	}
+	
+	// If we have focus, we get mouse move events on Mac even when the mouse is
+	// outside our client rectangle, we don't want those.
+	if (event.Moving() && !GetClientRect().Contains(event.GetPosition()))
+	{
+		event.Skip();
 		return;
 	}
 
