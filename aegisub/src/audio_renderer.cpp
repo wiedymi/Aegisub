@@ -214,10 +214,10 @@ wxBitmap AudioRenderer::GetCachedBitmap(int i, bool selected)
 void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool selected)
 {
 	assert(start >= 0);
-	assert(length > 0);
 
 	if (!provider) return;
 	if (!renderer) return;
+	if (length <= 0) return;
 
 	// One past last absolute pixel strip to render
 	int end = start + length;
@@ -251,17 +251,16 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 	// origin is passed by value because we'll be using it as a local var to keep track
 	// of rendering progress!
 
-	if (end / cache_bitmap_width >= (int)cache_numblocks)
+	if (start / cache_bitmap_width >= (int)cache_numblocks)
 	{
 		// Do nothing, the blank audio rendering will happen later
 	}
-	if (firstbitmap == lastbitmap)
+	else if (firstbitmap == lastbitmap)
 	{
 		const int renderwidth = lastbitmapoffset - firstbitmapoffset;
 		wxBitmap bmp = GetCachedBitmap(firstbitmap, selected);
 		wxMemoryDC bmpdc(bmp);
-		dc.Blit(origin, wxSize(renderwidth, pixel_height),
-			&bmpdc, wxPoint(firstbitmapoffset, 0));
+		dc.Blit(origin, wxSize(renderwidth, pixel_height), &bmpdc, wxPoint(firstbitmapoffset, 0));
 		origin.x += renderwidth;
 	}
 	else
@@ -296,7 +295,7 @@ void AudioRenderer::Render(wxDC &dc, wxPoint origin, int start, int length, bool
 	// Now render blank audio from origin to end
 	if (origin.x < lastx)
 	{
-		renderer->RenderBlank(dc, wxRect(origin.x-1, origin.y, lastx-origin.x, pixel_height), selected);
+		renderer->RenderBlank(dc, wxRect(origin.x-1, origin.y, lastx-origin.x+1, pixel_height), selected);
 	}
 
 	if (selected)
