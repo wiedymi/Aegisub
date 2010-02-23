@@ -35,6 +35,7 @@
 
 
 #ifndef AGI_PRE
+#include <memory>
 #include <vector>
 #include <stdint.h>
 #include <assert.h>
