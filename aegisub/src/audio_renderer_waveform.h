@@ -46,6 +46,13 @@ class AudioWaveformRenderer : public AudioRendererBitmapProvider {
 	/// Colour table used for rendering the audio selection
 	AudioColorScheme colors_selected;
 
+	/// Pre-allocated buffer for audio fetched from provider
+	void *audio_buffer;
+
+protected:
+	virtual void OnSetProvider();
+	virtual void OnSetSamplesPerPixel();
+
 public:
 	/// @brief Constructor
 	AudioWaveformRenderer();

@@ -49,12 +49,16 @@
 #include "audio_renderer_waveform.h"
 #include "colorspace.h"
 
+#undef min
+#undef max
+
 
 
 AudioWaveformRenderer::AudioWaveformRenderer()
 : AudioRendererBitmapProvider()
 , colors_normal(6)
 , colors_selected(6)
+, audio_buffer(0)
 {
 	colors_normal.InitIcyBlue_Normal();
 	colors_selected.InitIcyBlue_Selected();
@@ -63,6 +67,7 @@ AudioWaveformRenderer::AudioWaveformRenderer()
 
 AudioWaveformRenderer::~AudioWaveformRenderer()
 {
+	delete[] audio_buffer;
 }
 
 
@@ -79,24 +84,59 @@ void AudioWaveformRenderer::Render(wxBitmap &bmp, int start, bool selected)
 	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.DrawRectangle(rect);
 
-	/// @todo Store these buffers in the instance to avoid constant re-allocations
-	int *peak_min = new int[rect.width];
-	int *peak_max = new int[rect.width];
-
-	/// @todo Move this out of AudioProvider and extend it to get both average and extreme values
-	provider->GetWaveForm(peak_min, peak_max, start*pixel_samples, rect.width, rect.height, pixel_samples, amplitude_scale);
-
-	dc.SetPen(wxPen(pal->get(0.8f)));
-	for (int x = 0; x < rect.width; ++x)
+	// Make sure we've got a buffer to fill with audio data
+	if (!audio_buffer)
 	{
-		dc.DrawLine(x, peak_max[x], x, peak_min[x]-1);
+		// Buffer for one pixel strip of audio
+		size_t buffer_needed = pixel_samples * provider->GetChannels() * provider->GetSampleRate() * provider->GetBytesPerSample();
+		audio_buffer = new char[buffer_needed];
 	}
 
+	int64_t cur_sample = start * pixel_samples;
+
+	assert(provider->GetBytesPerSample() == 2);
+	assert(provider->GetChannels() == 1);
+
+	wxPen pen_peaks(wxPen(pal->get(0.4f)));
+	wxPen pen_avgs(wxPen(pal->get(0.7f)));
+
+	for (int x = 0; x < rect.width; ++x)
+	{
+		provider->GetAudio(audio_buffer, cur_sample, pixel_samples);
+		cur_sample += pixel_samples;
+		
+		int peak_min = 0, peak_max = 0;
+		int64_t avg_min_accum = 0, avg_max_accum = 0;
+		const int16_t *aud = (const int16_t *)audio_buffer;
+		for (int si = pixel_samples; si > 0; --si, ++aud)
+		{
+			if (*aud > 0)
+			{
+				peak_max = std::max(peak_max, (int)*aud);
+				avg_max_accum += *aud;
+			}
+			else
+			{
+				peak_min = std::min(peak_min, (int)*aud);
+				avg_min_accum += *aud;
+			}
+		}
+
+		// midpoint is half height
+		peak_min = std::max((int)(peak_min * amplitude_scale * midpoint) / 0x8000, -midpoint);
+		peak_max = std::min((int)(peak_max * amplitude_scale * midpoint) / 0x8000, midpoint);
+		int avg_min = std::max((int)(avg_min_accum * amplitude_scale * midpoint / pixel_samples) / 0x8000, -midpoint);
+		int avg_max = std::min((int)(avg_max_accum * amplitude_scale * midpoint / pixel_samples) / 0x8000, midpoint);
+
+		dc.SetPen(pen_peaks);
+		dc.DrawLine(x, midpoint - peak_max, x, midpoint - peak_min);
+		dc.SetPen(pen_avgs);
+		dc.DrawLine(x, midpoint - avg_max, x, midpoint - avg_min);
+	}
+
+	// Horizontal zero-point line
 	dc.SetPen(wxPen(pal->get(1.0f)));
 	dc.DrawLine(0, midpoint, rect.width, midpoint);
-
-	delete[] peak_min;
-	delete[] peak_max;
 }
 
 
@@ -118,6 +158,21 @@ void AudioWaveformRenderer::RenderBlank(wxDC &dc, const wxRect &rect, bool selec
 
 	dc.SetPen(wxPen(line));
 	dc.DrawLine(rect.x, rect.y+halfheight, rect.x+rect.width, rect.y+halfheight);
+}
+
+
+
+void AudioWaveformRenderer::OnSetProvider()
+{
+	delete[] audio_buffer;
+	audio_buffer = 0;
+}
+
+
+void AudioWaveformRenderer::OnSetSamplesPerPixel()
+{
+	delete[] audio_buffer;
+	audio_buffer = 0;
 }
 
 

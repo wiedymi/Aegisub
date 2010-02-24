@@ -97,8 +97,6 @@ public:
 	int GetBytesPerSample() const;
 	int GetChannels() const;
 	virtual bool AreSamplesNativeEndian() const = 0;
-
-	void GetWaveForm(int *min,int *peak,int64_t start,int w,int h,int samples,float scale);
 };
 
 
