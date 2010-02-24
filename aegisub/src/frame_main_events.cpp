@@ -2019,7 +2019,7 @@ void FrameMain::OnViewSubs (wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnMedusaPlay(wxCommandEvent &event) {
-	audioController->PlayRange(audioController->GetSelection());
+	audioController->PlaySelection();
 }
 
 /// @brief DOCME

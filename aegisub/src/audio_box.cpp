@@ -366,7 +366,7 @@ void AudioBox::OnVerticalLink(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlaySelection(wxCommandEvent &event) {
-	controller->PlayRange(controller->GetSelection());
+	controller->PlaySelection();
 }
 
 
@@ -381,7 +381,7 @@ void AudioBox::OnPlayDialogue(wxCommandEvent &event) {
 	controller->SetSelection(AudioController::SampleRange(
 		controller->SamplesFromMilliseconds(start),
 		controller->SamplesFromMilliseconds(end)));
-	controller->PlayRange(controller->GetSelection());
+	controller->PlaySelection();
 }
 
 

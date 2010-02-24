@@ -162,6 +162,7 @@ private:
 	enum PlaybackMode {
 		PM_NotPlaying,
 		PM_Range,
+		PM_Selection,
 		PM_ToEnd
 	};
 	/// The current playback mode
@@ -236,9 +237,16 @@ public:
 	/// @brief Start or restart audio playback, playing a range
 	/// @param range The range of audio to play back
 	///
-	/// Calling various other functions during playback may change the end of the range,
-	/// causing playback to end sooner or later than originally requested.
+	/// The end of the played back range may be requested changed, but is not changed
+	/// automatically from any other operations.
 	void PlayRange(const SampleRange &range);
+
+	/// @brief Start or restart audio playback, playing the current selection
+	///
+	/// If the selection is updated during playback, the end of the playback range
+	/// will be updated to match the new selection. The playback end can not be
+	/// changed in any other way.
+	void PlaySelection();
 
 	/// @brief Start or restart audio playback, playing from a point to the end of stream
 	/// @param start_sample Index of the sample to start playback at
@@ -286,6 +294,9 @@ public:
 
 	/// @brief Change the current audio selection
 	/// @param newsel The new selection to use
+	///
+	/// If playback of the selection is in progress, changing the selection will update
+	/// the end time of the playback.
 	void SetSelection(const SampleRange &newsel);
 
 	/// @brief Get all static markers inside a range

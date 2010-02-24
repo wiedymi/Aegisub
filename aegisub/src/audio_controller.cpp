@@ -413,6 +413,14 @@ void AudioController::PlayRange(const AudioController::SampleRange &range)
 }
 
 
+void AudioController::PlaySelection()
+{
+	PlayRange(GetSelection());
+	if (playback_mode == PM_Range)
+		playback_mode = PM_Selection;
+}
+
+
 void AudioController::PlayToEnd(int64_t start_sample)
 {
 	if (!IsAudioOpen()) return;
@@ -478,7 +486,10 @@ void AudioController::SetSelection(const SampleRange &newsel)
 {
 	selection = newsel;
 	
-	/// @todo This affects playback end time in some circumstances... which?
+	if (playback_mode == PM_Selection)
+	{
+		player->SetEndPosition(selection.end());
+	}
 
 	TIMING_LISTENERS(l)
 	{
