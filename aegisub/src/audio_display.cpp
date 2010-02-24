@@ -45,6 +45,7 @@
 
 #include <wx/dcbuffer.h>
 #include <wx/dcclient.h>
+#include <wx/mousestate.h>
 #endif
 
 #include "ass_time.h"
