@@ -39,8 +39,11 @@
 #include <wx/pen.h>
 #endif
 
+#include "ass_time.h"
+#include "ass_dialogue.h"
 #include "audio_controller.h"
 #include "audio_timing.h"
+#include "selection_controller.h"
 #include "utils.h"
 
 
@@ -110,9 +113,12 @@ public:
 ///
 /// Another later expansion will be to affect the timing of multiple selected
 /// lines at the same time, if they e.g. have end1==start2.
-class AudioTimingControllerDialogue : public AudioTimingController {
+class AudioTimingControllerDialogue : public AudioTimingController, private SubtitleSelectionListener {
 	/// Start and end markers for the active line
 	AudioMarkerDialogueTiming markers[2];
+
+	/// Has the timing been modified by the user?
+	bool timing_modified;
 
 	/// Get the leftmost of the markers
 	AudioMarkerDialogueTiming *GetLeftMarker();
@@ -126,6 +132,14 @@ class AudioTimingControllerDialogue : public AudioTimingController {
 
 	/// Update the audio controller's selection
 	void UpdateSelection();
+
+	/// Selection controller managing the set of lines currently being timed
+	SubtitleSelectionController *selection_controller;
+
+private:
+	// SubtitleSelectionListener interface
+	virtual void OnActiveLineChanged(AssDialogue *new_line);
+	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection);
 
 public:
 	// AudioMarkerProvider interface
@@ -148,14 +162,15 @@ public:
 	// Specific interface
 
 	/// @brief Constructor
-	AudioTimingControllerDialogue(AudioController *audio_controller);
+	AudioTimingControllerDialogue(AudioController *audio_controller, SubtitleSelectionController *selection_controller);
+	virtual ~AudioTimingControllerDialogue();
 };
 
 
 
-AudioTimingController *CreateDialogueTimingController(AudioController *audio_controller)
+AudioTimingController *CreateDialogueTimingController(AudioController *audio_controller, SubtitleSelectionController *selection_controller)
 {
-	return new AudioTimingControllerDialogue(audio_controller);
+	return new AudioTimingControllerDialogue(audio_controller, selection_controller);
 }
 
 
@@ -212,13 +227,24 @@ void AudioMarkerDialogueTiming::InitPair(AudioMarkerDialogueTiming *marker1, Aud
 
 // AudioTimingControllerDialogue
 
-AudioTimingControllerDialogue::AudioTimingControllerDialogue(AudioController *audio_controller)
-: audio_controller(audio_controller)
+AudioTimingControllerDialogue::AudioTimingControllerDialogue(AudioController *audio_controller, SubtitleSelectionController *selection_controller)
+: timing_modified(false)
+, audio_controller(audio_controller)
+, selection_controller(selection_controller)
 {
 	assert(audio_controller != 0);
 
 	AudioMarkerDialogueTiming::InitPair(&markers[0], &markers[1]);
+
+	selection_controller->AddSelectionListener(this);
 }
+
+
+AudioTimingControllerDialogue::~AudioTimingControllerDialogue()
+{
+	selection_controller->RemoveSelectionListener(this);
+}
+
 
 
 AudioMarkerDialogueTiming *AudioTimingControllerDialogue::GetLeftMarker()
@@ -253,6 +279,21 @@ void AudioTimingControllerDialogue::GetMarkers(const AudioController::SampleRang
 
 
 
+void AudioTimingControllerDialogue::OnActiveLineChanged(AssDialogue *new_line)
+{
+	/// @todo Need to change policy to default commit at some point
+	Revert(); // revert will read and reset the selection/markers
+}
+
+
+
+void AudioTimingControllerDialogue::OnSelectedSetChanged(const SubtitleSelection &new_selection)
+{
+	/// @todo Create new passive markers, perhaps
+}
+
+
+
 wxString AudioTimingControllerDialogue::GetWarningMessage() const
 {
 	return wxString();
@@ -278,28 +319,68 @@ bool AudioTimingControllerDialogue::HasLabels() const
 
 void AudioTimingControllerDialogue::Next()
 {
-	/// @todo Support walking among dialogue lines
+	selection_controller->NextLine();
 }
 
 
 
 void AudioTimingControllerDialogue::Prev()
 {
-	/// @todo Support walking among dialogue lines
+	selection_controller->PrevLine();
 }
 
 
 
 void AudioTimingControllerDialogue::Commit()
 {
-	/// @todo Support working on actual dialogue lines
+	/// @todo Make these depend on actual configuration
+	const bool next_line_on_commit = true;
+	const int default_duration = 5000; // milliseconds
+
+	int new_start_ms = audio_controller->MillisecondsFromSamples(GetLeftMarker()->GetPosition());
+	int new_end_ms = audio_controller->MillisecondsFromSamples(GetRightMarker()->GetPosition());
+
+	// Store back new times
+	if (timing_modified)
+	{
+		SubtitleSelection sel;
+		selection_controller->GetSelectedSet(sel);
+		for (SubtitleSelection::iterator sub = sel.begin(); sub != sel.end(); ++sub)
+		{
+			(*sub)->SetStartMS(new_start_ms);
+			(*sub)->SetEndMS(new_end_ms);
+		}
+		/// @todo Set an undo point
+		timing_modified = false;
+	}
+
+	// Assume that the next line might be zero-timed and should thus get a default timing
+	if (next_line_on_commit)
+	{
+		markers[0].SetPosition(audio_controller->SamplesFromMilliseconds(new_end_ms));
+		markers[1].SetPosition(audio_controller->SamplesFromMilliseconds(new_end_ms + default_duration));
+		UpdateSelection();
+	}
 }
 
 
 
 void AudioTimingControllerDialogue::Revert()
 {
-	/// @todo Support working on actual dialogue lines
+	AssDialogue *line = selection_controller->GetActiveLine();
+	if (line)
+	{
+		AssTime new_start = line->Start;
+		AssTime new_end = line->End;
+
+		if (new_start.GetMS() != 0 || new_end.GetMS() != 0)
+		{
+			markers[0].SetPosition(audio_controller->SamplesFromMilliseconds(new_start.GetMS()));
+			markers[1].SetPosition(audio_controller->SamplesFromMilliseconds(new_end.GetMS()));
+			timing_modified = false;
+			UpdateSelection();
+		}
+	}
 }
 
 
@@ -329,6 +410,7 @@ AudioMarker * AudioTimingControllerDialogue::OnLeftClick(int64_t sample, int sen
 		// Clicked near the left marker:
 		// Insta-move it and start dragging it
 		left->SetPosition(sample);
+		timing_modified = true;
 		UpdateSelection();
 		return left;
 	}
@@ -344,6 +426,7 @@ AudioMarker * AudioTimingControllerDialogue::OnLeftClick(int64_t sample, int sen
 	// Insta-set the left marker to the clicked position and return the right as the dragged one,
 	// such that if the user does start dragging, he will create a new selection from scratch
 	left->SetPosition(sample);
+	timing_modified = true;
 	UpdateSelection();
 	return right;
 }
@@ -355,6 +438,7 @@ AudioMarker * AudioTimingControllerDialogue::OnRightClick(int64_t sample, int se
 	AudioMarkerDialogueTiming *right = GetRightMarker();
 	
 	right->SetPosition(sample);
+	timing_modified = true;
 	UpdateSelection();
 	return right;
 }
@@ -366,6 +450,7 @@ void AudioTimingControllerDialogue::OnMarkerDrag(AudioMarker *marker, int64_t ne
 	assert(marker == &markers[0] || marker == &markers[1]);
 
 	static_cast<AudioMarkerDialogueTiming*>(marker)->SetPosition(new_position);
+	timing_modified = true;
 
 	UpdateSelection();
 }

@@ -128,14 +128,29 @@ public:
 /// @class SubtitleSelectionListener
 /// @brief Abstract interface for classes wanting to subtitle selection change notifications
 class SubtitleSelectionListener {
+public:
 	/// Virtual destructor for safety
 	virtual ~SubtitleSelectionListener() { }
 
 	/// @brief Called when the active subtitle line changes
 	/// @param new_line The subtitle line that is now the active line
-	virtual void OnActiveLineChanged(AssDialogue *new_line) const = 0;
+	virtual void OnActiveLineChanged(AssDialogue *new_line) = 0;
 
 	/// @brief Called when the selected set changes
 	/// @param new_selection The subtitle line set that is now the selected set
-	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection) const = 0;
+	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection) = 0;
+};
+
+
+/// Do-nothing selection controller, can be considered to always operate on an empty subtitle file
+class DummySubtitleSelectionController : public SubtitleSelectionController {
+public:
+	virtual void SetActiveLine(AssDialogue *new_line) { }
+	virtual AssDialogue * GetActiveLine() const { return 0; }
+	virtual void SetSelectedSet(const SubtitleSelection &new_selection) { }
+	virtual void GetSelectedSet(SubtitleSelection &selection) const { }
+	virtual void NextLine() { }
+	virtual void PrevLine() { }
+	virtual void AddSelectionListener(SubtitleSelectionListener *listener) { }
+	virtual void RemoveSelectionListener(SubtitleSelectionListener *listener) { }
 };
