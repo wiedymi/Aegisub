@@ -1908,6 +1908,10 @@
 				RelativePath="..\..\src\audio_timing.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\selection_controller.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
