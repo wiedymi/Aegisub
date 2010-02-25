@@ -1188,6 +1188,9 @@ void AudioDisplay::OnAudioOpen(AudioProvider *_provider)
 	audio_renderer->SetAudioProvider(provider);
 	audio_renderer->SetCacheMaxSize(Options.AsInt(_T("Audio Spectrum Memory Max")) * 1024 * 1024);
 
+	if (provider)
+		timeline->ChangeAudio(provider->GetNumSamples(), provider->GetSampleRate());
+
 	SetZoomLevel(zoom_level);
 
 	Refresh();
