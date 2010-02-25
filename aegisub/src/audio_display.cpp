@@ -1074,8 +1074,11 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 
 		if (!controller->IsPlaying())
 			SetTrackCursor(scroll_left + mousepos.x, true);
-		else
-			RemoveTrackCursor();
+	}
+
+	if (event.Leaving() && !controller->IsPlaying())
+	{
+		RemoveTrackCursor();
 	}
 
 	if (event.LeftDown() && timing)
