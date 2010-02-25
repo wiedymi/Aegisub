@@ -145,7 +145,7 @@ class DataBlockCache {
 		for (size_t bi = 0; bi < mb.blocks.size(); ++bi)
 		{
 			BlockT *b = mb.blocks[bi];
-			if (!b)
+			if (b)
 				factory.DisposeBlock(b);
 		}
 
