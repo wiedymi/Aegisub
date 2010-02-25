@@ -54,7 +54,7 @@ void AudioColorScheme::InitIcyBlue_Normal()
 	unsigned char *palptr = palette;
 	for (size_t i = 0; i <= factor; ++i)
 	{
-		float t = (float)i / (factor-1);
+		float t = (float)i / factor;
 		int H = (int)(255 * (1.5 - t) / 2);
 		int S = (int)(255 * (0.5 + t/2));
 		int L = std::min(255, (int)(128 * 2 * t));
@@ -69,10 +69,10 @@ void AudioColorScheme::InitIcyBlue_Selected()
 	unsigned char *palptr = palette;
 	for (size_t i = 0; i <= factor; ++i)
 	{
-		float t = (float)i / (factor-1);
+		float t = (float)i / factor;
 		int H = (int)(255 * (1.5 - t) / 2);
 		int S = (int)(255 * (0.5 + t/2));
-		int L = std::min(255, (int)(128 * (3 * t/2 + 0.25)));
+		int L = std::min(255, (int)(128 * (3 * t/2 + 0.5)));
 		hsl_to_rgb(H, S, L, palptr + 0, palptr + 1, palptr + 2);
 		palptr += 4;
 	}

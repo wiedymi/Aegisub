@@ -230,7 +230,7 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 
 	fftw_execute(dft_plan);
 
-	float scale_factor = 9 / sqrt((float)(2<<derivation_size));
+	float scale_factor = 9 / sqrt(2 * (float)(2<<derivation_size));
 
 	fftw_complex *o = dft_output;
 	for (size_t si = 1<<derivation_size; si > 0; --si)
@@ -253,7 +253,7 @@ void AudioSpectrumRenderer::FillBlock(size_t block_index, float *block)
 	FFT fft;
 	fft.Transform(2<<derivation_size, fft_input, fft_real, fft_imag);
 
-	float scale_factor = 9 / sqrt((float)(2<<derivation_size));
+	float scale_factor = 9 / sqrt(2 * (float)(2<<derivation_size));
 
 	for (size_t si = 1<<derivation_size; si > 0; --si)
 	{
