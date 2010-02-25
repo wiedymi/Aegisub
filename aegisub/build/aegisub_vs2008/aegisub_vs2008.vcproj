@@ -1797,14 +1797,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\audio_controller.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\audio_controller.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\audio_display.cpp"
 				>
 			</File>
@@ -1842,10 +1834,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\audio_renderer_waveform.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\audio_timing.h"
 				>
 			</File>
 			<File
@@ -1902,6 +1890,22 @@
 			</File>
 			<File
 				RelativePath="..\..\src\res.rc"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Controllers"
+			>
+			<File
+				RelativePath="..\..\src\audio_controller.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio_controller.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\audio_timing.h"
 				>
 			</File>
 		</Filter>
