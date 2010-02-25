@@ -906,7 +906,39 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	{
 		wxDCPenChanger penchanger(dc, wxPen(*wxWHITE));
 		dc.DrawLine(track_cursor_pos-scroll_left, audio_top, track_cursor_pos-scroll_left, audio_top+audio_height);
-		/// @todo Draw any text required by the track cursor
+
+		if (!track_cursor_label.IsEmpty())
+		{
+			wxDCFontChanger fc(dc);
+			wxFont font = dc.GetFont();
+			font.SetWeight(wxFONTWEIGHT_BOLD);
+			dc.SetFont(font);
+
+			wxSize label_size(dc.GetTextExtent(track_cursor_label));
+			wxPoint label_pos(track_cursor_pos - scroll_left - label_size.x/2, audio_top + 2);
+			if (label_pos.x < 2) label_pos.x = 2;
+			if (label_pos.x + label_size.x >= client_width - 2) label_pos.x = client_width - label_size.x - 2;
+
+			int old_bg_mode = dc.GetBackgroundMode();
+			dc.SetBackgroundMode(wxTRANSPARENT);
+			dc.SetTextForeground(wxColour(64, 64, 64));
+			dc.DrawText(track_cursor_label, label_pos.x+1, label_pos.y+1);
+			dc.DrawText(track_cursor_label, label_pos.x+1, label_pos.y-1);
+			dc.DrawText(track_cursor_label, label_pos.x-1, label_pos.y+1);
+			dc.DrawText(track_cursor_label, label_pos.x-1, label_pos.y-1);
+			dc.SetTextForeground(*wxWHITE);
+			dc.DrawText(track_cursor_label, label_pos.x, label_pos.y);
+			dc.SetBackgroundMode(old_bg_mode);
+
+			label_pos.x -= 2; label_pos.y -= 2;
+			label_size.IncBy(4, 4);
+			// If the rendered text changes size we have to draw it an extra time to make sure the entire thing was drawn
+			bool need_extra_redraw = track_cursor_label_rect.GetSize() != label_size;
+			track_cursor_label_rect.SetPosition(label_pos);
+			track_cursor_label_rect.SetSize(label_size);
+			if (need_extra_redraw)
+				RefreshRect(track_cursor_label_rect);
+		}
 	}
 
 	if (redraw_scrollbar)
@@ -943,10 +975,22 @@ void AudioDisplay::SetTrackCursor(int new_pos, bool show_time)
 		RefreshRect(wxRect(old_pos - scroll_left - 0, audio_top, 1, audio_height));
 		RefreshRect(wxRect(new_pos - scroll_left - 0, audio_top, 1, audio_height));
 
-		AssTime new_label_time;
-		new_label_time.SetMS(controller->MillisecondsFromSamples(track_cursor_pos));
-		track_cursor_label = new_label_time.GetASSFormated();
-		/// @todo Figure out a sensible way to handle the label bounding rect
+		// Make sure the old label gets cleared away
+		RefreshRect(track_cursor_label_rect);
+
+		if (show_time)
+		{
+			AssTime new_label_time;
+			new_label_time.SetMS(controller->MillisecondsFromSamples(SamplesFromAbsoluteX(track_cursor_pos)));
+			track_cursor_label = new_label_time.GetASSFormated();
+			track_cursor_label_rect.x += new_pos - old_pos;
+			RefreshRect(track_cursor_label_rect);
+		}
+		else
+		{
+			track_cursor_label_rect.SetSize(wxSize(0,0));
+			track_cursor_label.Clear();
+		}
 	}
 }
 

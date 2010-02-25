@@ -169,9 +169,9 @@ private:
 
 	/// Absolute pixel position of the tracking cursor (mouse or playback)
 	int track_cursor_pos;
-	/// Display timestamp by tracking cursor?
+	/// Label to show by track cursor
 	wxString track_cursor_label;
-	/// Bounding rectangle for tracking time display
+	/// Bounding rectangle last drawn track cursor label
 	wxRect track_cursor_label_rect;
 	/// @brief Move the tracking cursor
 	/// @param new_pos   New absolute pixel position of the tracking cursor
