@@ -68,7 +68,6 @@
 #include "options.h"
 #include "plugin_manager.h"
 #include "standard_paths.h"
-#include "subs_grid.h"
 #include "subtitle_format.h"
 #include "version.h"
 #include "video_context.h"

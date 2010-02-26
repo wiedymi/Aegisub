@@ -54,6 +54,7 @@
 #include "dialog_kara_timing_copy.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "selection_controller.h"
 #include "subs_grid.h"
 #include "utils.h"
 #include "validators.h"

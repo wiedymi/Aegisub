@@ -57,6 +57,7 @@
 #include "libresrc/libresrc.h"
 #include "main.h"
 #include "options.h"
+#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "timeedit_ctrl.h"
@@ -360,6 +361,7 @@ void SubsEditBox::SetToLine(int n,bool weak) {
 		enabled = true;
 		if (n != linen) {
 			linen = n;
+			grid->AnnounceActiveLineChanged();
 			StartTime->Update();
 			EndTime->Update();
 			Duration->Update();

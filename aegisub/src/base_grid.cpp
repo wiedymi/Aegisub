@@ -47,6 +47,7 @@
 #include "ass_file.h"
 #include "ass_style.h"
 #include "audio_controller.h"
+#include "selection_controller.h"
 #include "base_grid.h"
 #include "frame_main.h"
 #include "options.h"
@@ -139,6 +140,8 @@ void BaseGrid::Clear () {
 	diagPtrMap.clear();
 	selMap.clear();
 	yPos = 0;
+	AnnounceSelectedSetChanged();
+	AnnounceActiveLineChanged();
 	AdjustScrollbar();
 }
 
@@ -721,6 +724,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 		// Toggle selected
 		if (click && ctrl && !shift && !alt) {
 			SelectRow(row,true,!IsInSelection(row,0));
+			AnnounceSelectedSetChanged();
 			parentFrame->UpdateToolbar();
 			return;
 		}
@@ -730,6 +734,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 			editBox->SetToLine(row);
 			if (dclick) VideoContext::Get()->JumpToFrame(VFR_Output.GetFrameAtTime(GetDialogue(row)->Start.GetMS(),true));
 			SelectRow(row,false);
+			AnnounceSelectedSetChanged();
 			parentFrame->UpdateToolbar();
 			lastRow = row;
 			return;
@@ -759,6 +764,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 					SelectRow(i,notFirst,true);
 					notFirst = true;
 				}
+				AnnounceSelectedSetChanged();
 				parentFrame->UpdateToolbar();
 			}
 			return;
@@ -969,7 +975,7 @@ void BaseGrid::SetColumnWidths() {
 /// @param n 
 /// @return 
 ///
-AssDialogue *BaseGrid::GetDialogue(int n) {
+AssDialogue *BaseGrid::GetDialogue(int n) const {
 	try {
 		if (n < 0) return NULL;
 		if ((size_t)n >= diagMap.size()) return NULL;
@@ -1117,6 +1123,7 @@ void BaseGrid::OnKeyPress(wxKeyEvent &event) {
 			int next = MID(0,curLine+dir*step,GetRows()-1);
 			editBox->SetToLine(next);
 			SelectRow(next);
+			AnnounceSelectedSetChanged();
 			MakeCellVisible(next,0,false);
 			return;
 		}
@@ -1151,6 +1158,7 @@ void BaseGrid::OnKeyPress(wxKeyEvent &event) {
 			for (int i=i1;i<=i2;i++) {
 				SelectRow(i,true);
 			}
+			AnnounceSelectedSetChanged();
 
 			MakeCellVisible(extendRow,0,false);
 			return;
@@ -1201,6 +1209,89 @@ wxArrayInt BaseGrid::GetRangeArray(int n1,int n2) {
 		target.Add(i);
 	}
 	return target;
+}
+
+
+
+
+void BaseGrid::AnnounceActiveLineChanged()
+{
+	this->BaseSubtitleSelectionController::AnnounceActiveLineChanged(GetActiveLine());
+}
+
+void BaseGrid::AnnounceSelectedSetChanged()
+{
+	SubtitleSelection sel;
+	GetSelectedSet(sel);
+	this->BaseSubtitleSelectionController::AnnounceSelectedSetChanged(sel);
+}
+
+
+void BaseGrid::SetActiveLine(AssDialogue *new_line)
+{
+	/// @todo non-horrible implementation
+	if (new_line == 0)
+	{
+		editBox->SetToLine(-1);
+		return;
+	}
+	for (int i = 0; i < diagPtrMap.size(); ++i)
+	{
+		if (diagPtrMap[i] == new_line)
+		{
+			editBox->SetToLine(i);
+			return;
+		}
+	}
+}
+
+
+AssDialogue * BaseGrid::GetActiveLine() const
+{
+	/// @todo non-horrible implementation
+	return GetDialogue(editBox->linen);
+}
+
+
+void BaseGrid::SetSelectedSet(const SubtitleSelection &new_selection)
+{
+	/// @todo non-horrible implementation
+	std::set<AssDialogue*> newselset(new_selection.begin(), new_selection.end());
+	for (int i = 0; i < selMap.size(); ++i)
+	{
+		selMap[i] = newselset.find(diagPtrMap[i]) != newselset.end();
+	}
+	this->BaseSubtitleSelectionController::AnnounceSelectedSetChanged(new_selection);
+}
+
+
+void BaseGrid::GetSelectedSet(SubtitleSelection &selection) const
+{
+	/// @todo non-horrible implementation?
+	// this is the least horrible I think... though it still depends on the crazy structures
+	for (int i = 0; i < diagPtrMap.size(); ++i)
+	{
+		if (selMap[i])
+			selection.push_back(diagPtrMap[i]);
+	}
+}
+
+
+void BaseGrid::NextLine()
+{
+	/// @todo non-horrible implementation
+	int newn = editBox->linen + 1;
+	if (newn < diagMap.size())
+		editBox->SetToLine(newn);
+}
+
+
+void BaseGrid::PrevLine()
+{
+	/// @todo non-horrible implementation
+	int newn = editBox->linen - 1;
+	if (newn >= 0)
+		editBox->SetToLine(newn);
 }
 
 

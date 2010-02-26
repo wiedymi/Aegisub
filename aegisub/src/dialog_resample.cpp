@@ -46,6 +46,7 @@
 #include "dialog_resample.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "utils.h"

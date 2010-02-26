@@ -65,7 +65,7 @@ typedef std::list<AssEntry*>::iterator entryIter;
 /// @brief DOCME
 ///
 /// DOCME
-class BaseGrid : public wxWindow {
+class BaseGrid : public wxWindow, public BaseSubtitleSelectionController {
 private:
 
 	/// DOCME
@@ -118,10 +118,27 @@ protected:
 	/// DOCME
 	int yPos;
 
+
+public:
+	// SubtitleSelectionController interface
+	virtual void SetActiveLine(AssDialogue *new_line);
+	virtual AssDialogue * GetActiveLine() const;
+	virtual void SetSelectedSet(const SubtitleSelection &new_selection);
+	virtual void GetSelectedSet(SubtitleSelection &selection) const;
+	virtual void NextLine();
+	virtual void PrevLine();
+	// AddSelectionListener implemented in BaseSubtitleSelectionController
+	// RemoveSelectionListener implemented in BaseSubtitleSelectionController
+
 public:
 
 	/// DOCME
 	SubsEditBox *editBox;
+
+	/// Called by SubsEditBox when the active line changes, to announce to selection listeners
+	void AnnounceActiveLineChanged();
+	/// Called from various places when the selection is updated
+	void AnnounceSelectedSetChanged();
 
 
 	/// DOCME
@@ -160,7 +177,7 @@ public:
 	wxArrayInt GetRangeArray(int n1,int n2);
 	void MakeCellVisible(int row, int col,bool center=true);
 
-	AssDialogue *GetDialogue(int n);
+	AssDialogue *GetDialogue(int n) const;
 
 	BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxWANTS_CHARS, const wxString& name = wxPanelNameStr);
 	~BaseGrid();

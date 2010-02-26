@@ -59,6 +59,7 @@
 #include "frame_main.h"
 #include "hotkeys.h"
 #include "options.h"
+#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "utils.h"
@@ -280,6 +281,7 @@ void SubtitlesGrid::OnKeyDown(wxKeyEvent &event) {
 				SwapLines(n,n+1);
 				SelectRow(n+1);
 				editBox->SetToLine(n+1);
+				AnnounceSelectedSetChanged();
 			}
 			return;
 		}
@@ -290,6 +292,7 @@ void SubtitlesGrid::OnKeyDown(wxKeyEvent &event) {
 				SwapLines(n-1,n);
 				SelectRow(n-1);
 				editBox->SetToLine(n-1);
+				AnnounceSelectedSetChanged();
 			}
 			return;
 		}
@@ -481,6 +484,7 @@ void SubtitlesGrid::OnInsertBefore (wxCommandEvent &event) {
 	InsertLine(def,n,false);
 	SelectRow(n);
 	editBox->SetToLine(n);
+	AnnounceSelectedSetChanged();
 	EndBatch();
 }
 
@@ -513,6 +517,7 @@ void SubtitlesGrid::OnInsertAfter (wxCommandEvent &event) {
 	InsertLine(def,n,true);
 	SelectRow(n+1);
 	editBox->SetToLine(n+1);
+	AnnounceSelectedSetChanged();
 	EndBatch();
 }
 
@@ -537,6 +542,7 @@ void SubtitlesGrid::OnInsertBeforeVideo (wxCommandEvent &event) {
 	InsertLine(def,n,false);
 	SelectRow(n);
 	editBox->SetToLine(n);
+	AnnounceSelectedSetChanged();
 	EndBatch();
 }
 
@@ -561,6 +567,7 @@ void SubtitlesGrid::OnInsertAfterVideo (wxCommandEvent &event) {
 	InsertLine(def,n,true);
 	SelectRow(n+1);
 	editBox->SetToLine(n+1);
+	AnnounceSelectedSetChanged();
 	EndBatch();
 }
 
@@ -876,6 +883,7 @@ void SubtitlesGrid::LoadFromAss (AssFile *_ass,bool keepSelection,bool dontModif
 	// Select first
 	else {
 		SelectRow(0);
+		AnnounceSelectedSetChanged();
 	}
 
 	// Commit
@@ -1103,6 +1111,7 @@ void SubtitlesGrid::PasteLines(int n,bool pasteOver) {
 					SelectRow(i,true);
 				}
 				editBox->SetToLine(n);
+				AnnounceSelectedSetChanged();
 			}
 		}
 	}
@@ -1147,6 +1156,7 @@ void SubtitlesGrid::DeleteLines(wxArrayInt target, bool flagModified) {
 	int newSelected = MID(0, editBox->linen,GetRows() - 1);
 	editBox->SetToLine(newSelected);
 	SelectRow(newSelected);
+	AnnounceSelectedSetChanged();
 }
 
 
@@ -1299,6 +1309,7 @@ void SubtitlesGrid::JoinAsKaraoke(int n1,int n2) {
 	// Select new line
 	editBox->SetToLine(n1);
 	SelectRow(n1);
+	AnnounceSelectedSetChanged();
 }
 
 
@@ -1338,6 +1349,7 @@ void SubtitlesGrid::DuplicateLines(int n1,int n2,bool nextFrame) {
 		SelectRow(i+step,true);
 	}
 	editBox->SetToLine(n1+step);
+	AnnounceSelectedSetChanged();
 }
 
 
@@ -1615,5 +1627,4 @@ void SubtitlesGrid::SetSelectionFromAbsolute(std::vector<int> &selection) {
 		} else selMap[i] = false;
 	}
 }
-
 

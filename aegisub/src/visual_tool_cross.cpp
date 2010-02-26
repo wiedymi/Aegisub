@@ -41,6 +41,7 @@
 
 #include "ass_file.h"
 #include "gl_text.h"
+#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "video_context.h"

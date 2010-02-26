@@ -48,6 +48,7 @@
 #include "dialog_selection.h"
 #include "help_button.h"
 #include "options.h"
+#include "selection_controller.h"
 #include "subs_grid.h"
 
 

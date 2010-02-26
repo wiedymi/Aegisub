@@ -45,6 +45,7 @@
 #include "help_button.h"
 #include "libresrc/libresrc.h"
 #include "options.h"
+#include "selection_controller.h"
 #include "subs_grid.h"
 #include "utils.h"
 #include "validators.h"

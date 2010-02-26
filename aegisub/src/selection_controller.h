@@ -34,6 +34,9 @@
 /// @brief Interface declaration for the SubtitleSelectionController
 
 
+#include <set>
+
+
 // For now, the type of subtitle lines being edited
 class AssDialogue;
 
@@ -140,6 +143,51 @@ public:
 	/// @param new_selection The subtitle line set that is now the selected set
 	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection) = 0;
 };
+
+
+
+/// @class BaseSubtitleSelectionController
+/// @brief Base-implementation of SubtitleSelectionController
+///
+/// This class implements adding and removing listeners for selection change
+/// notifications, and provides protected functions to announce selection changes.
+///
+/// This class should be derived from for most real-world uses, but might not
+/// be desirable in some special cases such as test drivers.
+class BaseSubtitleSelectionController : public SubtitleSelectionController {
+	std::set<SubtitleSelectionListener *> listeners;
+
+protected:
+	/// Call OnActiveLineChanged on all listeners
+	void AnnounceActiveLineChanged(AssDialogue *new_line)
+	{
+		for (std::set<SubtitleSelectionListener *>::iterator listener = listeners.begin(); listener != listeners.end(); ++listener)
+		{
+			(*listener)->OnActiveLineChanged(new_line);
+		}
+	}
+
+	/// Call OnSelectedSetChangedon all listeners
+	void AnnounceSelectedSetChanged(const SubtitleSelection &new_selection)
+	{
+		for (std::set<SubtitleSelectionListener *>::iterator listener = listeners.begin(); listener != listeners.end(); ++listener)
+		{
+			(*listener)->OnSelectedSetChanged(new_selection);
+		}
+	}
+
+public:
+	virtual void AddSelectionListener(SubtitleSelectionListener *listener)
+	{
+		listeners.insert(listener);
+	}
+
+	virtual void RemoveSelectionListener(SubtitleSelectionListener *listener)
+	{
+		listeners.erase(listener);
+	}
+};
+
 
 
 /// Do-nothing selection controller, can be considered to always operate on an empty subtitle file

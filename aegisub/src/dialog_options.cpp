@@ -60,6 +60,7 @@
 #include "libresrc/libresrc.h"
 #include "options.h"
 #include "standard_paths.h"
+#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "subtitles_provider_manager.h"

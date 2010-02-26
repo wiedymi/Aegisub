@@ -51,6 +51,7 @@
 #include "frame_main.h"
 #include "main.h"
 #include "options.h"
+#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "video_display.h"
