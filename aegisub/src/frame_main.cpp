@@ -637,8 +637,8 @@ void FrameMain::InitContents() {
 	// Set sizers/hints
 	StartupLog(_T("Arrange main sizers"));
 	ToolsSizer = new wxBoxSizer(wxVERTICAL);
-	ToolsSizer->Add(audioSash, 1, wxEXPAND);
-	ToolsSizer->Add(EditBox, 0, wxEXPAND);
+	ToolsSizer->Add(audioSash, 0, wxEXPAND);
+	ToolsSizer->Add(EditBox, 1, wxEXPAND);
 	TopSizer = new wxBoxSizer(wxHORIZONTAL);
 	TopSizer->Add(videoSizer, 0, wxEXPAND, 0);
 	TopSizer->Add(ToolsSizer, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 5);
