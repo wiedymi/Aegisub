@@ -66,6 +66,7 @@ class AudioKaraoke;
 class FrameMain;
 class wxToggleButton;
 class ToggleBitmap;
+class SubtitleSelectionController;
 
 
 
@@ -78,6 +79,12 @@ class AudioBox : public wxPanel {
 
 	/// The audio display in the box
 	AudioDisplay *audioDisplay;
+	
+	/// Selection controller used for timing controllers
+	SubtitleSelectionController *selection_controller;
+	
+	/// The regular dalogue timing controller
+	AudioTimingController *timing_controller_dialogue;
 
 	/// DOCME
 	wxSlider *HorizontalZoom;
@@ -180,7 +187,7 @@ public:
 	/// DOCME
 	bool karaokeMode;
 
-	AudioBox(wxWindow *parent, AudioController *controller);
+	AudioBox(wxWindow *parent, AudioController *controller, SubtitleSelectionController *selection_controller);
 	~AudioBox();
 
 	void SetKaraokeButtons();

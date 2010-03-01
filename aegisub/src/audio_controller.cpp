@@ -178,9 +178,6 @@ AudioController::AudioController()
 {
 	Connect(playback_timer.GetId(), wxEVT_TIMER, (wxObjectEventFunction)&AudioController::OnPlaybackTimer);
 
-	/// @todo Get rid of this after making sure timing controller basics work!
-	SetTimingController(CreateDialogueTimingController(this, new DummySubtitleSelectionController));
-
 #ifdef wxHAS_POWER_EVENTS
 	Connect(wxEVT_POWER_SUSPENDED, (wxObjectEventFunction)&AudioController::OnComputerSuspending);
 	Connect(wxEVT_POWER_RESUME, (wxObjectEventFunction)&AudioController::OnComputerResuming);

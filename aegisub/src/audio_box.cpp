@@ -107,9 +107,10 @@ enum AudioBoxControlIDs {
 /// @brief Constructor 
 /// @param parent 
 ///
-AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
+AudioBox::AudioBox(wxWindow *parent, AudioController *_controller, SubtitleSelectionController *selection_controller)
 : wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISED)
 , controller(_controller)
+, selection_controller(selection_controller)
 {
 	// Setup
 	karaokeMode = false;
@@ -253,6 +254,9 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller)
 	SetSizer(MainSizer);
 
 	SetKaraokeButtons(); // Decide which one to show or hide.
+	
+	timing_controller_dialogue = CreateDialogueTimingController(controller, selection_controller);
+	controller->SetTimingController(timing_controller_dialogue);
 }
 
 

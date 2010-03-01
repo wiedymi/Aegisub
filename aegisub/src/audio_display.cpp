@@ -674,7 +674,10 @@ void AudioDisplay::SetZoomLevel(int new_zoom_level)
 	zoom_level = new_zoom_level;
 
 	if (!provider)
+	{
+		pixel_samples = 1;
 		return;
+	}
 
 	const int samples_per_second = provider ? provider->GetSampleRate() : 48000;
 	const int base_pixels_per_second = 50; /// @todo Make this customisable
