@@ -19,7 +19,6 @@ SUBDIRS = \
 	$(univchardet) \
 	tools \
 	src \
-	reporter \
 	automation \
 	desktop \
 	po
