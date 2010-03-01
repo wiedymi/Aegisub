@@ -951,7 +951,7 @@ void FrameMain::UpdateTitle() {
 	else newTitle << _T("untitled");
 #endif
 
-#ifdef __WXMAC__
+#if defined(__WXMAC__) && !defined(__LP64__)
 	// On Mac, set the mark in the close button
 	WindowRef wnd = (WindowRef)GetHandle();
 	SetWindowModified(wnd, subsMod);
