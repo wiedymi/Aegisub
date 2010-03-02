@@ -51,12 +51,6 @@ class SubtitleSelectionListener;
 /// @class SubtitleSelectionController
 /// @brief Abstract interface for subtitle selection controllers
 ///
-/// There is only intended to be one instance of a class implementing this interface
-/// per editing session, but there may be many different implementations of it.
-/// The primary implementation would be the subtitle grid in the main GUI, allowing
-/// the user to actively manipulate the active and selected line sets, but other
-/// potential implementations are in a test driver and in a non-interactive scenario.
-///
 /// Two concepts are managed by implementations of this interface: The concept of the
 /// active line, and the concept of the set of selected lines. There is one or zero
 /// active lines, the active line is the base for subtitle manipulation in the GUI.
@@ -66,6 +60,12 @@ class SubtitleSelectionListener;
 /// controls what lines are actually modified when the user performs modifications.
 /// In most cases, the active line will be a member of the selected set. It will be
 /// the responsibility of manipulators to affect the appropriate lines.
+///
+/// There is only intended to be one instance of a class implementing this interface
+/// per editing session, but there may be many different implementations of it.
+/// The primary implementation would be the subtitle grid in the main GUI, allowing
+/// the user to actively manipulate the active and selected line sets, but other
+/// potential implementations are in a test driver and in a non-interactive scenario.
 ///
 /// Objects implementing the SubtitleSelectionListener interface can subscribe to
 /// changes in the active line and the selected set.
@@ -101,7 +101,7 @@ public:
 	virtual void SetSelectedSet(const SubtitleSelection &new_selection) = 0;
 
 	/// @brief Obtain the selected set
-	/// @param [out]selection Filled with the selected set on return
+	/// @param[out] selection Filled with the selected set on return
 	virtual void GetSelectedSet(SubtitleSelection &selection) const = 0;
 
 	/// @brief Change the active line to the next in sequence
@@ -113,7 +113,7 @@ public:
 
 	/// @brief Change the active line to the previous in sequence
 	///
-	/// If there is no logical preview line in sequence, no change happens. This
+	/// If there is no logical previous line in sequence, no change happens. This
 	/// should also reset the selected set to consist of exactly the active line, if
 	/// the active line was changed.
 	virtual void PrevLine() = 0;
