@@ -1233,6 +1233,8 @@ void BaseGrid::SetActiveLine(AssDialogue *new_line)
 	if (new_line == 0)
 	{
 		editBox->SetToLine(-1);
+		ClearSelection();
+		AnnounceSelectedSetChanged();
 		return;
 	}
 	for (int i = 0; i < diagPtrMap.size(); ++i)
@@ -1240,6 +1242,8 @@ void BaseGrid::SetActiveLine(AssDialogue *new_line)
 		if (diagPtrMap[i] == new_line)
 		{
 			editBox->SetToLine(i);
+			SelectRow(i, false, true);
+			AnnounceSelectedSetChanged();
 			return;
 		}
 	}
@@ -1261,6 +1265,7 @@ void BaseGrid::SetSelectedSet(const SubtitleSelection &new_selection)
 	{
 		selMap[i] = newselset.find(diagPtrMap[i]) != newselset.end();
 	}
+	Refresh(false);
 	this->BaseSubtitleSelectionController::AnnounceSelectedSetChanged(new_selection);
 }
 
@@ -1282,7 +1287,11 @@ void BaseGrid::NextLine()
 	/// @todo non-horrible implementation
 	int newn = editBox->linen + 1;
 	if (newn < diagMap.size())
+	{
 		editBox->SetToLine(newn);
+		SelectRow(newn, false, true);
+		AnnounceSelectedSetChanged();
+	}
 }
 
 
@@ -1291,7 +1300,11 @@ void BaseGrid::PrevLine()
 	/// @todo non-horrible implementation
 	int newn = editBox->linen - 1;
 	if (newn >= 0)
+	{
 		editBox->SetToLine(newn);
+		SelectRow(newn, false, true);
+		AnnounceSelectedSetChanged();
+	}
 }
 
 
