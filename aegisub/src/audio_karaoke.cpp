@@ -667,7 +667,7 @@ void AudioKaraoke::Join() {
 
 	// Update
 	must_rebuild = true;
-	display->NeedCommit = true;
+	//display->NeedCommit = true;
 	display->Update();
 	Refresh(false);
 
@@ -715,7 +715,7 @@ void AudioKaraoke::EndSplit(bool commit) {
 	if (hasSplit) {
 		wxLogDebug(_T("AudioKaraoke::EndSplit: hasSplit"));
 		must_rebuild = true;
-		display->NeedCommit = true;
+		//display->NeedCommit = true;
 		SetSelection(first_sel);
 		display->Update();
 	}
@@ -927,8 +927,9 @@ void AudioKaraokeTagMenu::OnSelectItem(wxCommandEvent &event) {
 	// Update display
 	kara->must_rebuild = true;
 	//kara->Commit();
-	kara->display->NeedCommit = true;
-	kara->display->CommitChanges();
+	//kara->display->NeedCommit = true;
+	/// @todo Commit changes and stay on current line
+	//kara->display->CommitChanges();
 	//kara->display->Update();
 	kara->SetSelection(firstsel, lastsel);
 }

@@ -107,9 +107,11 @@ public:
 
 
 /// @class AudioDisplay
-/// @brief Control that displays audio and lets the user create selections
+/// @brief Primary view/UI for interaction with audio timing
 ///
-/// Everyone hates this class.
+/// The audio display is the common view that allows the user to interact with the active
+/// timing controller. The audio display also renders audio according to the audio controller
+/// and the timing controller, using an audio renderer instance.
 class AudioDisplay: public wxWindow, private AudioControllerAudioEventListener, private AudioControllerTimingEventListener {
 private:
 
@@ -206,32 +208,6 @@ private:
 	virtual void OnMarkersMoved();
 	virtual void OnSelectionChanged();
 	virtual void OnTimingControllerChanged();
-
-
-public:
-	// Here's all kinds of stuff other parts depend on
-	// Annotating where each field or function is referenced
-
-
-	/// Things have changed and a commit is required
-	// audio_karaoke.cpp 667 715 927
-	bool NeedCommit;
-
-
-	/// Do a commit
-	// audio_karaoke.cpp 931
-	// audio_box.cpp 501
-	void CommitChanges(bool) { }
-	void CommitChanges() { }
-
-
-	/// Switch dialogue line
-	// audio_box.cpp 588 596
-	void SetDialogue() { }
-
-	/// Add lead in and/or lead out
-	// audio_box.cpp 741 750
-	void AddLead(bool, bool) { }
 
 
 public:

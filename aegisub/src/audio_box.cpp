@@ -379,12 +379,8 @@ void AudioBox::OnPlaySelection(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlayDialogue(wxCommandEvent &event) {
-	int start=0,end=0;
-	/// @todo Figure out where this current line stored times obtaining should be
-	//audioDisplay->GetTimesDialogue(start,end);
-	controller->SetSelection(AudioController::SampleRange(
-		controller->SamplesFromMilliseconds(start),
-		controller->SamplesFromMilliseconds(end)));
+	if (controller->GetTimingController())
+		controller->GetTimingController()->Revert();
 	controller->PlaySelection();
 }
 
@@ -403,10 +399,11 @@ void AudioBox::OnStop(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnNext(wxCommandEvent &event) {
-	/// @todo Remodel this
 	//audioDisplay->SetFocus();
-	//audioDisplay->Stop();
-	//audioDisplay->Next();
+	controller->Stop();
+	if (controller->GetTimingController())
+		controller->GetTimingController()->Next();
+	controller->PlaySelection();
 }
 
 
@@ -415,10 +412,11 @@ void AudioBox::OnNext(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPrev(wxCommandEvent &event) {
-	/// @todo Remodel this
 	//audioDisplay->SetFocus();
-	//audioDisplay->Stop();
-	//audioDisplay->Prev();
+	controller->Stop();
+	if (controller->GetTimingController())
+		controller->GetTimingController()->Prev();
+	controller->PlaySelection();
 }
 
 
@@ -492,7 +490,8 @@ void AudioBox::OnCommit(wxCommandEvent &event) {
 	wxLogDebug(_T("AudioBox::OnCommit"));
 	audioDisplay->SetFocus();
 	wxLogDebug(_T("AudioBox::OnCommit: has set focus, now committing changes"));
-	audioDisplay->CommitChanges(true);
+	/// @todo Commit changes and go to next line if appropriate
+	//audioDisplay->CommitChanges(true);
 	wxLogDebug(_T("AudioBox::OnCommit: returning"));
 }
 
@@ -512,7 +511,8 @@ void AudioBox::OnKaraoke(wxCommandEvent &event) {
 		}
 		karaokeMode = false;
 		audioKaraoke->enabled = false;
-		audioDisplay->SetDialogue();
+		/// @todo Replace this with changing timing controller
+		//audioDisplay->SetDialogue();
 		audioKaraoke->Refresh(false);
 	}
 
@@ -520,7 +520,8 @@ void AudioBox::OnKaraoke(wxCommandEvent &event) {
 		wxLogDebug(_T("AudioBox::OnKaraoke: karaoke disabled, enabling"));
 		karaokeMode = true;
 		audioKaraoke->enabled = true;
-		audioDisplay->SetDialogue();
+		/// @todo Replace this with changing timing controller
+		//audioDisplay->SetDialogue();
 	}
 
 	SetKaraokeButtons();
@@ -641,22 +642,13 @@ void AudioBox::OnMedusaMode(wxCommandEvent &event) {
 */
 
 
-/// @todo Put spectrum mode toggling into the menu bar
-/*
-void AudioBox::OnSpectrumMode(wxCommandEvent &event) {
-	//Options.SetBool(_T("Audio Spectrum"),SpectrumMode->GetValue());
-	//Options.Save();
-}
-*/
-
-
 
 /// @brief Lead in/out 
 /// @param event 
 ///
 void AudioBox::OnLeadIn(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
-	audioDisplay->AddLead(true,false);
+	//audioDisplay->AddLead(true,false);
 }
 
 
@@ -665,6 +657,6 @@ void AudioBox::OnLeadIn(wxCommandEvent &event) {
 ///
 void AudioBox::OnLeadOut(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
-	audioDisplay->AddLead(false,true);
+	//audioDisplay->AddLead(false,true);
 }
 
