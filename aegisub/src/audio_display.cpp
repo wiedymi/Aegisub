@@ -823,7 +823,8 @@ void AudioDisplay::OnPaint(wxPaintEvent& event)
 	bool redraw_scrollbar = false;
 	bool redraw_timeline = false;
 
-	AudioController::SampleRange sel_samples(controller->GetSelection());
+	/// @todo Get rendering style ranges from timing controller instead
+	AudioController::SampleRange sel_samples(controller->GetPrimaryPlaybackRange());
 	int selection_start = AbsoluteXFromSamples(sel_samples.begin());
 	int selection_end = AbsoluteXFromSamples(sel_samples.end());
 
@@ -1226,7 +1227,8 @@ void AudioDisplay::OnMarkersMoved()
 
 void AudioDisplay::OnSelectionChanged()
 {
-	AudioController::SampleRange sel(controller->GetSelection());
+	/// @todo Handle rendering style ranges from timing controller instead
+	AudioController::SampleRange sel(controller->GetPrimaryPlaybackRange());
 	scrollbar->SetSelection(AbsoluteXFromSamples(sel.begin()), AbsoluteXFromSamples(sel.length()));
 
 	if (sel.overlaps(old_selection))

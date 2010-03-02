@@ -173,7 +173,6 @@ AudioController::AudioController()
 , timing_controller(0)
 , keyframes_marker_provider(new AudioMarkerProviderKeyframes(this))
 , playback_mode(PM_NotPlaying)
-, selection(0, 0)
 , playback_timer(this)
 {
 	Connect(playback_timer.GetId(), wxEVT_TIMER, (wxObjectEventFunction)&AudioController::OnPlaybackTimer);
@@ -396,6 +395,49 @@ void AudioController::SetTimingController(AudioTimingController *new_controller)
 
 
 
+void AudioController::OnTimingControllerUpdatedPrimaryRange(AudioTimingController *sending_controller)
+{
+	assert(sending_controller != 0);
+	if (sending_controller != timing_controller)
+		return;
+	
+	if (playback_mode == PM_PrimaryRange)
+	{
+		player->SetEndPosition(timing_controller->GetPrimaryPlaybackRange().end());
+	}
+
+	TIMING_LISTENERS(l)
+	{
+		(*l)->OnSelectionChanged();
+	}
+}
+
+
+void AudioController::OnTimingControllerUpdatedStyleRanges(AudioTimingController *sending_controller)
+{
+	assert(sending_controller != 0);
+	if (sending_controller != timing_controller)
+		return;
+
+	/// @todo redraw and stuff, probably
+}
+
+
+void AudioController::OnTimingControllerMarkerMoved(AudioTimingController *sending_controller, AudioMarker *marker)
+{
+	assert(sending_controller != 0);
+	if (sending_controller != timing_controller)
+		return;
+
+	/// @todo shouldn't this be more detailed?
+	TIMING_LISTENERS(l)
+	{
+		(*l)->OnMarkersMoved();
+	}
+}
+
+
+
 void AudioController::PlayRange(const AudioController::SampleRange &range)
 {
 	if (!IsAudioOpen()) return;
@@ -411,11 +453,11 @@ void AudioController::PlayRange(const AudioController::SampleRange &range)
 }
 
 
-void AudioController::PlaySelection()
+void AudioController::PlayPrimaryRange()
 {
-	PlayRange(GetSelection());
+	PlayRange(GetPrimaryPlaybackRange());
 	if (playback_mode == PM_Range)
-		playback_mode = PM_Selection;
+		playback_mode = PM_PrimaryRange;
 }
 
 
@@ -455,15 +497,6 @@ bool AudioController::IsPlaying()
 }
 
 
-void AudioController::ChangePlaybackEnd(int64_t end_sample)
-{
-	if (!IsAudioOpen()) return;
-	if (playback_mode != PM_Range) return;
-
-	player->SetEndPosition(end_sample);
-}
-
-
 int64_t AudioController::GetPlaybackPosition()
 {
 	if (!IsPlaying()) return 0;
@@ -480,18 +513,15 @@ void AudioController::ResyncPlaybackPosition(int64_t new_position)
 }
 
 
-void AudioController::SetSelection(const SampleRange &newsel)
+AudioController::SampleRange AudioController::GetPrimaryPlaybackRange() const
 {
-	selection = newsel;
-	
-	if (playback_mode == PM_Selection)
+	if (timing_controller != 0)
 	{
-		player->SetEndPosition(selection.end());
+		return timing_controller->GetPrimaryPlaybackRange();
 	}
-
-	TIMING_LISTENERS(l)
+	else
 	{
-		(*l)->OnSelectionChanged();
+		return SampleRange(0, 0);
 	}
 }
 

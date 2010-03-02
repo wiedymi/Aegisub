@@ -370,7 +370,7 @@ void AudioBox::OnVerticalLink(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlaySelection(wxCommandEvent &event) {
-	controller->PlaySelection();
+	controller->PlayPrimaryRange();
 }
 
 
@@ -381,7 +381,7 @@ void AudioBox::OnPlaySelection(wxCommandEvent &event) {
 void AudioBox::OnPlayDialogue(wxCommandEvent &event) {
 	if (controller->GetTimingController())
 		controller->GetTimingController()->Revert();
-	controller->PlaySelection();
+	controller->PlayPrimaryRange();
 }
 
 
@@ -403,7 +403,7 @@ void AudioBox::OnNext(wxCommandEvent &event) {
 	controller->Stop();
 	if (controller->GetTimingController())
 		controller->GetTimingController()->Next();
-	controller->PlaySelection();
+	controller->PlayPrimaryRange();
 }
 
 
@@ -416,7 +416,7 @@ void AudioBox::OnPrev(wxCommandEvent &event) {
 	controller->Stop();
 	if (controller->GetTimingController())
 		controller->GetTimingController()->Prev();
-	controller->PlaySelection();
+	controller->PlayPrimaryRange();
 }
 
 
@@ -425,7 +425,7 @@ void AudioBox::OnPrev(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlay500Before(wxCommandEvent &event) {
-	AudioController::SampleRange times(controller->GetSelection());
+	AudioController::SampleRange times(controller->GetPrimaryPlaybackRange());
 	controller->PlayRange(AudioController::SampleRange(
 		times.begin() - controller->SamplesFromMilliseconds(500),
 		times.begin()));
@@ -437,7 +437,7 @@ void AudioBox::OnPlay500Before(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlay500After(wxCommandEvent &event) {
-	AudioController::SampleRange times(controller->GetSelection());
+	AudioController::SampleRange times(controller->GetPrimaryPlaybackRange());
 	controller->PlayRange(AudioController::SampleRange(
 		times.end(),
 		times.end() + controller->SamplesFromMilliseconds(500)));
@@ -449,7 +449,7 @@ void AudioBox::OnPlay500After(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlay500First(wxCommandEvent &event) {
-	AudioController::SampleRange times(controller->GetSelection());
+	AudioController::SampleRange times(controller->GetPrimaryPlaybackRange());
 	controller->PlayRange(AudioController::SampleRange(
 		times.begin(),
 		times.begin() + std::min(
@@ -463,7 +463,7 @@ void AudioBox::OnPlay500First(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlay500Last(wxCommandEvent &event) {
-	AudioController::SampleRange times(controller->GetSelection());
+	AudioController::SampleRange times(controller->GetPrimaryPlaybackRange());
 	controller->PlayRange(AudioController::SampleRange(
 		times.end() - std::min(
 			controller->SamplesFromMilliseconds(500),
@@ -477,7 +477,7 @@ void AudioBox::OnPlay500Last(wxCommandEvent &event) {
 /// @param event 
 ///
 void AudioBox::OnPlayToEnd(wxCommandEvent &event) {
-	controller->PlayToEnd(controller->GetSelection().begin());
+	controller->PlayToEnd(controller->GetPrimaryPlaybackRange().begin());
 }
 
 

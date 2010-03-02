@@ -162,14 +162,11 @@ private:
 	enum PlaybackMode {
 		PM_NotPlaying,
 		PM_Range,
-		PM_Selection,
+		PM_PrimaryRange,
 		PM_ToEnd
 	};
 	/// The current playback mode
 	PlaybackMode playback_mode;
-
-	/// The current audio selection
-	SampleRange selection;
 
 
 	/// Timer used for playback position updates
@@ -241,12 +238,12 @@ public:
 	/// automatically from any other operations.
 	void PlayRange(const SampleRange &range);
 
-	/// @brief Start or restart audio playback, playing the current selection
+	/// @brief Start or restart audio playback, playing the primary playback range
 	///
-	/// If the selection is updated during playback, the end of the playback range
-	/// will be updated to match the new selection. The playback end can not be
-	/// changed in any other way.
-	void PlaySelection();
+	/// If the primary playback range is updated during playback, the end of the 
+	/// active playback range will be updated to match the new selection. The playback
+	/// end can not be changed in any other way.
+	void PlayPrimaryRange();
 
 	/// @brief Start or restart audio playback, playing from a point to the end of stream
 	/// @param start_sample Index of the sample to start playback at
@@ -261,15 +258,6 @@ public:
 	/// @brief Determine whether playback is ongoing
 	/// @return True if audio is being played back
 	bool IsPlaying();
-
-	/// @brief Change the playback end point
-	/// @param end_sample Sample index to stop playback at
-	///
-	/// Only has an effect if audio is being played and is not in "play to end" mode.
-	///
-	/// If the specified end sample is earlier than the current playback position, playback
-	/// stops immediately.
-	void ChangePlaybackEnd(int64_t end_sample);
 
 	/// @brief Get the current playback position
 	/// @return Approximate current sample index being heard by the user
@@ -288,16 +276,9 @@ public:
 	void ResyncPlaybackPosition(int64_t new_position);
 
 
-	/// @brief Get the current audio selection
+	/// @brief Get the primary playback range
 	/// @return An immutable SampleRange object
-	SampleRange GetSelection() const { return selection; }
-
-	/// @brief Change the current audio selection
-	/// @param newsel The new selection to use
-	///
-	/// If playback of the selection is in progress, changing the selection will update
-	/// the end time of the playback.
-	void SetSelection(const SampleRange &newsel);
+	SampleRange GetPrimaryPlaybackRange() const;
 
 	/// @brief Get all static markers inside a range
 	/// @param range   The sample range to retrieve markers for
@@ -331,6 +312,30 @@ public:
 	/// the current timing controller, to signal that the timing controller has changed
 	/// the object being timed, eg. changed to a new dialogue line.
 	void SetTimingController(AudioTimingController *new_controller);
+
+
+	/// @brief Timing controller signals primary playback range changed
+	/// @param timing_controller The timing controller sending this notification
+	///
+	/// Only timing controllers should call this function. This function must be called
+	/// when the primary playback range is changed in the timing controller, usually
+	/// as a result of user interaction.
+	void OnTimingControllerUpdatedPrimaryRange(AudioTimingController *timing_controller);
+
+	/// @brief Timing controller signals that the rendering style ranges have changed
+	/// @param timing_controller The timing controller sending this notification
+	///
+	/// Only timing controllers should call this function. This function must be called
+	/// when one or more rendering style ranges have changed in the timing controller.
+	void OnTimingControllerUpdatedStyleRanges(AudioTimingController *timing_controller);
+
+	/// @brief Timing controller signals that an audio marker has moved
+	/// @param timing_controller The timing controller sending this notification
+	/// @param marker            The marker that was moved
+	///
+	/// Only timing controllers should call this function. This function must be called
+	/// when a marker owned by the timing controller has been updated in some way.
+	void OnTimingControllerMarkerMoved(AudioTimingController *timing_controller, AudioMarker *marker);
 
 
 	/// @brief Convert a count of audio samples to a time in milliseconds

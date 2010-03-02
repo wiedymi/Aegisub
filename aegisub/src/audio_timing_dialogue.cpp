@@ -148,6 +148,7 @@ public:
 	// AudioTimingController interface
 	virtual wxString GetWarningMessage() const;
 	virtual AudioController::SampleRange GetIdealVisibleSampleRange() const;
+	virtual AudioController::SampleRange GetPrimaryPlaybackRange() const;
 	virtual bool HasLabels() const;
 	virtual void Next();
 	virtual void Prev();
@@ -296,12 +297,20 @@ void AudioTimingControllerDialogue::OnSelectedSetChanged(const SubtitleSelection
 
 wxString AudioTimingControllerDialogue::GetWarningMessage() const
 {
+	// We have no warning messages currently, maybe add the old "Modified" message back later?
 	return wxString();
 }
 
 
 
 AudioController::SampleRange AudioTimingControllerDialogue::GetIdealVisibleSampleRange() const
+{
+	return GetPrimaryPlaybackRange();
+}
+
+
+
+AudioController::SampleRange AudioTimingControllerDialogue::GetPrimaryPlaybackRange() const
 {
 	return AudioController::SampleRange(
 		GetLeftMarker()->GetPosition(),
@@ -410,6 +419,7 @@ AudioMarker * AudioTimingControllerDialogue::OnLeftClick(int64_t sample, int sen
 		// Clicked near the left marker:
 		// Insta-move it and start dragging it
 		left->SetPosition(sample);
+		audio_controller->OnTimingControllerMarkerMoved(this, left);
 		timing_modified = true;
 		UpdateSelection();
 		return left;
@@ -426,6 +436,7 @@ AudioMarker * AudioTimingControllerDialogue::OnLeftClick(int64_t sample, int sen
 	// Insta-set the left marker to the clicked position and return the right as the dragged one,
 	// such that if the user does start dragging, he will create a new selection from scratch
 	left->SetPosition(sample);
+	audio_controller->OnTimingControllerMarkerMoved(this, left);
 	timing_modified = true;
 	UpdateSelection();
 	return right;
@@ -438,6 +449,7 @@ AudioMarker * AudioTimingControllerDialogue::OnRightClick(int64_t sample, int se
 	AudioMarkerDialogueTiming *right = GetRightMarker();
 	
 	right->SetPosition(sample);
+	audio_controller->OnTimingControllerMarkerMoved(this, right);
 	timing_modified = true;
 	UpdateSelection();
 	return right;
@@ -450,6 +462,7 @@ void AudioTimingControllerDialogue::OnMarkerDrag(AudioMarker *marker, int64_t ne
 	assert(marker == &markers[0] || marker == &markers[1]);
 
 	static_cast<AudioMarkerDialogueTiming*>(marker)->SetPosition(new_position);
+	audio_controller->OnTimingControllerMarkerMoved(this, marker);
 	timing_modified = true;
 
 	UpdateSelection();
@@ -459,9 +472,7 @@ void AudioTimingControllerDialogue::OnMarkerDrag(AudioMarker *marker, int64_t ne
 
 void AudioTimingControllerDialogue::UpdateSelection()
 {
-	audio_controller->SetSelection(AudioController::SampleRange(
-		GetLeftMarker()->GetPosition(),
-		GetRightMarker()->GetPosition()));
+	audio_controller->OnTimingControllerUpdatedPrimaryRange(this);
 }
 
 

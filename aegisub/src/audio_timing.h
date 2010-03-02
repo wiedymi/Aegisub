@@ -60,6 +60,12 @@ public:
 	/// This is used for "bring working area into view" operations.
 	virtual AudioController::SampleRange GetIdealVisibleSampleRange() const = 0;
 
+	/// @brief Get the primary playback range
+	/// @return A sample range
+	///
+	/// Get the sample range the user is most likely to want to play back currently.
+	virtual AudioController::SampleRange GetPrimaryPlaybackRange() const = 0;
+
 	/// @brief Does this timing mode have labels on the audio display?
 	/// @return True if this timing mode needs labels on the audio display.
 	///

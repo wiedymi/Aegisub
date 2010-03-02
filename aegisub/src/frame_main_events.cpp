@@ -2020,7 +2020,7 @@ void FrameMain::OnViewSubs (wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnMedusaPlay(wxCommandEvent &event) {
-	audioController->PlaySelection();
+	audioController->PlayPrimaryRange();
 }
 
 /// @brief DOCME
@@ -2034,7 +2034,7 @@ void FrameMain::OnMedusaStop(wxCommandEvent &event) {
 
 	// Otherwise, play the last 500 ms
 	else {
-		AudioController::SampleRange sel(audioController->GetSelection());
+		AudioController::SampleRange sel(audioController->GetPrimaryPlaybackRange());
 		audioController->PlayRange(AudioController::SampleRange(
 			sel.end() - audioController->SamplesFromMilliseconds(500),
 			sel.end()));;
@@ -2046,10 +2046,11 @@ void FrameMain::OnMedusaStop(wxCommandEvent &event) {
 ///
 void FrameMain::OnMedusaShiftStartForward(wxCommandEvent &event) {
 	AudioController::SampleRange newsel(
-		audioController->GetSelection(),
+		audioController->GetPrimaryPlaybackRange(),
 		audioController->SamplesFromMilliseconds(10),
 		0);
-	audioController->SetSelection(newsel);
+	/// @todo Make this use the timing controller instead
+	//audioController->SetSelection(newsel);
 }
 
 /// @brief DOCME
@@ -2057,10 +2058,11 @@ void FrameMain::OnMedusaShiftStartForward(wxCommandEvent &event) {
 ///
 void FrameMain::OnMedusaShiftStartBack(wxCommandEvent &event) {
 	AudioController::SampleRange newsel(
-		audioController->GetSelection(),
+		audioController->GetPrimaryPlaybackRange(),
 		-audioController->SamplesFromMilliseconds(10),
 		0);
-	audioController->SetSelection(newsel);
+	/// @todo Make this use the timing controller instead
+	//audioController->SetSelection(newsel);
 }
 
 /// @brief DOCME
@@ -2068,10 +2070,11 @@ void FrameMain::OnMedusaShiftStartBack(wxCommandEvent &event) {
 ///
 void FrameMain::OnMedusaShiftEndForward(wxCommandEvent &event) {
 	AudioController::SampleRange newsel(
-		audioController->GetSelection(),
+		audioController->GetPrimaryPlaybackRange(),
 		0,
 		audioController->SamplesFromMilliseconds(10));
-	audioController->SetSelection(newsel);
+	/// @todo Make this use the timing controller instead
+	//audioController->SetSelection(newsel);
 }
 
 /// @brief DOCME
@@ -2079,17 +2082,18 @@ void FrameMain::OnMedusaShiftEndForward(wxCommandEvent &event) {
 ///
 void FrameMain::OnMedusaShiftEndBack(wxCommandEvent &event) {
 	AudioController::SampleRange newsel(
-		audioController->GetSelection(),
+		audioController->GetPrimaryPlaybackRange(),
 		0,
 		-audioController->SamplesFromMilliseconds(10));
-	audioController->SetSelection(newsel);
+	/// @todo Make this use the timing controller instead
+	//audioController->SetSelection(newsel);
 }
 
 /// @brief DOCME
 /// @param event 
 ///
 void FrameMain::OnMedusaPlayBefore(wxCommandEvent &event) {
-		AudioController::SampleRange sel(audioController->GetSelection());
+		AudioController::SampleRange sel(audioController->GetPrimaryPlaybackRange());
 		audioController->PlayRange(AudioController::SampleRange(
 			sel.begin() - audioController->SamplesFromMilliseconds(500),
 			sel.begin()));;
@@ -2099,7 +2103,7 @@ void FrameMain::OnMedusaPlayBefore(wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnMedusaPlayAfter(wxCommandEvent &event) {
-		AudioController::SampleRange sel(audioController->GetSelection());
+		AudioController::SampleRange sel(audioController->GetPrimaryPlaybackRange());
 		audioController->PlayRange(AudioController::SampleRange(
 			sel.end(),
 			sel.end() + audioController->SamplesFromMilliseconds(500)));;
