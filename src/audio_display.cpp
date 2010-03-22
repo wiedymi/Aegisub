@@ -57,8 +57,10 @@
 #endif
 #include "audio_provider_stream.h"
 #include "colorspace.h"
+#include "compat.h"
 #include "fft.h"
 #include "hotkeys.h"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "subs_edit_box.h"
@@ -980,7 +982,7 @@ void AudioDisplay::SetFile(wxString file) {
 			// Add to recent
 			if (!is_dummy) {
 				wxLogDebug(_T("AudioDisplay::SetFile: add to recent"));
-				Options.AddToRecentList(file,_T("Recent aud"));
+				AegisubApp::Get()->mru->Add("Audio", STD_STR(file));
 				wxFileName fn(file);
 				StandardPaths::SetPathValue(_T("?audio"),fn.GetPath());
 			}

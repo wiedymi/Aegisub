@@ -291,7 +291,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	// File menu
 	if (curMenu == fileMenu) {
 		// Rebuild recent
-		RebuildRecentList(_T("Recent sub"),RecentSubs,Menu_File_Recent);
+		RebuildRecentList(_T("Subtitle"),RecentSubs,Menu_File_Recent);
 	}
 
 	// View menu
@@ -359,9 +359,9 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Check(Menu_Video_Overscan,Options.AsBool(_T("Show Overscan Mask")));
 
 		// Rebuild recent lists
-		RebuildRecentList(_T("Recent vid"),RecentVids,Menu_Video_Recent);
-		RebuildRecentList(_T("Recent timecodes"),RecentTimecodes,Menu_Timecodes_Recent);
-		RebuildRecentList(_T("Recent Keyframes"),RecentKeyframes,Menu_Keyframes_Recent);
+		RebuildRecentList(_T("Video"),RecentVids,Menu_Video_Recent);
+		RebuildRecentList(_T("Timecodes"),RecentTimecodes,Menu_Timecodes_Recent);
+		RebuildRecentList(_T("Keyframes"),RecentKeyframes,Menu_Keyframes_Recent);
 	}
 
 	// Audio menu
@@ -373,7 +373,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Enable(Menu_Audio_Close,state);
 
 		// Rebuild recent
-		RebuildRecentList(_T("Recent aud"),RecentAuds,Menu_Audio_Recent);
+		RebuildRecentList(_T("Audio"),RecentAuds,Menu_Audio_Recent);
 	}
 
 	// Subtitles menu

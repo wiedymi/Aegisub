@@ -62,6 +62,8 @@
 #include "ass_style.h"
 #include "ass_time.h"
 #include "audio_display.h"
+#include "compat.h"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "subs_edit_box.h"
@@ -264,7 +266,7 @@ void VideoContext::SetVideo(const wxString &filename) {
 
 			// Set filename
 			videoName = filename;
-			Options.AddToRecentList(filename,_T("Recent vid"));
+			AegisubApp::Get()->mru->Add("Video", STD_STR(filename));
 			wxFileName fn(filename);
 			StandardPaths::SetPathValue(_T("?video"),fn.GetPath());
 

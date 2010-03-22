@@ -121,8 +121,6 @@ public:
 	void Load();
 	void LoadDefaults(bool onlyDefaults=false,bool versionOverride=false);
 
-	void AddToRecentList (wxString entry,wxString list);
-	void RemoveFromRecentList (wxString entry,wxString list);
 	wxArrayString GetRecentList (wxString list);
 
 	void SetInt(wxString key,int param,int ifLastVersion=-1);

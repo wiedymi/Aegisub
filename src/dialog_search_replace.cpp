@@ -44,6 +44,7 @@
 #include <wx/string.h>
 #endif
 
+#include "compat.h"
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "dialog_search_replace.h"
@@ -68,14 +69,14 @@ DialogSearchReplace::DialogSearchReplace (wxWindow *parent,bool _hasReplace,wxSt
 
 	// Find sizer
 	wxSizer *FindSizer = new wxFlexGridSizer(2,2,5,15);
-	wxArrayString FindHistory = Options.GetRecentList(_T("Recent find"));
+	wxArrayString FindHistory = Options.GetRecentList(_T("Find"));
 	FindEdit = new wxComboBox(this,-1,_T(""),wxDefaultPosition,wxSize(300,-1),FindHistory,wxCB_DROPDOWN);
 	//if (FindHistory.Count()) FindEdit->SetStringSelection(FindHistory[0]);
 	FindEdit->SetSelection(0);
 	FindSizer->Add(new wxStaticText(this,-1,_("Find what:")),0,wxRIGHT | wxALIGN_CENTER_VERTICAL,0);
 	FindSizer->Add(FindEdit,0,wxRIGHT,0);
 	if (hasReplace) {
-		wxArrayString ReplaceHistory = Options.GetRecentList(_T("Recent replace"));
+		wxArrayString ReplaceHistory = Options.GetRecentList(_T("Replace"));
 		ReplaceEdit = new wxComboBox(this,-1,_T(""),wxDefaultPosition,wxSize(300,-1),ReplaceHistory,wxCB_DROPDOWN);
 		FindSizer->Add(new wxStaticText(this,-1,_("Replace with:")),0,wxRIGHT | wxALIGN_CENTER_VERTICAL,0);
 		FindSizer->Add(ReplaceEdit,0,wxRIGHT,0);
@@ -234,7 +235,7 @@ void DialogSearchReplace::FindReplace(int mode) {
 		if (hasReplace) {
 			wxString ReplaceWith = ReplaceEdit->GetValue();
 			Search.ReplaceWith = ReplaceWith;
-			Options.AddToRecentList(ReplaceWith,_T("Recent replace"));
+			AegisubApp::Get()->mru->Add("Replace", STD_STR(ReplaceWith));
 		}	
 	}
 
@@ -244,11 +245,11 @@ void DialogSearchReplace::FindReplace(int mode) {
 		Search.ReplaceWith = ReplaceWith;
 		if (mode == 1) Search.ReplaceNext();
 		else Search.ReplaceAll();
-		Options.AddToRecentList(ReplaceWith,_T("Recent replace"));
+		AegisubApp::Get()->mru->Add("Replace", STD_STR(ReplaceWith));
 	}
 	
 	// Add to history
-	Options.AddToRecentList(LookFor,_T("Recent find"));
+	AegisubApp::Get()->mru->Add("Find", STD_STR(LookFor));
 	UpdateDropDowns();
 }
 
@@ -287,7 +288,7 @@ void DialogSearchReplace::UpdateDropDowns() {
 	// Find
 	FindEdit->Freeze();
 	FindEdit->Clear();
-	FindEdit->Append(Options.GetRecentList(_T("Recent find")));
+	FindEdit->Append(Options.GetRecentList(_T("Find")));
 	FindEdit->SetSelection(0);
 	FindEdit->Thaw();
 
@@ -295,7 +296,7 @@ void DialogSearchReplace::UpdateDropDowns() {
 	if (hasReplace) {
 		ReplaceEdit->Freeze();
 		ReplaceEdit->Clear();
-		ReplaceEdit->Append(Options.GetRecentList(_T("Recent replace")));
+		ReplaceEdit->Append(Options.GetRecentList(_T("Replace")));
 		ReplaceEdit->SetSelection(0);
 		ReplaceEdit->Thaw();
 	}

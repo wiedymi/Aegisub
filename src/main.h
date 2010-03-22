@@ -44,7 +44,7 @@
 #endif
 
 #include "aegisublocale.h"
-
+#include <libaegisub/mru.h>
 
 //////////////
 // Prototypes
@@ -74,6 +74,8 @@ public:
 
 	/// DOCME
 	AegisubLocale locale;
+
+	agi::MRUManager *mru;
 
 	/// DOCME
 	FrameMain *frame;

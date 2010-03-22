@@ -54,6 +54,8 @@
 #include "ass_file.h"
 #include "ass_override.h"
 #include "ass_style.h"
+#include "compat.h"
+#include "main.h"
 #include "options.h"
 #include "subtitle_format.h"
 #include "text_file_reader.h"
@@ -150,7 +152,7 @@ void AssFile::Load (const wxString _filename,const wxString charset,bool addToRe
 	SetScriptInfo(_T("ScriptType"),_T("v4.00+"));
 
 	// Add to recent
-	if (addToRecent) AddToRecent(_filename);
+	if (addToRecent) AegisubApp::Get()->mru->Add("Subtitle", STD_STR(_filename));
 }
 
 
@@ -183,7 +185,7 @@ void AssFile::Save(wxString _filename,bool setfilename,bool addToRecent,const wx
 	else throw _T("Unknown file type.");
 
 	// Add to recent
-	if (addToRecent) AddToRecent(_filename);
+	if (addToRecent) AegisubApp::Get()->mru->Add("Subtitle", STD_STR(_filename));
 
 	// Done
 	if (setfilename) {
@@ -893,16 +895,6 @@ AssStyle *AssFile::GetStyle(wxString name) {
 	}
 	return NULL;
 }
-
-
-
-/// @brief Adds file name to list of recent 
-/// @param file 
-///
-void AssFile::AddToRecent(wxString file) {
-	Options.AddToRecentList(file,_T("Recent sub"));
-}
-
 
 
 /// @brief List of supported wildcards 

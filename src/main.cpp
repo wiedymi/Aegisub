@@ -64,6 +64,7 @@
 #include "frame_main.h"
 #include "hotkeys.h"
 #include "main.h"
+#include "libresrc/libresrc.h"
 #include "options.h"
 #include "plugin_manager.h"
 #include "standard_paths.h"
@@ -71,7 +72,6 @@
 #include "subtitle_format.h"
 #include "version.h"
 #include "video_context.h"
-
 
 ///////////////////
 // wxWidgets macro
@@ -140,6 +140,11 @@ bool AegisubApp::OnInit() {
 	StartupLog(_T("Inside OnInit"));
 	frame = NULL;
 	try {
+
+		const std::string conf_mru(StandardPaths::DecodePath(_T("?user/mru.json")));
+
+		mru = new agi::MRUManager(conf_mru, GET_DEFAULT_CONFIG(default_mru));
+
 		// Initialize randomizer
 		StartupLog(_T("Initialize random generator"));
 		srand(time(NULL));
@@ -263,6 +268,7 @@ int AegisubApp::OnExit() {
 	SubtitleFormat::DestroyFormats();
 	VideoContext::Clear();
 	delete plugins;
+	delete mru;
 	Options.Clear();
 #ifdef WITH_AUTOMATION
 	delete global_scripts;

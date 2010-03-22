@@ -53,6 +53,8 @@
 #endif
 
 #include "colorspace.h"
+#include "compat.h"
+#include "main.h"
 #include "options.h"
 #include "text_file_reader.h"
 #include "text_file_writer.h"
@@ -745,84 +747,20 @@ bool OptionsManager::IsDefined(wxString key) {
 }
 
 
-
-/// @brief Adds an item to a list of recents 
-/// @param entry 
-/// @param list  
-///
-void OptionsManager::AddToRecentList (wxString entry,wxString list) {
-	// Find strings already in recent list
-	wxArrayString orig;
-	wxString cur;
-	int recentMax = AsInt(list + _T(" max"));
-	int n = 0;
-	for (int i=0;i<recentMax;i++) {
-		wxString key = wxString::Format(_T("%s #%i"), list.c_str(), i+1);
-		if (IsDefined(key)) {
-			cur = AsText(key);
-			if (cur != entry) {
-				orig.Add(cur);
-				n++;
-			}
-		}
-		else break;
-	}
-
-	// Write back to options
-	SetText(list + _T(" #1"),entry);
-	if (n > recentMax-1) n = recentMax-1;
-	for (int i=0;i<n;i++) {
-		wxString key = wxString::Format(_T("%s #%i"), list.c_str(), i+2);
-		SetText(key,orig[i]);
-	}
-
-	// Save options
-	Save();
-}
-
-
-
-/// @brief Removes an item from a list of recents, if it's in the list 
-/// @param entry 
-/// @param list  
-///
-void OptionsManager::RemoveFromRecentList (wxString entry,wxString list) {
-	// Find strings already in recent list
-	wxArrayString cleaned;
-	wxString cur;
-	int recentMax = AsInt(list + _T(" max"));
-	int n = 0;
-	for (int i=0;i<recentMax;i++) {
-		wxString key = wxString::Format(_T("%s #%i"), list.c_str(), i+1);
-		if (IsDefined(key)) {
-			cur = AsText(key);
-			if (cur != entry) {
-				cleaned.Add(cur);
-				n++;
-			}
-		}
-		else break;
-	}
-
-	// Write back to options
-	if (n > recentMax-1) n = recentMax-1;
-	for (int i=0;i<n;i++) {
-		wxString key = wxString::Format(_T("%s #%i"), list.c_str(), i+1);
-		SetText(key,cleaned[i]);
-	}
-
-	// Save options
-	Save();
-}
-
-
-
 /// @brief Get recent list 
 /// @param list 
 /// @return 
 ///
 wxArrayString OptionsManager::GetRecentList (wxString list) {
 	wxArrayString work;
+
+	agi::MRUManager::MRUListMap *map_list = AegisubApp::Get()->mru->Get(STD_STR(list));
+
+	for (agi::MRUManager::MRUListMap::const_iterator i_lst = map_list->begin(); i_lst != map_list->end(); ++i_lst) {
+		work.Add(wxString(i_lst->second));
+	}
+
+/*
 	int recentMax = AsInt(list + _T(" max"));
 	for (int i=0;i<recentMax;i++) {
 		wxString key = wxString::Format(_T("%s #%i"), list.c_str(), i+1);
@@ -831,6 +769,7 @@ wxArrayString OptionsManager::GetRecentList (wxString list) {
 		}
 		else break;
 	}
+*/
 	return work;
 }
 
