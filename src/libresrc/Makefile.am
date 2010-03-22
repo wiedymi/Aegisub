@@ -10,7 +10,7 @@ bitmap.cpp: ../../tools/common-respack
 	../../tools/common-respack bitmap.cpp ../bitmaps/16 ../bitmaps/24 ../bitmaps/misc/splash.png ../bitmaps/misc/wxicon.png
 
 default_config.cpp: ../../tools/common-respack
-	../../tools/common-respack default_config.cpp ./default_mru.json
+	../../tools/common-respack default_config.cpp ./default_mru.json ./default_config.json
 
 EXTRA_DIST = mru.json
 
