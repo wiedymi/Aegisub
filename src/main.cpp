@@ -73,6 +73,8 @@
 #include "version.h"
 #include "video_context.h"
 
+#include <libaegisub/io.h>
+
 ///////////////////
 // wxWidgets macro
 IMPLEMENT_APP(AegisubApp)
@@ -142,8 +144,21 @@ bool AegisubApp::OnInit() {
 	try {
 
 		const std::string conf_mru(StandardPaths::DecodePath(_T("?user/mru.json")));
-
 		mru = new agi::MRUManager(conf_mru, GET_DEFAULT_CONFIG(default_mru));
+
+    try {
+		opt = new agi::Options();
+#ifdef _DEBUG
+		const std::string conf_default("default_config.json");
+		std::istream *stream = agi::io::Open(conf_default);
+		opt->ConfigDefault(*stream);
+		delete stream;
+#else
+		opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
+#endif
+    } catch (Aegisub::Exception& e) {
+		wxPrintf("Caught Aegisub::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
+	}
 
 		// Initialize randomizer
 		StartupLog(_T("Initialize random generator"));
@@ -268,6 +283,7 @@ int AegisubApp::OnExit() {
 	SubtitleFormat::DestroyFormats();
 	VideoContext::Clear();
 	delete plugins;
+	delete opt;
 	delete mru;
 	Options.Clear();
 #ifdef WITH_AUTOMATION
