@@ -54,6 +54,7 @@ const OptionValue* Options::Get(const std::string &name) {
     if ((index = values.find(name)) != values.end())
 		return index->second;
 
+	std::cout << "agi::Options::Get Option not found: (" << name << ")" << std::endl;
 	throw OptionErrorNotFound(L"Option value not found");
 }
 
