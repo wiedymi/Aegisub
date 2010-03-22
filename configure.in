@@ -1204,6 +1204,7 @@ AC_CONFIG_FILES([
 Makefile
 automation/Makefile
 desktop/Makefile
+libaegisub/Makefile
 libass/Makefile
 libffms/Makefile
 po/Makefile.in
