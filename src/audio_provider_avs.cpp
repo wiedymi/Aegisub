@@ -51,6 +51,7 @@
 
 #include "audio_provider_avs.h"
 #include "charset_conv.h"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "utils.h"
@@ -160,7 +161,7 @@ void AvisynthAudioProvider::LoadFromClip(AVSValue _clip) {
 	vi = script.AsClip()->GetVideoInfo();
 
 	// Convert sample rate
-	int setsample = Options.AsInt(_T("Audio Sample Rate"));
+	int setsample = OPT_GET("Provider/Audio/AVS/Sample Rate")->GetInt();
 	if (vi.SamplesPerSecond() < 32000) setsample = 44100;
 	if (setsample != 0) {
 		AVSValue args[2] = { script, setsample };
