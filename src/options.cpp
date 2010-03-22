@@ -760,16 +760,6 @@ wxArrayString OptionsManager::GetRecentList (wxString list) {
 		work.Add(wxString(i_lst->second));
 	}
 
-/*
-	int recentMax = AsInt(list + _T(" max"));
-	for (int i=0;i<recentMax;i++) {
-		wxString key = wxString::Format(_T("%s #%i"), list.c_str(), i+1);
-		if (IsDefined(key)) {
-			work.Add(Options.AsText(key));
-		}
-		else break;
-	}
-*/
 	return work;
 }
 
