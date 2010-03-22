@@ -71,7 +71,6 @@
 #include "video_context.h"
 
 
-
 #ifdef __WXMAC__
 
 /// DOCME
@@ -87,7 +86,7 @@
 /// @param parent 
 ///
 AudioDisplay::AudioDisplay(wxWindow *parent)
-: wxWindow (parent, -1, wxDefaultPosition, wxSize(200,Options.AsInt(_T("Audio Display Height"))), AudioDisplayWindowStyle , _T("Audio Display"))
+: wxWindow (parent, -1, wxDefaultPosition, wxSize(200,OPT_GET("Audio/Display Height")->GetInt()), AudioDisplayWindowStyle , _T("Audio Display"))
 {
 	// Set variables
 	origImage = NULL;
@@ -329,7 +328,7 @@ void AudioDisplay::DoUpdateImage() {
 		// Draw boundaries
 		if (true) {
 			// Draw start boundary
-			int selWidth = Options.AsInt(_T("Audio Line boundaries Thickness"));
+			const int selWidth = OPT_GET("Audio Line Boundaries Thickness")->GetInt();
 			dc.SetPen(wxPen(Options.AsColour(_T("Audio Line boundary start"))));
 			dc.SetBrush(wxBrush(Options.AsColour(_T("Audio Line boundary start"))));
 			dc.DrawRectangle(lineStart-selWidth/2+1,0,selWidth,h);
@@ -425,7 +424,7 @@ void AudioDisplay::DoUpdateImage() {
 /// Draws markers for inactive lines, eg. the previous line, per configuration.
 void AudioDisplay::DrawInactiveLines(wxDC &dc) {
 	// Check if there is anything to do
-	int shadeType = Options.AsInt(_T("Audio Inactive Lines Display Mode"));
+	const int shadeType = OPT_GET("Audio Inactive Lines Display Mode")->GetInt();
 	if (shadeType == 0) return;
 
 	// Spectrum?
@@ -436,7 +435,7 @@ void AudioDisplay::DrawInactiveLines(wxDC &dc) {
 
 	// Set options
 	dc.SetBrush(wxBrush(Options.AsColour(_T("Audio Line boundary inactive line"))));
-	int selWidth = Options.AsInt(_T("Audio Line boundaries Thickness"));
+	const int selWidth = OPT_GET("Audio/Line Boundaries Thickness")->GetInt();
 	AssDialogue *shade;
 	int shadeX1,shadeX2;
 	int shadeFrom,shadeTo;
@@ -1369,15 +1368,15 @@ void AudioDisplay::CommitChanges (bool nextLine) {
 			AssDialogue *def = new AssDialogue;
 			def->Start = grid->GetDialogue(line_n)->End;
 			def->End = grid->GetDialogue(line_n)->End;
-			def->End.SetMS(def->End.GetMS()+Options.AsInt(_T("Timing Default Duration")));
+			def->End.SetMS(def->End.GetMS()+OPT_GET("Audio/Timing Default Duration")->GetInt());
 			def->Style = grid->GetDialogue(line_n)->Style;
 			grid->InsertLine(def,line_n,true);
 			curStartMS = curEndMS;
-			curEndMS = curStartMS + Options.AsInt(_T("Timing Default Duration"));
+			curEndMS = curStartMS + OPT_GET("Audio/Timing Default Duration")->GetInt();
 		}
 		else if (grid->GetDialogue(line_n+1)->Start.GetMS() == 0 && grid->GetDialogue(line_n+1)->End.GetMS() == 0) {
 			curStartMS = curEndMS;
-			curEndMS = curStartMS + Options.AsInt(_T("Timing Default Duration"));
+			curEndMS = curStartMS + OPT_GET("Audio/Timing Default Duration")->GetInt();
 		}
 		else {
 			curStartMS = grid->GetDialogue(line_n+1)->Start.GetMS();
@@ -1403,13 +1402,13 @@ void AudioDisplay::CommitChanges (bool nextLine) {
 void AudioDisplay::AddLead(bool in,bool out) {
 	// Lead in
 	if (in) {
-		curStartMS -= Options.AsInt(_T("Audio Lead in"));
+		curStartMS -= OPT_GET("Audio/Lead/IN")->GetInt();
 		if (curStartMS < 0) curStartMS = 0;
 	}
 
 	// Lead out
 	if (out) {
-		curEndMS += Options.AsInt(_T("Audio Lead out"));
+		curEndMS += OPT_GET("Audio/Lead/OUT")->GetInt();
 	}
 
 	// Set changes
@@ -1729,7 +1728,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
 						updated = true;
 						diagUpdated = true;
 
-						if (leftIsDown && abs((long)(x-lastX)) > Options.AsInt(_T("Audio Start Drag Sensitivity"))) {
+						if (leftIsDown && abs((long)(x-lastX)) > OPT_GET("Audio/Start Drag Sensitivity")->GetInt()) {
 							selStart = lastX;
 							selEnd = x;
 							curStartMS = GetBoundarySnap(GetMSAtX(lastX),10,event.ShiftDown(),true);
@@ -1891,7 +1890,7 @@ int AudioDisplay::GetBoundarySnap(int ms,int rangeX,bool shiftHeld,bool start) {
 	}
 
 	// Other subtitles' boundaries
-	int inactiveType = Options.AsInt(_T("Audio Inactive Lines Display Mode"));
+	int inactiveType = OPT_GET("Audio/Inactive Lines Display Mode")->GetInt();
 	bool snapLines = Options.AsBool(_T("Audio snap to other lines"));
 	if (shiftHeld) snapLines = !snapLines;
 	if (snapLines && (inactiveType == 1 || inactiveType == 2)) {
