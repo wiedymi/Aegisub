@@ -165,13 +165,6 @@
 		"Tips enabled" : false,
 		"Show splash" : true,
 		"Local config" : false,
-		"Recent timecodes max" : 16,
-		"Recent keyframes max" : 16,
-		"Recent sub max" : 16,
-		"Recent vid max" : 16,
-		"Recent aud max" : 16,
-		"Recent find max" : 16,
-		"Recent replace max" : 16,
 		"Auto save path" : "?user/autosave",
 		"Auto backup" : true,
 		"Auto backup path" : "?user/autoback",
@@ -332,12 +325,6 @@
 		"Style editor preview text" : "Aegisub\\N0123 月語",
 		"Style editor preview background" : "rgb(125, 153, 176)",
 		"last version" : "4040",
-		"recent aud #1" : "/mnt/free/aegisub/test_files/Kaze no Garden - Nocturne (theme).mp3.wav",
-		"recent aud #2" : "/mnt/free/aegisub/test_files/out.wav",
-		"recent sub #1" : "/mnt/free/aegisub/test_files/Ookami_Kakushi_ep01[edit.AK.wind].ass",
-		"recent vid #1" : "/mnt/free/aegisub/test_files/kenichi_test.avi",
-		"recent vid #2" : "/mnt/free/aegisub/test_files/Aegisub MPG seeking sample.mpg",
 		"Last Version" : 4040,
-		"Recent aud #1" : "/mnt/free/aegisub/test_files/Kaze no Garden - Nocturne (theme).mp3.wav"
 	}
 }
