@@ -45,6 +45,7 @@
 #endif
 
 #include "dialog_tip.h"
+#include "main.h"
 #include "options.h"
 
 
@@ -100,7 +101,7 @@ wxString TipOfTheDay::GetTip() {
 void TipOfTheDay::Show(wxWindow *parent) {
 	try {
 		if (Options.AsBool(_T("Tips enabled"))) {
-			TipOfTheDay *tip = new TipOfTheDay(Options.AsInt(_T("Tips current")));
+			TipOfTheDay *tip = new TipOfTheDay(OPT_GET("Tool/Tip of the Day/Current")->GetInt());
 			bool show = wxShowTip(parent, tip, true);
 			if (!show) Options.SetBool(_T("Tips enabled"),false);
 			Options.SetInt(_T("Tips current"),tip->curTip);

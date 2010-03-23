@@ -44,6 +44,7 @@
 
 #include "dialog_detached_video.h"
 #include "frame_main.h"
+#include "main.h"
 #include "options.h"
 #include "video_box.h"
 #include "video_context.h"
@@ -63,8 +64,8 @@ DialogDetachedVideo::DialogDetachedVideo(FrameMain *par, const wxSize &initialDi
 	parent = par;
 
 	// Set up window
-	int x = Options.AsInt(_T("Detached video last x"));
-	int y = Options.AsInt(_T("Detached video last y"));
+	int x = OPT_GET("Video/Detached/Last/X")->GetInt();
+	int y = OPT_GET("Video/Detached/Last/Y")->GetInt();
 	if (x != -1 && y != -1) SetPosition(wxPoint(x,y));
 	if (Options.AsBool(_T("Detached video maximized"))) Maximize();
 

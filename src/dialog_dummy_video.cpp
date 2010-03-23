@@ -46,6 +46,7 @@
 
 #include "dialog_dummy_video.h"
 #include "help_button.h"
+#include "main.h"
 #include "options.h"
 
 
@@ -195,8 +196,8 @@ DialogDummyVideo::DialogDummyVideo(wxWindow *parent)
 
 	// Initialise controls
 	int lastwidth, lastheight, lastres = 0;
-	lastwidth = Options.AsInt(_T("Video Dummy Last Width"));
-	lastheight = Options.AsInt(_T("Video Dummy Last Height"));
+	lastwidth = OPT_GET("Video/Dummy/Last/Width")->GetInt();
+	lastheight = OPT_GET("Video/Dummy/Last/Height")->GetInt();
 	for (ResolutionShortcut *res = resolutions; res->name; ++res) {
 		resolution_shortcuts->Append(res->name);
 		if (res->width == lastwidth && res->height == lastheight)
@@ -212,7 +213,7 @@ DialogDummyVideo::DialogDummyVideo(wxWindow *parent)
 	width->ChangeValue(Options.AsText(_T("Video Dummy Last Width")));
 	height->ChangeValue(Options.AsText(_T("Video Dummy Last Height")));
 	length->SetRange(0, 0x10000000);
-	length->SetValue(Options.AsInt(_T("Video Dummy Last Length")));
+	length->SetValue(OPT_GET("Video/Dummy/Last/Length")->GetInt());
 	UpdateLengthDisplay();
 
 	// Layout

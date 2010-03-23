@@ -56,6 +56,7 @@
 #include "frame_main.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "scintilla_text_ctrl.h"
 #include "subs_grid.h"
@@ -122,7 +123,7 @@ DialogFontsCollector::DialogFontsCollector(wxWindow *parent)
 	choices.Add(_("DEBUG: Verify all fonts in system"));
 #endif
 	CollectAction = new wxRadioBox(this,RADIO_BOX,_T("Action"),wxDefaultPosition,wxDefaultSize,choices,1);
-	size_t lastAction = Options.AsInt(_T("Fonts Collector Action"));
+	size_t lastAction = OPT_GET("Tool/Fonts Collector/Action")->GetInt();
 	if (lastAction >= choices.GetCount()) lastAction = 0;
 	CollectAction->SetSelection(lastAction);
 

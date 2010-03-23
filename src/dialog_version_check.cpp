@@ -65,6 +65,7 @@
 #endif
 
 #include "dialog_version_check.h"
+#include "main.h"
 #include "options.h"
 #include "include/aegisub/exception.h"
 #include "string_codec.h"
@@ -173,7 +174,7 @@ wxThread::ExitCode AegisubVersionCheckerThread::Entry()
 			return 0;
 
 		// Is it actually time for a check?
-		time_t next_check = Options.AsInt(_T("Updates Next Check Time"));
+		time_t next_check = OPT_GET("Version/Next Check")->GetInt();
 		if ((time_t)next_check > wxDateTime::GetTimeNow())
 			return 0;
 	}

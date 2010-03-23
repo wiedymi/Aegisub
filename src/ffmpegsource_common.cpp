@@ -310,9 +310,9 @@ wxThread::ExitCode FFmpegSourceCacheCleaner::Entry() {
 
 	// the option is in megabytes, we need bytes
 	// shift left by 20 is CLEARLY more efficient than multiplying by 1048576
-	int64_t maxsize = Options.AsInt(_T("FFmpegSource max cache size")) << 20;
+	int64_t maxsize = OPT_GET("Provider/FFmpegSource/Cache/Size")->GetInt() << 20;
 	int64_t cursize = wxDir::GetTotalSize(cachedirname).GetValue();
-	int maxfiles	= Options.AsInt(_T("FFmpegSource max cache files"));
+	int maxfiles	= OPT_GET("Provider/FFmpegSource/Cache/Files")->GetInt();
 
 	if (!cachedir.HasFiles(_T("*.ffindex"))) {
 		wxLogDebug(_T("FFmpegSourceCacheCleaner: no index files in cache folder, exiting"));

@@ -111,8 +111,8 @@ DialogSearchReplace::DialogSearchReplace (wxWindow *parent,bool _hasReplace,wxSt
 	wxSizer *LimitSizer = new wxBoxSizer(wxHORIZONTAL);
 	LimitSizer->Add(Field,1,wxEXPAND | wxRIGHT,5);
 	LimitSizer->Add(Affect,0,wxEXPAND | wxRIGHT,0);
-	Field->SetSelection(Options.AsInt(_T("Find Field")));
-	Affect->SetSelection(Options.AsInt(_T("Find Affect")));
+	Field->SetSelection(OPT_GET("Tool/Search Replace/Field")->GetInt());
+	Affect->SetSelection(OPT_GET("Tool/Search Replace/Affect")->GetInt());
 
 	// Left sizer
 	wxSizer *LeftSizer = new wxBoxSizer(wxVERTICAL);

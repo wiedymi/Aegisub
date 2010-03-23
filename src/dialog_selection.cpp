@@ -47,6 +47,7 @@
 #include "ass_dialogue.h"
 #include "dialog_selection.h"
 #include "help_button.h"
+#include "main.h"
 #include "options.h"
 #include "subs_grid.h"
 
@@ -129,13 +130,13 @@ wxDialog (parent,-1,_("Select"),wxDefaultPosition,wxDefaultSize,wxCAPTION)
 	CenterOnParent();
 
 	// Load settings
-	Field->SetSelection(Options.AsInt(_T("Select Field")));
-	Action->SetSelection(Options.AsInt(_T("Select Action")));
+	Field->SetSelection(OPT_GET("Tool/Select/Field")->GetInt());
+	Action->SetSelection(OPT_GET("Tool/Select/Action")->GetInt());
 	MatchCase->SetValue(Options.AsBool(_T("Select Match case")));
 	MatchDialogues->SetValue(Options.AsBool(_T("Select Match dialogues")));
 	MatchComments->SetValue(Options.AsBool(_T("Select Match comments")));
-	int condition = Options.AsInt(_T("Select Condition"));
-	int mode = Options.AsInt(_T("Select Mode"));
+	int condition = OPT_GET("Tool/Select/Condition")->GetInt();
+	int mode = OPT_GET("Tool/Select/Mode")->GetInt();
 	if (condition == 1) DoesntMatch->SetValue(true);
 	if (mode == 1) Contains->SetValue(true);
 	else if (mode == 2) RegExp->SetValue(true);

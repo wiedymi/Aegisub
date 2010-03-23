@@ -55,6 +55,7 @@
 #include "dialog_shift_times.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "subs_edit_box.h"
@@ -163,10 +164,10 @@ DialogShiftTimes::DialogShiftTimes (wxWindow *parent,SubtitlesGrid *_grid)
 		}
 	}
 	else {
-		ShiftTime->SetTime(Options.AsInt(_T("Shift Times Length")));
+		ShiftTime->SetTime(OPT_GET("Tool/Shift Times/Length")->GetInt());
 	}
-	TimesChoice->SetSelection(Options.AsInt(_T("Shift Times Type")));
-	SelChoice->SetSelection(Options.AsInt(_T("Shift Times Affect")));
+	TimesChoice->SetSelection(OPT_GET("Tool/Shift Times/Type")->GetInt());
+	SelChoice->SetSelection(OPT_GET("Tool/Shift Times/Affect")->GetInt());
 	if (Options.AsBool(_T("Shift Times Direction"))) DirectionBackward->SetValue(true);
 
 	// Has selection?

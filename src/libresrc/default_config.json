@@ -55,11 +55,18 @@
 		},
 		"Avisynth" : {
 			"Memory Max" : 64
+		},
+		"FFmpegSource" : {
+			"Cache" : {
+				"Size" : 42,
+				"Files" : 20
+			}
 		}
 	},
 
 	"Version" : {
-		"SVN" : "$Id$"
+		"Id" : "$Id$",
+		"Next Check" : 0
 	},
 
 
@@ -69,6 +76,59 @@
 			"Thread Priority" : 1
 		}
 	},
+
+	"Tool" : {
+		"Colour Picker" : {
+			"Mode" : 4
+		},
+		"Fonts Collector" : {
+			"Action" : 0
+		},
+		"Preferences" : {
+			"Page" : 0
+		},
+		"Search Replace" : {
+			"Affect" : 0,
+			"Field" : 0
+		},
+		"Select" : {
+			"Field" : 0,
+			"Action" : 0,
+			"Condition" : 0,
+			"Mode" : 1
+		},
+
+		"Shift Times" : {
+			"Type" : 0,
+			"Length" : 0,
+			"Affect" : 0
+		},
+
+		"Tip of the Day" : {
+			"Current" : 0
+		}
+
+	},
+
+
+	"Video" : {
+		"Detached" : {
+			"Last" : {
+				"X" : -1,
+				"Y" : -1
+			}
+		},
+		"Dummy" : {
+			"Last" : {
+				"Width" : 640,
+				"Height" : 480,
+				"Length" : 40000
+ 			}
+		}
+	},
+
+
+
 
 
 	"Config" : {
@@ -124,8 +184,6 @@
 		"Allow Ancient Avisynth" : false,
 		"Subtitles Provider" : "libass",
 		"Video cache size" : 32,
-		"FFmpegSource max cache size" : 42,
-		"FFmpegSource max cache files" : 20,
 		"FFmpegSource always index all tracks" : 1,
 		"FFmpegSource log level" : "quiet",
 		"FFmpegSource audio decoding error handling" : "stop",
@@ -186,34 +244,24 @@
 		"Audio Play cursor" : "white",
 		"Audio Background" : "black",
 		"RGBAdjust Tool" : false,
-		"Video Dummy Last Width" : 640,
-		"Video Dummy Last Height" : 480,
 		"Video Dummy Last Colour" : "rgb(47, 163, 254)",
 		"Video Dummy Last FPS" : 23.975999999999999091,
-		"Video Dummy Last Length" : 40000,
 		"Video Dummy Pattern" : false,
 		"Locale Code" : -1,
 		"Sync video with subs" : true,
 		"Spell checker language" : "en_US",
 		"Thesaurus language" : "en_US",
-		"Options Page" : 0,
 		"Audio Link" : true,
 		"Audio Autocommit" : false,
 		"Audio Autoscroll" : true,
 		"Audio Medusa Timing Hotkeys" : false,
 		"Audio Next Line on Commit" : true,
 		"Shift Times ByTime" : true,
-		"Shift Times Type" : 0,
-		"Shift Times Length" : 0,
-		"Shift Times Affect" : 0,
 		"Shift Times Direction" : true,
-		"Tips current" : 0,
 		"Maximized" : false,
 		"Find Match Case" : false,
 		"Find RegExp" : false,
 		"Find Update Video" : false,
-		"Find Affect" : 0,
-		"Find Field" : 0,
 		"Grid show column 0" : true,
 		"Grid show column 1" : true,
 		"Grid show column 2" : true,
@@ -235,12 +283,9 @@
 		"Paste Over #8" : false,
 		"Paste Over #9" : true,
 		"Fonts Collector Destination" : "?script",
-		"Fonts Collector Action" : 0,
 		"Audio Spectrum" : true,
 		"Video Visual Realtime" : true,
 		"Detached video" : false,
-		"Detached video last x" : -1,
-		"Detached video last y" : -1,
 		"Detached video maximized" : false,
 		"Timing processor key start before thres" : 5,
 		"Timing processor key start after thres" : 4,
@@ -254,15 +299,10 @@
 		"Timing processor Only Selection" : false,
 		"Timing processor adjacent bias" : 1,
 		"Select Text" : "",
-		"Select Condition" : 0,
-		"Select Field" : 0,
-		"Select Action" : 0,
-		"Select Mode" : 1,
 		"Select Match case" : false,
 		"Select Match dialogues" : true,
 		"Select Match comments" : false,
 		"Color Picker Recent" : "&H000000& &H0000FF& &H00FFFF& &H00FF00& &HFFFF00& &HFF0000& &HFF00FF& &HFFFFFF&",
-		"Color Picker Mode" : 4,
 		"Last open subtitles path" : "",
 		"Last open video path" : "",
 		"Last open audio path" : "/mnt/free/aegisub/test_files/Kaze no Garden - Nocturne (theme).mp3.wav",
@@ -272,7 +312,6 @@
 		"kanji timer interpolation" : true,
 		"Style editor preview text" : "Aegisub\\N0123 月語",
 		"Style editor preview background" : "rgb(125, 153, 176)",
-		"Updates Next Check Time" : 0,
 		"last version" : "4040",
 		"recent aud #1" : "/mnt/free/aegisub/test_files/Kaze no Garden - Nocturne (theme).mp3.wav",
 		"recent aud #2" : "/mnt/free/aegisub/test_files/out.wav",

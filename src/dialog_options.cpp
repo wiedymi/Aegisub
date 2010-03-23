@@ -56,6 +56,7 @@
 #include "frame_main.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "subs_edit_box.h"
@@ -628,7 +629,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 	book->AddPage(autoPage,_("Automation"),true);
 	book->AddPage(hotkeysPage,_("Hotkeys"),true);
 	#ifdef wxUSE_TREEBOOK
-	book->ChangeSelection(Options.AsInt(_T("Options page")));
+	book->ChangeSelection(OPT_GET("Tool/Preferences/Page")->GetInt());
 	#endif
 	book->Fit();
 

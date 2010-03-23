@@ -1015,7 +1015,7 @@ void SubsEditBox::Commit(bool stay) {
 		if (next >= nrows) {
 			AssDialogue *newline = new AssDialogue;
 			newline->Start = cur->End;
-			newline->End.SetMS(cur->End.GetMS()+Options.AsInt(_T("Timing Default Duration")));
+			newline->End.SetMS(cur->End.GetMS()+OPT_GET("Timing/Default Duration")->GetInt());
 			newline->Style = cur->Style;
 			newline->UpdateData();
 			grid->InsertLine(newline,next-1,true,true);

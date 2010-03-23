@@ -59,6 +59,7 @@
 #include "dialog_colorpicker.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "utils.h"
 
@@ -764,7 +765,7 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 
 	// Fill the controls
 	updating_controls = false;
-	int mode = Options.AsInt(_T("Color Picker Mode"));
+	int mode = OPT_GET("Tool/Colour Picker/Mode")->GetInt();
 	if (mode < 0 || mode > 4) mode = 3; // HSL default
 	colorspace_choice->SetSelection(mode);
 	SetColor(initial_color);
