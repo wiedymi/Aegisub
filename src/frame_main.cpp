@@ -192,7 +192,7 @@ FrameMain::FrameMain (wxArrayString args)
 	// Set autosave timer
 	StartupLog(_T("Set up Auto Save"));
 	AutoSave.SetOwner(this,AutoSave_Timer);
-	int time = Options.AsInt(_T("Auto save every seconds"));
+	int time = OPT_GET("App/Auto/Save Every Seconds")->GetInt();
 	if (time > 0) {
 		AutoSave.Start(time*1000);
 	}
@@ -214,7 +214,7 @@ FrameMain::FrameMain (wxArrayString args)
 
 	// Version checker
 	StartupLog(_T("Possibly perform automatic updates check"));
-	int option = Options.AsInt(_T("Auto check for updates"));
+	int option = OPT_GET("App/Auto/Check For Updates")->GetInt();
 	if (option == -1) {
 		int result = wxMessageBox(_("Do you want Aegisub to check for updates whenever it starts? You can still do it manually via the Help menu."),_("Check for updates?"),wxYES_NO);
 		option = (result == wxYES);
@@ -596,7 +596,7 @@ void FrameMain::InitContents() {
 	videoBox->videoSlider->grid = SubsBox;
 	VideoContext::Get()->grid = SubsBox;
 	StartupLog(_T("Reset video zoom"));
-	videoBox->videoDisplay->SetZoomPos(Options.AsInt(_T("Video Default Zoom")));
+	videoBox->videoDisplay->SetZoomPos(OPT_GET("Video/Default Zoom")->GetInt());
 	Search.grid = SubsBox;
 
 	// Audio area
@@ -966,7 +966,7 @@ void FrameMain::SynchronizeProject(bool fromSubs) {
 		wxString AutoScriptString = subs->GetScriptInfo(_T("Automation Scripts"));
 
 		// Check if there is anything to change
-		int autoLoadMode = Options.AsInt(_T("Autoload linked files"));
+		int autoLoadMode = OPT_GET("App/Auto/Load Linked Files")->GetInt();
 		bool hasToLoad = false;
 		if (curSubsAudio != audioBox->audioName ||
 			curSubsVFR != VFR_Output.GetFilename() ||
@@ -1170,7 +1170,7 @@ void FrameMain::LoadVideo(wxString file,bool autoload) {
 		int scriptx = SubsBox->ass->GetScriptInfoAsInt(_T("PlayResX"));
 		int scripty = SubsBox->ass->GetScriptInfoAsInt(_T("PlayResY"));
 		if (scriptx != vidx || scripty != vidy) {
-			switch (Options.AsInt(_T("Video Check Script Res"))) {
+			switch (OPT_GET("Video/Check Script Res")->GetInt()) {
 				case 1:
 					// Ask to change on mismatch
 					if (wxMessageBox(wxString::Format(_("The resolution of the loaded video and the resolution specified for the subtitles don't match.\n\nVideo resolution:\t%d x %d\nScript resolution:\t%d x %d\n\nChange subtitles resolution to match video?"), vidx, vidy, scriptx, scripty), _("Resolution mismatch"), wxYES_NO, this) != wxYES)

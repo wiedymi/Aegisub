@@ -44,6 +44,7 @@
 #endif
 
 #include "ass_dialogue.h"
+#include "main.h"
 #include "options.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
@@ -203,7 +204,7 @@ void SubsTextEditCtrl::SetStyles() {
 	font.SetEncoding(wxFONTENCODING_DEFAULT); // this solves problems with some fonts not working properly
 	wxString fontname = Options.AsText(_T("Edit Font Face"));
 	if (fontname != _T("")) font.SetFaceName(fontname);
-	int size = Options.AsInt(_T("Edit Font Size"));
+	int size = OPT_GET("Subtitle/Edit Box/Font Size")->GetInt();
 
 	// Normal style
 	StyleSetFont(0,font);

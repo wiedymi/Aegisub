@@ -57,6 +57,7 @@
 #include "audio_provider_quicktime.h"
 #endif
 #include "audio_provider_ram.h"
+#include "main.h"
 #include "options.h"
 
 
@@ -285,7 +286,7 @@ AudioProvider *AudioProviderFactoryManager::GetAudioProvider(wxString filename, 
 		provider = CreateConvertAudioProvider(provider);
 
 	// Change provider to RAM/HD cache if needed
-	if (cache == -1) cache = Options.AsInt(_T("Audio Cache"));
+	if (cache == -1) cache = OPT_GET("Audio/Cache")->GetInt();
 	if (cache) {
 		AudioProvider *final = NULL;
 

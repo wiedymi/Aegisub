@@ -1,11 +1,20 @@
-
 {
+	"App" : {
+		"Auto" : {
+			"Save Every Seconds" : 60,
+			"Check For Updates" : -1,
+			"Load Linked Files" : 2
+		},
+		"Locale" : -1
+	},
+
 	"Audio" : {
 		"Display Height" : 200,
 		"Line Boundaries Thickness" : 2,
 		"Inactive Lines Display Mode" : 1,
 		"Start Drag Sensitivity" : 2,
 		"Line Boundary Inactive Line" : "grey",
+		"Cache" : 1,
 		"Lead" : {
 			"IN": 200,
 			"OUT": 300
@@ -26,11 +35,15 @@
 	},
 
 
+
 	"Subtitle" : {
 		"Undo Levels" : 8,
 		"Grid" : {
 			"Font Size" : 10,
 			"Hide Overrides" : 1
+		},
+		"Edit Box" : {
+			"Font Size" : 10
 		}
 	},
 
@@ -53,6 +66,17 @@
 				"Sample Rate" : 0
 			}
 		},
+
+		"Video" : {
+			"FFMpegSource" : {
+				"Decoding Threads" : 1
+			},
+			"Cache" : {
+				"Size" : 32
+			}
+		},
+
+
 		"Avisynth" : {
 			"Memory Max" : 64
 		},
@@ -72,6 +96,7 @@
 
 	"Automation" : {
 		"Trace Level" : 3,
+		"Autoreload Mode" : 1,
 		"Lua" : {
 			"Thread Priority" : 1
 		}
@@ -112,6 +137,11 @@
 
 
 	"Video" : {
+		"Check Script Res" : 0,
+		"Default Zoom" : 7,
+		"Slider" : {
+			"Fast Jump Step" : 10
+		},
 		"Detached" : {
 			"Last" : {
 				"X" : -1,
@@ -142,12 +172,9 @@
 		"Recent aud max" : 16,
 		"Recent find max" : 16,
 		"Recent replace max" : 16,
-		"Auto check for updates" : -1,
-		"Auto save every seconds" : 60,
 		"Auto save path" : "?user/autosave",
 		"Auto backup" : true,
 		"Auto backup path" : "?user/autoback",
-		"Autoload linked files" : 2,
 		"Text actor separator" : ":",
 		"Text comment starter" : "#",
 		"Save charset" : "UTF-8",
@@ -171,19 +198,14 @@
 		"Edit Box Need Enter Background" : "rgb(192, 192, 255)",
 		"Edit Font Size" : 11,
 		"Edit Font Face" : "",
-		"Video Check Script Res" : 0,
-		"Video Default Zoom" : 7,
-		"Video Fast Jump Step" : 10,
 		"Video Screenshot Path" : "?video",
 		"Show keyframes on video slider" : true,
 		"Show overscan mask" : false,
 		"Threaded Video" : false,
 		"Video Provider" : "ffmpegsource",
 		"FFmpeg allow unsafe seeking" : false,
-		"FFmpegSource decoding threads" : 1,
 		"Allow Ancient Avisynth" : false,
 		"Subtitles Provider" : "libass",
-		"Video cache size" : 32,
 		"FFmpegSource always index all tracks" : 1,
 		"FFmpegSource log level" : "quiet",
 		"FFmpegSource audio decoding error handling" : "stop",
@@ -195,7 +217,6 @@
 		"Audio snap to keyframes" : false,
 		"Audio snap to other lines" : false,
 		"Disable Dragging Times" : false,
-		"Audio Cache" : 1,
 		"Audio Player" : "portaudio",
 		"Audio Provider" : "ffmpegsource",
 		"Audio Downmixer" : "ConvertToMono",
@@ -207,7 +228,6 @@
 		"Automation Base Path" : "?data/automation/",
 		"Automation Include Path" : "?user/automation/include/|?data/automation/include/",
 		"Automation Autoload Path" : "?user/automation/autoload/|?data/automation/autoload/",
-		"Automation Autoreload Mode" : 1,
 		"Grid allow focus" : true,
 		"Highlight subs in frame" : true,
 		"Grid standard foreground" : "black",
@@ -247,7 +267,6 @@
 		"Video Dummy Last Colour" : "rgb(47, 163, 254)",
 		"Video Dummy Last FPS" : 23.975999999999999091,
 		"Video Dummy Pattern" : false,
-		"Locale Code" : -1,
 		"Sync video with subs" : true,
 		"Spell checker language" : "en_US",
 		"Thesaurus language" : "en_US",

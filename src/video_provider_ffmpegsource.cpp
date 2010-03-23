@@ -54,6 +54,7 @@
 
 #include "aegisub_endian.h"
 #include "include/aegisub/aegisub.h"
+#include "main.h"
 #include "options.h"
 #include "video_context.h"
 #include "video_provider_ffmpegsource.h"
@@ -201,7 +202,7 @@ void FFmpegSourceVideoProvider::LoadVideo(wxString filename) {
 	}
 
 	// set thread count
-	int Threads = Options.AsInt(_T("FFmpegSource decoding threads"));
+	int Threads = OPT_GET("Provider/Video/FFmpegSource/Decoding Threads")->GetInt();
 	if (Threads < 1)
 		throw _T("FFmpegSource video provider: invalid decoding thread count");
 

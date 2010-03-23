@@ -41,6 +41,7 @@
 
 #include "ass_file.h"
 #include "ass_time.h"
+#include "main.h"
 #include "options.h"
 #include "subtitle_format_ttxt.h"
 
@@ -369,7 +370,7 @@ void TTXTSubtitleFormat::ConvertToTTXT () {
 	// Insert blank line at the end
 	AssDialogue *diag = new AssDialogue();
 	diag->SetStartMS(lastTime.GetMS());
-	diag->SetEndMS(lastTime.GetMS()+Options.AsInt(_T("Timing Default Duration")));
+	diag->SetEndMS(lastTime.GetMS()+OPT_GET("Timing/Default Duration")->GetInt());
 	diag->group = _T("[Events]");
 	diag->Style = _T("Default");
 	diag->Comment = false;

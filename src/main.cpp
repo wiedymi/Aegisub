@@ -225,7 +225,7 @@ bool AegisubApp::OnInit() {
 		StartupLog(_T("Initialize final locale"));
 
 		// Set locale
-		int lang = Options.AsInt(_T("Locale Code"));
+		int lang = OPT_GET("App/Locale")->GetInt();
 		if (lang == -1) {
 			lang = locale.PickLanguage();
 			Options.SetInt(_T("Locale Code"),lang);

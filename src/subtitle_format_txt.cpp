@@ -41,6 +41,7 @@
 
 #include "ass_dialogue.h"
 #include "dialog_text_import.h"
+#include "main.h"
 #include "options.h"
 #include "subtitle_format_txt.h"
 #include "text_file_reader.h"
@@ -184,7 +185,7 @@ void TXTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {	using na
 		line->group = _T("[Events]");
 		line->Style = _T("Default");
 		line->SetStartMS(0);
-		line->SetEndMS(Options.AsInt(_T("Timing Default Duration")));
+		line->SetEndMS(OPT_GET("Timing/Default Duration")->GetInt());
 		Line->push_back(line);
 	}
 }

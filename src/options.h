@@ -131,7 +131,6 @@ public:
 	void ResetWith(wxString key,wxString param);
 
 	bool IsDefined(wxString key);
-	int AsInt(wxString key);
 	double AsFloat(wxString key);
 	bool AsBool(wxString key);
 	wxString AsText(wxString key);
