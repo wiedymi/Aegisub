@@ -1209,8 +1209,8 @@ void FrameMain::OnOpenKanjiTimer (wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenOptions (wxCommandEvent &event) {
 	try {
-		DialogOptions options(this);
-		options.ShowModal();
+//		DialogOptions options(this);
+//		options.ShowModal();
 	}
 	catch (const wxChar *e) {
 		wxLogError(e);

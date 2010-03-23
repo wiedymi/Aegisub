@@ -232,7 +232,6 @@ aegisub_2_2_SOURCES = \
 	dialog_fonts_collector.cpp \
 	dialog_jumpto.cpp \
 	dialog_kara_timing_copy.cpp \
-	dialog_options.cpp \
 	dialog_paste_over.cpp \
 	dialog_progress.cpp \
 	dialog_properties.cpp \
