@@ -848,7 +848,7 @@ void FrameMain::OnNewSubtitles(wxCommandEvent& WXUNUSED(event)) {
 ///
 void FrameMain::OnExportSubtitles(wxCommandEvent & WXUNUSED(event)) {
 #ifdef WITH_AUTOMATION
-	int autoreload = Options.AsInt(_T("Automation Autoreload Mode"));
+	int autoreload = OPT_GET("Automation/Autoreload Mode")->GetInt();
 	if (autoreload & 1) {
 		// Local scripts
 		const std::vector<Automation4::Script*> scripts = local_scripts->GetScripts();
@@ -1845,7 +1845,7 @@ void FrameMain::OnNextLine(wxCommandEvent &event) {
 ///
 void FrameMain::OnToggleTags(wxCommandEvent &event) {
 	// Read value
-	int tagMode = Options.AsInt(_T("Grid hide overrides"));
+	int tagMode = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
 
 	// Cycle to next
 	if (tagMode < 0 || tagMode > 2) tagMode = 1;
