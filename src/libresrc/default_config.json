@@ -4,17 +4,34 @@
 		"Display Height" : 200,
 		"Line Boundaries Thickness" : 2,
 		"Inactive Lines Display Mode" : 1,
-		"Default Duration" : 2000,
 		"Start Drag Sensitivity" : 2,
 		"Line Boundary Inactive Line" : "grey",
 		"Lead" : {
 			"IN": 200,
 			"OUT": 300
+		},
+
+		"Renderer" : {
+			"Spectrum" : {
+				"Cutoff" : 0,
+				"Quality" : 1,
+				"Memory Max" : 128
+			}
 		}
 	},
 
+
+	"Timing" : {
+		"Default Duration" : 2000
+	},
+
+
 	"Subtitle" : {
-		"Undo Levels" : 8
+		"Undo Levels" : 8,
+		"Grid" : {
+			"Font Size" : 10,
+			"Hide Overrides" : 1
+		}
 	},
 
 
@@ -35,12 +52,24 @@
 			"AVS" : {
 				"Sample Rate" : 0
 			}
+		},
+		"Avisynth" : {
+			"Memory Max" : 64
 		}
 	},
 
 	"Version" : {
 		"SVN" : "$Id$"
 	},
+
+
+	"Automation" : {
+		"Trace Level" : 3,
+		"Lua" : {
+			"Thread Priority" : 1
+		}
+	},
+
 
 	"Config" : {
 		"Tips enabled" : false,
@@ -88,7 +117,6 @@
 		"Video Screenshot Path" : "?video",
 		"Show keyframes on video slider" : true,
 		"Show overscan mask" : false,
-		"Avisynth MemoryMax" : 64,
 		"Threaded Video" : false,
 		"Video Provider" : "ffmpegsource",
 		"FFmpeg allow unsafe seeking" : false,
@@ -118,14 +146,9 @@
 		"Audio HD Cache Location" : "default",
 		"Audio HD Cache Name" : "audio%02i.tmp",
 		"Audio Disable PCM Provider" : false,
-		"Audio Spectrum Cutoff" : 0,
-		"Audio Spectrum Quality" : 1,
-		"Audio Spectrum Memory Max" : 128,
 		"Automation Base Path" : "?data/automation/",
 		"Automation Include Path" : "?user/automation/include/|?data/automation/include/",
 		"Automation Autoload Path" : "?user/automation/autoload/|?data/automation/autoload/",
-		"Automation Trace Level" : 3,
-		"Automation Thread Priority" : 1,
 		"Automation Autoreload Mode" : 1,
 		"Grid allow focus" : true,
 		"Highlight subs in frame" : true,
@@ -141,7 +164,6 @@
 		"Grid left column" : "rgb(196, 236, 201)",
 		"Grid active border" : "rgb(255, 91, 239)",
 		"Grid lines" : "grey",
-		"Grid font size" : 10,
 		"Grid Font Face" : "",
 		"Grid hide overrides char" : "☀",
 		"Audio Draw Secondary Lines" : true,
@@ -192,7 +214,6 @@
 		"Find Update Video" : false,
 		"Find Affect" : 0,
 		"Find Field" : 0,
-		"Grid hide overrides" : 1,
 		"Grid show column 0" : true,
 		"Grid show column 1" : true,
 		"Grid show column 2" : true,

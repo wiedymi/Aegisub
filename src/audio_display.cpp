@@ -1368,15 +1368,15 @@ void AudioDisplay::CommitChanges (bool nextLine) {
 			AssDialogue *def = new AssDialogue;
 			def->Start = grid->GetDialogue(line_n)->End;
 			def->End = grid->GetDialogue(line_n)->End;
-			def->End.SetMS(def->End.GetMS()+OPT_GET("Audio/Timing Default Duration")->GetInt());
+			def->End.SetMS(def->End.GetMS()+OPT_GET("Timing/Default Duration")->GetInt());
 			def->Style = grid->GetDialogue(line_n)->Style;
 			grid->InsertLine(def,line_n,true);
 			curStartMS = curEndMS;
-			curEndMS = curStartMS + OPT_GET("Audio/Timing Default Duration")->GetInt();
+			curEndMS = curStartMS + OPT_GET("Timing/Default Duration")->GetInt();
 		}
 		else if (grid->GetDialogue(line_n+1)->Start.GetMS() == 0 && grid->GetDialogue(line_n+1)->End.GetMS() == 0) {
 			curStartMS = curEndMS;
-			curEndMS = curStartMS + OPT_GET("Audio/Timing Default Duration")->GetInt();
+			curEndMS = curStartMS + OPT_GET("Timing/Default Duration")->GetInt();
 		}
 		else {
 			curStartMS = grid->GetDialogue(line_n+1)->Start.GetMS();

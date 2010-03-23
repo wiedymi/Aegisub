@@ -112,7 +112,7 @@ AviSynthWrapper::AviSynthWrapper() {
 		}
 		AVSTRACE(_T("Created script environment"));
 		// Set memory limit
-		int memoryMax = Options.AsInt(_T("Avisynth MemoryMax"));
+		const int memoryMax = OPT_GET("Provider/Avisynth/Memory Max")->GetInt();
 		if (memoryMax != 0) {
 			env->SetMemoryMax(memoryMax);
 			AVSTRACE(_T("Set Avisynth memory limit"));

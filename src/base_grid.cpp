@@ -49,6 +49,7 @@
 #include "audio_display.h"
 #include "base_grid.h"
 #include "frame_main.h"
+#include "main.h"
 #include "options.h"
 #include "subs_edit_box.h"
 #include "utils.h"
@@ -109,7 +110,7 @@ void BaseGrid::UpdateStyle() {
 	wxString fontname = Options.AsText(_T("Grid Font Face"));
 	if (fontname.IsEmpty()) fontname = _T("Tahoma");
 	font.SetFaceName(fontname);
-	font.SetPointSize(Options.AsInt(_T("Grid font size")));
+	font.SetPointSize(OPT_GET("Subtitle/Grid/Font Size")->GetInt());
 	font.SetWeight(wxFONTWEIGHT_NORMAL);
 
 	// Set line height
@@ -516,7 +517,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 			strings.Add(curDiag->GetMarginString(2));
 
 			// Set text
-			int mode = Options.AsInt(_T("Grid Hide Overrides"));
+			int mode = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
 			wxString value = _T("");
 
 			// Hidden overrides

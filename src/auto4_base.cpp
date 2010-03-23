@@ -68,6 +68,7 @@
 #include "ass_file.h"
 #include "ass_style.h"
 #include "auto4_base.h"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "string_codec.h"
@@ -491,7 +492,7 @@ namespace Automation4 {
 		Center();
 
 		// Init trace level
-		trace_level = Options.AsInt(_T("Automation Trace Level"));
+		trace_level = OPT_GET("Automation/Trace Level")->GetInt();
 	}
 
 
