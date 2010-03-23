@@ -35,7 +35,15 @@ Options::~Options() {
 
 
 void Options::ConfigDefault(std::istream &config) {
-	json::Reader::Read(config_root, config);
+
+	try {
+		json::Reader::Read(config_root, config);
+	} catch (json::Reader::ParseException& e) {
+		std::cout << "json::ParseException: " << e.what() << ", Line/offset: " << e.m_locTokenBegin.m_nLine + 1 << '/' << e.m_locTokenBegin.m_nLineOffset + 1 << std::endl << std::endl;
+    } catch (json::Exception& e) {
+        /// @todo Do something better here, maybe print the exact error
+        std::cout << "json::Exception: " << e.what() << std::endl;
+	}
 
 	ConfigVisitor config_visitor(values, std::string(""));
 	config_root.Accept(config_visitor);
