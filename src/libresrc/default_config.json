@@ -3,12 +3,50 @@
 		"Auto" : {
 			"Save Every Seconds" : 60,
 			"Check For Updates" : -1,
-			"Load Linked Files" : 2
+			"Load Linked Files" : 2,
+			"Backup" : true,
+			"Save on Every Change" : false
 		},
-		"Locale" : -1
+		"Call Tips" : false,
+		"Locale" : -1,
+		"Maximized" : false,
+		"Splash" : true,
+		"Tips" : false,
+		"Nonstandard Milisecond Times" : false,
+		"Local Config" : false
 	},
 
 	"Audio" : {
+		"Auto" : {
+			"Commit" : false,
+			"Focus" : false,
+			"Scroll" : true
+		},
+
+		"Display" : {
+		"Dragging Times" : false,
+			"Draw" : {
+				"Cursor Time" : true,
+				"Keyframes" : true,
+				"Secondary Lines" : true,
+				"Selection Background" : true,
+				"Timeline" : true,
+				"Video Position" : false
+			},
+			"Snap" : {
+				"Keyframes" : false,
+				"Other Lines" : false
+			}
+
+		},
+		"Link" : true,
+		"Medusa Timing Hotkeys" : false,
+		"Next Line on Commit" : true,
+		"Plays When Stepping Video" : false,
+		"Spectrum" : true,
+		"Wheel Default to Zoom" : false,
+		"Grab Times on Select" : true,
+		"Lock Scroll on Cursor" : false,
 		"Display Height" : 200,
 		"Line Boundaries Thickness" : 2,
 		"Inactive Lines Display Mode" : 1,
@@ -37,13 +75,22 @@
 
 
 	"Subtitle" : {
+		"Highlight" : {
+			"Syntax" : true
+		},
 		"Undo Levels" : 8,
 		"Grid" : {
 			"Font Size" : 10,
+			"Focus Allow" : true,
+			"Highlight Subtitles in Frame" : true,
 			"Hide Overrides" : 1
 		},
 		"Edit Box" : {
+			"Link Time Boxes Commit" : true,
 			"Font Size" : 10
+		},
+		"Time Edit": {
+			"Insert Mode" : true
 		}
 	},
 
@@ -61,14 +108,19 @@
 	},
 
 	"Provider" : {
+
 		"Audio" : {
 			"AVS" : {
 				"Sample Rate" : 0
+			},
+			"PCM" : {
+				"Disable" : false
 			}
 		},
 
 		"Video" : {
 			"FFMpegSource" : {
+				"Unsafe Seeking" : false,
 				"Decoding Threads" : 1
 			},
 			"Cache" : {
@@ -78,6 +130,7 @@
 
 
 		"Avisynth" : {
+			"Allow Ancient" : false,
 			"Memory Max" : 64
 		},
 		"FFmpegSource" : {
@@ -104,6 +157,7 @@
 
 	"Tool" : {
 		"Colour Picker" : {
+			"RGBAdjust Tool" : false,
 			"Mode" : 4
 		},
 		"Fonts Collector" : {
@@ -114,7 +168,10 @@
 		},
 		"Search Replace" : {
 			"Affect" : 0,
-			"Field" : 0
+			"Field" : 0,
+			"Match Case" : false,
+			"RegExp" : false,
+			"Video Update" : false
 		},
 		"Select" : {
 			"Field" : 0,
@@ -126,29 +183,62 @@
 		"Shift Times" : {
 			"Type" : 0,
 			"Length" : 0,
-			"Affect" : 0
+			"Affect" : 0,
+			"ByTime" : true,
+			"Direction" : true
 		},
 
 		"Tip of the Day" : {
 			"Current" : 0
-		}
+		},
 
+		"Kanji Timer" : {
+			"Interpolation" : true
+		},
+
+		"Select Lines" : {
+			"Match" : {
+				"Case" : false,
+				"Comment" : false,
+				"Dialogue" : true
+			}
+		},
+
+		"Timing Post Processor" : {
+			"Enable" : {
+				"Adjacent" : true,
+				"Keyframe" : true,
+				"Lead" : {
+					"IN" : true,
+					"OUT" : true
+				}
+			},
+			"Only Selection" : false
+		}
 	},
 
 
 	"Video" : {
+		"Threaded" : false,
+		"Subtitle Sync" : true,
+		"Visual Realtime" : true,
+		"Overscan Mask" : false,
 		"Check Script Res" : 0,
 		"Default Zoom" : 7,
 		"Slider" : {
+			"Show Keyframes" : true,
 			"Fast Jump Step" : 10
 		},
 		"Detached" : {
+			"Maximized" : false,
+			"Enabled" : false,
 			"Last" : {
 				"X" : -1,
 				"Y" : -1
 			}
 		},
 		"Dummy" : {
+			"Pattern" : false,
 			"Last" : {
 				"Width" : 640,
 				"Height" : 480,
@@ -162,23 +252,13 @@
 
 
 	"Config" : {
-		"Tips enabled" : false,
-		"Show splash" : true,
-		"Local config" : false,
 		"Auto save path" : "?user/autosave",
-		"Auto backup" : true,
 		"Auto backup path" : "?user/autoback",
 		"Text actor separator" : ":",
 		"Text comment starter" : "#",
 		"Save charset" : "UTF-8",
-		"Use nonstandard milisecond times" : false,
-		"Auto save on every change" : false,
 		"Dictionaries path" : "/mnt/free/aegisub/i//share/myspell",
 		"Spell Checker" : "hunspell",
-		"Link time boxes commit" : true,
-		"Insert mode on time boxes" : true,
-		"Call tips enabled" : false,
-		"Syntax highlight enabled" : true,
 		"Syntax Highlight Normal" : "black",
 		"Syntax Highlight Brackets" : "rgb(20, 50, 255)",
 		"Syntax Highlight Slashes" : "rgb(255, 0, 200)",
@@ -192,24 +272,11 @@
 		"Edit Font Size" : 11,
 		"Edit Font Face" : "",
 		"Video Screenshot Path" : "?video",
-		"Show keyframes on video slider" : true,
-		"Show overscan mask" : false,
-		"Threaded Video" : false,
 		"Video Provider" : "ffmpegsource",
-		"FFmpeg allow unsafe seeking" : false,
-		"Allow Ancient Avisynth" : false,
 		"Subtitles Provider" : "libass",
 		"FFmpegSource always index all tracks" : 1,
 		"FFmpegSource log level" : "quiet",
 		"FFmpegSource audio decoding error handling" : "stop",
-		"Audio grab times on select" : true,
-		"Audio Autofocus" : false,
-		"Audio Plays When Stepping Video" : false,
-		"Audio Wheel Default To Zoom" : false,
-		"Audio lock scroll on cursor" : false,
-		"Audio snap to keyframes" : false,
-		"Audio snap to other lines" : false,
-		"Disable Dragging Times" : false,
 		"Audio Player" : "portaudio",
 		"Audio Provider" : "ffmpegsource",
 		"Audio Downmixer" : "ConvertToMono",
@@ -217,12 +284,9 @@
 		"Audio OSS Device" : "/dev/dsp",
 		"Audio HD Cache Location" : "default",
 		"Audio HD Cache Name" : "audio%02i.tmp",
-		"Audio Disable PCM Provider" : false,
 		"Automation Base Path" : "?data/automation/",
 		"Automation Include Path" : "?user/automation/include/|?data/automation/include/",
 		"Automation Autoload Path" : "?user/automation/autoload/|?data/automation/autoload/",
-		"Grid allow focus" : true,
-		"Highlight subs in frame" : true,
 		"Grid standard foreground" : "black",
 		"Grid selection background" : "rgb(206, 255, 231)",
 		"Grid selection foreground" : "black",
@@ -237,12 +301,6 @@
 		"Grid lines" : "grey",
 		"Grid Font Face" : "",
 		"Grid hide overrides char" : "☀",
-		"Audio Draw Secondary Lines" : true,
-		"Audio Draw Selection Background" : true,
-		"Audio Draw Keyframes" : true,
-		"Audio Draw Timeline" : true,
-		"Audio Draw Cursor Time" : true,
-		"Audio Draw Video Position" : false,
 		"Audio Selection Background Modified" : "rgb(92, 0, 0)",
 		"Audio Selection Background" : "rgb(64, 64, 64)",
 		"Audio Seconds Boundaries" : "rgb(0, 100, 255)",
@@ -256,64 +314,18 @@
 		"Audio Syllable text" : "red",
 		"Audio Play cursor" : "white",
 		"Audio Background" : "black",
-		"RGBAdjust Tool" : false,
 		"Video Dummy Last Colour" : "rgb(47, 163, 254)",
 		"Video Dummy Last FPS" : 23.975999999999999091,
-		"Video Dummy Pattern" : false,
-		"Sync video with subs" : true,
 		"Spell checker language" : "en_US",
 		"Thesaurus language" : "en_US",
-		"Audio Link" : true,
-		"Audio Autocommit" : false,
-		"Audio Autoscroll" : true,
-		"Audio Medusa Timing Hotkeys" : false,
-		"Audio Next Line on Commit" : true,
-		"Shift Times ByTime" : true,
-		"Shift Times Direction" : true,
-		"Maximized" : false,
-		"Find Match Case" : false,
-		"Find RegExp" : false,
-		"Find Update Video" : false,
-		"Grid show column 0" : true,
-		"Grid show column 1" : true,
-		"Grid show column 2" : true,
-		"Grid show column 3" : true,
-		"Grid show column 4" : true,
-		"Grid show column 5" : true,
-		"Grid show column 6" : true,
-		"Grid show column 7" : true,
-		"Grid show column 8" : true,
-		"Grid show column 9" : true,
-		"Paste Over #0" : false,
-		"Paste Over #1" : false,
-		"Paste Over #2" : false,
-		"Paste Over #3" : false,
-		"Paste Over #4" : false,
-		"Paste Over #5" : false,
-		"Paste Over #6" : false,
-		"Paste Over #7" : false,
-		"Paste Over #8" : false,
-		"Paste Over #9" : true,
 		"Fonts Collector Destination" : "?script",
-		"Audio Spectrum" : true,
-		"Video Visual Realtime" : true,
-		"Detached video" : false,
-		"Detached video maximized" : false,
 		"Timing processor key start before thres" : 5,
 		"Timing processor key start after thres" : 4,
 		"Timing processor key end before thres" : 5,
 		"Timing processor key end after thres" : 6,
 		"Timing processor adjacent thres" : 300,
-		"Timing processor Enable lead-in" : true,
-		"Timing processor Enable lead-out" : true,
-		"Timing processor Enable keyframe" : true,
-		"Timing processor Enable adjacent" : true,
-		"Timing processor Only Selection" : false,
 		"Timing processor adjacent bias" : 1,
 		"Select Text" : "",
-		"Select Match case" : false,
-		"Select Match dialogues" : true,
-		"Select Match comments" : false,
 		"Color Picker Recent" : "&H000000& &H0000FF& &H00FFFF& &H00FF00& &HFFFF00& &HFF0000& &HFF00FF& &HFFFFFF&",
 		"Last open subtitles path" : "",
 		"Last open video path" : "",
@@ -321,10 +333,10 @@
 		"Last open timecodes path" : "",
 		"Last open keyframes path" : "",
 		"Last open automation path" : "",
-		"kanji timer interpolation" : true,
 		"Style editor preview text" : "Aegisub\\N0123 月語",
 		"Style editor preview background" : "rgb(125, 153, 176)",
 		"last version" : "4040",
 		"Last Version" : 4040,
 	}
 }
+

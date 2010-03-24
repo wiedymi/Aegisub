@@ -88,10 +88,10 @@ DialogSearchReplace::DialogSearchReplace (wxWindow *parent,bool _hasReplace,wxSt
 	CheckMatchCase = new wxCheckBox(this,CHECK_MATCH_CASE,_("Match case"));
 	CheckRegExp = new wxCheckBox(this,CHECK_MATCH_CASE,_("Use regular expressions"));
 	CheckUpdateVideo = new wxCheckBox(this,CHECK_UPDATE_VIDEO,_("Update Video (slow)"));
-	CheckMatchCase->SetValue(Options.AsBool(_T("Find Match Case")));
-	CheckRegExp->SetValue(Options.AsBool(_T("Find RegExp")));
+	CheckMatchCase->SetValue(OPT_GET("Tool/Search Replace/Match Case")->GetBool());
+	CheckRegExp->SetValue(OPT_GET("Tool/Search Replace/RegExp")->GetBool());
 	//CheckRegExp->Enable(false);
-	CheckUpdateVideo->SetValue(Options.AsBool(_T("Find Update Video")));
+	CheckUpdateVideo->SetValue(OPT_GET("Tool/Search Replace/Video Update")->GetBool());
 //	CheckUpdateVideo->Enable(Search.grid->video->loaded);
 	OptionsSizer->Add(CheckMatchCase,0,wxBOTTOM,5);
 	OptionsSizer->Add(CheckRegExp,0,wxBOTTOM,5);

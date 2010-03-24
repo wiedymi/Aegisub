@@ -195,7 +195,7 @@ bool AegisubApp::OnInit() {
 			Options.SetFile(StandardPaths::DecodePath(_T("?data/config.dat")));
 			Options.Load();
 
-			if (Options.AsBool(_T("Local config"))) {
+			if (OPT_GET("App/Local Config")->GetBool()) {
 				// Local config, make ?user mean ?data so all user settings are placed in install dir
 				StandardPaths::SetPathValue(_T("?user"), StandardPaths::DecodePath(_T("?data")));
 			}

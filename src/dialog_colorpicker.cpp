@@ -724,7 +724,7 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 
 	wxSizer *recent_sizer = new wxBoxSizer(wxVERTICAL);
 	recent_sizer->Add(recent_box, 1, wxEXPAND);
-	if (Options.AsBool(_T("RGBAdjust Tool"))) recent_sizer->Add(new wxButton(this,BUTTON_RGBADJUST,_T("rgbadjust()")), 0, wxEXPAND);
+	if (OPT_GET("Tool/Colour Picker/RGBAdjust Tool")->GetBool()) recent_sizer->Add(new wxButton(this,BUTTON_RGBADJUST,_T("rgbadjust()")), 0, wxEXPAND);
 
 	wxSizer *picker_sizer = new wxBoxSizer(wxHORIZONTAL);
 	picker_sizer->AddStretchSpacer();

@@ -484,7 +484,7 @@ void SubsTextEditCtrl::UpdateStyle(int start, int _length) {
 ///
 void SubsTextEditCtrl::UpdateCallTip() {
 	// Enabled?
-	if (!Options.AsBool(_T("Call tips enabled"))) return;
+	if (!OPT_GET("App/Call Tips")->GetBool()) return;
 
 	// Get position and text
 	const unsigned int pos = GetReverseUnicodePosition(GetCurrentPos());

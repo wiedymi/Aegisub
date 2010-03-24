@@ -44,6 +44,7 @@
 #include "dialog_timing_processor.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "subs_grid.h"
 #include "utils.h"
@@ -87,19 +88,19 @@ DialogTimingProcessor::DialogTimingProcessor(wxWindow *parent,SubtitlesGrid *_gr
 	// Options box
 	wxSizer *optionsSizer = new wxStaticBoxSizer(wxHORIZONTAL,this,_("Options"));
 	onlySelection = new wxCheckBox(this,-1,_("Affect selection only"));
-	onlySelection->SetValue(Options.AsBool(_T("Timing processor Only Selection")));
+	onlySelection->SetValue(OPT_GET("Tool/Timing Post Processor/Only Selection")->GetBool());
 	optionsSizer->Add(onlySelection,1,wxALL,0);
 
 	// Lead-in/out box
 	wxSizer *LeadSizer = new wxStaticBoxSizer(wxHORIZONTAL,this,_("Lead-in/Lead-out"));
 	hasLeadIn = new wxCheckBox(this,CHECK_ENABLE_LEADIN,_("Add lead in:"));
 	hasLeadIn->SetToolTip(_("Enable adding of lead-ins to lines."));
-	hasLeadIn->SetValue(Options.AsBool(_T("Timing processor Enable lead-in")));
+	hasLeadIn->SetValue(OPT_GET("Tool/Timing Post Processor/Enable/Lead/IN")->GetBool());
 	leadIn = new wxTextCtrl(this,-1,_T(""),wxDefaultPosition,wxSize(80,-1),0,NumValidator(&leadInTime));
 	leadIn->SetToolTip(_("Lead in to be added, in milliseconds."));
 	hasLeadOut = new wxCheckBox(this,CHECK_ENABLE_LEADOUT,_("Add lead out:"));
 	hasLeadOut->SetToolTip(_("Enable adding of lead-outs to lines."));
-	hasLeadOut->SetValue(Options.AsBool(_T("Timing processor Enable lead-out")));
+	hasLeadOut->SetValue(OPT_GET("Tool/Timing Post Processor/Enable/Lead/OUT")->GetBool());
 	leadOut = new wxTextCtrl(this,-1,_T(""),wxDefaultPosition,wxSize(80,-1),0,NumValidator(&leadOutTime));
 	leadOut->SetToolTip(_("Lead out to be added, in milliseconds."));
 	LeadSizer->Add(hasLeadIn,0,wxRIGHT|wxEXPAND,5);
@@ -112,7 +113,7 @@ DialogTimingProcessor::DialogTimingProcessor(wxWindow *parent,SubtitlesGrid *_gr
 	wxSizer *AdjacentSizer = new wxStaticBoxSizer(wxHORIZONTAL,this,_("Make adjacent subtitles continuous"));
 	adjsEnable = new wxCheckBox(this,CHECK_ENABLE_ADJASCENT,_("Enable"));
 	adjsEnable->SetToolTip(_("Enable snapping of subtitles together if they are within a certain distance of each other."));
-	adjsEnable->SetValue(Options.AsBool(_T("Timing processor Enable adjacent")));
+	adjsEnable->SetValue(OPT_GET("Tool/Timing Post Processor/Enable/Adjacent")->GetBool());
 	wxStaticText *adjsThresText = new wxStaticText(this,-1,_("Threshold:"),wxDefaultPosition,wxDefaultSize,wxALIGN_CENTRE);
 	adjacentThres = new wxTextCtrl(this,-1,_T(""),wxDefaultPosition,wxSize(60,-1),0,NumValidator(&adjsThresTime));
 	adjacentThres->SetToolTip(_("Maximum difference between start and end time for two subtitles to be made continuous, in milliseconds."));
@@ -130,7 +131,7 @@ DialogTimingProcessor::DialogTimingProcessor(wxWindow *parent,SubtitlesGrid *_gr
 	wxSizer *KeyframesFlexSizer = new wxFlexGridSizer(2,5,5,0);
 	keysEnable = new wxCheckBox(this,CHECK_ENABLE_KEYFRAME,_("Enable"));
 	keysEnable->SetToolTip(_("Enable snapping of subtitles to nearest keyframe, if distance is within threshold."));
-	keysEnable->SetValue(Options.AsBool(_T("Timing processor Enable keyframe")));
+	keysEnable->SetValue(OPT_GET("Tool/Timing Post Processor/Enable/Keyframe")->GetBool());
 	wxStaticText *textStartBefore = new wxStaticText(this,-1,_("Starts before thres.:"),wxDefaultPosition,wxDefaultSize,wxALIGN_CENTRE);
 	keysStartBefore = new wxTextCtrl(this,-1,_T(""),wxDefaultPosition,wxSize(60,-1),0,NumValidator(&thresStartBefore));
 	keysStartBefore->SetToolTip(_("Threshold for 'before start' distance, that is, how many frames a subtitle must start before a keyframe to snap to it."));

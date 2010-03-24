@@ -55,6 +55,7 @@
 #include "ass_style.h"
 #include "ass_time.h"
 #include "export_visible_lines.h"
+#include "main.h"
 #include "options.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
@@ -120,7 +121,7 @@ void VisualTool::OnMouseEvent (wxMouseEvent &event) {
 	parent->GetClientSize(&w,&h);
 	VideoContext::Get()->GetScriptSize(sw,sh);
 	frame_n = VideoContext::Get()->GetFrameN();
-	bool realTime = Options.AsBool(_T("Video Visual Realtime"));
+	bool realTime = OPT_GET("Video/Visual Realtime")->GetBool();
 
 	// Mouse leaving control
 	if (event.Leaving()) {

@@ -132,9 +132,9 @@ wxDialog (parent,-1,_("Select"),wxDefaultPosition,wxDefaultSize,wxCAPTION)
 	// Load settings
 	Field->SetSelection(OPT_GET("Tool/Select/Field")->GetInt());
 	Action->SetSelection(OPT_GET("Tool/Select/Action")->GetInt());
-	MatchCase->SetValue(Options.AsBool(_T("Select Match case")));
-	MatchDialogues->SetValue(Options.AsBool(_T("Select Match dialogues")));
-	MatchComments->SetValue(Options.AsBool(_T("Select Match comments")));
+	MatchCase->SetValue(OPT_GET("Tool/Select Lines/Match/Case")->GetBool());
+	MatchDialogues->SetValue(OPT_GET("Tool/Select Lines/Match/Dialogue")->GetBool());
+	MatchComments->SetValue(OPT_GET("Tool/Select Lines/Match/Comment")->GetBool());
 	int condition = OPT_GET("Tool/Select/Condition")->GetInt();
 	int mode = OPT_GET("Tool/Select/Mode")->GetInt();
 	if (condition == 1) DoesntMatch->SetValue(true);

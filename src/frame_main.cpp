@@ -145,7 +145,7 @@ FrameMain::FrameMain (wxArrayString args)
 
 	// Create menu and tool bars
 	StartupLog(_T("Apply saved Maximized state"));
-	if (Options.AsBool(_T("Maximized"))) Maximize(true);
+	if (OPT_GET("App/Maximized")->GetBool()) Maximize(true);
 	StartupLog(_T("Initialize toolbar"));
 	InitToolbar();
 	StartupLog(_T("Initialize menu bar"));
@@ -746,7 +746,7 @@ void FrameMain::LoadSubtitles (wxString filename,wxString charset) {
 
 	// Save copy
 	wxFileName origfile(filename);
-	if (!isBinary && Options.AsBool(_T("Auto backup")) && origfile.FileExists()) {
+	if (!isBinary && OPT_GET("App/Auto/Backup")->GetBool() && origfile.FileExists()) {
 		// Get path
 		wxString path = Options.AsText(_T("Auto backup path"));
 		if (path.IsEmpty()) path = origfile.GetPath();
@@ -1333,7 +1333,7 @@ void FrameMain::SetAccelerators() {
 	entry.push_back(Hotkeys.GetAccelerator(_T("Edit box commit"),Edit_Box_Commit));
 
 	// Medusa
-	bool medusaPlay = Options.AsBool(_T("Audio Medusa Timing Hotkeys"));
+	bool medusaPlay = OPT_GET("Audio/Medusa Timing Hotkeys")->GetBool();
 	if (medusaPlay && audioBox->audioDisplay->loaded) {
 		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Play"),Medusa_Play));
 		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Stop"),Medusa_Stop));

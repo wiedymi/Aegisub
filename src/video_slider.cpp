@@ -479,7 +479,7 @@ void VideoSlider::DrawImage(wxDC &destdc) {
 
 	// Draw keyframes
 	int curX;
-	if (Display && Options.AsBool(_T("Show keyframes on video slider"))) {
+	if (Display && OPT_GET("Video/Slider/Show Keyframes")->GetBool()) {
 		dc.SetPen(wxPen(shad));
 		wxArrayInt KeyFrames = VideoContext::Get()->GetKeyFrames();
 		int keys = KeyFrames.Count();

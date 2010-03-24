@@ -100,7 +100,7 @@ wxString TipOfTheDay::GetTip() {
 ///
 void TipOfTheDay::Show(wxWindow *parent) {
 	try {
-		if (Options.AsBool(_T("Tips enabled"))) {
+		if (OPT_GET("App/Tips")->GetBool()) {
 			TipOfTheDay *tip = new TipOfTheDay(OPT_GET("Tool/Tip of the Day/Current")->GetInt());
 			bool show = wxShowTip(parent, tip, true);
 			if (!show) Options.SetBool(_T("Tips enabled"),false);

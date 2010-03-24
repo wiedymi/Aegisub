@@ -67,7 +67,7 @@ DialogDetachedVideo::DialogDetachedVideo(FrameMain *par, const wxSize &initialDi
 	int x = OPT_GET("Video/Detached/Last/X")->GetInt();
 	int y = OPT_GET("Video/Detached/Last/Y")->GetInt();
 	if (x != -1 && y != -1) SetPosition(wxPoint(x,y));
-	if (Options.AsBool(_T("Detached video maximized"))) Maximize();
+	if (OPT_GET("Video/Detached/Maximized")->GetBool()) Maximize();
 
 	// Set obscure stuff
 	SetExtraStyle((GetExtraStyle() & ~wxWS_EX_BLOCK_EVENTS) | wxWS_EX_PROCESS_UI_UPDATES);

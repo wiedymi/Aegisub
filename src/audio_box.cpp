@@ -54,6 +54,7 @@
 #include "frame_main.h"
 #include "hotkeys.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "toggle_bitmap.h"
 #include "tooltip_manager.h"
@@ -97,7 +98,7 @@ wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISE
 	VolumeBar = new wxSlider(this,Audio_Volume,50,0,100,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH|wxSL_INVERSE);
 	VolumeBar->PushEventHandler(new FocusEvent());
 	VolumeBar->SetToolTip(_("Audio Volume"));
-	bool link = Options.AsBool(_T("Audio Link"));
+	bool link = OPT_GET("Audio/Link")->GetBool();
 	if (link) {
 		VolumeBar->SetValue(VerticalZoom->GetValue());
 		VolumeBar->Enable(false);
@@ -177,23 +178,23 @@ wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISE
 
 	AutoCommit = new ToggleBitmap(this,Audio_Check_AutoCommit,GETIMAGE(toggle_audio_autocommit_24),wxSize(30,-1));
 	AutoCommit->SetToolTip(_("Automatically commit all changes"));
-	AutoCommit->SetValue(Options.AsBool(_T("Audio Autocommit")));
+	AutoCommit->SetValue(OPT_GET("Audio/Auto/Commit")->GetBool());
 	ButtonSizer->Add(AutoCommit,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
 	NextCommit = new ToggleBitmap(this,Audio_Check_NextCommit,GETIMAGE(toggle_audio_nextcommit_24),wxSize(30,-1));
 	NextCommit->SetToolTip(_("Auto goes to next line on commit"));
-	NextCommit->SetValue(Options.AsBool(_T("Audio Next Line on Commit")));
+	NextCommit->SetValue(OPT_GET("Audio/Next Line on Commit")->GetBool());
 	ButtonSizer->Add(NextCommit,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
 	AutoScroll = new ToggleBitmap(this,Audio_Check_AutoGoto,GETIMAGE(toggle_audio_autoscroll_24),wxSize(30,-1));
 	AutoScroll->SetToolTip(_("Auto scrolls audio display to selected line"));
-	AutoScroll->SetValue(Options.AsBool(_T("Audio Autoscroll")));
+	AutoScroll->SetValue(OPT_GET("Audio/Auto/Scroll")->GetBool());
 	ButtonSizer->Add(AutoScroll,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
 	SpectrumMode = new ToggleBitmap(this,Audio_Check_Spectrum,GETIMAGE(toggle_audio_spectrum_24),wxSize(30,-1));
 	SpectrumMode->SetToolTip(_("Spectrum analyzer mode"));
-	SpectrumMode->SetValue(Options.AsBool(_T("Audio Spectrum")));
+	SpectrumMode->SetValue(OPT_GET("Audio/Spectrum")->GetBool());
 	ButtonSizer->Add(SpectrumMode,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
 	MedusaMode = new ToggleBitmap(this,Audio_Check_Medusa,GETIMAGE(toggle_audio_medusa_24),wxSize(30,-1));
 	MedusaMode->SetToolTip(_("Enable Medusa-Style Timing Shortcuts"));
-	MedusaMode->SetValue(Options.AsBool(_T("Audio Medusa Timing Hotkeys")));
+	MedusaMode->SetValue(OPT_GET("Audio/Medusa Timing Hotkeys")->GetBool());
 	ButtonSizer->Add(MedusaMode,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
 	ButtonSizer->AddStretchSpacer(1);
 

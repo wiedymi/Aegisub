@@ -244,7 +244,7 @@ AudioProvider *AudioProviderFactoryManager::GetAudioProvider(wxString filename, 
 	// Prepare provider
 	AudioProvider *provider = NULL;
 
-	if (!Options.AsBool(_T("Audio Disable PCM Provider"))) {
+	if (!OPT_GET("Provider/Audio/PCM/Disable")->GetBool()) {
 		// Try a PCM provider first
 		provider = CreatePCMAudioProvider(filename);
 		if (provider) {

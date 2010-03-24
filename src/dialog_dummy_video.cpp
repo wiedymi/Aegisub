@@ -204,7 +204,7 @@ DialogDummyVideo::DialogDummyVideo(wxWindow *parent)
 			resolution_shortcuts->SetSelection(lastres);
 		lastres++;
 	}
-	pattern->SetValue(Options.AsBool(_T("Video Dummy Pattern")));
+	pattern->SetValue(OPT_GET("Video/Dummy/Pattern")->GetBool());
 	/*fps->Append(_T("23.976"));
 	fps->Append(_T("29.97"));
 	fps->Append(_T("24"));

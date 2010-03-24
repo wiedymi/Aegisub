@@ -125,7 +125,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent)
 	// Init
 	UpdateTimer.SetOwner(this,Audio_Update_Timer);
 	GetClientSize(&w,&h);
-	h -= Options.AsBool(_T("Audio Draw Timeline")) ? 20 : 0;
+	h -= OPT_GET("Audio/Display/Draw/Timeline")->GetBool() ? 20 : 0;
 	SetSamplesPercent(50,false);
 
 	// Set cursor
@@ -206,7 +206,7 @@ void AudioDisplay::DoUpdateImage() {
 	bool weak = needImageUpdateWeak;
 
 	// Prepare bitmap
-	int timelineHeight = Options.AsBool(_T("Audio Draw Timeline")) ? 20 : 0;
+	int timelineHeight = OPT_GET("Audio/Display/Draw/Timeline")->GetBool() ? 20 : 0;
 	int displayH = h+timelineHeight;
 	if (origImage) {
 		if (origImage->GetWidth() != w || origImage->GetHeight() != displayH) {
@@ -216,9 +216,9 @@ void AudioDisplay::DoUpdateImage() {
 	}
 
 	// Options
-	bool draw_boundary_lines = Options.AsBool(_T("Audio Draw Secondary Lines"));
-	bool draw_selection_background = Options.AsBool(_T("Audio Draw Selection Background"));
-	bool drawKeyframes = Options.AsBool(_T("Audio Draw Keyframes"));
+	bool draw_boundary_lines = OPT_GET("Audio/Display/Draw/Secondary Lines")->GetBool();
+	bool draw_selection_background = OPT_GET("Audio/Display/Draw/Selection Background")->GetBool();
+	bool drawKeyframes = OPT_GET("Audio/Display/Draw/Keyframes")->GetBool();
 
 	// Invalid dimensions
 	if (w == 0 || displayH == 0) return;
@@ -228,7 +228,7 @@ void AudioDisplay::DoUpdateImage() {
 
 	// Is spectrum?
 	bool spectrum = false;
-	if (provider && Options.AsBool(_T("Audio Spectrum"))) {
+	if (provider && OPT_GET("Audio/Spectrum")->GetBool()) {
 		spectrum = true;
 	}
 
@@ -308,7 +308,7 @@ void AudioDisplay::DoUpdateImage() {
 	}
 
 	// Draw current frame
-	if (Options.AsBool(_T("Audio Draw Video Position"))) {
+	if (OPT_GET("Audio/Display/Draw/Video Position")->GetBool()) {
 		if (VideoContext::Get()->IsLoaded()) {
 			dc.SetPen(wxPen(Options.AsColour(_T("Audio Play Cursor")),2,wxLONG_DASH));
 			int x = GetXAtMS(VFR_Output.GetTimeAtFrame(VideoContext::Get()->GetFrameN()));
@@ -429,7 +429,7 @@ void AudioDisplay::DrawInactiveLines(wxDC &dc) {
 
 	// Spectrum?
 	bool spectrum = false;
-	if (provider && Options.AsBool(_T("Audio Spectrum"))) {
+	if (provider && OPT_GET("Audio/Spectrum")->GetBool()) {
 		spectrum = true;
 	}
 
@@ -523,7 +523,7 @@ void AudioDisplay::DrawKeyframes(wxDC &dc) {
 /// @param dc The DC to draw to.
 void AudioDisplay::DrawTimescale(wxDC &dc) {
 	// Set size
-	int timelineHeight = Options.AsBool(_T("Audio Draw Timeline")) ? 20 : 0;
+	int timelineHeight = OPT_GET("Audio/Display/Draw/Timeline")->GetBool() ? 20 : 0;
 
 	// Set colours
 	dc.SetBrush(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
@@ -611,7 +611,7 @@ void AudioDisplay::DrawWaveform(wxDC &dc,bool weak) {
 
 	if (hasSel) {
 		// Draw selection
-		if (Options.AsBool(_T("Audio Draw Selection Background"))) {
+		if (OPT_GET("Audio/Display/Draw/Selection Background")->GetBool()) {
 			if (NeedCommit && !karaoke->enabled) dc.SetPen(wxPen(Options.AsColour(_T("Audio Waveform Modified"))));
 			else dc.SetPen(wxPen(Options.AsColour(_T("Audio Waveform Selected"))));
 		}
@@ -745,7 +745,7 @@ void AudioDisplay::GetKaraokePos(int64_t &karStart,int64_t &karEnd, bool cap) {
 void AudioDisplay::Update() {
 	if (blockUpdate) return;
 	if (loaded) {
-		if (Options.AsBool(_T("Audio Autoscroll")))
+		if (OPT_GET("Audio/Auto/Scroll")->GetBool())
 			MakeDialogueVisible();
 		else
 			UpdateImage(true);
@@ -758,7 +758,7 @@ void AudioDisplay::Update() {
 ///
 void AudioDisplay::RecreateImage() {
 	GetClientSize(&w,&h);
-	h -= Options.AsBool(_T("Audio Draw Timeline")) ? 20 : 0;
+	h -= OPT_GET("Audio/Display/Draw/Timeline")->GetBool() ? 20 : 0;
 	delete origImage;
 	origImage = NULL;
 	UpdateImage(false);
@@ -1247,7 +1247,7 @@ void AudioDisplay::SetDialogue(SubtitlesGrid *_grid,AssDialogue *diag,int n) {
 		NeedCommit = false;
 
 		// Set times
-		if (dialogue && !dontReadTimes && Options.AsBool(_T("Audio grab times on select"))) {
+		if (dialogue && !dontReadTimes && OPT_GET("Audio/Grab Times on Select")->GetBool()) {
 			wxLogDebug(_T("AudioDisplay::SetDialogue: grabbing times"));
 			int s = dialogue->Start.GetMS();
 			int e = dialogue->End.GetMS();
@@ -1359,7 +1359,7 @@ void AudioDisplay::CommitChanges (bool nextLine) {
 	}
 
 	// Next line (ugh what a condition, can this be simplified?)
-	if (nextLine && !karaoke->enabled && Options.AsBool(_T("Audio Next Line on Commit")) && !wasKaraSplitting) {
+	if (nextLine && !karaoke->enabled && OPT_GET("Audio/Next Line on Commit")->GetBool() && !wasKaraSplitting) {
 		wxLogDebug(_T("AudioDisplay::CommitChanges: going to next line"));
 		// Insert a line if it doesn't exist
 		int nrows = grid->GetRows();
@@ -1414,7 +1414,7 @@ void AudioDisplay::AddLead(bool in,bool out) {
 	// Set changes
 	UpdateTimeEditCtrls();
 	NeedCommit = true;
-	if (Options.AsBool(_T("Audio Autocommit"))) CommitChanges();
+	if (OPT_GET("Audio/Auto/Commit")->GetBool()) CommitChanges();
 	Update();
 }
 
@@ -1457,7 +1457,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
 	int64_t y = event.GetY();
 	bool karMode = karaoke->enabled;
 	bool shiftDown = event.m_shiftDown;
-	int timelineHeight = Options.AsBool(_T("Audio Draw Timeline")) ? 20 : 0;
+	int timelineHeight = OPT_GET("Audio/Display/Draw/Timeline")->GetBool() ? 20 : 0;
 
 	// Leaving event
 	if (event.Leaving()) {
@@ -1478,7 +1478,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
 			inside = true;
 
 			// Get focus
-			if (wxWindow::FindFocus() != this && Options.AsBool(_T("Audio Autofocus"))) SetFocus();
+			if (wxWindow::FindFocus() != this && OPT_GET("Audio/Auto/Focus")->GetBool()) SetFocus();
 		}
 		else if (y < h+timelineHeight) onScale = true;
 	}
@@ -1507,7 +1507,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
 	if (event.GetWheelRotation() != 0) {
 		// Zoom or scroll?
 		bool zoom = shiftDown;
-		if (Options.AsBool(_T("Audio Wheel Default To Zoom"))) zoom = !zoom;
+		if (OPT_GET("Audio/Wheel Default to Zoom")->GetBool()) zoom = !zoom;
 
 		// Zoom
 		if (zoom) {
@@ -1543,7 +1543,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
 			dc.DrawLine(x,0,x,h);
 
 			// Time
-			if (Options.AsBool(_T("Audio Draw Cursor Time"))) {
+			if (OPT_GET("Audio/Display/Draw/Cursor")->GetBool()) {
 				// Time string
 				AssTime time;
 				time.SetMS(GetMSAtX(x));
@@ -1645,7 +1645,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
 			// Line timing mode
 			if (!karTime) {
 				// Grab start
-				if (abs64 (x - selStart) < 6 && Options.AsBool(_T("Disable Dragging Times"))==false) {
+				if (abs64 (x - selStart) < 6 && OPT_GET("Audio/Display/Dragging Times")->GetBool()==false) {
 					wxCursor cursor(wxCURSOR_SIZEWE);
 					SetCursor(cursor);
 					defCursor = false;
@@ -1656,7 +1656,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
 				}
 
 				// Grab end
-				else if (abs64 (x - selEnd) < 6 && Options.AsBool(_T("Disable Dragging Times"))==false) {
+				else if (abs64 (x - selEnd) < 6 && OPT_GET("Audio/Display/Dragging Times")->GetBool()==false) {
 					wxCursor cursor(wxCURSOR_SIZEWE);
 					SetCursor(cursor);
 					defCursor = false;
@@ -1817,7 +1817,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event) {
 					NeedCommit = true;
 					if (curStartMS <= curEndMS) {
 						UpdateTimeEditCtrls();
-						if (Options.AsBool(_T("Audio Autocommit"))) CommitChanges();
+						if (OPT_GET("Audio/Auto/Commit")->GetBool()) CommitChanges();
 					}
 
 					else UpdateImage(true);
@@ -1873,9 +1873,9 @@ int AudioDisplay::GetBoundarySnap(int ms,int rangeX,bool shiftHeld,bool start) {
 
 	// Keyframe boundaries
 	wxArrayInt boundaries;
-	bool snapKey = Options.AsBool(_T("Audio snap to keyframes"));
+	bool snapKey = OPT_GET("Audio/Display/Snap/Keyframes")->GetBool();
 	if (shiftHeld) snapKey = !snapKey;
-	if (snapKey && VideoContext::Get()->KeyFramesLoaded() && Options.AsBool(_T("Audio Draw Keyframes"))) {
+	if (snapKey && VideoContext::Get()->KeyFramesLoaded() && OPT_GET("Audio/Display/Draw/Keyframes")->GetBool()) {
 		int64_t keyMS;
 		wxArrayInt keyFrames = VideoContext::Get()->GetKeyFrames();
 		int frame;
@@ -1891,7 +1891,7 @@ int AudioDisplay::GetBoundarySnap(int ms,int rangeX,bool shiftHeld,bool start) {
 
 	// Other subtitles' boundaries
 	int inactiveType = OPT_GET("Audio/Inactive Lines Display Mode")->GetInt();
-	bool snapLines = Options.AsBool(_T("Audio snap to other lines"));
+	bool snapLines = OPT_GET("Audio/Display/Snap/Other Lines")->GetBool();
 	if (shiftHeld) snapLines = !snapLines;
 	if (snapLines && (inactiveType == 1 || inactiveType == 2)) {
 		AssDialogue *shade;
@@ -2059,7 +2059,7 @@ int AudioDisplay::GetBoundarySnap(int ms,int rangeX,bool shiftHeld,bool start) {
 void AudioDisplay::OnSize(wxSizeEvent &event) {
 	// Set size
 	GetClientSize(&w,&h);
-	h -= Options.AsBool(_T("Audio Draw Timeline")) ? 20 : 0;
+	h -= OPT_GET("Audio/Display/Draw/Timeline")->GetBool() ? 20 : 0;
 
 	// Update image
 	UpdateSamples();
@@ -2103,7 +2103,7 @@ void AudioDisplay::OnUpdateTimer(wxTimerEvent &event) {
 			int posX = GetXAtSample(curPos);
 			bool fullDraw = false;
 			bool centerLock = false;
-			bool scrollToCursor = Options.AsBool(_T("Audio lock scroll on cursor"));
+			bool scrollToCursor = OPT_GET("Audio/Lock Scroll on Cursor")->GetBool();
 			if (centerLock) {
 				int goTo = MAX(0,curPos - w*samples/2);
 				if (goTo >= 0) {
@@ -2328,7 +2328,7 @@ void AudioDisplay::OnKeyDown(wxKeyEvent &event) {
 	if (diagUpdated) {
 		diagUpdated = false;
 		NeedCommit = true;
-		if (Options.AsBool(_T("Audio Autocommit")) && curStartMS <= curEndMS) CommitChanges();
+		if (OPT_GET("Audio/Auto/Commit")->GetBool() && curStartMS <= curEndMS) CommitChanges();
 		else UpdateImage(true);
 	}
 }

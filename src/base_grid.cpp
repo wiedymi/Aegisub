@@ -551,7 +551,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 			if (inSel && curDiag->Comment) curColor = 5;
 			else if (inSel) curColor = 2;
 			else if (curDiag->Comment) curColor = 3;
-			else if (Options.AsBool(_T("Highlight subs in frame")) && IsDisplayed(curDiag)) curColor = 4;
+			else if (OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame/")->GetBool() && IsDisplayed(curDiag)) curColor = 4;
 		}
 
 		else {

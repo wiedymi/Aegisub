@@ -155,7 +155,7 @@ DialogShiftTimes::DialogShiftTimes (wxWindow *parent,SubtitlesGrid *_grid)
 	CenterOnParent();
 
 	// Load values from options
-	if (!Options.AsBool(_T("Shift Times ByTime"))) {
+	if (!OPT_GET("Tools/Shift Times/ByTime")->GetBool()) {
 		if (RadioFrames->IsEnabled()) {
 			RadioFrames->SetValue(true);
 			ShiftFrame->Enable(true);
@@ -168,7 +168,7 @@ DialogShiftTimes::DialogShiftTimes (wxWindow *parent,SubtitlesGrid *_grid)
 	}
 	TimesChoice->SetSelection(OPT_GET("Tool/Shift Times/Type")->GetInt());
 	SelChoice->SetSelection(OPT_GET("Tool/Shift Times/Affect")->GetInt());
-	if (Options.AsBool(_T("Shift Times Direction"))) DirectionBackward->SetValue(true);
+	if (OPT_GET("Tools/Shift Times/Direction")->GetBool()) DirectionBackward->SetValue(true);
 
 	// Has selection?
 	wxArrayInt sel = grid->GetSelection();

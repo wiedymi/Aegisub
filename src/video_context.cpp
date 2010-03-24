@@ -321,7 +321,7 @@ void VideoContext::UpdateDisplays(bool full) {
 
 	// Update audio display
 	if (audio && audio->loaded && audio->IsShownOnScreen()) {
-		if (Options.AsBool(_T("Audio Draw Video Position"))) {
+		if (OPT_GET("Audio/Display/Draw/Video Position")->GetBool()) {
 			audio->UpdateImage(false);
 		}
 	}
@@ -366,7 +366,7 @@ void VideoContext::JumpToFrame(int n) {
 	UpdateDisplays(false);
 
 	// Update grid
-	if (!isPlaying && Options.AsBool(_T("Highlight subs in frame"))) grid->Refresh(false);
+	if (!isPlaying && OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame/")->GetBool()) grid->Refresh(false);
 }
 
 
@@ -480,7 +480,7 @@ void VideoContext::PlayNextFrame() {
 	int thisFrame = frame_n;
 	JumpToFrame(frame_n + 1);
 	// Start playing audio
-	if (Options.AsBool(_T("Audio Plays When Stepping Video")))
+	if (OPT_GET("Audio/Plays When Stepping")->GetBool())
 		audio->Play(VFR_Output.GetTimeAtFrame(thisFrame),VFR_Output.GetTimeAtFrame(thisFrame + 1));
 }
 
@@ -494,7 +494,7 @@ void VideoContext::PlayPrevFrame() {
 	int thisFrame = frame_n;
 	JumpToFrame(frame_n -1);
 	// Start playing audio
-	if (Options.AsBool(_T("Audio Plays When Stepping Video")))
+	if (OPT_GET("Audio/Plays When Stepping")->GetBool())
 		audio->Play(VFR_Output.GetTimeAtFrame(thisFrame - 1),VFR_Output.GetTimeAtFrame(thisFrame));
 }
 

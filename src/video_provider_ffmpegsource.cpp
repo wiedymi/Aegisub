@@ -209,7 +209,7 @@ void FFmpegSourceVideoProvider::LoadVideo(wxString filename) {
 	// set seekmode
 	// TODO: give this its own option?
 	int SeekMode;
-	if (Options.AsBool(_T("FFmpeg allow unsafe seeking")))
+	if (OPT_GET("Provider/Video/FFMpegSource/Unsafe Seeking")->GetBool())
 		SeekMode = FFMS_SEEK_UNSAFE;
 	else 
 		SeekMode = FFMS_SEEK_NORMAL;
