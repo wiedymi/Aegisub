@@ -123,7 +123,9 @@ void BaseGrid::UpdateStyle() {
 	}
 
 	// Set column widths
-	for (int i=0;i<10;i++) showCol[i] = Options.AsBool(_T("Grid show column ") + AegiIntegerToString(i));
+	std::vector<bool> column_array;
+	OPT_GET("Subtitle/Grid/Column")->GetListBool(column_array);
+	for (int i=0;i<10;i++) showCol[i] = column_array.at(i);
 	SetColumnWidths();
 
 	// Update
@@ -551,7 +553,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 			if (inSel && curDiag->Comment) curColor = 5;
 			else if (inSel) curColor = 2;
 			else if (curDiag->Comment) curColor = 3;
-			else if (OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame/")->GetBool() && IsDisplayed(curDiag)) curColor = 4;
+			else if (OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame")->GetBool() && IsDisplayed(curDiag)) curColor = 4;
 		}
 
 		else {

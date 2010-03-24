@@ -366,7 +366,7 @@ void VideoContext::JumpToFrame(int n) {
 	UpdateDisplays(false);
 
 	// Update grid
-	if (!isPlaying && OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame/")->GetBool()) grid->Refresh(false);
+	if (!isPlaying && OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame")->GetBool()) grid->Refresh(false);
 }
 
 

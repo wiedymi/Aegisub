@@ -83,7 +83,19 @@
 			"Font Size" : 10,
 			"Focus Allow" : true,
 			"Highlight Subtitles in Frame" : true,
-			"Hide Overrides" : 1
+			"Hide Overrides" : 1,
+			"Column" : [
+					{ "bool" : true},
+					{ "bool" : true},
+					{ "bool" : true},
+					{ "bool" : true},
+					{ "bool" : true},
+					{ "bool" : true},
+					{ "bool" : true},
+					{ "bool" : true},
+					{ "bool" : true},
+					{ "bool" : true}
+			]
 		},
 		"Edit Box" : {
 			"Link Time Boxes Commit" : true,
@@ -215,9 +227,22 @@
 				}
 			},
 			"Only Selection" : false
+		},
+		"Paste Lines Over" : {
+			"Fields" : [
+					{ "bool" : false},
+					{ "bool" : false},
+					{ "bool" : false},
+					{ "bool" : false},
+					{ "bool" : false},
+					{ "bool" : false},
+					{ "bool" : false},
+					{ "bool" : false},
+					{ "bool" : false},
+					{ "bool" : true}
+			]
 		}
 	},
-
 
 	"Video" : {
 		"Threaded" : false,

@@ -646,21 +646,6 @@ void OptionsManager::ResetWith(wxString key,wxString param) {
 
 
 
-/// @brief As boolean 
-/// @param key 
-/// @return 
-///
-bool OptionsManager::AsBool(wxString key) {
-	std::map<wxString,VariableData>::iterator cur;
-	cur = (opt.find(key.Lower()));
-	if (cur != opt.end()) {
-		return (*cur).second.AsBool();
-	}
-	else throw key.c_str();//_T("Internal error: Attempted getting undefined configuration setting");
-}
-
-
-
 /// @brief As float 
 /// @param key 
 /// @return 
