@@ -356,7 +356,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		}
 
 		// Set overscan mask
-		MenuBar->Check(Menu_Video_Overscan,Options.AsBool(_T("Show Overscan Mask")));
+		MenuBar->Check(Menu_Video_Overscan,OPT_GET("Video/Overscan Mask")->GetBool());
 
 		// Rebuild recent lists
 		RebuildRecentList(_T("Video"),RecentVids,Menu_Video_Recent);

@@ -678,7 +678,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 
 	// Get focus
 	if (event.ButtonDown()) {
-		if (Options.AsBool(_T("Grid Allow Focus"))) {
+		if (OPT_GET("Subtitle/Grid/Focus Allow")->GetBool()) {
 			SetFocus();
 		}
 	}

@@ -265,7 +265,7 @@ void SubsTextEditCtrl::SetStyles() {
 ///
 void SubsTextEditCtrl::UpdateStyle(int start, int _length) {
 	// Styling enabled?
-	if (Options.AsBool(_T("Syntax Highlight Enabled")) == 0) return;
+	if (OPT_GET("Subtitle/Highlight/Syntax")->GetBool() == 0) return;
 
 	// Check if it's a template line
 	AssDialogue *diag = control->grid->GetDialogue(control->linen);

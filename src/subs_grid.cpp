@@ -1505,7 +1505,7 @@ void SubtitlesGrid::CommitChanges(bool force,bool videoOnly) {
 
 	if (!videoOnly) {
 		// Autosave if option is enabled
-		if (Options.AsBool(_T("Auto Save on Every Change"))) {
+		if (OPT_GET("App/Auto/Save on Every Change")->GetBool()) {
 			if (ass->IsModified() && !ass->filename.IsEmpty()) parentFrame->SaveSubtitles(false);
 		}
 

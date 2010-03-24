@@ -179,7 +179,7 @@ FrameMain::FrameMain (wxArrayString args)
 	// It doesn't work properly on wxMac, and the jumping dock icon
 	// signals the same as the splash screen either way.
 #if !_DEBUG && !__WXMAC__
-	if (Options.AsBool(_T("Show Splash"))) {
+	if (OPT_GET("App/Splash")->GetBool()) {
 		SplashScreen *splash = new SplashScreen(this);
 		splash->Show(true);
 		splash->Update();
@@ -1195,7 +1195,7 @@ void FrameMain::LoadVideo(wxString file,bool autoload) {
 	SetDisplayMode(1,-1);
 	EditBox->UpdateFrameTiming();
 
-	DetachVideo(VideoContext::Get()->IsLoaded() && Options.AsBool(_T("Detached Video")));
+	DetachVideo(VideoContext::Get()->IsLoaded() && OPT_GET("Video/Detached/Enabled")->GetBool());
 	Thaw();
 }
 

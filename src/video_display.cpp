@@ -55,6 +55,7 @@
 
 #include "ass_dialogue.h"
 #include "hotkeys.h"
+#include "main.h"
 #include "options.h"
 #include "utils.h"
 #include "video_out_gl.h"
@@ -316,7 +317,7 @@ void VideoDisplay::DrawTVEffects() {
 	int sw,sh;
 	VideoContext *context = VideoContext::Get();
 	context->GetScriptSize(sw,sh);
-	bool drawOverscan = Options.AsBool(_T("Show Overscan Mask"));
+	bool drawOverscan = OPT_GET("Video/Overscan Mask")->GetBool();
 
 	if (drawOverscan) {
 		// Get aspect ratio

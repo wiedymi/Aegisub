@@ -170,7 +170,7 @@ wxThread::ExitCode AegisubVersionCheckerThread::Entry()
 	if (!interactive)
 	{
 		// Automatic checking enabled?
-		if (!Options.AsBool(_T("auto check for updates")))
+		if (!OPT_GET("App/Auto/Check For Updates")->GetInt())
 			return 0;
 
 		// Is it actually time for a check?
@@ -486,7 +486,7 @@ VersionCheckerResultDialog::VersionCheckerResultDialog(const wxString &main_text
 	}
 
 	automatic_check_checkbox = new wxCheckBox(this, -1, _("Auto Check for Updates"));
-	automatic_check_checkbox->SetValue(Options.AsBool(_T("Auto check for updates")));
+	automatic_check_checkbox->SetValue(OPT_GET("App/Auto/Check For Updates")->GetInt());
 
 	wxButton *remind_later_button = 0;
 	if (updates.size() > 0)

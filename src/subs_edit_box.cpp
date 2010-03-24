@@ -373,11 +373,11 @@ void SubsEditBox::SetToLine(int n,bool weak) {
 
 	// Set video
 	if (VideoContext::Get()->IsLoaded() && !weak) {
-		wxString sync;
-		if (Search.hasFocus) sync = _T("Find update video");
-		else sync = _T("Sync video with subs");
-		
-		if (Options.AsBool(sync)) {
+		bool sync;
+		if (Search.hasFocus) sync = OPT_GET("Tool/Search Replace/Video Update")->GetBool();
+		else sync = OPT_GET("Video/Subtitle Sync")->GetBool();
+
+		if (sync) {
 			VideoContext::Get()->Stop();
 			AssDialogue *cur = grid->GetDialogue(n);
 			if (cur) VideoContext::Get()->JumpToFrame(VFR_Output.GetFrameAtTime(cur->Start.GetMS(),true));
@@ -724,7 +724,7 @@ void SubsEditBox::OnLayerEnter(wxCommandEvent &event) {
 ///
 void SubsEditBox::OnStartTimeChange(wxCommandEvent &event) {
 	if (StartTime->time > EndTime->time) StartTime->SetTime(EndTime->time.GetMS());
-	bool join = Options.AsBool(_T("Link Time Boxes Commit")) && EndTime->HasBeenModified();
+	bool join = OPT_GET("Subtitle/Edit Box/Link Time Boxes Commit")->GetBool() && EndTime->HasBeenModified();
 	StartTime->Update();
 	Duration->Update();
 	if (join) EndTime->Update();
@@ -738,7 +738,7 @@ void SubsEditBox::OnStartTimeChange(wxCommandEvent &event) {
 ///
 void SubsEditBox::OnEndTimeChange(wxCommandEvent &event) {
 	if (StartTime->time > EndTime->time) EndTime->SetTime(StartTime->time.GetMS());
-	bool join = Options.AsBool(_T("Link Time Boxes Commit")) && StartTime->HasBeenModified();
+	bool join = OPT_GET("Subtitle/Edit Box/Link Time Boxes Commit")->GetBool() && StartTime->HasBeenModified();
 	EndTime->Update();
 	Duration->Update();
 	if (join) StartTime->Update();

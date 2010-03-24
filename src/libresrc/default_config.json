@@ -134,6 +134,7 @@
 			"Memory Max" : 64
 		},
 		"FFmpegSource" : {
+			"Index All Tracks" : true,
 			"Cache" : {
 				"Size" : 42,
 				"Files" : 20
@@ -274,7 +275,6 @@
 		"Video Screenshot Path" : "?video",
 		"Video Provider" : "ffmpegsource",
 		"Subtitles Provider" : "libass",
-		"FFmpegSource always index all tracks" : 1,
 		"FFmpegSource log level" : "quiet",
 		"FFmpegSource audio decoding error handling" : "stop",
 		"Audio Player" : "portaudio",
@@ -336,7 +336,7 @@
 		"Style editor preview text" : "Aegisub\\N0123 月語",
 		"Style editor preview background" : "rgb(125, 153, 176)",
 		"last version" : "4040",
-		"Last Version" : 4040,
+		"Last Version" : 4040
 	}
 }
 
