@@ -119,7 +119,6 @@ public:
 	wxString GetFile() const;
 	void Save();
 	void Load();
-	void LoadDefaults(bool onlyDefaults=false,bool versionOverride=false);
 
 	wxArrayString GetRecentList (wxString list);
 

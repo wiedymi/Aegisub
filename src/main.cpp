@@ -189,7 +189,6 @@ bool AegisubApp::OnInit() {
 
 		// Set config file
 		StartupLog(_T("Load configuration"));
-		Options.LoadDefaults();
 #ifdef __WXMSW__
 		// Try loading configuration from the install dir if one exists there
 		if (wxFileName::FileExists(StandardPaths::DecodePath(_T("?data/config.dat")))) {
@@ -214,7 +213,6 @@ bool AegisubApp::OnInit() {
 
 		StartupLog(_T("Store options back"));
 		Options.SetInt(_T("Last Version"),GetSVNRevision());
-		Options.LoadDefaults(false,true);	// Override options based on version number
 		Options.Save();
 		AssTime::UseMSPrecision = OPT_GET("App/Nonstandard Milisecond Times")->GetBool();
 
