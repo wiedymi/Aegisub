@@ -142,7 +142,12 @@ void ConfigVisitor::Visit(const json::Number& number) {
 
 
 void ConfigVisitor::Visit(const json::String& string) {
-	OptionValue *opt = new OptionValueString(name, string.Value());
+	OptionValue *opt;
+	if (string.Value().find("rgb(") == 0) {
+		opt = new OptionValueColour(name, string.Value());
+	} else {
+		opt = new OptionValueString(name, string.Value());
+	}
 	AddOptionValue(opt);
 }
 
