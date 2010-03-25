@@ -48,14 +48,14 @@ const std::string Rename(const std::string& from, const std::string& to) {
 
 	// Using from.c_str() / to.c_str() triggers a bug in GCC:
 	// http://gcc.gnu.org/bugzilla/show_bug.cgi?id=24704
-	char from_str[from.size()+1];
-	strncpy(from_str, from.c_str(), sizeof(from_str));
 
-	char to_str[to.size()+1];
-	strncpy(to_str, to.c_str(), sizeof(to_str));
+//	char from_str[from.size()+1];
+//	strncpy(from_str, from.c_str(), sizeof(from_str));
 
-//	rename(*from_str, *to_str);
-rename("/home/verm/.aegisub-2-2.2/mru.json_tmp", "/home/verm/.aegisub-2-2.2/mru.json");
+//	char to_str[to.size()+1];
+//	strncpy(to_str, to.c_str(), sizeof(to_str));
+
+	rename(from.c_str(), to.c_str());
 
 }
 
