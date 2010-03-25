@@ -222,6 +222,7 @@ aegisub_2_2_SOURCES = \
 	charset_conv.cpp \
 	colorspace.cpp \
 	colour_button.cpp \
+	compat.cpp \
 	dialog_about.cpp \
 	dialog_attachments.cpp \
 	dialog_automation.cpp \
