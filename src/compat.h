@@ -8,4 +8,4 @@
 
 #define STD_STR(x) std::string(x.mb_str())
 
-inline wxColour lagi_wxColour(agi::Colour &colour);
+inline wxColour lagi_wxColour(const agi::Colour &colour) { return wxColour(colour); }
