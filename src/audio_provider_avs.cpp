@@ -153,7 +153,7 @@ void AvisynthAudioProvider::LoadFromClip(AVSValue _clip) {
 
 	// Convert to one channel
 	char buffer[1024];
-	strcpy(buffer,Options.AsText(_T("Audio Downmixer")).mb_str(csConvLocal));
+	strcpy(buffer,lagi_wxString(OPT_GET("")->GetString()).mb_str(csConvLocal));
 	script = env->Invoke(buffer, _clip);
 
 	// Convert to 16 bits per sample

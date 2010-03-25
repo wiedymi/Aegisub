@@ -49,7 +49,7 @@
 #include "help_button.h"
 #include "main.h"
 #include "options.h"
-
+#include "utils.h"
 
 /// DOCME
 struct ResolutionShortcut {
@@ -211,8 +211,8 @@ DialogDummyVideo::DialogDummyVideo(wxWindow *parent)
 	fps->Append(_T("24"));
 	fps->Append(_T("25"));
 	fps->Append(_T("30"));*/
-	width->ChangeValue(Options.AsText(_T("Video Dummy Last Width")));
-	height->ChangeValue(Options.AsText(_T("Video Dummy Last Height")));
+	width->ChangeValue(AegiIntegerToString(OPT_GET("Video/Dummy/Last/Width")->GetInt()));
+	height->ChangeValue(AegiIntegerToString(OPT_GET("Video/Dummy/Last/Height")->GetInt()));
 	length->SetRange(0, 0x10000000);
 	length->SetValue(OPT_GET("Video/Dummy/Last/Length")->GetInt());
 	UpdateLengthDisplay();

@@ -108,7 +108,7 @@ BaseGrid::~BaseGrid() {
 ///
 void BaseGrid::UpdateStyle() {
 	// Set font
-	wxString fontname = Options.AsText(_T("Grid Font Face"));
+	wxString fontname = lagi_wxString(OPT_GET("Subtitle/Grid/Font Face")->GetString());
 	if (fontname.IsEmpty()) fontname = _T("Tahoma");
 	font.SetFaceName(fontname);
 	font.SetPointSize(OPT_GET("Subtitle/Grid/Font Size")->GetInt());
@@ -525,7 +525,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 
 			// Hidden overrides
 			if (mode == 1 || mode == 2) {
-				wxString replaceWith = Options.AsText(_T("Grid hide overrides char"));
+				wxString replaceWith = lagi_wxString(OPT_GET("Subtitle/Grid/Hide Overrides Char")->GetString());
 				int textlen = curDiag->Text.Length();
 				int depth = 0;
 				wxChar curChar;

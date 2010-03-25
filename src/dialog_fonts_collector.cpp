@@ -51,6 +51,7 @@
 #include "ass_file.h"
 #include "ass_override.h"
 #include "ass_style.h"
+#include "compat.h"
 #include "dialog_fonts_collector.h"
 #include "font_file_lister.h"
 #include "frame_main.h"
@@ -97,7 +98,7 @@ DialogFontsCollector::DialogFontsCollector(wxWindow *parent)
 	main = (FrameMain*) parent;
 
 	// Destination box
-	wxString dest = Options.AsText(_T("Fonts Collector Destination"));
+	wxString dest = lagi_wxString(OPT_GET("Path/Fonts Collector Destination")->GetString());
 	if (dest == _T("?script")) {
 		wxFileName filename(AssFile::top->filename);
 		dest = filename.GetPath();

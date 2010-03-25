@@ -56,6 +56,7 @@
 
 #include "ass_style.h"
 #include "colorspace.h"
+#include "compat.h"
 #include "dialog_colorpicker.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
@@ -769,7 +770,7 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 	if (mode < 0 || mode > 4) mode = 3; // HSL default
 	colorspace_choice->SetSelection(mode);
 	SetColor(initial_color);
-	recent_box->LoadFromString(Options.AsText(_T("Color Picker Recent")));
+	recent_box->LoadFromString(lagi_wxString(OPT_GET("Tool/Colour Picker/Recent")->GetString()));
 
 	// The mouse event handler for the Dropper control must be manually assigned
 	// The EVT_MOUSE_EVENTS macro can't take a control id

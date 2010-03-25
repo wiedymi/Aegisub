@@ -426,7 +426,7 @@ AegiVideoFrame VideoContext::GetFrame(int n,bool raw) {
 ///
 void VideoContext::SaveSnapshot(bool raw) {
 	// Get folder
-	wxString option = Options.AsText(_T("Video Screenshot Path"));
+	wxString option = lagi_wxString(OPT_GET("Path/Screenshot")->GetString());
 	wxFileName videoFile(videoName);
 	wxString basepath;
 	// Is it a path specifier and not an actual fixed path?

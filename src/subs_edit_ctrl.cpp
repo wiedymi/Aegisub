@@ -203,7 +203,7 @@ void SubsTextEditCtrl::SetStyles() {
 	// Styles
 	wxFont font = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
 	font.SetEncoding(wxFONTENCODING_DEFAULT); // this solves problems with some fonts not working properly
-	wxString fontname = Options.AsText(_T("Edit Font Face"));
+	wxString fontname = lagi_wxString(OPT_GET("Subtitle/Edit Box/Font Face")->GetString());
 	if (fontname != _T("")) font.SetFaceName(fontname);
 	int size = OPT_GET("Subtitle/Edit Box/Font Size")->GetInt();
 
@@ -865,7 +865,7 @@ void SubsTextEditCtrl::ShowPopupMenu(int activePos) {
 		wxArrayString langs = spellchecker->GetLanguageList();	// This probably should be cached...
 
 		// Current language
-		wxString curLang = Options.AsText(_T("Spell checker language"));
+		wxString curLang = lagi_wxString(OPT_GET("Tool/Spell Checker/Language")->GetString());
 
 		// Languages
 		wxMenu *languageMenu = new wxMenu();
@@ -951,7 +951,7 @@ void SubsTextEditCtrl::ShowPopupMenu(int activePos) {
 		wxArrayString langs = thesaurus->GetLanguageList();	// This probably should be cached...
 
 		// Current language
-		wxString curLang = Options.AsText(_T("Thesaurus language"));
+		wxString curLang = lagi_wxString(OPT_GET("Tool/Thesaurus/Language")->GetString());
 
 		// Languages
 		wxMenu *languageMenu = new wxMenu();

@@ -47,6 +47,7 @@
 #endif
 
 #include "auto4_base.h"
+#include "compat.h"
 #include "dialog_automation.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
@@ -230,7 +231,7 @@ void DialogAutomation::OnAdd(wxCommandEvent &evt)
 		fnfilter = _T("All supported scripts|") + catchall + _T("|") + fnfilter;
 	}
 
-	wxString fname = wxFileSelector(_("Add Automation script"), Options.AsText(_T("Last open automation path")), wxEmptyString, wxEmptyString, fnfilter, wxFD_OPEN|wxFD_FILE_MUST_EXIST, this);
+	wxString fname = wxFileSelector(_("Add Automation script"), lagi_wxString(OPT_GET("Path/Last/Automation")->GetString()), wxEmptyString, wxEmptyString, fnfilter, wxFD_OPEN|wxFD_FILE_MUST_EXIST, this);
 
 	if (!fname.IsEmpty()) {
 

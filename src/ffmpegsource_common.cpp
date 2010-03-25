@@ -46,6 +46,7 @@
 #include <wx/choicdlg.h> // Keep this last so wxUSE_CHOICEDLG is set.
 #endif
 
+#include "compat.h"
 #include "ffmpegsource_common.h"
 #include "frame_main.h"
 #include "main.h"
@@ -176,7 +177,7 @@ int FFmpegSourceProvider::AskForTrackSelection(const std::map<int,wxString> &Tra
 
 /// @brief Set ffms2 log level according to setting in config.dat 
 void FFmpegSourceProvider::SetLogLevel() {
-	wxString LogLevel = Options.AsText(_T("FFmpegSource log level"));
+	wxString LogLevel = lagi_wxString(OPT_GET("Provider/FFmpegSource/Log Level")->GetString());
 
 	if (!LogLevel.CmpNoCase(_T("panic")))
 		FFMS_SetLogLevel(FFMS_LOG_PANIC);
@@ -198,7 +199,7 @@ void FFmpegSourceProvider::SetLogLevel() {
 
 
 FFMS_IndexErrorHandling FFmpegSourceProvider::GetErrorHandlingMode() {
-	wxString Mode = Options.AsText(_T("FFmpegSource audio decoding error handling"));
+	wxString Mode = lagi_wxString(OPT_GET("Provider/Audio/FFMpegSource/Decode Error Handling")->GetString());
 
 	if (!Mode.CmpNoCase(_T("ignore")))
 		return FFMS_IEH_IGNORE;

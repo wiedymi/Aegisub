@@ -132,7 +132,6 @@ public:
 
 	bool IsDefined(wxString key);
 	double AsFloat(wxString key);
-	wxString AsText(wxString key);
 	ModType GetModType(wxString key);
 };
 

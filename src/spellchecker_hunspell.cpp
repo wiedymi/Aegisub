@@ -63,7 +63,7 @@
 HunspellSpellChecker::HunspellSpellChecker() {
 	hunspell = NULL;
 	conv = NULL;
-	SetLanguage(Options.AsText(_T("Spell checker Language")));
+	SetLanguage(lagi_wxString(OPT_GET("Tool/Spell Checker/Language")->GetString()));
 }
 
 
@@ -219,7 +219,7 @@ wxArrayString HunspellSpellChecker::GetSuggestions(wxString word) {
 ///
 wxArrayString HunspellSpellChecker::GetLanguageList() {
 	// Get dir name
-	wxString path = StandardPaths::DecodePathMaybeRelative(Options.AsText(_T("Dictionaries path")), _T("?data")) + _T("/");
+	wxString path = StandardPaths::DecodePathMaybeRelative(lagi_wxString(OPT_GET("Path/Dictionary")->GetString()), _T("?data")) + _T("/");
 	wxArrayString list;
 	wxFileName folder(path);
 	if (!folder.DirExists()) return list;
@@ -259,7 +259,7 @@ void HunspellSpellChecker::SetLanguage(wxString language) {
 
 	// Get dir name
 	//FIXME: this should use ?user instead of ?data; however, since it apparently works already on win32, I'm not gonna mess with it right now :p
-	wxString path = StandardPaths::DecodePathMaybeRelative(Options.AsText(_T("Dictionaries path")), _T("?data")) + _T("/");
+	wxString path = StandardPaths::DecodePathMaybeRelative(lagi_wxString(OPT_GET("Path/Dictionary")->GetString()), _T("?data")) + _T("/");
 	wxString userPath = StandardPaths::DecodePath(_T("?user/dictionaries/user_"));
 
 	// Get affix and dictionary paths

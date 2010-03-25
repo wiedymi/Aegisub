@@ -62,6 +62,7 @@
 #include "avisynth_wrap.h"
 #endif
 #include "charset_conv.h"
+#include "compat.h"
 #include "dialog_detached_video.h"
 #include "dialog_search_replace.h"
 #include "dialog_splash.h"
@@ -748,7 +749,7 @@ void FrameMain::LoadSubtitles (wxString filename,wxString charset) {
 	wxFileName origfile(filename);
 	if (!isBinary && OPT_GET("App/Auto/Backup")->GetBool() && origfile.FileExists()) {
 		// Get path
-		wxString path = Options.AsText(_T("Auto backup path"));
+		wxString path = lagi_wxString(OPT_GET("Path/Auto/Backup")->GetString());
 		if (path.IsEmpty()) path = origfile.GetPath();
 		wxFileName dstpath(path);
 		if (!dstpath.IsAbsolute()) path = StandardPaths::DecodePathMaybeRelative(path, _T("?user/"));
@@ -783,7 +784,7 @@ bool FrameMain::SaveSubtitles(bool saveas,bool withCharset) {
 	// Failed, ask user
 	if (filename.IsEmpty()) {
 		VideoContext::Get()->Stop();
-		wxString path = Options.AsText(_T("Last open subtitles path"));
+		wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString());
 		wxFileName origPath(AssFile::top->filename);
 		filename = 	wxFileSelector(_("Save subtitles file"),path,origPath.GetName() + _T(".ass"),_T("ass"),AssFile::GetWildcardList(1),wxFD_SAVE | wxFD_OVERWRITE_PROMPT,this);
 	}
@@ -1021,7 +1022,7 @@ void FrameMain::SynchronizeProject(bool fromSubs) {
 			local_scripts->RemoveAll();
 			wxStringTokenizer tok(AutoScriptString, _T("|"), wxTOKEN_STRTOK);
 			wxFileName subsfn(subs->filename);
-			wxString autobasefn(Options.AsText(_T("Automation Base Path")));
+			wxString autobasefn(lagi_wxString(OPT_GET("Path/Automation/Base")->GetString()));
 			while (tok.HasMoreTokens()) {
 				wxString sfnames = tok.GetNextToken().Trim(true).Trim(false);
 				wxString sfnamel = sfnames.Left(1);
@@ -1089,7 +1090,7 @@ void FrameMain::SynchronizeProject(bool fromSubs) {
 		// 4. Otherwise, use path relative to subs ("~")
 #ifdef WITH_AUTOMATION
 		wxString scripts_string;
-		wxString autobasefn(Options.AsText(_T("Automation Base Path")));
+		wxString autobasefn(lagi_wxString(OPT_GET("Path/Automation/Base")->GetString()));
 
 		const std::vector<Automation4::Script*> &scripts = local_scripts->GetScripts();
 		for (unsigned int i = 0; i < scripts.size(); i++) {

@@ -45,6 +45,7 @@
 #endif
 
 #include "ass_dialogue.h"
+#include "compat.h"
 #include "dialog_selection.h"
 #include "help_button.h"
 #include "main.h"
@@ -70,7 +71,7 @@ wxDialog (parent,-1,_("Select"),wxDefaultPosition,wxDefaultSize,wxCAPTION)
 	// Matches box
 	Matches = new wxRadioButton(this,-1,_("Matches"),wxDefaultPosition,wxDefaultSize,wxRB_GROUP);
 	DoesntMatch = new wxRadioButton(this,-1,_("Doesn't Match"),wxDefaultPosition,wxDefaultSize,0);
-	Match = new wxTextCtrl(this,-1,Options.AsText(_T("Select Text")),wxDefaultPosition,wxSize(200,-1));
+	Match = new wxTextCtrl(this,-1,lagi_wxString(OPT_GET("Tool/Select Lines/Text")->GetString()),wxDefaultPosition,wxSize(200,-1));
 	MatchCase = new wxCheckBox(this,-1,_("Match case"));
 	Exact = new wxRadioButton(this,-1,_("Exact match"),wxDefaultPosition,wxDefaultSize,wxRB_GROUP);
 	Contains = new wxRadioButton(this,-1,_("Contains"));

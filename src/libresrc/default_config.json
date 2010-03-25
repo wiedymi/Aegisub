@@ -13,10 +13,23 @@
 		"Splash" : true,
 		"Tips" : false,
 		"Nonstandard Milisecond Times" : false,
+		"Save Charset" : "UTF-8",
 		"Local Config" : false
 	},
 
+
 	"Audio" : {
+		"Downmixer" : "ConvertToMono",
+		"Cache" : {
+			"Type" : 1,
+			"HD" : {
+				"Location" : "default",
+				"Name" : "audio%02i.tmp"
+			}
+		},
+
+		"Player" : "portaudio",
+		"Provider" : "ffmpegsource",
 		"Auto" : {
 			"Commit" : false,
 			"Focus" : false,
@@ -52,7 +65,6 @@
 		"Inactive Lines Display Mode" : 1,
 		"Start Drag Sensitivity" : 2,
 		"Line Boundary Inactive Line" : "grey",
-		"Cache" : 1,
 		"Lead" : {
 			"IN": 200,
 			"OUT": 300
@@ -75,11 +87,14 @@
 
 
 	"Subtitle" : {
+		"Provider" : "libass",
 		"Highlight" : {
 			"Syntax" : true
 		},
 		"Undo Levels" : 8,
 		"Grid" : {
+			"Font Face" : "",
+			"Hide Overrides Char" : "☀",
 			"Font Size" : 10,
 			"Focus Allow" : true,
 			"Highlight Subtitles in Frame" : true,
@@ -99,6 +114,7 @@
 		},
 		"Edit Box" : {
 			"Link Time Boxes Commit" : true,
+			"Font Face" : "",
 			"Font Size" : 10
 		},
 		"Time Edit": {
@@ -115,7 +131,14 @@
 			},
 			"PortAudio" : {
 				"Device" : -1
+			},
+			"ALSA" : {
+				"Device" : "default"
+			},
+			"OSS" : {
+				"Device" : "/dev/dsp"
 			}
+
 		}
 	},
 
@@ -127,6 +150,10 @@
 			},
 			"PCM" : {
 				"Disable" : false
+			},
+
+			"FFMpegSource" : {
+				"Decode Error Handling" : "stop"
 			}
 		},
 
@@ -146,6 +173,7 @@
 			"Memory Max" : 64
 		},
 		"FFmpegSource" : {
+			"Log Level" : "quiet",
 			"Index All Tracks" : true,
 			"Cache" : {
 				"Size" : 42,
@@ -172,6 +200,7 @@
 	"Tool" : {
 		"Colour Picker" : {
 			"RGBAdjust Tool" : false,
+			"Recent" : "&H000000& &H0000FF& &H00FFFF& &H00FF00& &HFFFF00& &HFF0000& &HFF00FF& &HFFFFFF&",
 			"Mode" : 4
 		},
 		"Fonts Collector" : {
@@ -211,6 +240,7 @@
 		},
 
 		"Select Lines" : {
+			"Text" : "",
 			"Match" : {
 				"Case" : false,
 				"Comment" : false,
@@ -251,10 +281,31 @@
 					{ "bool" : false},
 					{ "bool" : true}
 			]
+		},
+
+		"Spell Checker" : {
+			"Backend" : "hunspell",
+			"Language" : "en_US"
+		},
+
+		"Thesaurus" : {
+			"Language" : "en_US"
+		},
+
+		"Style Editor" : {
+			"Preview Text" : "Aegisub\\N0123 月語"
+		},
+
+		"Import": {
+			"Text" : {
+				"Actor Separator" : ":",
+				"Comment Starter" : "#"
+			}
 		}
 	},
 
 	"Video" : {
+		"Provider" : "ffmpegsource",
 		"Threaded" : false,
 		"Subtitle Sync" : true,
 		"Visual Realtime" : true,
@@ -359,46 +410,32 @@
 	},
 
 
+	"Path" : {
 
+		"Last" : {
+			"Audio" : "",
+			"Automation" : "",
+			"Keyframes" : "",
+			"Subtitles" : "",
+			"Timecodes" : "",
+			"Video" : ""
+		},
 
-	"Config" : {
+		"Automation" : {
+			"Autoload" : "?user/automation/autoload/|?data/automation/autoload/",
+			"Base" : "?data/automation/",
+			"Include" : "?user/automation/include/|?data/automation/include/"
+		},
 
-		"Audio Alsa Device" : "default",
-		"Audio Downmixer" : "ConvertToMono",
-		"Audio HD Cache Location" : "default",
-		"Audio HD Cache Name" : "audio%02i.tmp",
-		"Audio OSS Device" : "/dev/dsp",
-		"Audio Player" : "portaudio",
-		"Audio Provider" : "ffmpegsource",
-		"Auto backup path" : "?user/autoback",
-		"Auto save path" : "?user/autosave",
-		"Automation Autoload Path" : "?user/automation/autoload/|?data/automation/autoload/",
-		"Automation Base Path" : "?data/automation/",
-		"Automation Include Path" : "?user/automation/include/|?data/automation/include/",
-		"Color Picker Recent" : "&H000000& &H0000FF& &H00FFFF& &H00FF00& &HFFFF00& &HFF0000& &HFF00FF& &HFFFFFF&",
-		"Dictionaries path" : "/mnt/free/aegisub/i//share/myspell",
-		"Edit Font Face" : "",
-		"FFmpegSource audio decoding error handling" : "stop",
-		"FFmpegSource log level" : "quiet",
-		"Fonts Collector Destination" : "?script",
-		"Grid Font Face" : "",
-		"Grid hide overrides char" : "☀",
-		"Last open audio path" : "/mnt/free/aegisub/test_files/Kaze no Garden - Nocturne (theme).mp3.wav",
-		"Last open automation path" : "",
-		"Last open keyframes path" : "",
-		"Last open subtitles path" : "",
-		"Last open timecodes path" : "",
-		"Last open video path" : "",
-		"Save charset" : "UTF-8",
-		"Select Text" : "",
-		"Spell Checker" : "hunspell",
-		"Spell checker language" : "en_US",
-		"Style editor preview text" : "Aegisub\\N0123 月語",
-		"Subtitles Provider" : "libass",
-		"Text actor separator" : ":",
-		"Text comment starter" : "#",
-		"Thesaurus language" : "en_US",
-		"Video Provider" : "ffmpegsource",
-		"Video Screenshot Path" : "?video"
+		"Auto" : {
+			"Backup" : "?user/autoback",
+			"Save" : "?user/autosave"
+		},
+
+		"Dictionary" : "?user/dictionary",
+		"Screenshot" : "?video",
+		"Fonts Collector Destination" : "?script"
+
 	}
+
 }

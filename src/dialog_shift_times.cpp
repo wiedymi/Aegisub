@@ -160,7 +160,7 @@ DialogShiftTimes::DialogShiftTimes (wxWindow *parent,SubtitlesGrid *_grid)
 			RadioFrames->SetValue(true);
 			ShiftFrame->Enable(true);
 			ShiftTime->Enable(false);
-			ShiftFrame->SetValue(Options.AsText(_T("Shift Times Length")));
+			ShiftFrame->SetValue(AegiIntegerToString(OPT_GET("Tool/Shift Times/Length")->GetInt()));
 		}
 	}
 	else {

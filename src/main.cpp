@@ -60,6 +60,7 @@
 #include "auto4_base.h"
 #endif
 #include "charset_conv.h"
+#include "compat.h"
 #include "export_framerate.h"
 #include "frame_main.h"
 #include "hotkeys.h"
@@ -240,7 +241,7 @@ bool AegisubApp::OnInit() {
 		// Load Automation scripts
 #ifdef WITH_AUTOMATION
 		StartupLog(_T("Load global Automation scripts"));
-		global_scripts = new Automation4::AutoloadScriptManager(Options.AsText(_T("Automation Autoload Path")));
+		global_scripts = new Automation4::AutoloadScriptManager(lagi_wxString(OPT_GET("Path/Automation/Autoload")->GetString()));
 #endif
 
 		// Load export filters

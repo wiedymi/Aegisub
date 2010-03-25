@@ -57,6 +57,7 @@
 #include "audio_provider_quicktime.h"
 #endif
 #include "audio_provider_ram.h"
+#include "compat.h"
 #include "main.h"
 #include "options.h"
 
@@ -258,7 +259,7 @@ AudioProvider *AudioProviderFactoryManager::GetAudioProvider(wxString filename, 
 	}
 
 	// List of providers
-	wxArrayString list = GetFactoryList(Options.AsText(_T("Audio provider")));
+	wxArrayString list = GetFactoryList(lagi_wxString(OPT_GET("Audio/Provider")->GetString()));
 
 	// None available
 	if (list.Count() == 0) throw _T("No audio providers are available.");

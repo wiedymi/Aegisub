@@ -197,7 +197,7 @@ namespace Automation4 {
 			lua_pushstring(L, "path");
 			lua_gettable(L, -3);
 
-			wxStringTokenizer toker(Options.AsText(_T("Automation Include Path")), _T("|"), wxTOKEN_STRTOK);
+			wxStringTokenizer toker(lagi_wxString(OPT_GET("Path/Automation/Include")->GetString()), _T("|"), wxTOKEN_STRTOK);
 			while (toker.HasMoreTokens()) {
 				wxFileName path(StandardPaths::DecodePath(toker.GetNextToken()));
 				if (path.IsOk() && !path.IsRelative() && path.DirExists()) {

@@ -67,8 +67,8 @@ DialogTimingProcessor::DialogTimingProcessor(wxWindow *parent,SubtitlesGrid *_gr
 
 	// Set variables
 	grid = _grid;
-	leadInTime = Options.AsText(_T("Audio lead in"));
-	leadOutTime = Options.AsText(_T("Audio lead out"));
+	leadInTime = AegiIntegerToString(OPT_GET("Audio/Lead/IN")->GetInt());
+	leadOutTime = AegiIntegerToString(OPT_GET("Audio/Lead/OUT")->GetInt());
 	thresStartBefore = AegiIntegerToString(OPT_GET("Tool/Timing Post Processor/Threshold/Key Start Before")->GetInt());
 	thresStartAfter = AegiIntegerToString(OPT_GET("Tool/Timing Post Processor/Threshold/Key Start After")->GetInt());
 	thresEndBefore = AegiIntegerToString(OPT_GET("Tool/Timing Post Processor/Threshold/Key End Before")->GetInt());

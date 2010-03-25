@@ -44,7 +44,9 @@
 #include <wx/stattext.h>
 #endif
 
+#include "compat.h"
 #include "dialog_text_import.h"
+#include "main.h"
 #include "options.h"
 
 
@@ -56,8 +58,8 @@ DialogTextImport::DialogTextImport()
 	// Main controls
 	wxFlexGridSizer *fg = new wxFlexGridSizer(2, 5, 5);
 	wxBoxSizer *main_sizer = new wxBoxSizer(wxVERTICAL);
-	edit_separator = new wxTextCtrl(this, EDIT_ACTOR_SEPARATOR, Options.AsText(_T("text actor separator")));
-	edit_comment = new wxTextCtrl(this, EDIT_COMMENT_STARTER, Options.AsText(_T("text comment starter")));
+	edit_separator = new wxTextCtrl(this, EDIT_ACTOR_SEPARATOR, lagi_wxString(OPT_GET("Tool/Import/Text/Actor Separator")->GetString()));
+	edit_comment = new wxTextCtrl(this, EDIT_COMMENT_STARTER, lagi_wxString(OPT_GET("Tool/Import/Text/Comment Starter")->GetString()));
 
 	// Dialog layout
 	fg->Add(new wxStaticText(this, -1, _("Actor separator:")), 0, wxALIGN_CENTRE_VERTICAL);

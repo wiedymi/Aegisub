@@ -51,10 +51,12 @@
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "ass_style.h"
+#include "compat.h"
 #include "dialog_style_editor.h"
 #include "dialog_style_manager.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "subs_grid.h"
@@ -929,7 +931,7 @@ void DialogStyleManager::OnCurrentDelete (wxCommandEvent &event) {
 ///
 void DialogStyleManager::OnCurrentImport(wxCommandEvent &event) {
 	// Get file name
-	wxString path = Options.AsText(_T("Last open subtitles path"));	
+	wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString());	
 	wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	if (!filename.IsEmpty()) {
