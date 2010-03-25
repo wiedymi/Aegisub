@@ -69,11 +69,12 @@ DialogTimingProcessor::DialogTimingProcessor(wxWindow *parent,SubtitlesGrid *_gr
 	grid = _grid;
 	leadInTime = Options.AsText(_T("Audio lead in"));
 	leadOutTime = Options.AsText(_T("Audio lead out"));
-	thresStartBefore = Options.AsText(_T("Timing processor key start before thres"));
-	thresStartAfter = Options.AsText(_T("Timing processor key start after thres"));
-	thresEndBefore = Options.AsText(_T("Timing processor key end before thres"));
-	thresEndAfter = Options.AsText(_T("Timing processor key end after thres"));
-	adjsThresTime = Options.AsText(_T("Timing processor adjacent thres"));
+	thresStartBefore = AegiIntegerToString(OPT_GET("Tool/Timing Post Processor/Threshold/Key Start Before")->GetInt());
+	thresStartAfter = AegiIntegerToString(OPT_GET("Tool/Timing Post Processor/Threshold/Key Start After")->GetInt());
+	thresEndBefore = AegiIntegerToString(OPT_GET("Tool/Timing Post Processor/Threshold/Key End Before")->GetInt());
+	thresEndAfter = AegiIntegerToString(OPT_GET("Tool/Timing Post Processor/Threshold/Key End After")->GetInt());
+	adjsThresTime = AegiIntegerToString(OPT_GET("Tool/Timing Post Processor/Threshold/Adjacent")->GetInt());
+
 
 	// Styles box
 	wxSizer *LeftSizer = new wxStaticBoxSizer(wxVERTICAL,this,_("Apply to styles"));
@@ -117,7 +118,7 @@ DialogTimingProcessor::DialogTimingProcessor(wxWindow *parent,SubtitlesGrid *_gr
 	wxStaticText *adjsThresText = new wxStaticText(this,-1,_("Threshold:"),wxDefaultPosition,wxDefaultSize,wxALIGN_CENTRE);
 	adjacentThres = new wxTextCtrl(this,-1,_T(""),wxDefaultPosition,wxSize(60,-1),0,NumValidator(&adjsThresTime));
 	adjacentThres->SetToolTip(_("Maximum difference between start and end time for two subtitles to be made continuous, in milliseconds."));
-	adjacentBias = new wxSlider(this,-1,MID(0,int(Options.AsFloat(_T("Timing processor adjacent bias"))*100),100),0,100,wxDefaultPosition,wxSize(-1,20));
+	adjacentBias = new wxSlider(this,-1,MID(0,int(OPT_GET("Tool/Timing Post Processor/Adjacent Bias")->GetDouble()*100),100),0,100,wxDefaultPosition,wxSize(-1,20));
 	adjacentBias->SetToolTip(_("Sets how to set the adjoining of lines. If set totally to left, it will extend start time of the second line; if totally to right, it will extend the end time of the first line."));
 	AdjacentSizer->Add(adjsEnable,0,wxRIGHT|wxEXPAND,10);
 	AdjacentSizer->Add(adjsThresText,0,wxRIGHT|wxALIGN_CENTER,5);

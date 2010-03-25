@@ -154,7 +154,7 @@ DialogDummyVideo::DialogDummyVideo(wxWindow *parent)
 	colour = new ColourButton(this, -1, wxSize(30, 17), Options.AsColour(_T("Video Dummy Last Colour")));
 	pattern = new wxCheckBox(this, -1, _("Checkerboard pattern"));
 	//fps = new wxComboBox(this, Dummy_Video_FPS, Options.AsText(_T("Video Dummy Last FPS")), wxDefaultPosition, wxDefaultSize, 0, 0, wxCB_DROPDOWN);
-	fps = new wxTextCtrl(this, Dummy_Video_FPS, Options.AsText(_T("Video Dummy Last FPS")));
+	fps = new wxTextCtrl(this, Dummy_Video_FPS, wxString::Format("%f", OPT_GET("Video/Dummy/FPS")->GetDouble()));
 	length = new wxSpinCtrl(this, Dummy_Video_Length);
 	length_display = new wxStaticText(this, -1, _T(""));
 

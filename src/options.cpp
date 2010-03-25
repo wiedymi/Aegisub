@@ -529,13 +529,7 @@ void OptionsManager::Load() {
 		else SetText(key,value);
 	}
 
-	// Get last version
-	if (IsDefined(_T("Last Version"))) {
-		long temp;
-		AsText(_T("Last Version")).ToLong(&temp);
-		lastVersion = temp;
-	}
-	else lastVersion = 1; // This was implemented in 1784, assume that anything before that is 1.
+	lastVersion = OPT_GET("Version/Last Version")->GetInt();
 }
 
 

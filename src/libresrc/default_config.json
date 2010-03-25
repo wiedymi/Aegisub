@@ -156,6 +156,7 @@
 
 	"Version" : {
 		"Id" : "$Id$",
+		"Last Version" : 4040,
 		"Next Check" : 0
 	},
 
@@ -226,8 +227,17 @@
 					"OUT" : true
 				}
 			},
+			"Threshold" : {
+				"Key Start Before" : 5,
+				"Key Start After" : 4,
+				"Key End Before" : 5,
+				"Key End After" : 6,
+				"Adjacent" : 300
+				},
+			"Adjacent Bias" : 0.9,
 			"Only Selection" : false
 		},
+
 		"Paste Lines Over" : {
 			"Fields" : [
 					{ "bool" : false},
@@ -265,6 +275,7 @@
 		},
 		"Dummy" : {
 			"Pattern" : false,
+			"FPS" : 23.975999999999999091,
 			"Last" : {
 				"Width" : 640,
 				"Height" : 480,
@@ -277,16 +288,6 @@
 
 
 	"Config" : {
-
-		"Edit Font Size" : 11,
-		"Video Dummy Last FPS" : 23.975999999999999091,
-		"Timing processor key start before thres" : 5,
-		"Timing processor key start after thres" : 4,
-		"Timing processor key end before thres" : 5,
-		"Timing processor key end after thres" : 6,
-		"Timing processor adjacent thres" : 300,
-		"Timing processor adjacent bias" : 1,
-		"Last Version" : 4040,
 
 		"Auto save path" : "?user/autosave",
 		"Auto backup path" : "?user/autoback",
@@ -336,7 +337,6 @@
 		"Last open keyframes path" : "",
 		"Last open automation path" : "",
 		"Style editor preview text" : "Aegisub\\N0123 月語",
-		"last version" : "4040",
 
 		"Syntax Highlight Brackets" : "rgb(20, 50, 255)",
 		"Syntax Highlight Slashes" : "rgb(255, 0, 200)",
