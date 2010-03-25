@@ -286,7 +286,7 @@ AudioProvider *AudioProviderFactoryManager::GetAudioProvider(wxString filename, 
 		provider = CreateConvertAudioProvider(provider);
 
 	// Change provider to RAM/HD cache if needed
-	if (cache == -1) cache = OPT_GET("Audio/Cache")->GetInt();
+	if (cache == -1) cache = OPT_GET("Audio/Cache/Type")->GetInt();
 	if (cache) {
 		AudioProvider *final = NULL;
 
