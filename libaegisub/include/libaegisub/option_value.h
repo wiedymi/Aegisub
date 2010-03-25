@@ -21,13 +21,12 @@
 #ifndef LAGI_PRE
 #include <fstream>
 
-#include <wx/colour.h>
-
 #include "libaegisub/cajun/reader.h"
 #include "libaegisub/cajun/writer.h"
 #include "libaegisub/cajun/elements.h"
 #endif
 
+#include <libaegisub/colour.h>
 #include "aegisub/exception.h"
 
 namespace agi {
@@ -78,7 +77,7 @@ public:
 		Type_List_String = 100,	///< List of Strings
 		Type_List_Int = 101,	///< List of Integers
 		Type_List_Double = 102,	///< List of Doubles
-		Type_List_Colour = 103,	///< List of Colours (wxColour)
+		Type_List_Colour = 103,	///< List of Colours
 		Type_List_Bool = 104	///< List of Bools
 	};
 
@@ -90,38 +89,38 @@ public:
 	virtual std::string GetString() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve string from non-string value"); }
 	virtual int64_t GetInt() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve int from non-int value"); }
 	virtual double GetDouble() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve double from non-double value"); }
-	virtual wxColour GetColour() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve colour from non-colour value"); }
+	virtual Colour GetColour() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve colour from non-colour value"); }
 	virtual bool GetBool() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve bool from non-bool value"); }
 
 	virtual void SetString(const std::string &val) { throw OptionValueErrorInvalidType(L"Attempt to set string in a non-string value"); }
 	virtual void SetInt(int64_t val) { throw OptionValueErrorInvalidType(L"Attempt to set int in a non-int value"); }
 	virtual void SetDouble(double val) { throw OptionValueErrorInvalidType(L"Attempt to set double in a non-double value"); }
-	virtual void SetColour(wxColour val) { throw OptionValueErrorInvalidType(L"Attempt to set colour in a non-colour value"); }
+	virtual void SetColour(Colour val) { throw OptionValueErrorInvalidType(L"Attempt to set colour in a non-colour value"); }
 	virtual void SetBool(bool val) { throw OptionValueErrorInvalidType(L"Attempt to set bool in a non-bool value"); }
 
 	virtual std::string GetDefaultString() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve string from non-string value"); }
 	virtual int64_t GetDefaultInt() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve int from non-int value"); }
 	virtual double GetDefaultDouble() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve double from non-double value"); }
-	virtual wxColour GetDefaultColour() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve colour from non-colour value"); }
+	virtual Colour GetDefaultColour() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve colour from non-colour value"); }
 	virtual bool GetDefaultBool() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve bool from non-bool value"); }
 
 
 	virtual void GetListString(std::vector<std::string> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive string list from non-string list"); }
 	virtual void GetListInt(std::vector<int64_t> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive int list from non-int list"); }
 	virtual void GetListDouble(std::vector<double> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive double list from non-double list"); }
-	virtual void GetListColour(std::vector<wxColour> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive colour list from non-colour list"); }
+	virtual void GetListColour(std::vector<Colour> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive colour list from non-colour list"); }
 	virtual void GetListBool(std::vector<bool> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive string bool from non-bool list"); }
 
 	virtual void SetListString(std::vector<std::string> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set string list in a non-string list"); }
 	virtual void SetListInt(std::vector<int64_t> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set int list in a non-int list"); }
 	virtual void SetListDouble(std::vector<double> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set double list in a non-double list"); }
-	virtual void SetListColour(std::vector<wxColour> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set colour list in a non-colour list"); }
+	virtual void SetListColour(std::vector<Colour> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set colour list in a non-colour list"); }
 	virtual void SetListBool(std::vector<bool> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set string in a non-bool list"); }
 
 	virtual void GetDefaultListString(std::vector<std::string> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive string list from non-string list"); }
 	virtual void GetDefaultListInt(std::vector<int64_t> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive int list from non-int list"); }
 	virtual void GetDefaultListDouble(std::vector<double> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive double list from non-double list"); }
-	virtual void GetDefaultListColour(std::vector<wxColour> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive colour list from non-colour list"); }
+	virtual void GetDefaultListColour(std::vector<Colour> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive colour list from non-colour list"); }
 	virtual void GetDefaultListBool(std::vector<bool> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive string bool from non-bool list"); }
 
 
@@ -153,7 +152,7 @@ public:
 CONFIG_OPTIONVALUE(String, std::string)
 CONFIG_OPTIONVALUE(Int, int64_t)
 CONFIG_OPTIONVALUE(Double, double)
-CONFIG_OPTIONVALUE(Colour, wxColour)
+CONFIG_OPTIONVALUE(Colour, Colour)
 CONFIG_OPTIONVALUE(Bool, bool)
 
 
@@ -166,7 +165,7 @@ protected:
 	virtual void InsertString(const std::string val) { throw OptionValueErrorInvalidListType(L"Attempt to insert string in a non-string list"); }
 	virtual void InsertInt(const int64_t val) { throw OptionValueErrorInvalidListType(L"Attempt to insert int in a non-int list"); }
 	virtual void InsertDouble(const double val) { throw OptionValueErrorInvalidListType(L"Attempt to insert double in a non-double list"); }
-	virtual void InsertColour(const wxColour val) { throw OptionValueErrorInvalidListType(L"Attempt insert set colour in a from non-colour list"); }
+	virtual void InsertColour(const Colour val) { throw OptionValueErrorInvalidListType(L"Attempt insert set colour in a from non-colour list"); }
 	virtual void InsertBool(const bool val) { throw OptionValueErrorInvalidListType(L"Attempt to insert bool in a non-bool list"); }
 };
 
@@ -193,7 +192,7 @@ protected:
 CONFIG_OPTIONVALUE_LIST(String, std::string)
 CONFIG_OPTIONVALUE_LIST(Int, int64_t)
 CONFIG_OPTIONVALUE_LIST(Double, double)
-CONFIG_OPTIONVALUE_LIST(Colour, wxColour)
+CONFIG_OPTIONVALUE_LIST(Colour, Colour)
 CONFIG_OPTIONVALUE_LIST(Bool, bool)
 
 } // namespace agi

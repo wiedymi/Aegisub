@@ -21,9 +21,9 @@
 #ifndef LAGI_PRE
 #include <map>
 
-#include <wx/wx.h>
 #endif
 
+#include <libaegisub/colour.h>
 #include "option_visit.h"
 
 namespace agi {
@@ -91,11 +91,11 @@ try {
 			break;
 
 			case OptionValue::Type_List_Colour: {
-				std::vector<wxColour> array_colour;
+				std::vector<Colour> array_colour;
 				i->second->GetListColour(array_colour);
 
 				wxPrintf("lcolour ->%s\n", i->first);
-				for (std::vector<wxColour>::const_iterator i_colour = array_colour.begin(); i_colour != array_colour.end(); ++i_colour) {
+				for (std::vector<Colour>::const_iterator i_colour = array_colour.begin(); i_colour != array_colour.end(); ++i_colour) {
 					wxPrintf("      %s\n", i_colour->GetAsString(wxC2S_CSS_SYNTAX));
 				}
 			}

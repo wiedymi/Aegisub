@@ -22,8 +22,6 @@
 #ifndef LAGI_PRE
 #include <fstream>
 
-#include <wx/colour.h>
-
 #include "libaegisub/cajun/reader.h"
 #include "libaegisub/cajun/writer.h"
 #include "libaegisub/cajun/elements.h"

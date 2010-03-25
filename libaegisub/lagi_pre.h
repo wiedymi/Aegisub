@@ -16,7 +16,5 @@
 #include "libaegisub/cajun/visitor.h"
 #include "libaegisub/cajun/writer.h"
 
-#include <wx/colour.h>
-
 #include "aegisub/exception.h"
 #define LAGI_PRE

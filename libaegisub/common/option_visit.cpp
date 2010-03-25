@@ -111,11 +111,8 @@ void ConfigVisitor::Visit(const json::Array& array) {
 
 				} else if (member_name == "colour") {
 					std::string val = (json::String)member.element;
-					wxColour col;
-					col.Set(val);
-					if (col.IsOk()) {
-						array_list->InsertColour(col);
-					}
+					Colour col(val);
+					array_list->InsertColour(col);
 				}
 
 				AddOptionValue(array_list);

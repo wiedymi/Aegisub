@@ -95,7 +95,7 @@ void Options::Flush() {
 			break;
 
 			case OptionValue::Type_Colour: {
-				std::string str = std::string(i->second->GetColour().GetAsString(wxC2S_CSS_SYNTAX).mb_str());
+				std::string str = std::string(i->second->GetColour());
 				ok = PutOption(obj_out, i->first, (json::String)str);
 			}
 			break;
@@ -151,15 +151,15 @@ void Options::Flush() {
 			break;
 
 			case OptionValue::Type_List_Colour: {
-				std::vector<wxColour> array_colour;
+				std::vector<Colour> array_colour;
 				i->second->GetListColour(array_colour);
 
 				json::Array array;
-				for (std::vector<wxColour>::const_iterator i_colour = array_colour.begin(); i_colour != array_colour.end(); ++i_colour) {
+				for (std::vector<Colour>::const_iterator i_colour = array_colour.begin(); i_colour != array_colour.end(); ++i_colour) {
 					json::Object obj;
 
-					wxColour col = *i_colour;
-					std::string str = std::string(col.GetAsString(wxC2S_CSS_SYNTAX).mb_str());
+					Colour col = *i_colour;
+					std::string str = std::string(col);
 
 					obj["colour"] = json::String(str);
 
