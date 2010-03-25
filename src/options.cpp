@@ -83,7 +83,6 @@ OptionsManager::~OptionsManager() {
 ///
 void OptionsManager::Clear() {
 	opt.clear();
-	optType.clear();
 }
 
 
@@ -128,68 +127,6 @@ void OptionsManager::Save() {
 }
 
 
-
-/// @brief Load 
-/// @return 
-///
-void OptionsManager::Load() {
-	// Check if file exists
-	wxFileName path(filename);
-	if (!path.FileExists()) {
-		modified = true;
-		return;
-	}
-
-	// Read header
-	TextFileReader file(filename);
-	wxString header;
-	try {
-		if (file.GetCurrentEncoding() != _T("binary"))
-			header = file.ReadLineFromFile();
-	}
-	catch (wxString e) {
-		header = _T("");
-	}
-	if (header != _T("[Config]")) {
-		wxMessageBox(_("Configuration file is either invalid or corrupt. The current file will be backed up and replaced with a default file."),_("Error"),wxCENTRE|wxICON_WARNING|wxOK);
-		wxRenameFile(filename,filename + wxString::Format(_T(".%i.backup"),wxGetUTCTime()));
-		modified = true;
-		return;
-	}
-
-	// Get variables
-	std::map<wxString,VariableData>::iterator cur;
-	wxString curLine;
-	while (file.HasMoreLines()) {
-		// Parse line
-		try {
-			curLine = file.ReadLineFromFile();
-		}
-		catch (wxString e) {
-			wxMessageBox(_("Configuration file is either invalid or corrupt. The current file will be backed up and replaced with a default file."),_("Error"),wxCENTRE|wxICON_WARNING|wxOK);
-			wxRenameFile(filename,filename + wxString::Format(_T(".%i.backup"),wxGetUTCTime()));
-			modified = true;
-			return;
-		}
-		if (curLine.IsEmpty()) continue;
-		size_t pos = curLine.Find(_T("="));
-		if (pos == wxString::npos) continue;
-		wxString key = curLine.Left(pos);
-		wxString value = curLine.Mid(pos+1);
-
-		// Find it
-		cur = opt.find(key);
-		if (cur != opt.end()) {
-			(*cur).second.ResetWith(value);
-		}
-		else SetText(key,value);
-	}
-
-	lastVersion = OPT_GET("Version/Last Version")->GetInt();
-}
-
-
-
 /// @brief Write int 
 /// @param key           
 /// @param param         
@@ -203,7 +140,6 @@ void OptionsManager::SetInt(wxString key,int param,int ifLastVersion) {
 	}
 	if (lastVersion >= ifLastVersion) return;
 	opt[key.Lower()].SetInt(param);
-	if (curModType != MOD_OFF) optType[key.Lower()] = curModType;
 	modified = true;
 }
 
@@ -222,7 +158,6 @@ void OptionsManager::SetFloat(wxString key,double param,int ifLastVersion) {
 	}
 	if (lastVersion >= ifLastVersion) return;
 	opt[key.Lower()].SetFloat(param);
-	if (curModType != MOD_OFF) optType[key.Lower()] = curModType;
 	modified = true;
 }
 
@@ -241,7 +176,7 @@ void OptionsManager::SetText(wxString key,wxString param,int ifLastVersion) {
 	}
 	if (lastVersion >= ifLastVersion) return;
 	opt[key.Lower()].SetText(param);
-	if (curModType != MOD_OFF) optType[key.Lower()] = curModType;
+//	if (curModType != MOD_OFF) optType[key.Lower()] = curModType;
 	modified = true;
 }
 
@@ -260,7 +195,6 @@ void OptionsManager::SetBool(wxString key,bool param,int ifLastVersion) {
 	}
 	if (lastVersion >= ifLastVersion) return;
 	opt[key.Lower()].SetBool(param);
-	if (curModType != MOD_OFF) optType[key.Lower()] = curModType;
 	modified = true;
 }
 
@@ -279,62 +213,9 @@ void OptionsManager::SetColour(wxString key,wxColour param,int ifLastVersion) {
 	}
 	if (lastVersion >= ifLastVersion) return;
 	opt[key.Lower()].SetColour(param);
-	if (curModType != MOD_OFF) optType[key.Lower()] = curModType;
 	modified = true;
 }
 
-
-
-/// @brief Reset with 
-/// @param key   
-/// @param param 
-///
-void OptionsManager::ResetWith(wxString key,wxString param) {
-	opt[key.Lower()].ResetWith(param);
-	modified = true;
-}
-
-
-
-/// @brief As float 
-/// @param key 
-/// @return 
-///
-double OptionsManager::AsFloat(wxString key) {
-	std::map<wxString,VariableData>::iterator cur;
-	cur = (opt.find(key.Lower()));
-	if (cur != opt.end()) {
-		return (*cur).second.AsFloat();
-	}
-	else throw key.c_str();//_T("Internal error: Attempted getting undefined configuration setting");
-}
-
-
-
-/// @brief Modification type 
-/// @param key 
-/// @return 
-///
-ModType OptionsManager::GetModType(wxString key) {
-	std::map<wxString,ModType>::iterator cur;
-	cur = (optType.find(key.Lower()));
-	if (cur != optType.end()) {
-		return (*cur).second;
-	}
-	else return MOD_AUTOMATIC;
-}
-
-
-
-/// @brief Is defined? 
-/// @param key 
-/// @return 
-///
-bool OptionsManager::IsDefined(wxString key) {
-	std::map<wxString,VariableData>::iterator cur;
-	cur = (opt.find(key.Lower()));
-	return (cur != opt.end());
-}
 
 
 /// @brief Get recent list 
@@ -352,16 +233,6 @@ wxArrayString OptionsManager::GetRecentList (wxString list) {
 
 	return work;
 }
-
-
-
-/// @brief Set modification type 
-/// @param type 
-///
-void OptionsManager::SetModificationType(ModType type) {
-	curModType = type;
-}
-
 
 
 /// DOCME

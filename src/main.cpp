@@ -209,7 +209,6 @@ bool AegisubApp::OnInit() {
 		// TODO: Check if we can write to config.dat and warn the user if we can't
 		// If we had local config, ?user now means ?data so this will still be loaded from the correct location
 		Options.SetFile(StandardPaths::DecodePath(_T("?user/config.dat")));
-		Options.Load();
 
 		StartupLog(_T("Store options back"));
 		Options.SetInt(_T("Last Version"),GetSVNRevision());
