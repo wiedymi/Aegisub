@@ -54,6 +54,7 @@
 #endif
 
 #include "ass_dialogue.h"
+#include "compat.h"
 #include "hotkeys.h"
 #include "main.h"
 #include "options.h"
@@ -167,8 +168,8 @@ void VideoDisplay::SetFrame(int frameNumber) {
 	PositionDisplay->SetValue(wxString::Format(_T("%01i:%02i:%02i.%03i - %i"), h, m, s, ms, frameNumber));
 	if (context->GetKeyFrames().Index(frameNumber) != wxNOT_FOUND) {
 		// Set the background color to indicate this is a keyframe
-		PositionDisplay->SetBackgroundColour(Options.AsColour(_T("Grid selection background")));
-		PositionDisplay->SetForegroundColour(Options.AsColour(_T("Grid selection foreground")));
+		PositionDisplay->SetBackgroundColour(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Selection")->GetColour()));
+		PositionDisplay->SetForegroundColour(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
 	}
 	else {
 		PositionDisplay->SetBackgroundColour(wxNullColour);

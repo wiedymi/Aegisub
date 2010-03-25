@@ -670,21 +670,6 @@ wxString OptionsManager::AsText(wxString key) {
 
 
 
-/// @brief As colour 
-/// @param key 
-/// @return 
-///
-wxColour OptionsManager::AsColour(wxString key) {
-	std::map<wxString,VariableData>::iterator cur;
-	cur = (opt.find(key.Lower()));
-	if (cur != opt.end()) {
-		return (*cur).second.AsColour();
-	}
-	else throw key.c_str();//_T("Internal error: Attempted getting undefined configuration setting");
-}
-
-
-
 /// @brief Modification type 
 /// @param key 
 /// @return 

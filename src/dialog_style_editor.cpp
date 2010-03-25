@@ -50,10 +50,12 @@
 #include "ass_override.h"
 #include "ass_style.h"
 #include "ass_style_storage.h"
+#include "compat.h"
 #include "dialog_colorpicker.h"
 #include "dialog_style_editor.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "subs_grid.h"
 #include "subs_preview.h"
@@ -363,8 +365,8 @@ DialogStyleEditor::DialogStyleEditor (wxWindow *parent, AssStyle *_style, Subtit
 	PreviewText = NULL;
 	if (SubtitlesProviderFactoryManager::ProviderAvailable()) {
 		PreviewText = new wxTextCtrl(this,TEXT_PREVIEW,Options.AsText(_T("Style editor preview text")));
-		previewButton = new ColourButton(this,BUTTON_PREVIEW_COLOR,wxSize(45,16),Options.AsColour(_T("Style editor preview background")));
-		SubsPreview = new SubtitlesPreview(this,-1,wxDefaultPosition,wxSize(100,60),wxSUNKEN_BORDER,Options.AsColour(_T("Style editor preview background")));
+		previewButton = new ColourButton(this,BUTTON_PREVIEW_COLOR,wxSize(45,16),lagi_wxColour(OPT_GET("Colour/Style Editor/Background/Preview")->GetColour()));
+		SubsPreview = new SubtitlesPreview(this,-1,wxDefaultPosition,wxSize(100,60),wxSUNKEN_BORDER,lagi_wxColour(OPT_GET("Colour/Style Editor/Background/Preview")->GetColour()));
 	
 		SubsPreview->SetToolTip(_("Preview of current style."));
 		SubsPreview->SetStyle(style);

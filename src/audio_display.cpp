@@ -238,7 +238,7 @@ void AudioDisplay::DoUpdateImage() {
 
 	// Black background
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.SetBrush(wxBrush(Options.AsColour(_T("Audio Background"))));
+	dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Background/Background")->GetColour())));
 	dc.DrawRectangle(0,0,w,h);
 
 	// Selection position
@@ -272,8 +272,8 @@ void AudioDisplay::DoUpdateImage() {
 
 	// Draw selection bg
 	if (hasSel && drawSelStart < drawSelEnd && draw_selection_background) {
-		if (NeedCommit && !karaoke->enabled) dc.SetBrush(wxBrush(Options.AsColour(_T("Audio Selection Background Modified"))));
-		else dc.SetBrush(wxBrush(Options.AsColour(_T("Audio Selection Background"))));
+		if (NeedCommit && !karaoke->enabled) dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Background/")->GetColour())));
+		else dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Background/")->GetColour())));
 		dc.DrawRectangle(drawSelStart,0,drawSelEnd-drawSelStart,h);
 	}
 
@@ -297,7 +297,7 @@ void AudioDisplay::DoUpdateImage() {
 		int64_t start = Position*samples;
 		int rate = provider->GetSampleRate();
 		int pixBounds = rate / samples;
-		dc.SetPen(wxPen(Options.AsColour(_T("Audio Seconds Boundaries")),1,wxDOT));
+		dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Seconds Boundaries")->GetColour()),1,wxDOT));
 		if (pixBounds >= 8) {
 			for (int x=0;x<w;x++) {
 				if (((x*samples)+start) % rate < samples) {
@@ -310,7 +310,7 @@ void AudioDisplay::DoUpdateImage() {
 	// Draw current frame
 	if (OPT_GET("Audio/Display/Draw/Video Position")->GetBool()) {
 		if (VideoContext::Get()->IsLoaded()) {
-			dc.SetPen(wxPen(Options.AsColour(_T("Audio Play Cursor")),2,wxLONG_DASH));
+			dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Play Cursor")->GetColour()),2,wxLONG_DASH));
 			int x = GetXAtMS(VFR_Output.GetTimeAtFrame(VideoContext::Get()->GetFrameN()));
 			dc.DrawLine(x,0,x,h);
 		}
@@ -329,8 +329,8 @@ void AudioDisplay::DoUpdateImage() {
 		if (true) {
 			// Draw start boundary
 			const int selWidth = OPT_GET("Audio Line Boundaries Thickness")->GetInt();
-			dc.SetPen(wxPen(Options.AsColour(_T("Audio Line boundary start"))));
-			dc.SetBrush(wxBrush(Options.AsColour(_T("Audio Line boundary start"))));
+			dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Line boundary Start")->GetColour())));
+			dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Line boundary Start")->GetColour())));
 			dc.DrawRectangle(lineStart-selWidth/2+1,0,selWidth,h);
 			wxPoint points1[3] = { wxPoint(lineStart,0), wxPoint(lineStart+10,0), wxPoint(lineStart,10) };
 			wxPoint points2[3] = { wxPoint(lineStart,h-1), wxPoint(lineStart+10,h-1), wxPoint(lineStart,h-11) };
@@ -338,8 +338,8 @@ void AudioDisplay::DoUpdateImage() {
 			dc.DrawPolygon(3,points2);
 
 			// Draw end boundary
-			dc.SetPen(wxPen(Options.AsColour(_T("Audio Line boundary end"))));
-			dc.SetBrush(wxBrush(Options.AsColour(_T("Audio Line boundary end"))));
+			dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Line boundary End")->GetColour())));
+			dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Line boundary End")->GetColour())));
 			dc.DrawRectangle(lineEnd-selWidth/2+1,0,selWidth,h);
 			wxPoint points3[3] = { wxPoint(lineEnd,0), wxPoint(lineEnd-10,0), wxPoint(lineEnd,10) };
 			wxPoint points4[3] = { wxPoint(lineEnd,h-1), wxPoint(lineEnd-10,h-1), wxPoint(lineEnd,h-11) };
@@ -351,11 +351,11 @@ void AudioDisplay::DoUpdateImage() {
 		if (hasKaraoke) {
 			try {
 				// Prepare
-				wxPen curPen(Options.AsColour(_T("Audio Syllable boundaries")),1,wxDOT);
+				wxPen curPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Syllable Boundaries")->GetColour()),1,wxDOT);
 				dc.SetPen(curPen);
 				wxFont curFont(9,wxFONTFAMILY_DEFAULT,wxFONTSTYLE_NORMAL,wxFONTWEIGHT_BOLD,false,_T("Verdana"),wxFONTENCODING_SYSTEM);
 				dc.SetFont(curFont);
-				if (!spectrum) dc.SetTextForeground(Options.AsColour(_T("Audio Syllable text")));
+				if (!spectrum) dc.SetTextForeground(lagi_wxColour(OPT_GET("Colour/Audio Display/Syllable Text")->GetColour()));
 				else dc.SetTextForeground(wxColour(255,255,255));
 				size_t karn = karaoke->syllables.size();
 				int64_t pos1,pos2;
@@ -434,7 +434,7 @@ void AudioDisplay::DrawInactiveLines(wxDC &dc) {
 	}
 
 	// Set options
-	dc.SetBrush(wxBrush(Options.AsColour(_T("Audio Line boundary inactive line"))));
+	dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Line Boundary Inactive Line")->GetColour())));
 	const int selWidth = OPT_GET("Audio/Line Boundaries Thickness")->GetInt();
 	AssDialogue *shade;
 	int shadeX1,shadeX2;
@@ -480,13 +480,13 @@ void AudioDisplay::DrawInactiveLines(wxDC &dc) {
 				x2 = MIN(x2,selX1);
 
 				// Set pen and draw
-				dc.SetPen(wxPen(Options.AsColour(_T("Audio Waveform Inactive"))));
+				dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Waveform Inactive")->GetColour())));
 				for (int i=x1;i<x2;i++) dc.DrawLine(i,peak[i],i,min[i]-1);
 				for (int i=x3;i<x4;i++) dc.DrawLine(i,peak[i],i,min[i]-1);
 			}
 
 			// Draw boundaries
-			dc.SetPen(wxPen(Options.AsColour(_T("Audio Line boundary inactive line"))));
+			dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Line Boundary Inactive Line")->GetColour())));
 			dc.DrawRectangle(shadeX1-selWidth/2+1,0,selWidth,h);
 			dc.DrawRectangle(shadeX2-selWidth/2+1,0,selWidth,h);
 		}
@@ -604,7 +604,7 @@ void AudioDisplay::DrawWaveform(wxDC &dc,bool weak) {
 
 	// Draw pre-selection
 	if (!hasSel) selStartCap = w;
-	dc.SetPen(wxPen(Options.AsColour(_T("Audio Waveform"))));
+	dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Waveform")->GetColour())));
 	for (int64_t i=0;i<selStartCap;i++) {
 		dc.DrawLine(i,peak[i],i,min[i]-1);
 	}
@@ -612,15 +612,15 @@ void AudioDisplay::DrawWaveform(wxDC &dc,bool weak) {
 	if (hasSel) {
 		// Draw selection
 		if (OPT_GET("Audio/Display/Draw/Selection Background")->GetBool()) {
-			if (NeedCommit && !karaoke->enabled) dc.SetPen(wxPen(Options.AsColour(_T("Audio Waveform Modified"))));
-			else dc.SetPen(wxPen(Options.AsColour(_T("Audio Waveform Selected"))));
+			if (NeedCommit && !karaoke->enabled) dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Waveform Modified")->GetColour())));
+			else dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Waveform Selected")->GetColour())));
 		}
 		for (int64_t i=selStartCap;i<selEndCap;i++) {
 			dc.DrawLine(i,peak[i],i,min[i]-1);
 		}
 
 		// Draw post-selection
-		dc.SetPen(wxPen(Options.AsColour(_T("Audio Waveform"))));
+		dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Waveform")->GetColour())));
 		for (int64_t i=selEndCap;i<w;i++) {
 			dc.DrawLine(i,peak[i],i,min[i]-1);
 		}
@@ -2129,7 +2129,7 @@ void AudioDisplay::OnUpdateTimer(wxTimerEvent &event) {
 			wxMemoryDC src;
 			curpos = GetXAtSample(curPos);
 			if (curpos >= 0 && curpos < GetClientSize().GetWidth()) {
-				dc.SetPen(wxPen(Options.AsColour(_T("Audio Play cursor"))));
+				dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Play Cursor")->GetColour())));
 				src.SelectObject(*origImage);
 				if (fullDraw) {
 					//dc.Blit(0,0,w,h,&src,0,0);

@@ -47,6 +47,7 @@
 #endif
 
 #include "ass_time.h"
+#include "compat.h"
 #include "main.h"
 #include "options.h"
 #include "timeedit_ctrl.h"
@@ -152,7 +153,7 @@ void TimeEdit::Modified(bool byUser) {
 
 	// Colour
 	if (showModified && !modified) {
-		SetBackgroundColour(Options.AsColour(_T("Edit Box Need Enter Background")));
+		SetBackgroundColour(lagi_wxColour(OPT_GET("Edit Box/Background/Need Enter")->GetColour()));
 	}
 	modified = true;
 

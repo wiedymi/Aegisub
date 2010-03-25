@@ -44,6 +44,7 @@
 #include <wx/statline.h>
 #endif
 
+#include "compat.h"
 #include "dialog_dummy_video.h"
 #include "help_button.h"
 #include "main.h"
@@ -151,7 +152,7 @@ DialogDummyVideo::DialogDummyVideo(wxWindow *parent)
 	resolution_shortcuts = new wxComboBox(this, Dummy_Video_Resolution_Shortcut, _T(""), wxDefaultPosition, wxDefaultSize, 0, 0, wxCB_READONLY);
 	width = new wxTextCtrl(this, -1);
 	height = new wxTextCtrl(this, -1);
-	colour = new ColourButton(this, -1, wxSize(30, 17), Options.AsColour(_T("Video Dummy Last Colour")));
+	colour = new ColourButton(this, -1, wxSize(30, 17), lagi_wxColour(OPT_GET("Colour/Video Dummy/Last Colour")->GetColour()));
 	pattern = new wxCheckBox(this, -1, _("Checkerboard pattern"));
 	//fps = new wxComboBox(this, Dummy_Video_FPS, Options.AsText(_T("Video Dummy Last FPS")), wxDefaultPosition, wxDefaultSize, 0, 0, wxCB_DROPDOWN);
 	fps = new wxTextCtrl(this, Dummy_Video_FPS, wxString::Format("%f", OPT_GET("Video/Dummy/FPS")->GetDouble()));

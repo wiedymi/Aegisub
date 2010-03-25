@@ -48,6 +48,7 @@
 #include "ass_style.h"
 #include "audio_display.h"
 #include "base_grid.h"
+#include "compat.h"
 #include "frame_main.h"
 #include "main.h"
 #include "options.h"
@@ -421,12 +422,12 @@ void BaseGrid::DrawImage(wxDC &dc) {
 	dc.SetFont(font);
 
 	// Clear background
-	dc.SetBackground(wxBrush(Options.AsColour(_T("Grid Background"))));
+	dc.SetBackground(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Background")->GetColour())));
 	dc.Clear();
 
 	// Draw labels
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.SetBrush(wxBrush(Options.AsColour(_T("Grid left column"))));
+	dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Left Column")->GetColour())));
 	dc.DrawRectangle(0,lineHeight,colWidth[0],h-lineHeight);
 
 	// Visible lines
@@ -437,23 +438,23 @@ void BaseGrid::DrawImage(wxDC &dc) {
 	// Row colors
 	std::vector<wxBrush> rowColors;
 	std::vector<wxColor> foreColors;
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid Background"))));					// 0 = Standard
-	foreColors.push_back(Options.AsColour(_T("Grid standard foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid Header"))));						// 1 = Header
-	foreColors.push_back(Options.AsColour(_T("Grid standard foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid selection background"))));		// 2 = Selected
-	foreColors.push_back(Options.AsColour(_T("Grid selection foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid comment background"))));			// 3 = Commented
-	foreColors.push_back(Options.AsColour(_T("Grid selection foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid inframe background"))));			// 4 = Video Highlighted
-	foreColors.push_back(Options.AsColour(_T("Grid selection foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid selected comment background"))));	// 5 = Commented & selected
-	foreColors.push_back(Options.AsColour(_T("Grid selection foreground")));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Background")->GetColour())));					// 0 = Standard
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Standard")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Header")->GetColour())));						// 1 = Header
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Standard")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Selection")->GetColour())));		// 2 = Selected
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Comment")->GetColour())));			// 3 = Commented
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Inframe")->GetColour())));			// 4 = Video Highlighted
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Selected Comment")->GetColour())));	// 5 = Commented & selected
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
 
 	// First grid row
 	bool drawGrid = true;
 	if (drawGrid) {
-		dc.SetPen(wxPen(Options.AsColour(_T("Grid lines"))));
+		dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Lines")->GetColour())));
 		dc.DrawLine(0,0,w,0);
 		dc.SetPen(*wxTRANSPARENT_PEN);
 	}
@@ -567,7 +568,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 		}
 
 		// Set text color
-		if (collides) dc.SetTextForeground(Options.AsColour(_T("Grid collision foreground")));
+		if (collides) dc.SetTextForeground(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Collision")->GetColour()));
 		else {
 			dc.SetTextForeground(foreColors[curColor]);
 		}
@@ -598,7 +599,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 		// Draw grid
 		dc.DestroyClippingRegion();
 		if (drawGrid) {
-			dc.SetPen(wxPen(Options.AsColour(_T("Grid lines"))));
+			dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Lines")->GetColour())));
 			dc.DrawLine(0,dy+lineHeight,w,dy+lineHeight);
 			dc.SetPen(*wxTRANSPARENT_PEN);
 		}
@@ -607,7 +608,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 	// Draw grid columns
 	dx = 0;
 	if (drawGrid) {
-		dc.SetPen(wxPen(Options.AsColour(_T("Grid lines"))));
+		dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Lines")->GetColour())));
 		for (int i=0;i<10;i++) {
 			dx += colWidth[i];
 			dc.DrawLine(dx,0,dx,maxH);
@@ -617,7 +618,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 	}
 
 	// Draw currently active line border
-	dc.SetPen(wxPen(Options.AsColour(_T("Grid Active border"))));
+	dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Active Border")->GetColour())));
 	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 	dy = (editBox->linen+1-yPos) * lineHeight;
 	dc.DrawRectangle(0,dy,w,lineHeight+1);

@@ -285,22 +285,91 @@
 	},
 
 
+	"Colour" : {
+		"Audio Display" : {
+
+			"Line Boundary Inactive Line" : "rgb(190,190,190)",
+			"Play Cursor" : "rgb(255,255,255)",
+			"Syllable Boundaries" : "rgb(255,255,0)",
+			"Syllable Text" : "rgb(255,0,0)",
+			"Waveform Selected" : "rgb(255,255,255)",
+			"Line boundary End" : "rgb(230, 125, 0)",
+			"Line boundary Start" : "rgb(216, 0, 0)",
+			"Seconds Boundaries" : "rgb(0, 100, 255)",
+			"Waveform Inactive" : "rgb(0, 80, 0)",
+			"Waveform Modified" : "rgb(255, 230, 230)",
+			"Waveform" : "rgb(0, 200, 0)",
+			"Background" : {
+				"Background" : "rgb(0,0,0)",
+				"Selection Modified" : "rgb(92, 0, 0)",
+				"Selection" : "rgb(64, 64, 64)"
+			}
+		},
+
+		"Edit Box" : {
+			"Background" : {
+				"Need Enter" : "rgb(192, 192, 255)"
+			}
+		},
+
+		"Subtitle Grid": {
+			"Active Border" : "rgb(255, 91, 239)",
+			"Header" : "rgb(165, 207, 231)",
+			"Left Column" : "rgb(196, 236, 201)",
+
+			"Collision" : "rgb(255,0,0)",
+			"Lines" : "rgb(190,190,190)",
+			"Selection" : "rgb(0,0,0)",
+			"Standard" : "rgb(0,0,0)",
+
+			"Background" : {
+				"Background" : "rgb(255,255,255)",
+				"Comment" : "rgb(216, 222, 245)",
+				"Inframe" : "rgb(255, 253, 234)",
+				"Selected Comment" : "rgb(211, 238, 238)",
+				"Selection" : "rgb(206, 255, 231)"
+			}
+		},
+
+		"Style Editor" : {
+			"Background" : {
+				"Preview" : "rgb(125, 153, 176)"
+			}
+		},
+
+		"Subtitle" : {
+			"Syntax" : {
+				"Normal" : "rgb(0,0,0)",
+				"Brackets" : "rgb(20, 50, 255)",
+				"Error" : "rgb(200, 0, 0)",
+				"Karaoke Template" : "rgb(128, 0, 192)",
+				"Line Break" : "rgb(160, 160, 160)",
+				"Parameters" : "rgb(40, 90, 40)",
+				"Slashes" : "rgb(255, 0, 200)",
+				"Highlight Tags" : "rgb(90, 90, 90)",
+				"Background" : {
+					"Error" : "rgb(255, 200, 200)"
+				}
+			}
+		},
+
+		"Video Dummy" : {
+			"Last Colour" : "rgb(47, 163, 254)"
+		}
+	},
+
+
 
 
 	"Config" : {
 
 		"Audio Alsa Device" : "default",
-		"Audio Background" : "black",
 		"Audio Downmixer" : "ConvertToMono",
 		"Audio HD Cache Location" : "default",
 		"Audio HD Cache Name" : "audio%02i.tmp",
 		"Audio OSS Device" : "/dev/dsp",
-		"Audio Play cursor" : "white",
 		"Audio Player" : "portaudio",
 		"Audio Provider" : "ffmpegsource",
-		"Audio Syllable boundaries" : "yellow",
-		"Audio Syllable text" : "red",
-		"Audio Waveform Selected" : "white",
 		"Auto backup path" : "?user/autoback",
 		"Auto save path" : "?user/autosave",
 		"Automation Autoload Path" : "?user/automation/autoload/|?data/automation/autoload/",
@@ -313,12 +382,7 @@
 		"FFmpegSource log level" : "quiet",
 		"Fonts Collector Destination" : "?script",
 		"Grid Font Face" : "",
-		"Grid background" : "white",
-		"Grid collision foreground" : "red",
 		"Grid hide overrides char" : "☀",
-		"Grid lines" : "grey",
-		"Grid selection foreground" : "black",
-		"Grid standard foreground" : "black",
 		"Last open audio path" : "/mnt/free/aegisub/test_files/Kaze no Garden - Nocturne (theme).mp3.wav",
 		"Last open automation path" : "",
 		"Last open keyframes path" : "",
@@ -331,39 +395,10 @@
 		"Spell checker language" : "en_US",
 		"Style editor preview text" : "Aegisub\\N0123 月語",
 		"Subtitles Provider" : "libass",
-		"Syntax Highlight Normal" : "black",
 		"Text actor separator" : ":",
 		"Text comment starter" : "#",
 		"Thesaurus language" : "en_US",
 		"Video Provider" : "ffmpegsource",
-		"Video Screenshot Path" : "?video",
-
-
-		"Audio Line boundary end" : "rgb(230, 125, 0)",
-		"Audio Line boundary start" : "rgb(216, 0, 0)",
-		"Audio Seconds Boundaries" : "rgb(0, 100, 255)",
-		"Audio Selection Background Modified" : "rgb(92, 0, 0)",
-		"Audio Selection Background" : "rgb(64, 64, 64)",
-		"Audio Waveform Inactive" : "rgb(0, 80, 0)",
-		"Audio Waveform Modified" : "rgb(255, 230, 230)",
-		"Audio Waveform" : "rgb(0, 200, 0)",
-		"Edit Box Need Enter Background" : "rgb(192, 192, 255)",
-		"Grid active border" : "rgb(255, 91, 239)",
-		"Grid comment background" : "rgb(216, 222, 245)",
-		"Grid header" : "rgb(165, 207, 231)",
-		"Grid inframe background" : "rgb(255, 253, 234)",
-		"Grid left column" : "rgb(196, 236, 201)",
-		"Grid selected comment background" : "rgb(211, 238, 238)",
-		"Grid selection background" : "rgb(206, 255, 231)",
-		"Style editor preview background" : "rgb(125, 153, 176)",
-		"Syntax Highlight Brackets" : "rgb(20, 50, 255)",
-		"Syntax Highlight Error Background" : "rgb(255, 200, 200)",
-		"Syntax Highlight Error" : "rgb(200, 0, 0)",
-		"Syntax Highlight Karaoke Template" : "rgb(128, 0, 192)",
-		"Syntax Highlight Line Break" : "rgb(160, 160, 160)",
-		"Syntax Highlight Parameters" : "rgb(40, 90, 40)",
-		"Syntax Highlight Slashes" : "rgb(255, 0, 200)",
-		"Syntax Highlight Tags" : "rgb(90, 90, 90)",
-		"Video Dummy Last Colour" : "rgb(47, 163, 254)"
+		"Video Screenshot Path" : "?video"
 	}
 }

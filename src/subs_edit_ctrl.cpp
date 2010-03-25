@@ -44,6 +44,7 @@
 #endif
 
 #include "ass_dialogue.h"
+#include "compat.h"
 #include "main.h"
 #include "options.h"
 #include "subs_edit_box.h"
@@ -209,47 +210,47 @@ void SubsTextEditCtrl::SetStyles() {
 	// Normal style
 	StyleSetFont(0,font);
 	StyleSetSize(0,size);
-	StyleSetForeground(0,Options.AsColour(_T("Syntax Highlight Normal")));
+	StyleSetForeground(0,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Normal")->GetColour()));
 
 	// Brackets style
 	StyleSetFont(1,font);
 	StyleSetSize(1,size);
-	StyleSetForeground(1,Options.AsColour(_T("Syntax Highlight Brackets")));
+	StyleSetForeground(1,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Brackets")->GetColour()));
 
 	// Slashes/Parenthesis/Comma style
 	StyleSetFont(2,font);
 	StyleSetSize(2,size);
-	StyleSetForeground(2,Options.AsColour(_T("Syntax Highlight Slashes")));
+	StyleSetForeground(2,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Slashes")->GetColour()));
 
 	// Tags style
 	StyleSetFont(3,font);
 	StyleSetSize(3,size);
 	StyleSetBold(3,true);
-	StyleSetForeground(3,Options.AsColour(_T("Syntax Highlight Tags")));
+	StyleSetForeground(3,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Highlight Tags")->GetColour()));
 
 	// Error style
 	StyleSetFont(4,font);
 	StyleSetSize(4,size);
-	StyleSetForeground(4,Options.AsColour(_T("Syntax Highlight Error")));
-	StyleSetBackground(4,Options.AsColour(_T("Syntax Highlight Error Background")));
+	StyleSetForeground(4,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Error")->GetColour()));
+	StyleSetBackground(4,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Background/Error")->GetColour()));
 
 	// Tag Parameters style
 	StyleSetFont(5,font);
 	StyleSetSize(5,size);
-	StyleSetForeground(5,Options.AsColour(_T("Syntax Highlight Parameters")));
+	StyleSetForeground(5,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Parameters")->GetColour()));
 
 	// Line breaks style
 	StyleSetFont(6,font);
 	StyleSetSize(6,size);
 	StyleSetBold(6,true);
-	StyleSetForeground(6,Options.AsColour(_T("Syntax Highlight Line Break")));
+	StyleSetForeground(6,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Line Break")->GetColour()));
 
 	// Karaoke template code block style
 	StyleSetFont(7,font);
 	StyleSetSize(7,size);
 	StyleSetBold(7,true);
 	//StyleSetItalic(7,true);
-	StyleSetForeground(7,Options.AsColour(_T("Syntax Highlight Karaoke Template")));
+	StyleSetForeground(7,lagi_wxColour(OPT_GET("Colour/Subtitle/Syntax/Karaoke Template")->GetColour()));
 
 	// Misspelling indicator
 	IndicatorSetStyle(0,wxSTC_INDIC_SQUIGGLE);
