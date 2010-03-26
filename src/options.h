@@ -78,8 +78,6 @@ public:
 	wxString GetFile() const;
 	void Save();
 
-	wxArrayString GetRecentList (wxString list);
-
 	void SetInt(wxString key,int param,int ifLastVersion=-1);
 	void SetFloat(wxString key,double param,int ifLastVersion=-1);
 	void SetBool(wxString key,bool param,int ifLastVersion=-1);

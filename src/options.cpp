@@ -217,24 +217,6 @@ void OptionsManager::SetColour(wxString key,wxColour param,int ifLastVersion) {
 }
 
 
-
-/// @brief Get recent list 
-/// @param list 
-/// @return 
-///
-wxArrayString OptionsManager::GetRecentList (wxString list) {
-	wxArrayString work;
-
-	agi::MRUManager::MRUListMap *map_list = AegisubApp::Get()->mru->Get(STD_STR(list));
-
-	for (agi::MRUManager::MRUListMap::const_iterator i_lst = map_list->begin(); i_lst != map_list->end(); ++i_lst) {
-		work.Add(wxString(i_lst->second));
-	}
-
-	return work;
-}
-
-
 /// DOCME
 OptionsManager Options;
 

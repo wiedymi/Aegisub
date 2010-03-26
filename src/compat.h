@@ -2,6 +2,7 @@
 #include <string>
 
 #include <wx/colour.h>
+<wx/arrstr.h>
 #include <wx/string.h>
 #endif
 
@@ -11,3 +12,4 @@
 
 inline wxColour lagi_wxColour(const agi::Colour &colour) { return wxColour(colour); }
 inline wxString lagi_wxString(const std::string &str) { return wxString(str); }
+wxArrayString lagi_MRU_wxAS(const wxString &list);

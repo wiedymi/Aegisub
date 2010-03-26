@@ -265,7 +265,7 @@ void FrameMain::RebuildRecentList(wxString listName,wxMenu *menu,int startID) {
 	// Rebuild
 	int added = 0;
 	wxString n;
-	wxArrayString entries = Options.GetRecentList(listName);
+	wxArrayString entries = lagi_MRU_wxAS(listName);
 	for (size_t i=0;i<entries.Count();i++) {
 		n = wxString::Format(_T("%i"),i+1);
 		if (i < 9) n = _T("&") + n;
