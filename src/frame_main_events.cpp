@@ -523,8 +523,7 @@ int FrameMain::AddMacroMenuItems(wxMenu *menu, const std::vector<Automation4::Fe
 ///
 void FrameMain::OnOpenRecentSubs(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_File_Recent;
-	wxString key = _T("Recent sub #") + wxString::Format(_T("%i"),number+1);
-//	LoadSubtitles(Options.AsText(key));
+	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Subtitle", number));
 }
 
 
@@ -534,8 +533,7 @@ void FrameMain::OnOpenRecentSubs(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenRecentVideo(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Video_Recent;
-	wxString key = _T("Recent vid #") + wxString::Format(_T("%i"),number+1);
-//	LoadVideo(Options.AsText(key));
+	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Video", number));
 }
 
 
@@ -545,8 +543,7 @@ void FrameMain::OnOpenRecentVideo(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Timecodes_Recent;
-	wxString key = _T("Recent timecodes #") + wxString::Format(_T("%i"),number+1);
-//	LoadVFR(Options.AsText(key));
+	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Timecodes", number));
 }
 
 
@@ -556,8 +553,7 @@ void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Keyframes_Recent;
-	wxString key = _T("Recent Keyframes #") + wxString::Format(_T("%i"),number+1);
-//	KeyFrameFile::Load(Options.AsText(key));
+	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Keyframes", number));
 	videoBox->videoSlider->Refresh();
 	audioBox->audioDisplay->Update();
 	Refresh();
@@ -570,8 +566,7 @@ void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenRecentAudio(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Audio_Recent;
-	wxString key = _T("Recent aud #") + wxString::Format(_T("%i"),number+1);
-//	LoadAudio(Options.AsText(key));
+	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Audio", number));
 }
 
 

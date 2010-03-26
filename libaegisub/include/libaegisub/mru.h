@@ -33,6 +33,7 @@ namespace agi {
 
 DEFINE_BASE_EXCEPTION_NOINNER(MRUError,Aegisub::Exception)
 DEFINE_SIMPLE_EXCEPTION_NOINNER(MRUErrorInvalidKey, MRUError, "mru/invalid")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(MRUErrorIndexOutOfRange, MRUError, "mru/invalid")
 
 /// @class MRUManager
 /// @brief Most Recently Used (MRU) list handling
@@ -73,6 +74,12 @@ public:
 	/// @param key List name
 	/// @exception MRUErrorInvalidKey thrown when an invalid key is used.
 	const MRUListMap* Get(const std::string &key);
+
+	/// @brief Return A single entry in a list.
+	/// @param key List name
+	/// @param entry 0-base position of entry
+	/// @exception MRUErrorInvalidKey thrown when an invalid key is used.
+	const std::string GetEntry(const std::string &key, const int entry);
 
 	/// Write MRU lists to disk.
 	void Flush();

@@ -121,6 +121,21 @@ const MRUManager::MRUListMap* MRUManager::Get(const std::string &key) {
 }
 
 
+const std::string MRUManager::GetEntry(const std::string &key, const int entry) {
+
+	const MRUManager::MRUListMap *map = Get(key);
+
+	MRUListMap::const_iterator index = map->begin();;
+
+	if ((unsigned int)entry > map->size())
+		throw MRUErrorIndexOutOfRange(L"Requested element index is out of range.");
+
+	std::advance(index, entry);
+
+	return index->second;
+}
+
+
 void MRUManager::Flush() {
 
 	json::Object out;
