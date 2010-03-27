@@ -724,7 +724,7 @@ void DialogStyleEditor::OnPreviewTextChange (wxCommandEvent &event) {
 ///
 void DialogStyleEditor::OnPreviewColourChange (wxCommandEvent &event) {
 	if (SubsPreview) SubsPreview->SetColour(previewButton->GetColour());
-	Options.SetColour(_T("Style editor preview background"),previewButton->GetColour());
+	OPT_SET("Colour/Style Editor/Background/Preview")->SetColour(STD_STR(previewButton->GetColour().GetAsString(wxC2S_CSS_SYNTAX)));
 	Options.Save();
 }
 

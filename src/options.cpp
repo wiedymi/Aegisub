@@ -163,24 +163,6 @@ void OptionsManager::SetBool(wxString key,bool param,int ifLastVersion) {
 }
 
 
-
-/// @brief Write colour 
-/// @param key           
-/// @param param         
-/// @param ifLastVersion 
-/// @return 
-///
-void OptionsManager::SetColour(wxString key,wxColour param,int ifLastVersion) {
-	if (ifLastVersion == -1) {
-		if (overriding) ifLastVersion = 0;
-		else ifLastVersion = 0x7FFFFFFF;
-	}
-	if (lastVersion >= ifLastVersion) return;
-	opt[key.Lower()].SetColour(param);
-	modified = true;
-}
-
-
 /// DOCME
 OptionsManager Options;
 

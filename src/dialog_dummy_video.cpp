@@ -129,7 +129,7 @@ bool DialogDummyVideo::CreateDummyVideo(wxWindow *parent, wxString &out_filename
 		OPT_SET("Video/Dummy/Last/Width")->SetInt(width);
 		OPT_SET("Video/Dummy/Last/Height")->SetInt(height);
 		OPT_SET("Video/Dummy/Last/Length")->SetInt(length);
-		Options.SetColour(_T("Video Dummy Last Colour"), colour);
+		OPT_SET("Colour/Video Dummy/Last Colour")->SetColour(STD_STR(colour.GetAsString(wxC2S_CSS_SYNTAX)));
 		Options.SetBool(_T("Video Dummy Pattern"), pattern);
 
 		out_filename = DummyVideoProvider::MakeFilename(fps, length, width, height, colour, pattern);
