@@ -127,25 +127,6 @@ void OptionsManager::Save() {
 }
 
 
-
-/// @brief Write float 
-/// @param key           
-/// @param param         
-/// @param ifLastVersion 
-/// @return 
-///
-void OptionsManager::SetFloat(wxString key,double param,int ifLastVersion) {
-	if (ifLastVersion == -1) {
-		if (overriding) ifLastVersion = 0;
-		else ifLastVersion = 0x7FFFFFFF;
-	}
-	if (lastVersion >= ifLastVersion) return;
-	opt[key.Lower()].SetFloat(param);
-	modified = true;
-}
-
-
-
 /// @brief Write boolean 
 /// @param key           
 /// @param param         

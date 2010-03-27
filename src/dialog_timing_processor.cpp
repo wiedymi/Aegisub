@@ -308,7 +308,7 @@ void DialogTimingProcessor::OnApply(wxCommandEvent &event) {
 	OPT_SET("Tool/Timing Post Processor/Threshold/Key End After")->SetInt(temp);
 	adjacentThres->GetValue().ToLong(&temp);
 	OPT_SET("Tool/Timing Post Processor/Threshold/Adjacent")->SetInt(temp);
-	Options.SetFloat(_T("Timing processor adjacent bias"),adjacentBias->GetValue() / 100.0);
+	OPT_SET("Tool/Timing Post Processor/Adjacent Bias")->SetDouble(adjacentBias->GetValue() / 100.0);
 	Options.SetBool(_T("Timing processor Enable lead-in"),hasLeadIn->IsChecked());
 	Options.SetBool(_T("Timing processor Enable lead-out"),hasLeadOut->IsChecked());
 	if (keysEnable->IsEnabled()) Options.SetBool(_T("Timing processor Enable keyframe"),keysEnable->IsChecked());

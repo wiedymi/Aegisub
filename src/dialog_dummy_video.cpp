@@ -125,7 +125,7 @@ bool DialogDummyVideo::CreateDummyVideo(wxWindow *parent, wxString &out_filename
 		pattern = dlg.pattern->GetValue();
 
 		// Write to options
-		Options.SetFloat(_T("Video Dummy Last FPS"), fps);
+		OPT_SET("Video/Dummy/FPS")->SetDouble(fps);
 		OPT_SET("Video/Dummy/Last/Width")->SetInt(width);
 		OPT_SET("Video/Dummy/Last/Height")->SetInt(height);
 		OPT_SET("Video/Dummy/Last/Length")->SetInt(length);
