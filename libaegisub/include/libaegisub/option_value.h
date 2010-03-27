@@ -92,11 +92,11 @@ public:
 	virtual Colour GetColour() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve colour from non-colour value"); }
 	virtual bool GetBool() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve bool from non-bool value"); }
 
-	virtual void SetString(const std::string &val) { throw OptionValueErrorInvalidType(L"Attempt to set string in a non-string value"); }
-	virtual void SetInt(int64_t val) { throw OptionValueErrorInvalidType(L"Attempt to set int in a non-int value"); }
-	virtual void SetDouble(double val) { throw OptionValueErrorInvalidType(L"Attempt to set double in a non-double value"); }
-	virtual void SetColour(Colour val) { throw OptionValueErrorInvalidType(L"Attempt to set colour in a non-colour value"); }
-	virtual void SetBool(bool val) { throw OptionValueErrorInvalidType(L"Attempt to set bool in a non-bool value"); }
+	virtual void SetString(const std::string val) { throw OptionValueErrorInvalidType(L"Attempt to set string in a non-string value"); }
+	virtual void SetInt(const int64_t val) { throw OptionValueErrorInvalidType(L"Attempt to set int in a non-int value"); }
+	virtual void SetDouble(const double val) { throw OptionValueErrorInvalidType(L"Attempt to set double in a non-double value"); }
+	virtual void SetColour(const Colour val) { throw OptionValueErrorInvalidType(L"Attempt to set colour in a non-colour value"); }
+	virtual void SetBool(const bool val) { throw OptionValueErrorInvalidType(L"Attempt to set bool in a non-bool value"); }
 
 	virtual std::string GetDefaultString() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve string from non-string value"); }
 	virtual int64_t GetDefaultInt() const { throw OptionValueErrorInvalidType(L"Attempt to retrieve int from non-int value"); }
@@ -141,7 +141,7 @@ public:
 		OptionValue##type_name(std::string member_name, type member_value):                   \
 						  value(member_value), name(member_name) {}                           \
 		type Get##type_name() const { return value; }                                         \
-		void Set##type_name(type new_val) { value = new_val; }                                \
+		void Set##type_name(const type new_val) { value = new_val; }                          \
 		type GetDefault##type_name() const { return value_default; }                          \
 		OptionType GetType() const { return OptionValue::Type_##type_name; }                  \
 		std::string GetName() const { return name; }                                          \

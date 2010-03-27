@@ -82,7 +82,7 @@ public:
 	/// @brief Get an option by name.
 	/// @param name Option to get.
 	/// Get an option value object by name throw an internal exception if the option is not found.
-	const OptionValue* Get(const std::string &name);
+	OptionValue* Get(const std::string &name);
 
 	/// Load internal default values
 	void ConfigDefault(std::istream &config);

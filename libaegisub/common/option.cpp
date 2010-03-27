@@ -55,7 +55,7 @@ void Options::ConfigNext(const std::istream &src) {}
 void Options::ConfigUser(const std::string &filename) {}
 
 
-const OptionValue* Options::Get(const std::string &name) {
+OptionValue* Options::Get(const std::string &name) {
 
 	OptionValueMap::iterator index;
 
