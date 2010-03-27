@@ -236,7 +236,7 @@ void DialogAutomation::OnAdd(wxCommandEvent &evt)
 	if (!fname.IsEmpty()) {
 
 		wxFileName fnpath(fname);
-		Options.SetText(_T("Last open automation path"), fnpath.GetPath());
+		OPT_SET("Path/Last/Automation")->SetString(STD_STR(fnpath.GetPath()));
 
 		// TODO: make sure each script is only loaded once. check in both local and global managers!!
 		// it doesn't break for macros, but will for export filters, and maybe for file formats,

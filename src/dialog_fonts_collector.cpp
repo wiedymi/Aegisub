@@ -243,7 +243,7 @@ void DialogFontsCollector::OnStart(wxCommandEvent &event) {
 		if (filename.GetPath() == dest) {
 			dest = _T("?script");
 		}
-		Options.SetText(_T("Fonts Collector Destination"),dest);
+		OPT_SET("Path/Fonts Collector Destination")->SetString(STD_STR(dest));
 	}
 	OPT_SET("Tool/Fonts Collector/Action")->SetInt(action);
 	Options.Save();

@@ -80,7 +80,6 @@ public:
 
 	void SetFloat(wxString key,double param,int ifLastVersion=-1);
 	void SetBool(wxString key,bool param,int ifLastVersion=-1);
-	void SetText(wxString key,wxString param,int ifLastVersion=-1);
 	void SetColour(wxString key,wxColour param,int ifLastVersion=-1);
 };
 

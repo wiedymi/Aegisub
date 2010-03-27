@@ -706,7 +706,7 @@ void FrameMain::LoadSubtitles (wxString filename,wxString charset) {
 					wxString cur = testSubs.ReadLineFromFile();
 					if (cur.Left(10) == _T("# timecode")) {
 						LoadVFR(filename);
-						Options.SetText(_T("Last open timecodes path"), fileCheck.GetPath());
+						OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(fileCheck.GetPath()));
 						return;
 					}
 				}
@@ -725,7 +725,7 @@ void FrameMain::LoadSubtitles (wxString filename,wxString charset) {
 			SubsBox->LoadFromAss(AssFile::top,false,true);
 			wxFileName fn(filename);
 			StandardPaths::SetPathValue(_T("?script"),fn.GetPath());
-			Options.SetText(_T("Last open subtitles path"), fn.GetPath());
+			OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(fn.GetPath()));
 		}
 		else {
 			SubsBox->LoadDefault(AssFile::top);
@@ -793,7 +793,7 @@ bool FrameMain::SaveSubtitles(bool saveas,bool withCharset) {
 	if (!filename.empty()) {
 		// Store path
 		wxFileName filepath(filename);
-		Options.SetText(_T("Last open subtitles path"), filepath.GetPath());
+		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
 
 		// Fix me, ghetto hack for correct relative path generation in SynchronizeProject()
 		AssFile::top->filename = filename;

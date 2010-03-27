@@ -403,7 +403,7 @@ void DialogSpellChecker::OnChangeLanguage(wxCommandEvent &event) {
 	// Change language code
 	wxString code = langCodes[language->GetSelection()];
 	spellchecker->SetLanguage(code);
-	Options.SetText(_T("Spell checker language"),code);
+	OPT_SET("Tool/Spell Checker/Language")->SetString(STD_STR(code));
 	Options.Save();
 
 	// Go back to first match

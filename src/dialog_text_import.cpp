@@ -87,8 +87,8 @@ DialogTextImport::~DialogTextImport()
 void DialogTextImport::OnOK(wxCommandEvent &event)
 {
 	// Set options
-	Options.SetText(_T("text actor separator"), edit_separator->GetValue());
-	Options.SetText(_T("text comment starter"), edit_comment->GetValue());
+	OPT_SET("Tool/Import/Text/Actor Separator")->SetString(STD_STR(edit_separator->GetValue()));
+	OPT_SET("Tool/Import/Text/Comment Starter")->SetString(STD_STR(edit_comment->GetValue()));
 	Options.Save();
 
 	EndModal(wxID_OK);

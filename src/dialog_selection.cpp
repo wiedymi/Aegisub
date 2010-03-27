@@ -297,7 +297,7 @@ void DialogSelection::SaveSettings() {
 	else condition = 1;
 
 	// Store
-	Options.SetText(_T("Select Text"),Match->GetValue());
+	OPT_SET("Tool/Select Lines/Text")->SetString(STD_STR(Match->GetValue()));
 	OPT_SET("Tool/Select/Condition")->SetInt(condition);
 	OPT_SET("Tool/Select/Field")->SetInt(field);
 	OPT_SET("Tool/Select/Action")->SetInt(action);

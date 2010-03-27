@@ -590,7 +590,7 @@ void DialogStyleEditor::Apply (bool apply,bool close) {
 		// Exit
 		if (close) {
 			EndModal(1);
-			if (PreviewText) Options.SetText(_T("Style editor preview text"),PreviewText->GetValue());
+			if (PreviewText) OPT_SET("Tool/Style Editor/Preview Text")->SetString(STD_STR(PreviewText->GetValue()));
 			Options.Save();
 		}
 
@@ -602,7 +602,7 @@ void DialogStyleEditor::Apply (bool apply,bool close) {
 	else {
 		if (close) {
 			EndModal(0);
-			if (PreviewText) Options.SetText(_T("Style editor preview text"),PreviewText->GetValue());
+			if (PreviewText) OPT_SET("Tool/Style Editor/Preview Text")->SetString(STD_STR(PreviewText->GetValue()));
 			Options.Save();
 		}
 	}

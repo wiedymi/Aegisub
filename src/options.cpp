@@ -146,25 +146,6 @@ void OptionsManager::SetFloat(wxString key,double param,int ifLastVersion) {
 
 
 
-/// @brief Write string 
-/// @param key           
-/// @param param         
-/// @param ifLastVersion 
-/// @return 
-///
-void OptionsManager::SetText(wxString key,wxString param,int ifLastVersion) {
-	if (ifLastVersion == -1) {
-		if (overriding) ifLastVersion = 0;
-		else ifLastVersion = 0x7FFFFFFF;
-	}
-	if (lastVersion >= ifLastVersion) return;
-	opt[key.Lower()].SetText(param);
-//	if (curModType != MOD_OFF) optType[key.Lower()] = curModType;
-	modified = true;
-}
-
-
-
 /// @brief Write boolean 
 /// @param key           
 /// @param param         

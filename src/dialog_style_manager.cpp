@@ -937,7 +937,7 @@ void DialogStyleManager::OnCurrentImport(wxCommandEvent &event) {
 	if (!filename.IsEmpty()) {
 		// Save path
 		wxFileName filepath(filename);
-		Options.SetText(_T("Last open subtitles path"), filepath.GetPath());
+		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
 		Options.Save();
 
 		try {

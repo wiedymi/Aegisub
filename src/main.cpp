@@ -481,7 +481,7 @@ void AegisubApp::MacOpenFile(const wxString &filename) {
 	if (frame != NULL && !filename.empty()) {
 		frame->LoadSubtitles(filename);
 		wxFileName filepath(filename);
-		Options.SetText(_T("Last open subtitles path"), filepath.GetPath());
+		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
 	}
 }
 #endif
