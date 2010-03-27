@@ -58,6 +58,9 @@ namespace Automation4 { class AutoloadScriptManager; }
 /// Macro to get OptionValue object.
 #define OPT_GET(x) AegisubApp::Get()->opt->Get(x)
 
+/// Macro to set OptionValue object.
+#define OPT_SET(x) AegisubApp::Get()->opt->Get(x)
+
 /// DOCME
 /// @class AegisubApp
 /// @brief DOCME
