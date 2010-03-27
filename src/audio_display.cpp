@@ -272,8 +272,8 @@ void AudioDisplay::DoUpdateImage() {
 
 	// Draw selection bg
 	if (hasSel && drawSelStart < drawSelEnd && draw_selection_background) {
-		if (NeedCommit && !karaoke->enabled) dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Background/")->GetColour())));
-		else dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Background/")->GetColour())));
+		if (NeedCommit && !karaoke->enabled) dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Background/Selection Modified")->GetColour())));
+		else dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Background/Background")->GetColour())));
 		dc.DrawRectangle(drawSelStart,0,drawSelEnd-drawSelStart,h);
 	}
 
@@ -328,7 +328,7 @@ void AudioDisplay::DoUpdateImage() {
 		// Draw boundaries
 		if (true) {
 			// Draw start boundary
-			const int selWidth = OPT_GET("Audio Line Boundaries Thickness")->GetInt();
+			const int selWidth = OPT_GET("Audio/Line Boundaries Thickness")->GetInt();
 			dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Audio Display/Line boundary Start")->GetColour())));
 			dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Audio Display/Line boundary Start")->GetColour())));
 			dc.DrawRectangle(lineStart-selWidth/2+1,0,selWidth,h);
@@ -424,7 +424,7 @@ void AudioDisplay::DoUpdateImage() {
 /// Draws markers for inactive lines, eg. the previous line, per configuration.
 void AudioDisplay::DrawInactiveLines(wxDC &dc) {
 	// Check if there is anything to do
-	const int shadeType = OPT_GET("Audio Inactive Lines Display Mode")->GetInt();
+	const int shadeType = OPT_GET("Audio/Inactive Lines Display Mode")->GetInt();
 	if (shadeType == 0) return;
 
 	// Spectrum?
