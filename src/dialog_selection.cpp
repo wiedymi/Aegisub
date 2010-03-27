@@ -298,10 +298,10 @@ void DialogSelection::SaveSettings() {
 
 	// Store
 	Options.SetText(_T("Select Text"),Match->GetValue());
-	Options.SetInt(_T("Select Condition"),condition);
-	Options.SetInt(_T("Select Field"),field);
-	Options.SetInt(_T("Select Action"),action);
-	Options.SetInt(_T("Select Mode"),mode);
+	OPT_SET("Tool/Select/Condition")->SetInt(condition);
+	OPT_SET("Tool/Select/Field")->SetInt(field);
+	OPT_SET("Tool/Select/Action")->SetInt(action);
+	OPT_SET("Tool/Select/Mode")->SetInt(mode);
 	Options.SetBool(_T("Select Match case"),MatchCase->IsChecked());
 	Options.SetBool(_T("Select Match dialogues"),MatchDialogues->IsChecked());
 	Options.SetBool(_T("Select Match comments"),MatchComments->IsChecked());

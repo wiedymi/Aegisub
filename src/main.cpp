@@ -211,7 +211,7 @@ bool AegisubApp::OnInit() {
 		Options.SetFile(StandardPaths::DecodePath(_T("?user/config.dat")));
 
 		StartupLog(_T("Store options back"));
-		Options.SetInt(_T("Last Version"),GetSVNRevision());
+		OPT_SET("Version/Last Version")->SetInt(GetSVNRevision());
 		Options.Save();
 		AssTime::UseMSPrecision = OPT_GET("App/Nonstandard Milisecond Times")->GetBool();
 
@@ -226,7 +226,7 @@ bool AegisubApp::OnInit() {
 		int lang = OPT_GET("App/Locale")->GetInt();
 		if (lang == -1) {
 			lang = locale.PickLanguage();
-			Options.SetInt(_T("Locale Code"),lang);
+			OPT_SET("App/Locale")->SetInt(lang);
 			Options.Save();
 		}
 		locale.Init(lang);

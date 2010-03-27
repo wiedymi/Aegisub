@@ -245,7 +245,7 @@ void DialogFontsCollector::OnStart(wxCommandEvent &event) {
 		}
 		Options.SetText(_T("Fonts Collector Destination"),dest);
 	}
-	Options.SetInt(_T("Fonts Collector Action"),action);
+	OPT_SET("Tool/Fonts Collector/Action")->SetInt(action);
 	Options.Save();
 
 	// Set buttons

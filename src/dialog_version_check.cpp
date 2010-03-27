@@ -202,7 +202,7 @@ wxThread::ExitCode AegisubVersionCheckerThread::Entry()
 	// because the tree only depends on the keys.
 	// Lastly, writing options to disk only happens when Options.Save() is called.
 	time_t new_next_check_time = wxDateTime::GetTimeNow() + 60*60; // in one hour
-	Options.SetInt(_T("Updates Next Check Time"), (int)new_next_check_time);
+	OPT_SET("Version/Next Check")->SetInt((int)new_next_check_time);
 
 	return 0;
 }
@@ -524,7 +524,7 @@ void VersionCheckerResultDialog::OnRemindMeLater(wxCommandEvent &evt)
 {
 	// In one week
 	time_t new_next_check_time = wxDateTime::Today().GetTicks() + 7*24*60*60;
-	Options.SetInt(_T("Updates Next Check Time"), (int)new_next_check_time);
+	OPT_SET("Version/Next Check")->SetInt((int)new_next_check_time);
 
 	Close();
 }

@@ -164,8 +164,8 @@ void DialogSearchReplace::UpdateSettings() {
 	Options.SetBool(_T("Find Match Case"),CheckMatchCase->IsChecked());
 	Options.SetBool(_T("Find RegExp"),CheckRegExp->IsChecked());
 	Options.SetBool(_T("Find Update Video"),CheckUpdateVideo->IsChecked());
-	Options.SetInt(_T("Find Field"),Field->GetSelection());
-	Options.SetInt(_T("Find Affect"),Affect->GetSelection());
+	OPT_SET("Tool/Search Replace/Field")->SetInt(Field->GetSelection());
+	OPT_SET("Tool/Search Replace/Affect")->SetInt(Affect->GetSelection());
 	Options.Save();
 }	
 

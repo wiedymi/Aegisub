@@ -1328,7 +1328,7 @@ void DialogColorPicker::OnChangeMode(wxCommandEvent &evt)
 {
 	if (!updating_controls)
 		spectrum_dirty = true;
-	Options.SetInt(_T("Color Picker Mode"), colorspace_choice->GetSelection());
+	OPT_SET("Tool/Colour Picker/Mode")->SetInt(colorspace_choice->GetSelection());
 	UpdateSpectrumDisplay();
 }
 

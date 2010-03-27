@@ -295,19 +295,19 @@ void DialogTimingProcessor::OnApply(wxCommandEvent &event) {
 	// Save settings
 	long temp = 0;
 	leadIn->GetValue().ToLong(&temp);
-	Options.SetInt(_T("Audio lead in"),temp);
+	OPT_SET("Audio/Lead/IN")->SetInt(temp);
 	leadOut->GetValue().ToLong(&temp);
-	Options.SetInt(_T("Audio lead out"),temp);
+	OPT_SET("Audio/Lead/OUT")->SetInt(temp);
 	keysStartBefore->GetValue().ToLong(&temp);
-	Options.SetInt(_T("Timing processor key start before thres"),temp);
+	OPT_SET("Tool/Timing Post Processor/Threshold/Key Start Before")->SetInt(temp);
 	keysStartAfter->GetValue().ToLong(&temp);
-	Options.SetInt(_T("Timing processor key start after thres"),temp);
+	OPT_SET("Tool/Timing Post Processor/Threshold/Key Start After")->SetInt(temp);
 	keysEndBefore->GetValue().ToLong(&temp);
-	Options.SetInt(_T("Timing processor key end before thres"),temp);
+	OPT_SET("Tool/Timing Post Processor/Threshold/Key End Before")->SetInt(temp);
 	keysEndAfter->GetValue().ToLong(&temp);
-	Options.SetInt(_T("Timing processor key end after thres"),temp);
+	OPT_SET("Tool/Timing Post Processor/Threshold/Key End After")->SetInt(temp);
 	adjacentThres->GetValue().ToLong(&temp);
-	Options.SetInt(_T("Timing processor adjacent thres"),temp);
+	OPT_SET("Tool/Timing Post Processor/Threshold/Adjacent")->SetInt(temp);
 	Options.SetFloat(_T("Timing processor adjacent bias"),adjacentBias->GetValue() / 100.0);
 	Options.SetBool(_T("Timing processor Enable lead-in"),hasLeadIn->IsChecked());
 	Options.SetBool(_T("Timing processor Enable lead-out"),hasLeadOut->IsChecked());

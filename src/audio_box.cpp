@@ -420,7 +420,7 @@ void AudioBox::OnSash(wxSashEvent& event) {
 	Sash->GetParent()->Layout();
 
 	// Store new size
-	Options.SetInt(_T("Audio Display Height"),h);
+	OPT_SET("Audio/Display Height")->SetInt(h);
 	Options.Save();
 
 	// Fix layout

@@ -78,7 +78,6 @@ public:
 	wxString GetFile() const;
 	void Save();
 
-	void SetInt(wxString key,int param,int ifLastVersion=-1);
 	void SetFloat(wxString key,double param,int ifLastVersion=-1);
 	void SetBool(wxString key,bool param,int ifLastVersion=-1);
 	void SetText(wxString key,wxString param,int ifLastVersion=-1);

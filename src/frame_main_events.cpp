@@ -1857,7 +1857,7 @@ void FrameMain::OnToggleTags(wxCommandEvent &event) {
 	StatusTimeout(message,10000);
 
 	// Set option
-	Options.SetInt(_T("Grid hide overrides"),tagMode);
+	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(tagMode);
 	Options.Save();
 
 	// Refresh grid
@@ -1906,7 +1906,7 @@ void FrameMain::OnChooseLanguage (wxCommandEvent &event) {
 	// Is OK?
 	if (newCode != -1) {
 		// Set code
-		Options.SetInt(_T("Locale Code"),newCode);
+		OPT_SET("App/Locale")->SetInt(newCode);
 		Options.Save();
 
 		// Language actually changed?

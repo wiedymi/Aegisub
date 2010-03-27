@@ -128,8 +128,8 @@ DialogDetachedVideo::DialogDetachedVideo(FrameMain *par, const wxSize &initialDi
 	// Update
 	parent->SetDisplayMode(0, -1);
 	GetPosition(&x, &y);
-	Options.SetInt(_T("Detached video last x"), x);
-	Options.SetInt(_T("Detached video last y"), y);
+	OPT_SET("Video/Detached/Last/X")->SetInt(x);
+	OPT_SET("Video/Detached/Last/Y")->SetInt(y);
 	Options.SetBool(_T("Detached video"),true);
 	Options.Save();
 
@@ -165,8 +165,8 @@ void DialogDetachedVideo::OnClose(wxCloseEvent &WXUNUSED(event)) {
 /// @param event 
 void DialogDetachedVideo::OnMove(wxMoveEvent &event) {
 	wxPoint pos = event.GetPosition();
-	Options.SetInt(_T("Detached video last x"),pos.x);
-	Options.SetInt(_T("Detached video last y"),pos.y);
+	OPT_SET("Video/Detached/Last/X")->SetInt(pos.x);
+	OPT_SET("Video/Detached/Last/Y")->SetInt(pos.y);
 }
 
 /// @brief Minimize event handler
