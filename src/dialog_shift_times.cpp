@@ -310,7 +310,6 @@ void DialogShiftTimes::OnOK(wxCommandEvent &event) {
 	OPT_SET("Tool/Shift Times/Length")->SetInt(len);
 	OPT_SET("Tool/Shift Times/Affect")->SetInt(affect);
 	OPT_SET("Tools/Shift Times/Direction")->SetBool(backward);
-	Options.Save();
 
 	// End dialog
 	grid->ass->FlagAsModified(_("shifting"));

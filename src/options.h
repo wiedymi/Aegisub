@@ -35,54 +35,5 @@
 ///
 
 
-#pragma once
-
-
-///////////
-// Headers
-#ifndef AGI_PRE
-#include <map>
-#endif
-
-#include "variable_data.h"
-
-/// DOCME
-/// @class OptionsManager
-/// @brief DOCME
-///
-/// DOCME
-class OptionsManager {
-private:
-
-	/// DOCME
-	bool modified;
-
-	/// DOCME
-	bool overriding;
-
-	/// DOCME
-	wxString filename;
-
-	/// DOCME
-	std::map<wxString,VariableData> opt;
-
-	/// DOCME
-	int lastVersion;
-
-public:
-	OptionsManager();
-	~OptionsManager();
-
-	void Clear();
-	void SetFile(wxString file);
-	wxString GetFile() const;
-	void Save();
-
-};
-
-
-///////////////////
-// Global instance
-extern OptionsManager Options;
 
 

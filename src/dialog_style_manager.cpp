@@ -938,7 +938,6 @@ void DialogStyleManager::OnCurrentImport(wxCommandEvent &event) {
 		// Save path
 		wxFileName filepath(filename);
 		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
-		Options.Save();
 
 		try {
 			// Load file

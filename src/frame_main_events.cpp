@@ -697,7 +697,6 @@ void FrameMain::OnOpenVideo(wxCommandEvent& WXUNUSED(event)) {
 	if (!filename.empty()) {
 		LoadVideo(filename);
 		OPT_SET("Path/Last/Video")->SetString(STD_STR(filename));
-		Options.Save();
 	}
 }
 
@@ -724,7 +723,6 @@ void FrameMain::OnOpenAudio (wxCommandEvent& WXUNUSED(event)) {
 	if (!filename.empty()) {
 		LoadAudio(filename);
 		OPT_SET("Path/Last/Audio")->SetString(STD_STR(filename));
-		Options.Save();
 	}
 }
 
@@ -775,7 +773,6 @@ void FrameMain::OnOpenSubtitles(wxCommandEvent& WXUNUSED(event)) {
 		LoadSubtitles(filename);
 		wxFileName filepath(filename);
 		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
-		Options.Save();
 	}
 }
 
@@ -797,7 +794,6 @@ void FrameMain::OnOpenSubtitlesCharset(wxCommandEvent& WXUNUSED(event)) {
 			LoadSubtitles(filename,charset);
 		}
 		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filename));
-		Options.Save();
 	}
 }
 
@@ -883,7 +879,6 @@ void FrameMain::OnOpenVFR(wxCommandEvent &event) {
 	if (!filename.empty()) {
 		LoadVFR(filename);
 		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
-		Options.Save();
 	}
 }
 
@@ -900,7 +895,6 @@ void FrameMain::OnSaveVFR(wxCommandEvent &event) {
 	if (!filename.empty()) {
 		SaveVFR(filename);
 		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
-		Options.Save();
 	}
 }
 
@@ -926,7 +920,6 @@ void FrameMain::OnOpenKeyframes (wxCommandEvent &event) {
 	wxString filename = wxFileSelector(_T("Select the keyframes file to open"),path,_T(""),_T(".txt"),_T("All supported formats (*.txt, *.pass, *.stats, *.log)|*.txt;*.pass;*.stats;*.log|All files (*.*)|*.*"),wxFD_FILE_MUST_EXIST | wxFD_OPEN);
 	if (filename.IsEmpty()) return;
 	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
-	Options.Save();
 
 	// Load
 	KeyFrameFile::Load(filename);
@@ -959,7 +952,6 @@ void FrameMain::OnSaveKeyframes (wxCommandEvent &event) {
 	wxString filename = wxFileSelector(_T("Select the Keyframes file to open"),path,_T(""),_T("*.key.txt"),_T("Text files (*.txt)|*.txt"),wxFD_OVERWRITE_PROMPT | wxFD_SAVE);
 	if (filename.IsEmpty()) return;
 	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
-	Options.Save();
 
 	// Save
 	KeyFrameFile::Save(filename);
@@ -1054,7 +1046,6 @@ void FrameMain::OnDummyVideo (wxCommandEvent &event) {
 ///
 void FrameMain::OnOverscan (wxCommandEvent &event) {
 	OPT_SET("Video/Overscan Mask")->SetBool(event.IsChecked());
-	Options.Save();
 	VideoContext::Get()->Stop();
 	videoBox->videoDisplay->Render();
 }
@@ -1602,7 +1593,6 @@ void FrameMain::OnCloseWindow (wxCloseEvent &event) {
 
 	// Store maximization state
 	OPT_SET("App/Maximized")->SetBool(IsMaximized());
-	Options.Save();
 
 	// Abort/destroy
 	if (canVeto) {
@@ -1858,7 +1848,6 @@ void FrameMain::OnToggleTags(wxCommandEvent &event) {
 
 	// Set option
 	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(tagMode);
-	Options.Save();
 
 	// Refresh grid
 	SubsBox->Refresh(false);
@@ -1907,7 +1896,6 @@ void FrameMain::OnChooseLanguage (wxCommandEvent &event) {
 	if (newCode != -1) {
 		// Set code
 		OPT_SET("App/Locale")->SetInt(newCode);
-		Options.Save();
 
 		// Language actually changed?
 		if (newCode != old) {

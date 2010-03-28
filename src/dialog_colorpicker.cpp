@@ -824,7 +824,6 @@ wxColour DialogColorPicker::GetColor()
 {
 	recent_box->AddColor(cur_color);
 	OPT_SET("Tool/Colour Picker/Recent")->SetString(STD_STR(recent_box->StoreToString()));
-	Options.Save();
 	return cur_color;
 }
 

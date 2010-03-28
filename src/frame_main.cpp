@@ -220,7 +220,6 @@ FrameMain::FrameMain (wxArrayString args)
 		int result = wxMessageBox(_("Do you want Aegisub to check for updates whenever it starts? You can still do it manually via the Help menu."),_("Check for updates?"),wxYES_NO);
 		option = (result == wxYES);
 		OPT_SET("App/Auto/Check For Updates")->SetInt(option);
-		Options.Save();
 	}
 
 	PerformVersionCheck(false);

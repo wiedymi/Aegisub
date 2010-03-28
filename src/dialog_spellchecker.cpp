@@ -404,7 +404,6 @@ void DialogSpellChecker::OnChangeLanguage(wxCommandEvent &event) {
 	wxString code = langCodes[language->GetSelection()];
 	spellchecker->SetLanguage(code);
 	OPT_SET("Tool/Spell Checker/Language")->SetString(STD_STR(code));
-	Options.Save();
 
 	// Go back to first match
 	GetFirstMatch();

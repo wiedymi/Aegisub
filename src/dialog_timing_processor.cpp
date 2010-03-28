@@ -314,7 +314,6 @@ void DialogTimingProcessor::OnApply(wxCommandEvent &event) {
 	if (keysEnable->IsEnabled()) OPT_SET("Tool/Timing Post Processor/Enable/Keyframe")->SetBool(keysEnable->IsChecked());
 	OPT_SET("Tool/Timing Post Processor/Enable/Adjacent")->SetBool(adjsEnable->IsChecked());
 	OPT_SET("Tool/Timing Post Processor/Only Selection")->SetBool(onlySelection->IsChecked());
-	Options.Save();
 
 	// Check if rows are valid
 	bool valid = true;

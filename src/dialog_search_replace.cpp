@@ -166,7 +166,6 @@ void DialogSearchReplace::UpdateSettings() {
 	OPT_SET("Tool/Search Replace/Video Update")->SetBool(CheckUpdateVideo->IsChecked());
 	OPT_SET("Tool/Search Replace/Field")->SetInt(Field->GetSelection());
 	OPT_SET("Tool/Search Replace/Affect")->SetInt(Affect->GetSelection());
-	Options.Save();
 }	
 
 

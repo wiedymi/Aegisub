@@ -500,7 +500,6 @@ void SubsEditBox::OnKeyDown(wxStyledTextEvent &event) {
 void SubsEditBox::OnSyntaxBox(wxCommandEvent &event) {
 	TextEdit->UpdateStyle();
 	OPT_SET("Subtitle/Highlight/Syntax")->SetBool(SyntaxHighlight->GetValue());
-	Options.Save();
 	event.Skip();
 }
 

@@ -131,7 +131,6 @@ DialogDetachedVideo::DialogDetachedVideo(FrameMain *par, const wxSize &initialDi
 	OPT_SET("Video/Detached/Last/X")->SetInt(x);
 	OPT_SET("Video/Detached/Last/Y")->SetInt(y);
 	OPT_SET("Video/Detached/Enabled")->SetBool(true);
-	Options.Save();
 
 	// Copy the main accelerator table to this dialog
 	wxAcceleratorTable *table = par->GetAcceleratorTable();
@@ -141,7 +140,6 @@ DialogDetachedVideo::DialogDetachedVideo(FrameMain *par, const wxSize &initialDi
 /// @brief Destructor
 DialogDetachedVideo::~DialogDetachedVideo() {
 	OPT_SET("Video/Detached/Maximized")->SetBool(IsMaximized());
-	Options.Save();
 }
 
 // Event table

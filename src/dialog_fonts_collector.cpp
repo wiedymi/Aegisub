@@ -246,7 +246,6 @@ void DialogFontsCollector::OnStart(wxCommandEvent &event) {
 		OPT_SET("Path/Fonts Collector Destination")->SetString(STD_STR(dest));
 	}
 	OPT_SET("Tool/Fonts Collector/Action")->SetInt(action);
-	Options.Save();
 
 	// Set buttons
 	StartButton->Enable(false);

@@ -206,13 +206,9 @@ bool AegisubApp::OnInit() {
 			}
 		}
 #endif
-		// TODO: Check if we can write to config.dat and warn the user if we can't
-		// If we had local config, ?user now means ?data so this will still be loaded from the correct location
-		Options.SetFile(StandardPaths::DecodePath(_T("?user/config.dat")));
 
 		StartupLog(_T("Store options back"));
 		OPT_SET("Version/Last Version")->SetInt(GetSVNRevision());
-		Options.Save();
 		AssTime::UseMSPrecision = OPT_GET("App/Nonstandard Milisecond Times")->GetBool();
 
 		// Set hotkeys file
@@ -227,7 +223,6 @@ bool AegisubApp::OnInit() {
 		if (lang == -1) {
 			lang = locale.PickLanguage();
 			OPT_SET("App/Locale")->SetInt(lang);
-			Options.Save();
 		}
 		locale.Init(lang);
 
@@ -283,7 +278,6 @@ int AegisubApp::OnExit() {
 	delete plugins;
 	delete opt;
 	delete mru;
-	Options.Clear();
 #ifdef WITH_AUTOMATION
 	delete global_scripts;
 #endif

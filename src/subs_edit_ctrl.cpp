@@ -1147,7 +1147,6 @@ void SubsTextEditCtrl::OnSetDicLanguage(wxCommandEvent &event) {
 	if (index >= 0) lang = langs[index];
 	spellchecker->SetLanguage(lang);
 	OPT_SET("Tool/Spell Checker/Language")->SetString(STD_STR(lang));
-	Options.Save();
 
 	// Update styling
 	UpdateStyle();
@@ -1168,7 +1167,6 @@ void SubsTextEditCtrl::OnSetThesLanguage(wxCommandEvent &event) {
 	if (index >= 0) lang = langs[index];
 	thesaurus->SetLanguage(lang);
 	OPT_SET("Tool/Thesaurus/Language")->SetString(STD_STR(lang));
-	Options.Save();
 
 	// Update styling
 	UpdateStyle();

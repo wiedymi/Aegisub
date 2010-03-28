@@ -105,7 +105,6 @@ void TipOfTheDay::Show(wxWindow *parent) {
 			bool show = wxShowTip(parent, tip, true);
 			if (!show) OPT_SET("App/Tips")->SetBool(false);
 			OPT_SET("Tool/Tip of the Day/Current")->SetInt(tip->curTip);
-			Options.Save();
 			delete tip;
 		}
 	}

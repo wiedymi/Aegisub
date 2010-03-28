@@ -591,7 +591,6 @@ void DialogStyleEditor::Apply (bool apply,bool close) {
 		if (close) {
 			EndModal(1);
 			if (PreviewText) OPT_SET("Tool/Style Editor/Preview Text")->SetString(STD_STR(PreviewText->GetValue()));
-			Options.Save();
 		}
 
 		// Update preview
@@ -603,7 +602,6 @@ void DialogStyleEditor::Apply (bool apply,bool close) {
 		if (close) {
 			EndModal(0);
 			if (PreviewText) OPT_SET("Tool/Style Editor/Preview Text")->SetString(STD_STR(PreviewText->GetValue()));
-			Options.Save();
 		}
 	}
 }
@@ -725,7 +723,6 @@ void DialogStyleEditor::OnPreviewTextChange (wxCommandEvent &event) {
 void DialogStyleEditor::OnPreviewColourChange (wxCommandEvent &event) {
 	if (SubsPreview) SubsPreview->SetColour(previewButton->GetColour());
 	OPT_SET("Colour/Style Editor/Background/Preview")->SetColour(STD_STR(previewButton->GetColour().GetAsString(wxC2S_CSS_SYNTAX)));
-	Options.Save();
 }
 
 /// @brief Command event to update preview 
