@@ -532,7 +532,7 @@ void VersionCheckerResultDialog::OnRemindMeLater(wxCommandEvent &evt)
 
 void VersionCheckerResultDialog::OnClose(wxCloseEvent &evt)
 {
-	Options.SetBool(_T("Auto check for updates"), automatic_check_checkbox->GetValue());
+	OPT_SET("App/Auto/Check For Updates")->SetBool(automatic_check_checkbox->GetValue());
 	Destroy();
 }
 

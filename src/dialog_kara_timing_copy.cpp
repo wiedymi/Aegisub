@@ -935,7 +935,7 @@ END_EVENT_TABLE()
 /// @param event 
 ///
 void DialogKanjiTimer::OnClose(wxCommandEvent &event) {
-	Options.SetBool(_T("kanji timer interpolation"),Interpolate->IsChecked());
+	OPT_SET("Tool/Kanji Timer/Interpolation")->SetBool(Interpolate->IsChecked());
 	Options.Save();
 	bool modified = !LinesToChange.empty();
 	

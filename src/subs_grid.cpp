@@ -232,13 +232,11 @@ void SubtitlesGrid::OnPopupMenu(bool alternate) {
 /// @param event 
 ///
 void SubtitlesGrid::OnShowColMenu(wxCommandEvent &event) {
-	// Set width
 	int item = event.GetId()-MENU_SHOW_COL;
 	showCol[item] = !showCol[item];
 
-	// Save options
-	Options.SetBool(_T("Grid show column ") + AegiIntegerToString(item),showCol[item]);
-	Options.Save();
+	std::vector<bool> map(showCol, showCol + sizeof(showCol) / sizeof(bool));
+	OPT_SET("Subtitle/Grid/Column")->SetListBool(map);
 
 	// Update
 	SetColumnWidths();

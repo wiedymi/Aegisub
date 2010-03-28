@@ -223,7 +223,7 @@ void VideoBox::OnVideoStop(wxCommandEvent &event) {
 /// @param event 
 ///
 void VideoBox::OnVideoToggleScroll(wxCommandEvent &event) {
-	Options.SetBool(_T("Sync video with subs"),AutoScroll->GetValue());
+	OPT_SET("Video/Subtitle Sync")->SetBool(AutoScroll->GetValue());
 	Options.Save();
 }
 
@@ -251,7 +251,7 @@ void VideoBox::OnSubTool(wxCommandEvent &event) {
 /// @param event 
 ///
 void VideoBox::OnToggleRealtime(wxCommandEvent &event) {
-	Options.SetBool(_T("Video Visual Realtime"),event.IsChecked());
+	OPT_SET("Video/Visual Realtime")->SetBool(event.IsChecked());
 	Options.Save();
 }
 

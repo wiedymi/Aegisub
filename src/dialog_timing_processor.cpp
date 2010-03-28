@@ -309,11 +309,11 @@ void DialogTimingProcessor::OnApply(wxCommandEvent &event) {
 	adjacentThres->GetValue().ToLong(&temp);
 	OPT_SET("Tool/Timing Post Processor/Threshold/Adjacent")->SetInt(temp);
 	OPT_SET("Tool/Timing Post Processor/Adjacent Bias")->SetDouble(adjacentBias->GetValue() / 100.0);
-	Options.SetBool(_T("Timing processor Enable lead-in"),hasLeadIn->IsChecked());
-	Options.SetBool(_T("Timing processor Enable lead-out"),hasLeadOut->IsChecked());
-	if (keysEnable->IsEnabled()) Options.SetBool(_T("Timing processor Enable keyframe"),keysEnable->IsChecked());
-	Options.SetBool(_T("Timing processor Enable adjacent"),adjsEnable->IsChecked());
-	Options.SetBool(_T("Timing processor Only Selection"),onlySelection->IsChecked());
+	OPT_SET("Tool/Timing Post Processor/Enable/Lead/IN")->SetBool(hasLeadIn->IsChecked());
+	OPT_SET("Tool/Timing Post Processor/Enable/Lead/OUT")->SetBool(hasLeadOut->IsChecked());
+	if (keysEnable->IsEnabled()) OPT_SET("Tool/Timing Post Processor/Enable/Keyframe")->SetBool(keysEnable->IsChecked());
+	OPT_SET("Tool/Timing Post Processor/Enable/Adjacent")->SetBool(adjsEnable->IsChecked());
+	OPT_SET("Tool/Timing Post Processor/Only Selection")->SetBool(onlySelection->IsChecked());
 	Options.Save();
 
 	// Check if rows are valid

@@ -78,7 +78,6 @@ public:
 	wxString GetFile() const;
 	void Save();
 
-	void SetBool(wxString key,bool param,int ifLastVersion=-1);
 };
 
 

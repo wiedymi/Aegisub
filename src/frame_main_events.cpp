@@ -1053,7 +1053,7 @@ void FrameMain::OnDummyVideo (wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnOverscan (wxCommandEvent &event) {
-	Options.SetBool(_T("Show overscan mask"),event.IsChecked());
+	OPT_SET("Video/Overscan Mask")->SetBool(event.IsChecked());
 	Options.Save();
 	VideoContext::Get()->Stop();
 	videoBox->videoDisplay->Render();
@@ -1601,7 +1601,7 @@ void FrameMain::OnCloseWindow (wxCloseEvent &event) {
 	int result = TryToCloseSubs(canVeto);
 
 	// Store maximization state
-	Options.SetBool(_T("Maximized"),IsMaximized());
+	OPT_SET("App/Maximized")->SetBool(IsMaximized());
 	Options.Save();
 
 	// Abort/destroy

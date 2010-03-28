@@ -302,9 +302,9 @@ void DialogSelection::SaveSettings() {
 	OPT_SET("Tool/Select/Field")->SetInt(field);
 	OPT_SET("Tool/Select/Action")->SetInt(action);
 	OPT_SET("Tool/Select/Mode")->SetInt(mode);
-	Options.SetBool(_T("Select Match case"),MatchCase->IsChecked());
-	Options.SetBool(_T("Select Match dialogues"),MatchDialogues->IsChecked());
-	Options.SetBool(_T("Select Match comments"),MatchComments->IsChecked());
+	OPT_SET("Tool/Select Lines/Match/Case")->SetBool(MatchCase->IsChecked());
+	OPT_SET("Tool/Select Lines/Match/Dialogue")->SetBool(MatchDialogues->IsChecked());
+	OPT_SET("Tool/Select Lines/Match/Comment")->SetBool(MatchComments->IsChecked());
 }
 
 

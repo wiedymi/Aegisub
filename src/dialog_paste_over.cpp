@@ -142,15 +142,13 @@ END_EVENT_TABLE()
 /// @param event 
 ///
 void DialogPasteOver::OnOK(wxCommandEvent &event) {
-	// Set options
-	options.SetCount(10);
-	for (int i=0;i<10;i++) {
-		options[i] = ListBox->IsChecked(i) ? 1 : 0;
-		Options.SetBool(wxString::Format(_T("Paste Over #%i"),i),options[i]==1);
-	}
-	Options.Save();
 
-	// End
+	std::vector<bool> map;
+	for (int i=0;i<10;i++) {
+		map[i] = ListBox->IsChecked(i);
+	}
+	OPT_SET("Tool/Paste Lines Over/Fields")->SetListBool(map);
+
 	EndModal(1);
 }
 

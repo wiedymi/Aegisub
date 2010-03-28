@@ -305,11 +305,11 @@ void DialogShiftTimes::OnOK(wxCommandEvent &event) {
 	}
 
 	// Store modifications
-	Options.SetBool(_T("Shift Times ByTime"),byTime);
+	OPT_SET("Tools/Shift Times/ByTime")->SetBool(byTime);
 	OPT_SET("Tool/Shift Times/Type")->SetInt(type);
 	OPT_SET("Tool/Shift Times/Length")->SetInt(len);
 	OPT_SET("Tool/Shift Times/Affect")->SetInt(affect);
-	Options.SetBool(_T("Shift Times Direction"),backward);
+	OPT_SET("Tools/Shift Times/Direction")->SetBool(backward);
 	Options.Save();
 
 	// End dialog

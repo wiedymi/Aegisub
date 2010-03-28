@@ -127,23 +127,6 @@ void OptionsManager::Save() {
 }
 
 
-/// @brief Write boolean 
-/// @param key           
-/// @param param         
-/// @param ifLastVersion 
-/// @return 
-///
-void OptionsManager::SetBool(wxString key,bool param,int ifLastVersion) {
-	if (ifLastVersion == -1) {
-		if (overriding) ifLastVersion = 0;
-		else ifLastVersion = 0x7FFFFFFF;
-	}
-	if (lastVersion >= ifLastVersion) return;
-	opt[key.Lower()].SetBool(param);
-	modified = true;
-}
-
-
 /// DOCME
 OptionsManager Options;
 
