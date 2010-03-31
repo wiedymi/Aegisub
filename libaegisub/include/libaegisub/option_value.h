@@ -111,11 +111,11 @@ public:
 	virtual void GetListColour(std::vector<Colour> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive colour list from non-colour list"); }
 	virtual void GetListBool(std::vector<bool> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive string bool from non-bool list"); }
 
-	virtual void SetListString(std::vector<std::string> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set string list in a non-string list"); }
-	virtual void SetListInt(std::vector<int64_t> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set int list in a non-int list"); }
-	virtual void SetListDouble(std::vector<double> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set double list in a non-double list"); }
-	virtual void SetListColour(std::vector<Colour> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set colour list in a non-colour list"); }
-	virtual void SetListBool(std::vector<bool> &val) const { throw OptionValueErrorInvalidListType(L"Attempt to set string in a non-bool list"); }
+	virtual void SetListString(const std::vector<std::string> val) { throw OptionValueErrorInvalidListType(L"Attempt to set string list in a non-string list"); }
+	virtual void SetListInt(const std::vector<int64_t> val) { throw OptionValueErrorInvalidListType(L"Attempt to set int list in a non-int list"); }
+	virtual void SetListDouble(const std::vector<double> val) { throw OptionValueErrorInvalidListType(L"Attempt to set double list in a non-double list"); }
+	virtual void SetListColour(const std::vector<Colour> val) { throw OptionValueErrorInvalidListType(L"Attempt to set colour list in a non-colour list"); }
+	virtual void SetListBool(const std::vector<bool> val) { throw OptionValueErrorInvalidListType(L"Attempt to set string in a non-bool list"); }
 
 	virtual void GetDefaultListString(std::vector<std::string> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive string list from non-string list"); }
 	virtual void GetDefaultListInt(std::vector<int64_t> &out) const { throw OptionValueErrorInvalidListType(L"Attempt to retrive int list from non-int list"); }
@@ -180,7 +180,7 @@ protected:
 	virtual std::string GetString() const { return "";}                                       \
 		OptionValueList##type_name(std::string member_name): name(member_name) {}             \
 		void GetList##type_name(std::vector<type> &out) const { out = array; }                \
-		void SetList##type_name(std::vector<type> &val) { array = val; NotifyChanged(); }     \
+		void SetList##type_name(const std::vector<type> val) { array = val;}                  \
 		void GetDefaultList##type_name(std::vector<type> &out) const { out = array_default; } \
 		OptionType GetType() const { return OptionValue::Type_List_##type_name; }             \
 		std::string GetName() const { return name; }                                          \
