@@ -93,14 +93,14 @@ void Check(const std::string &file, acs::Type type) {
 		case FileRead:
 			file_status = access(file.c_str(), R_OK);
 			if (file_status != 0)
-				throw AcsAccess(L"File or directory is not readable.");
+				throw AcsRead(L"File or directory is not readable.");
 		break;
 
 		case DirWrite:
 		case FileWrite:
 			file_status = access(file.c_str(), W_OK);
 			if (file_status != 0)
-				throw AcsAccess(L"File or directory is not writable.");
+				throw AcsWrite(L"File or directory is not writable.");
 		break;
 	}
 }

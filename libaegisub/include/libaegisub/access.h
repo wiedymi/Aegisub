@@ -26,13 +26,14 @@ namespace agi {
 	namespace acs {
 
 DEFINE_BASE_EXCEPTION_NOINNER(AcsError, Aegisub::Exception)
-DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsAccess, AcsError, "io/access")
-DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsFatal, AcsError, "io/fatal")
-DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsNotFound, AcsError, "io/notfound")
-DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsNotAFile, AcsError, "io/file")
-DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsNotADirectory, AcsError, "io/directory")
-DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsAccessRead, AcsError, "io/read")
-DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsAccessWrite, AcsError, "io/write")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsFatal, AcsError, "acs/fatal")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsNotFound, AcsError, "acs/notfound")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsNotAFile, AcsError, "acs/file")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsNotADirectory, AcsError, "acs/directory")
+
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsAccess, AcsError, "acs/access")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsRead, AcsAccess, "acs/access/read")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsWrite, AcsAccess, "acs/access/write")
 
 
 enum Type {
