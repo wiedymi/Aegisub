@@ -1215,6 +1215,7 @@ src/libosxutil/Makefile
 src/libresrc/Makefile
 tools/Makefile
 universalchardet/Makefile
+tests/Makefile
 ])
 
 # Files that need substitution.
