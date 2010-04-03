@@ -64,13 +64,14 @@
 #include <vector>
 #endif
 
+#include "compat.h"
 #include "dialog_version_check.h"
 #include "main.h"
 #include "options.h"
-#include "include/aegisub/exception.h"
 #include "string_codec.h"
 #include "version.h"
 
+#include <libaegisub/exception.h>
 
 /* *** Public API is implemented here *** */
 
@@ -139,7 +140,7 @@ public:
 
 };
 
-DEFINE_SIMPLE_EXCEPTION_NOINNER(VersionCheckError, Aegisub::Exception, "versioncheck")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(VersionCheckError, agi::Exception, "versioncheck")
 
 
 class AegisubVersionCheckEventHandler : public wxEvtHandler {
@@ -184,10 +185,10 @@ wxThread::ExitCode AegisubVersionCheckerThread::Entry()
 	try {
 		DoCheck();
 	}
-	catch (const Aegisub::Exception &e) {
+	catch (const agi::Exception &e) {
 		PostErrorEvent(wxString::Format(
 			_("There was an error checking for updates to Aegisub:\n%s\n\nIf other applications can access the Internet fine, this is probably a temporary server problem on our end."),
-			e.GetMessage().c_str()));
+			e.GetMessage()));
 	}
 	catch (...) {
 		PostErrorEvent(_("An unknown error occurred while checking for updates to Aegisub."));
@@ -339,12 +340,14 @@ void AegisubVersionCheckerThread::DoCheck()
 	http.SetFlags(wxSOCKET_WAITALL|wxSOCKET_BLOCK);
 
 	if (!http.Connect(servername))
-		throw VersionCheckError(_("Could not connect to updates server."));
+		throw VersionCheckError(STD_STR(_("Could not connect to updates server.")));
 
 	std::auto_ptr<wxInputStream> stream(http.GetInputStream(path));
 
-	if (http.GetResponse() < 200 || http.GetResponse() >= 300)
-		throw VersionCheckError(wxString::Format(_("HTTP request failed, got HTTP response %d."), http.GetResponse()));
+	if (http.GetResponse() < 200 || http.GetResponse() >= 300) {
+		const std::string str_err = STD_STR(wxString::Format(_("HTTP request failed, got HTTP response %d."), http.GetResponse()));
+		throw VersionCheckError(str_err);
+	}
 
 	wxTextInputStream text(*stream);
 

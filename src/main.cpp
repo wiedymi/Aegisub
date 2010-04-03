@@ -157,8 +157,8 @@ bool AegisubApp::OnInit() {
 #else
 		opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
 #endif
-    } catch (Aegisub::Exception& e) {
-		wxPrintf("Caught Aegisub::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
+    } catch (agi::Exception& e) {
+		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
 	}
 
 		// Initialize randomizer
