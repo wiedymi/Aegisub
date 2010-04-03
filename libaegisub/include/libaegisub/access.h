@@ -19,13 +19,14 @@
 /// @ingroup libaegisub
 
 #ifndef LAGI_PRE
-#include "/mnt/free/aegisub/commit/src/include/aegisub/exception.h"
 #endif
+
+#include <libaegisub/exception.h>
 
 namespace agi {
 	namespace acs {
 
-DEFINE_BASE_EXCEPTION_NOINNER(AcsError, Aegisub::Exception)
+DEFINE_BASE_EXCEPTION_NOINNER(AcsError, Exception)
 DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsFatal, AcsError, "acs/fatal")
 DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsNotFound, AcsError, "acs/notfound")
 DEFINE_SIMPLE_EXCEPTION_NOINNER(AcsNotAFile, AcsError, "acs/file")

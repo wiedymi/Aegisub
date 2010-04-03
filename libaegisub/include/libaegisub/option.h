@@ -25,15 +25,14 @@
 #include "libaegisub/cajun/reader.h"
 #include "libaegisub/cajun/writer.h"
 #include "libaegisub/cajun/elements.h"
-
-#include "aegisub/exception.h"
 #endif
 
-#include "libaegisub/option_value.h"
+#include <libaegisub/exception.h>
+#include <libaegisub/option_value.h>
 
 namespace agi {
 
-DEFINE_BASE_EXCEPTION_NOINNER(OptionError,Aegisub::Exception)
+DEFINE_BASE_EXCEPTION_NOINNER(OptionError,Exception)
 DEFINE_SIMPLE_EXCEPTION_NOINNER(OptionErrorNotFound, OptionError, "options/not_found")
 DEFINE_SIMPLE_EXCEPTION_NOINNER(OptionErrorDuplicateKey, OptionError, "options/dump/duplicate")
 

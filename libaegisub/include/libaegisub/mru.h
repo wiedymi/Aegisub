@@ -27,11 +27,11 @@
 #include "libaegisub/cajun/elements.h"
 #endif
 
-#include "aegisub/exception.h"
+#include <libaegisub/exception.h>
 
 namespace agi {
 
-DEFINE_BASE_EXCEPTION_NOINNER(MRUError,Aegisub::Exception)
+DEFINE_BASE_EXCEPTION_NOINNER(MRUError,Exception)
 DEFINE_SIMPLE_EXCEPTION_NOINNER(MRUErrorInvalidKey, MRUError, "mru/invalid")
 DEFINE_SIMPLE_EXCEPTION_NOINNER(MRUErrorIndexOutOfRange, MRUError, "mru/invalid")
 

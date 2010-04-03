@@ -23,7 +23,7 @@
 #include <stdio.h>
 #endif
 
-#include "libaegisub/access.h"
+#include <libaegisub/access.h>
 
 namespace agi {
 	namespace util {

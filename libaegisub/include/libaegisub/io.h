@@ -19,13 +19,14 @@
 /// @ingroup libaegisub
 
 #ifndef LAGI_PRE
-#include "/mnt/free/aegisub/commit/src/include/aegisub/exception.h"
 #endif
+
+#include <libaegisub/exception.h>
 
 namespace agi {
 	namespace io {
 
-DEFINE_BASE_EXCEPTION_NOINNER(IOError, Aegisub::Exception)
+DEFINE_BASE_EXCEPTION_NOINNER(IOError, Exception)
 DEFINE_SIMPLE_EXCEPTION_NOINNER(IOFatal, IOError, "io/fatal")
 
 /*

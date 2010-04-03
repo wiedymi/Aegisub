@@ -85,7 +85,7 @@ void MRUManager::Add(const std::string &key, const std::string &entry) {
 		Prune(map);
 
 	} else {
-		throw MRUErrorInvalidKey(L"Invalid key value");
+		throw MRUErrorInvalidKey("Invalid key value");
 	}
 }
 
@@ -103,7 +103,7 @@ void MRUManager::Remove(const std::string &key, const std::string &entry) {
 				++map_idx;
 		}
 	} else {
-		throw MRUErrorInvalidKey(L"Invalid key value");
+		throw MRUErrorInvalidKey("Invalid key value");
 	}
 
 }
@@ -116,7 +116,7 @@ const MRUManager::MRUListMap* MRUManager::Get(const std::string &key) {
 	if ((index = mru.find(key)) != mru.end()) {
 		return index->second;
 	} else {
-		throw MRUErrorInvalidKey(L"Invalid key value");
+		throw MRUErrorInvalidKey("Invalid key value");
 	}
 }
 
@@ -128,7 +128,7 @@ const std::string MRUManager::GetEntry(const std::string &key, const int entry) 
 	MRUListMap::const_iterator index = map->begin();;
 
 	if ((unsigned int)entry > map->size())
-		throw MRUErrorIndexOutOfRange(L"Requested element index is out of range.");
+		throw MRUErrorIndexOutOfRange("Requested element index is out of range.");
 
 	std::advance(index, entry);
 

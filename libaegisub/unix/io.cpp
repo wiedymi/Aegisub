@@ -39,7 +39,7 @@ std::ifstream* Open(const std::string &file) {
 	std::ifstream *stream = new std::ifstream(file.c_str());
 
 	if (stream->fail())
-		throw IOFatal(L"Unknown fatal error as occurred");
+		throw IOFatal("Unknown fatal error as occurred");
 
 	return stream;
 }

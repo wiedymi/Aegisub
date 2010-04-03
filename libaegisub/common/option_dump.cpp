@@ -114,8 +114,8 @@ try {
 		}
 	}
 
-	} catch (Aegisub::Exception& e) {
-		wxPrintf("Caught Aegisub::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
+	} catch (agi::Exception& e) {
+		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
 	}
 
 }

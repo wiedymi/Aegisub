@@ -87,7 +87,7 @@ void ConfigVisitor::Visit(const json::Array& array) {
 				} else if (member_name == "colour") {
 					array_list = new OptionValueListColour(name);
 				} else {
-					throw OptionJsonValueArray(L"Array type not handled");
+					throw OptionJsonValueArray("Array type not handled");
 				}
 				init = 1;
 			}
@@ -117,8 +117,8 @@ void ConfigVisitor::Visit(const json::Array& array) {
 
 				AddOptionValue(array_list);
 
-			} catch (Aegisub::Exception& e) {
-				throw OptionJsonValueArray(L"Attempt to insert value into array of wrong type");
+			} catch (agi::Exception& e) {
+				throw OptionJsonValueArray("Attempt to insert value into array of wrong type");
 			}
 
 		} // for index_object
@@ -159,7 +159,7 @@ void ConfigVisitor::Visit(const json::Boolean& boolean) {
 
 
 void ConfigVisitor::Visit(const json::Null& null) {
-	throw OptionJsonValueNull(L"Attempt to read null value");
+	throw OptionJsonValueNull("Attempt to read null value");
 }
 
 
