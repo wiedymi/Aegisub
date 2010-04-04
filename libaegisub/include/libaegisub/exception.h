@@ -36,6 +36,8 @@
 
 #pragma once
 
+#include <string>
+
 /// @see aegisub.h
 namespace agi {
 
