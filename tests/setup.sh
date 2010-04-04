@@ -18,7 +18,9 @@ chmod 000 data/dir_access_denied
 mkdir data/dir_read_only
 chmod 444 data/dir_read_only
 
-echo '{"FromFile" : []}' > data/mru_ok.json
+echo '{"Valid" : []}' > data/mru_ok.json
+
+echo '{"Invalid" : [1 3]}' > data/mru_invalid.json
 
 touch data/rename_me
 

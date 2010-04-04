@@ -14,21 +14,15 @@
 //
 // $Id$
 
-/// @file main.h
-/// @brief Main header
-/// @ingroup main
+/// @file util.cpp
+/// @brief Common utilities used in tests.
+/// @ingroup util
 
-#include <gtest/gtest.h>
+namespace util {
 
-/// A small macro to silence "unused variable" warnings.
-#define unused(x) x = x
+void copy(const std::string from, const std::string to);
+void remove(const std::string& file);
 
-namespace {
+} // namespace util
 
-class libagi : public ::testing::Test {
-protected:
-    // place holder for future code placement
-};
-
-}  // namespace
 

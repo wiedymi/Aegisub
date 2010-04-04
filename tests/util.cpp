@@ -14,21 +14,26 @@
 //
 // $Id$
 
-/// @file main.h
-/// @brief Main header
-/// @ingroup main
+/// @file util.cpp
+/// @brief Common utilities used in tests.
+/// @ingroup util
 
-#include <gtest/gtest.h>
+#include <unistd.h>
+#include <fstream>
 
-/// A small macro to silence "unused variable" warnings.
-#define unused(x) x = x
+namespace util {
 
-namespace {
+void copy(const std::string from, const std::string to) {
+	std::ifstream ifs(from.c_str(), std::ios::binary);
+	std::ofstream ofs(to.c_str(), std::ios::binary);
 
-class libagi : public ::testing::Test {
-protected:
-    // place holder for future code placement
-};
+	ofs << ifs.rdbuf();
+}
 
-}  // namespace
+void remove(const std::string& file) {
+	unlink(file.c_str());
+}
+
+} // namespace util
+
 

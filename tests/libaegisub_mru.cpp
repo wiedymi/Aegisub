@@ -20,6 +20,7 @@
 
 #include <libaegisub/mru.h>
 #include "main.h"
+#include "util.h"
 
 class lagi_mru : public libagi {
 protected:
@@ -27,7 +28,7 @@ protected:
 	std::string conf_ok;
 
 	virtual void SetUp() {
-		default_mru = "{\"Test\" : []}";
+		default_mru = "{\"Valid_Int\" : []}";
 		conf_ok = "./data/mru_ok.json";
 	}
 };
@@ -36,3 +37,48 @@ protected:
 TEST_F(lagi_mru, MRUConstructFromFile) {
 	agi::MRUManager mru(conf_ok, default_mru);
 }
+
+TEST_F(lagi_mru, MRUConstructFromString) {
+	util::remove("data/mru_tmp");
+
+	const std::string nonexistent("data/mru_tmp");
+	agi::MRUManager mru(nonexistent, default_mru);
+}
+
+
+TEST_F(lagi_mru, MRUConstructInvalid) {
+	util::copy("data/mru_invalid.json", "data/mru_tmp");
+
+	const std::string nonexistent("data/mru_tmp");
+	agi::MRUManager mru(nonexistent, default_mru);
+
+	// Make sure it didn't load from the file.
+	EXPECT_THROW(mru.Add("Invalid", "/path/to/file"), agi::MRUErrorInvalidKey);
+	EXPECT_NO_THROW(mru.Add("Valid_Int", "/path/to/file"));
+}
+
+TEST_F(lagi_mru, MRUEntryAdd) {
+	util::copy("data/mru_ok.json", "data/mru_tmp");
+	agi::MRUManager mru("data/mru_tmp", default_mru);
+	EXPECT_NO_THROW(mru.Add("Valid", "/path/to/file"));
+}
+
+TEST_F(lagi_mru, MRUEntryRemove) {
+	util::copy("data/mru_ok.json", "data/mru_tmp");
+	agi::MRUManager mru("data/mru_tmp", default_mru);
+	EXPECT_NO_THROW(mru.Add("Valid", "/path/to/file"));
+	EXPECT_NO_THROW(mru.Remove("Valid", "/path/to/file"));
+}
+
+TEST_F(lagi_mru, MRUKeyInvalid) {
+	util::copy("data/mru_ok.json", "data/mru_tmp");
+	agi::MRUManager mru("data/mru_tmp", default_mru);
+	EXPECT_THROW(mru.Add("Invalid", "/path/to/file"), agi::MRUErrorInvalidKey);
+}
+
+TEST_F(lagi_mru, MRUKeyValid) {
+	util::copy("data/mru_ok.json", "data/mru_tmp");
+	agi::MRUManager mru("data/mru_tmp", default_mru);
+	EXPECT_NO_THROW(mru.Add("Valid", "/path/to/file"));
+}
+
