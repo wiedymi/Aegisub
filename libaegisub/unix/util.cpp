@@ -26,6 +26,7 @@
 #include <fstream>
 #endif
 
+#include <string.h>
 #include "libaegisub/util.h"
 
 namespace agi {
@@ -38,25 +39,20 @@ const std::string DirName(const std::string& path) {
 		return cwd;
 	}
 
-	const std::string stripped = path.substr(0, path.rfind("/"));
+	const std::string stripped = path.substr(0, path.rfind("/")+1);
 	return stripped;
 }
 
-const std::string Rename(const std::string& from, const std::string& to) {
+void Rename(const std::string& from, const std::string& to) {
 	acs::CheckFileWrite(from);
-	acs::CheckFileWrite(to);
 
-	// Using from.c_str() / to.c_str() triggers a bug in GCC:
-	// http://gcc.gnu.org/bugzilla/show_bug.cgi?id=24704
-
-//	char from_str[from.size()+1];
-//	strncpy(from_str, from.c_str(), sizeof(from_str));
-
-//	char to_str[to.size()+1];
-//	strncpy(to_str, to.c_str(), sizeof(to_str));
+	try {
+		acs::CheckFileWrite(to);
+	} catch (acs::AcsNotFound& e) {
+		acs::CheckDirWrite(DirName(to));
+	}
 
 	rename(from.c_str(), to.c_str());
-
 }
 
 	} // namespace io

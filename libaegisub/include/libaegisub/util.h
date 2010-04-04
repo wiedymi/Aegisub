@@ -29,7 +29,7 @@ namespace agi {
 	namespace util {
 
 	const std::string DirName(const std::string& path);
-	const std::string Rename(const std::string& from, const std::string& to);
+	void Rename(const std::string& from, const std::string& to);
 
 
 	} // namespace util
