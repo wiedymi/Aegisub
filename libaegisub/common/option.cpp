@@ -20,24 +20,42 @@
 
 #ifndef LAGI_PRE
 #include <fstream>
+#include <sstream>
 #include <map>
 #endif
 
+#include "libaegisub/io.h"
 #include "option_visit.h"
 
 namespace agi {
 
-Options::Options() {}
+Options::Options(const std::string file, const std::string& default_config):
+							config_file(file), config_default(default_config), config_loaded(false) {
+	std::istringstream stream(default_config);
+	LoadConfig(stream);
+}
 
 Options::~Options() {
 	Flush();
 }
 
+void Options::ConfigNext(std::istream& stream) {
+	LoadConfig(stream);
+}
 
-void Options::ConfigDefault(std::istream &config) {
+void Options::ConfigUser() {
+	std::istream *stream = agi::io::Open(config_file);
+	LoadConfig(*stream);
+	config_loaded = true;
+	delete stream;
+}
+
+
+void Options::LoadConfig(std::istream& stream) {
+//	std::ifstream stream_write(stream);
 
 	try {
-		json::Reader::Read(config_root, config);
+		json::Reader::Read(config_root, stream);
 	} catch (json::Reader::ParseException& e) {
 		std::cout << "json::ParseException: " << e.what() << ", Line/offset: " << e.m_locTokenBegin.m_nLine + 1 << '/' << e.m_locTokenBegin.m_nLineOffset + 1 << std::endl << std::endl;
     } catch (json::Exception& e) {
@@ -47,12 +65,9 @@ void Options::ConfigDefault(std::istream &config) {
 
 	ConfigVisitor config_visitor(values, std::string(""));
 	config_root.Accept(config_visitor);
-
 }
 
 
-void Options::ConfigNext(const std::istream &src) {}
-void Options::ConfigUser(const std::string &filename) {}
 
 
 OptionValue* Options::Get(const std::string &name) {

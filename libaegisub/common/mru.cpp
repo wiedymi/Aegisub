@@ -43,7 +43,7 @@ MRUManager::MRUManager(const std::string &config, const std::string &default_con
 		json::Reader::Read(root, *stream);
 	} catch (json::Exception& e) {
 		/// @todo Do something better here, maybe print the exact error
-		std::cout << "json::Exception: " << e.what() << std::endl;
+//		std::cout << "json::Exception: " << e.what() << std::endl;
 
 		stream = new std::istringstream(default_config);
 		json::Reader::Read(root, *stream);

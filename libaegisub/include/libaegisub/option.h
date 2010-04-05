@@ -62,18 +62,33 @@ class Options {
 	/// @param path Path to store
 	json::Object CreateObject(std::string path);
 
-protected:
+	/// User config (file that will be written to disk)
+	const std::string config_file;
 
+	/// Default config (for use when config file is/gets corrupted)
+	const std::string config_default;
+
+	/// Whether the user (final) config has been loaded
+	bool config_loaded;
+
+	/// @brief Load a config file into the Options object.
+	/// @param config Config to load.
+	void LoadConfig(std::istream& stream);
+
+
+protected:
 	/// @brief Write an option to file.
 	/// @param[out] obj  Parent object
 	/// @param[in] path  Path option should be stored in.
 	/// @param[in] value Value to write.
 	static bool PutOption(json::Object &obj, const std::string &path, const json::UnknownElement &value);
 
-public:
 
-	/// Constructor
-	Options();
+public:
+	/// @brief Constructor
+	/// @param file User config that will be loaded from and written back to.
+	/// @param default_config Default configuration.
+	Options(const std::string file, const std::string &default_config);
 
 	/// Destructor
 	~Options();
@@ -83,28 +98,23 @@ public:
 	/// Get an option value object by name throw an internal exception if the option is not found.
 	OptionValue* Get(const std::string &name);
 
-	/// Load internal default values
-	void ConfigDefault(std::istream &config);
-
 	/// @brief Next configuration file to load.
 	/// @param[in] src Stream to load from.
 	/// Load next config which will superceed any values from previous configs
 	/// can be called as many times as required, but only after ConfigDefault() and
 	/// before ConfigUser()
-	void ConfigNext(const std::istream &src);
+	void ConfigNext(std::istream &stream);
 
 	/// @brief Set user config file.
-	/// @param filename File read settings from and write to.
 	/// Set the user configuration file and read options from it, closes all possible
 	/// config file loading and sets the file to write to.
-	void ConfigUser(const std::string &filename);
+	void ConfigUser();
 
 	/// Write the user configuration to disk, throws an exeption if something goes wrong.
 	void Flush();
 
 	/// Print internal option type, name and values.
 	void DumpAll();
-
 };
 
 } // namespace agi
