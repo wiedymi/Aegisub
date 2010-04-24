@@ -53,6 +53,8 @@
 #include <hunspell/hunspell.hxx>
 
 #include "charset_conv.h"
+#include "compat.h"
+#include "main.h"
 #include "options.h"
 #include "spellchecker_hunspell.h"
 #include "standard_paths.h"
