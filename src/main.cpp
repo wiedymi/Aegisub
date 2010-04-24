@@ -148,7 +148,9 @@ bool AegisubApp::OnInit() {
 		mru = new agi::MRUManager(conf_mru, GET_DEFAULT_CONFIG(default_mru));
 
     try {
-		opt = new agi::Options();
+		const std::string conf_user(StandardPaths::DecodePath(_T("?user/config.json")));
+		opt = new agi::Options(conf_user, GET_DEFAULT_CONFIG(default_config));
+/*
 #ifdef _DEBUG
 		const std::string conf_default("default_config.json");
 		std::istream *stream = agi::io::Open(conf_default);
@@ -157,6 +159,9 @@ bool AegisubApp::OnInit() {
 #else
 		opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
 #endif
+*/
+//		opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
+
     } catch (agi::Exception& e) {
 		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
 	}
