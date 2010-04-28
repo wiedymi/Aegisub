@@ -150,6 +150,7 @@ bool AegisubApp::OnInit() {
     try {
 		const std::string conf_user(StandardPaths::DecodePath(_T("?user/config.json")));
 		opt = new agi::Options(conf_user, GET_DEFAULT_CONFIG(default_config));
+		opt->ConfigUser();
 /*
 #ifdef _DEBUG
 		const std::string conf_default("default_config.json");

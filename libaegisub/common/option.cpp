@@ -29,7 +29,7 @@
 
 namespace agi {
 
-Options::Options(const std::string file, const std::string& default_config):
+Options::Options(const std::string &file, const std::string& default_config):
 							config_file(file), config_default(default_config), config_loaded(false) {
 	std::istringstream stream(default_config);
 	LoadConfig(stream);
@@ -52,7 +52,9 @@ void Options::ConfigUser() {
 
 
 void Options::LoadConfig(std::istream& stream) {
-//	std::ifstream stream_write(stream);
+	/// @todo Store all previously loaded configs in an array for bug report purposes,
+	///       this is just a temp stub.
+	json::UnknownElement config_root;
 
 	try {
 		json::Reader::Read(config_root, stream);
@@ -201,10 +203,8 @@ void Options::Flush() {
 		}
 	}
 
-	std::ofstream file;
-	file.open("out.json");
-	json::Writer::Write(obj_out, file);
-	file.close();
+	io::Save file(config_file);
+	json::Writer::Write(obj_out, file.Get());
 }
 
 

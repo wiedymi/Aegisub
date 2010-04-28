@@ -88,7 +88,7 @@ public:
 	/// @brief Constructor
 	/// @param file User config that will be loaded from and written back to.
 	/// @param default_config Default configuration.
-	Options(const std::string file, const std::string &default_config);
+	Options(const std::string &file, const std::string &default_config);
 
 	/// Destructor
 	~Options();
