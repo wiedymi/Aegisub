@@ -26,6 +26,7 @@
 #include <wx/wxcrtvararg.h>
 #endif
 
+#include <libaegisub/colour.h>
 #include "option_visit.h"
 
 namespace agi {
@@ -166,8 +167,76 @@ void ConfigVisitor::Visit(const json::Null& null) {
 void ConfigVisitor::AddOptionValue(OptionValue* opt) {
 	// Corrosponding code is in the constuctor.
 	std::string stripped = name.substr(1, name.rfind("/")-1);
+	OptionValue *opt_cur;
 
-	values.insert(OptionValuePair(stripped, opt));
+	OptionValueMap::iterator index;
+
+	if ((index = values.find(stripped)) != values.end()) {
+		opt_cur = index->second;
+	} else {
+		values.insert(OptionValuePair(stripped, opt));
+		return;
+	}
+
+	int type = opt_cur->GetType();
+	switch (type) {
+		case OptionValue::Type_String:
+			opt_cur->SetString(opt->GetString());
+			break;
+
+		case OptionValue::Type_Int:
+			opt_cur->SetInt(opt->GetInt());
+			break;
+
+		case OptionValue::Type_Double:
+			opt_cur->SetDouble(opt->GetDouble());
+			break;
+
+		case OptionValue::Type_Colour:
+			opt_cur->SetColour(opt->GetColour());
+			break;
+
+		opt_cur->SetBool(opt->GetBool());
+			case OptionValue::Type_Bool:
+			break;
+
+		case OptionValue::Type_List_String: {
+			std::vector<std::string> array;
+ 			opt->GetListString(array);
+			opt_cur->SetListString(array);
+			break;
+		}
+
+		case OptionValue::Type_List_Int: {
+			std::vector<int64_t> array;
+ 			opt->GetListInt(array);
+			opt_cur->SetListInt(array);
+			break;
+		}
+
+		case OptionValue::Type_List_Double: {
+			std::vector<double> array;
+ 			opt->GetListDouble(array);
+			opt_cur->SetListDouble(array);
+			break;
+		}
+
+		case OptionValue::Type_List_Colour: {
+			std::vector<Colour> array;
+ 			opt->GetListColour(array);
+			opt_cur->SetListColour(array);
+			break;
+		}
+
+
+		case OptionValue::Type_List_Bool: {
+			std::vector<bool> array;
+ 			opt->GetListBool(array);
+			opt_cur->SetListBool(array);
+			break;
+		}
+	}
+
 }
 
 } // namespace agi
