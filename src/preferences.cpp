@@ -317,7 +317,12 @@ void Preferences::Advanced_Video(wxTreebook *book) {
 	wxArrayString sp_choice = SubtitlesProviderFactoryManager::GetFactoryList();
 	OptionChoice(panel, expert_flex, _("Subtitle provider"), sp_choice, "Subtitle/Provider");
 
+#ifdef WIN32
+	PAGE_SIZER(_("Windows Only"), windows);
 
+	OptionAdd(panel, windows_flex, _("Allow pre-2.56a Avisynth"), "Provider/Avisynth/Allow Ancient");
+	OptionAdd(panel, windows_flex, _("Avisynth memory limit"), "Provider/Avisynth/Memory Max");
+#endif
 
 	PAGE_END()
 }
