@@ -85,6 +85,7 @@
 #include "libresrc/libresrc.h"
 #include "main.h"
 #include "options.h"
+#include "preferences.h"
 #include "standard_paths.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
@@ -188,7 +189,7 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_MENU(Menu_Tools_Resample, FrameMain::OnOpenResample)
 	EVT_MENU(Menu_Tools_Timing_Processor, FrameMain::OnOpenTimingProcessor)
 	EVT_MENU(Menu_Tools_Kanji_Timer, FrameMain::OnOpenKanjiTimer)
-	EVT_MENU(Menu_Tools_Options, FrameMain::OnOpenOptions)
+	EVT_MENU(Menu_Tools_Options, FrameMain::OnOpenPreferences)
 	EVT_MENU(Menu_Tools_ASSDraw, FrameMain::OnOpenASSDraw)
 	
 	EVT_MENU(Menu_Subs_Snap_Start_To_Video, FrameMain::OnSnapSubsStartToVid)
@@ -1194,10 +1195,11 @@ void FrameMain::OnOpenKanjiTimer (wxCommandEvent &event) {
 /// @brief Open Options dialog 
 /// @param event 
 ///
-void FrameMain::OnOpenOptions (wxCommandEvent &event) {
+void FrameMain::OnOpenPreferences (wxCommandEvent &event) {
 	try {
-//		DialogOptions options(this);
-//		options.ShowModal();
+		Preferences pref(this);
+		pref.ShowModal();
+
 	}
 	catch (const wxChar *e) {
 		wxLogError(e);

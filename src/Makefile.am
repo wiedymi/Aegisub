@@ -274,6 +274,7 @@ aegisub_2_2_SOURCES = \
 	mythes.cxx \
 	options.cpp \
 	plugin_manager.cpp \
+	preferences.cpp \
 	scintilla_text_ctrl.cpp \
 	spellchecker.cpp \
 	spline.cpp \
