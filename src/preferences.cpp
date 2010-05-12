@@ -216,8 +216,7 @@ void Preferences::Video(wxTreebook *book) {
 	video_gen->Add(vgen_flex, 1, wxEXPAND, 5);
 
 	OptionAdd(panel, vgen_flex, _("Show keyframes in slider"), "Video/Slider/Show Keyframes");
-	/// @todo I couldn't find anything that would let you 'skip' a cell in a FlexGridSizer..
-	vgen_flex->Add(new wxStaticText(panel, wxID_ANY, _T("")), 1, wxALIGN_CENTRE_VERTICAL);
+	OptionAdd(panel, vgen_flex, _("Always show visual tools"), "Tool/Visual/Always Show");
 
 	const wxString cres_arr[3] = { _("Never"), _("Ask"), _("Always") };
 	wxArrayString choice_res(3, cres_arr);
