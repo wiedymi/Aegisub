@@ -121,7 +121,7 @@ VideoDisplay::VideoDisplay(VideoBox *box, VideoSlider *ControlSlider, wxTextCtrl
 , origSize(size)
 , currentFrame(-1)
 , w(8), h(8), dx1(0), dx2(8), dy1(0), dy2(8)
-, mouse_x(-1), mouse_y(-1)
+, mouse_x(INT_MIN), mouse_y(INT_MIN)
 , locked(false)
 , zoomValue(1.0)
 , ControlSlider(ControlSlider)
@@ -292,7 +292,9 @@ void VideoDisplay::Render() try {
 	DrawTVEffects();
 
 	if (visualMode == -1) SetVisualMode(0, false);
-	if (visual) visual->Draw();
+	if (visual && (visual->mouseX > INT_MIN || visual->mouseY > INT_MIN || OPT_GET("Tool/Visual/Always Show")->GetBool())) {
+		visual->Draw();
+	}
 
 	glFinish();
 	SwapBuffers();
@@ -504,20 +506,23 @@ void VideoDisplay::OnKey(wxKeyEvent &event) {
 	event.Skip();
 }
 
-/// @brief Set the zoom level
-/// @param value The new zoom level
 void VideoDisplay::SetZoom(double value) {
-	zoomValue = value;
+	using std::max;
+	zoomValue = max(value, .125);
+	zoomBox->SetValue(wxString::Format("%g%%", value * 100.));
 	UpdateSize();
 }
-
-/// @brief Set the position of the zoom dropdown and switch to that zoom
-/// @param value The new zoom position
-void VideoDisplay::SetZoomPos(int value) {
-	if (value < 0) value = 0;
-	if (value > 23) value = 23;
-	SetZoom(double(value+1)/8.0);
-	if (zoomBox->GetSelection() != value) zoomBox->SetSelection(value);
+void VideoDisplay::SetZoomFromBox() {
+	wxString strValue = zoomBox->GetValue();
+	strValue.EndsWith(L"%", &strValue);
+	double value;
+	if (strValue.ToDouble(&value)) {
+		zoomValue = value / 100.;
+		UpdateSize();
+	}
+}
+double VideoDisplay::GetZoom() {
+	return zoomValue;
 }
 
 /// @brief Copy the currently display frame to the clipboard, with subtitles
