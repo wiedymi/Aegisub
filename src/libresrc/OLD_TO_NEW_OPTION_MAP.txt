@@ -8,7 +8,7 @@ Audio Cache							Audio/Cache/Type
 Audio Disable PCM Provider			Provider/Audio/PCM/Disable
 Audio Display Height				Audio/Display Height
 Audio Downmixer						Audio/Downmixer
-Audio Draw Cursor Time				Audio/Display/Draw/Cursor
+Audio Draw Cursor Time				Audio/Display/Draw/Cursor Time
 Audio Draw Keyframes				Audio/Display/Draw/Keyframes
 Audio Draw Secondary Lines			Audio/Display/Draw/Secondary Lines
 Audio Draw Selection Background		Audio/Display/Draw/Selection Background
