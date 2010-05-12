@@ -86,12 +86,30 @@ Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"
 }
 
 void Preferences::OptionChoice(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, const wxArrayString &choices, const char *opt_name) {
+	agi::OptionValue *opt = OPT_GET(opt_name);
+
+	int type = opt->GetType();
+	wxString selection;
+
+	switch (type) {
+		case agi::OptionValue::Type_Int: {
+			selection = choices.Item(opt->GetInt());
+			break;
+		}
+		case agi::OptionValue::Type_String: {
+			selection.assign(opt->GetString());
+			break;
+		}
+
+//		default:
+		// throw
+	}
+
 	flex->Add(new wxStaticText(parent, wxID_ANY, name), 1, wxALIGN_CENTRE_VERTICAL);
 	wxComboBox *cb = new wxComboBox(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY | wxCB_DROPDOWN);
+	cb->SetValue(selection);
 	flex->Add(cb, 1, wxEXPAND, 0);
 }
-
-
 
 
 void Preferences::OptionAdd(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, const char *opt_name, double min, double max, double inc) {

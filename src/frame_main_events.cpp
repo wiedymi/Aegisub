@@ -1194,9 +1194,8 @@ void FrameMain::OnOpenPreferences (wxCommandEvent &event) {
 		Preferences pref(this);
 		pref.ShowModal();
 
-	}
-	catch (const wxChar *e) {
-		wxLogError(e);
+	} catch (agi::Exception& e) {
+		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
 	}
 }
 
