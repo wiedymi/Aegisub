@@ -12,7 +12,7 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
-// $Id: util.h 4176 2010-03-22 11:08:34Z verm $
+// $Id$
 
 /// @file colour.h
 /// @brief Colourspace class and functions.
