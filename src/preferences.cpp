@@ -31,6 +31,8 @@
 #include "libresrc/libresrc.h"
 #include "preferences.h"
 #include "main.h"
+#include "subtitles_provider_manager.h"
+#include "video_provider_manager.h"
 
 Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"), wxDefaultPosition, wxSize(500,500)) {
 //	SetIcon(BitmapToIcon(GETIMAGE(options_button_24)));
@@ -161,7 +163,7 @@ void Preferences::OnCancel(wxCommandEvent &event) {
 
 
 #define PAGE_SIZER(name, name_value)                                                           \
-	wxSizer *name_value##_sizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, _(Q(page_name)));  \
+	wxSizer *name_value##_sizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, _(Q(name))); \
 	sizer->Add(name_value##_sizer, 0,wxEXPAND, 5);                                             \
 	wxFlexGridSizer *name_value##_flex = new wxFlexGridSizer(2,5,5);                           \
 	name_value##_flex->AddGrowableCol(0,1);                                                    \
@@ -183,16 +185,16 @@ void Preferences::General(wxTreebook *book) {
 
 	PAGE_CREATE(General)
 
-	PAGE_SIZER("Startup", startup)
+	PAGE_SIZER(Startup, startup)
 	OptionAdd(panel, startup_flex, _("Check for updates"), "App/Splash");
 	OptionAdd(panel, startup_flex, _("Show Splash Screen"), "App/Splash");
 
-	PAGE_SIZER("Recently Used Lists", recent)
+	PAGE_SIZER(Recently Used Lists, recent)
 	OptionAdd(panel, recent_flex, _("Files"), "Limits/MRU");
 	OptionAdd(panel, recent_flex, _("Find/Replace"), "Limits/Find Replace");
 	sizer->AddSpacer(15);
 
-	PAGE_SIZER("Undo / Redo Settings", undo)
+	PAGE_SIZER(Undo / Redo Settings, undo)
 	OptionAdd(panel, undo_flex, _("Undo Levels"), "Limits/MRU");
 
 	PAGE_END()
@@ -209,28 +211,24 @@ void Preferences::Video(wxTreebook *book) {
 
 	PAGE_CREATE(Video)
 
-	wxSizer *video_gen = new wxStaticBoxSizer(wxHORIZONTAL, panel, _("General"));
-	sizer->Add(video_gen, 0,wxEXPAND, 5);
-	wxFlexGridSizer *vgen_flex = new wxFlexGridSizer(2,5,5);
-	vgen_flex->AddGrowableCol(0,1);
-	video_gen->Add(vgen_flex, 1, wxEXPAND, 5);
+	PAGE_SIZER(General, general)
 
-	OptionAdd(panel, vgen_flex, _("Show keyframes in slider"), "Video/Slider/Show Keyframes");
-	OptionAdd(panel, vgen_flex, _("Always show visual tools"), "Tool/Visual/Always Show");
+	OptionAdd(panel, general_flex, _("Show keyframes in slider"), "Video/Slider/Show Keyframes");
+	OptionAdd(panel, general_flex, _("Always show visual tools"), "Tool/Visual/Always Show");
 
 	const wxString cres_arr[3] = { _("Never"), _("Ask"), _("Always") };
 	wxArrayString choice_res(3, cres_arr);
-	OptionChoice(panel, vgen_flex, _("Match video resolution on open"), choice_res, "Video/Check Script Res");
+	OptionChoice(panel, general_flex, _("Match video resolution on open"), choice_res, "Video/Check Script Res");
 
 	const wxString czoom_arr[24] = { _T("12.5%"), _T("25%"), _T("37.5%"), _T("50%"), _T("62.5%"), _T("75%"), _T("87.5%"), _T("100%"), _T("112.5%"), _T("125%"), _T("137.5%"), _T("150%"), _T("162.5%"), _T("175%"), _T("187.5%"), _T("200%"), _T("212.5%"), _T("225%"), _T("237.5%"), _T("250%"), _T("262.5%"), _T("275%"), _T("287.5%"), _T("300%") };
 	wxArrayString choice_zoom(24, czoom_arr);
-	OptionChoice(panel, vgen_flex, _("Default Zoom"), choice_zoom, "Video/Default Zoom");
+	OptionChoice(panel, general_flex, _("Default Zoom"), choice_zoom, "Video/Default Zoom");
 
-	OptionAdd(panel, vgen_flex, _("Fast jump step in frames"), "Video/Slider/Fast Jump Step");
+	OptionAdd(panel, general_flex, _("Fast jump step in frames"), "Video/Slider/Fast Jump Step");
 
 	const wxString cscr_arr[3] = { _("?video"), _("?script"), _(".") };
 	wxArrayString scr_res(3, cscr_arr);
-	OptionChoice(panel, vgen_flex, _("Screenshot save path"), scr_res, "Path/Screenshot");
+	OptionChoice(panel, general_flex, _("Screenshot save path"), scr_res, "Path/Screenshot");
 
 
 
@@ -287,6 +285,23 @@ void Preferences::Advanced_Audio(wxTreebook *book) {
 
 void Preferences::Advanced_Video(wxTreebook *book) {
 	SUBPAGE_CREATE(Video)
+
+
+	wxStaticText *warning = new wxStaticText(panel, wxID_ANY ,_("Changing these settings might result in bugs and/or crashes.  Do not touch these unless you know what you're doing."));
+	warning->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
+	sizer->Fit(panel);
+	warning->Wrap(400);
+	sizer->Add(warning, 0, wxALL, 5);
+
+	PAGE_SIZER(Options, expert)
+	wxArrayString vp_choice = VideoProviderFactoryManager::GetFactoryList();
+	OptionChoice(panel, expert_flex, _("Video provider"), vp_choice, "Video/Provider");
+
+	wxArrayString sp_choice = SubtitlesProviderFactoryManager::GetFactoryList();
+	OptionChoice(panel, expert_flex, _("Subtitle provider"), sp_choice, "Subtitle/Provider");
+
+
+
 	PAGE_END()
 }
 
