@@ -979,7 +979,7 @@ void AssFile::StackPush(wxString desc) {
 	for (std::list<AssFile*>::iterator cur=UndoStack.begin();cur!=UndoStack.end();cur++) {
 		n++;
 	}
-	const int depth = OPT_GET("Subtitle/Undo Levels")->GetInt();
+	const int depth = OPT_GET("Limits/Undo Levels")->GetInt();
 	while (n > depth) {
 		delete UndoStack.front();
 		UndoStack.pop_front();

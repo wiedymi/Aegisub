@@ -150,6 +150,11 @@
 		}
 	},
 
+	"Limits" : {
+		"Find Replace" : 16,
+		"MRU" : 16,
+		"Undo Levels" : 8
+	},
 
 	"Path" : {
 		"Auto" : {
@@ -262,8 +267,7 @@
 		"Provider" : "libass",
 		"Time Edit" : {
 			"Insert Mode" : true
-		},
-		"Undo Levels" : 8
+		}
 	},
 
 
