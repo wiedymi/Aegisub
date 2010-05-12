@@ -168,20 +168,19 @@ void Preferences::OnCancel(wxCommandEvent &event) {
 }
 
 
-#define Q(x) #x
-#define PAGE_CREATE(name) \
+#define PAGE_CREATE(name)                           \
 	wxPanel *panel = new wxPanel(book, -1);         \
-	book->AddPage(panel, _(Q(name)), true);         \
+	book->AddPage(panel, name, true);               \
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);    \
 
-#define SUBPAGE_CREATE(name) \
+#define SUBPAGE_CREATE(name)                        \
 	wxPanel *panel = new wxPanel(book, -1);         \
-	book->AddSubPage(panel, _(Q(name)), true);      \
+	book->AddSubPage(panel, name, true);            \
 	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);    \
 
 
 #define PAGE_SIZER(name, name_value)                                                           \
-	wxSizer *name_value##_sizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, _(Q(name))); \
+	wxSizer *name_value##_sizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, name);            \
 	sizer->Add(name_value##_sizer, 0,wxEXPAND, 5);                                             \
 	wxFlexGridSizer *name_value##_flex = new wxFlexGridSizer(2,5,5);                           \
 	name_value##_flex->AddGrowableCol(0,1);                                                    \
@@ -194,25 +193,25 @@ void Preferences::OnCancel(wxCommandEvent &event) {
 
 
 void Preferences::Subtitles(wxTreebook *book) {
-	PAGE_CREATE(Subtitles)
+	PAGE_CREATE(_("Subtitles"))
 	PAGE_END()
 }
 
 
 void Preferences::General(wxTreebook *book) {
 
-	PAGE_CREATE(General)
+	PAGE_CREATE(_("General"))
 
-	PAGE_SIZER(Startup, startup)
+	PAGE_SIZER(_("Startup"), startup)
 	OptionAdd(panel, startup_flex, _("Check for updates"), "App/Splash");
 	OptionAdd(panel, startup_flex, _("Show Splash Screen"), "App/Splash");
 
-	PAGE_SIZER(Recently Used Lists, recent)
+	PAGE_SIZER(_("Recently Used Lists"), recent)
 	OptionAdd(panel, recent_flex, _("Files"), "Limits/MRU");
 	OptionAdd(panel, recent_flex, _("Find/Replace"), "Limits/Find Replace");
 	sizer->AddSpacer(15);
 
-	PAGE_SIZER(Undo / Redo Settings, undo)
+	PAGE_SIZER(_("Undo / Redo Settings"), undo)
 	OptionAdd(panel, undo_flex, _("Undo Levels"), "Limits/MRU");
 
 	PAGE_END()
@@ -220,16 +219,16 @@ void Preferences::General(wxTreebook *book) {
 
 
 void Preferences::Audio(wxTreebook *book) {
-	PAGE_CREATE(Audio)
+	PAGE_CREATE(_("Audio"))
 	PAGE_END()
 }
 
 
 void Preferences::Video(wxTreebook *book) {
 
-	PAGE_CREATE(Video)
+	PAGE_CREATE(_("Video"))
 
-	PAGE_SIZER(General, general)
+	PAGE_SIZER(_("Options"), general)
 
 	OptionAdd(panel, general_flex, _("Show keyframes in slider"), "Video/Slider/Show Keyframes");
 	OptionAdd(panel, general_flex, _("Always show visual tools"), "Tool/Visual/Always Show");
@@ -257,52 +256,52 @@ void Preferences::Video(wxTreebook *book) {
 
 
 void Preferences::Interface(wxTreebook *book) {
-	PAGE_CREATE(Interface)
+	PAGE_CREATE(_("Interface"))
 	PAGE_END()
 }
 
 void Preferences::Interface_Colours(wxTreebook *book) {
-	SUBPAGE_CREATE(Colours)
+	SUBPAGE_CREATE(_("Colours"))
 	PAGE_END()
 }
 
 void Preferences::Interface_Hotkeys(wxTreebook *book) {
-	SUBPAGE_CREATE(Hotkeys)
+	SUBPAGE_CREATE(_("Hotkeys"))
 	PAGE_END()
 }
 
 void Preferences::Paths(wxTreebook *book) {
-	PAGE_CREATE(Paths)
+	PAGE_CREATE(_("Paths"))
 	PAGE_END()
 }
 
 void Preferences::File_Associations(wxTreebook *book) {
-	PAGE_CREATE(File Assoc.)
+	PAGE_CREATE(_("File Assoc."))
 	PAGE_END()
 }
 
 void Preferences::Backup(wxTreebook *book) {
-	PAGE_CREATE(Backup)
+	PAGE_CREATE(_("Backup"))
 	PAGE_END()
 }
 
 void Preferences::Advanced(wxTreebook *book) {
-	PAGE_CREATE(Advanced)
+	PAGE_CREATE(_("Advanced"))
 	PAGE_END()
 }
 
 void Preferences::Advanced_Interface(wxTreebook *book) {
-	SUBPAGE_CREATE(Interface)
+	SUBPAGE_CREATE(_("Interface"))
 	PAGE_END()
 }
 
 void Preferences::Advanced_Audio(wxTreebook *book) {
-	SUBPAGE_CREATE(Audio)
+	SUBPAGE_CREATE(_("Audio"))
 	PAGE_END()
 }
 
 void Preferences::Advanced_Video(wxTreebook *book) {
-	SUBPAGE_CREATE(Video)
+	SUBPAGE_CREATE(_("Video"))
 
 
 	wxStaticText *warning = new wxStaticText(panel, wxID_ANY ,_("Changing these settings might result in bugs and/or crashes.  Do not touch these unless you know what you're doing."));
@@ -311,7 +310,7 @@ void Preferences::Advanced_Video(wxTreebook *book) {
 	warning->Wrap(400);
 	sizer->Add(warning, 0, wxALL, 5);
 
-	PAGE_SIZER(Options, expert)
+	PAGE_SIZER(_("Options"), expert)
 	wxArrayString vp_choice = VideoProviderFactoryManager::GetFactoryList();
 	OptionChoice(panel, expert_flex, _("Video provider"), vp_choice, "Video/Provider");
 
