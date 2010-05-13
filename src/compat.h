@@ -2,7 +2,7 @@
 #include <string>
 
 #include <wx/colour.h>
-<wx/arrstr.h>
+#include <wx/arrstr.h>
 #include <wx/string.h>
 #endif
 

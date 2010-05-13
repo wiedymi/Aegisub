@@ -59,6 +59,7 @@ Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"
 	Paths(book);
 	File_Associations(book);
 	Backup(book);
+	Automation(book);
 	Advanced(book);
 	Advanced_Interface(book);
 	Advanced_Audio(book);
@@ -378,6 +379,32 @@ void Preferences::Backup(wxTreebook *book) {
 	PAGE_CREATE(_("Backup"))
 	PAGE_END()
 }
+
+void Preferences::Automation(wxTreebook *book) {
+	PAGE_CREATE(_("Automation"))
+
+	PAGE_SIZER(_("Options"), general)
+
+	OptionAdd(panel, general_flex, _("Base path"), "Path/Automation/Base");
+	OptionAdd(panel, general_flex, _("Include path"), "Path/Automation/Include");
+	OptionAdd(panel, general_flex, _("Auto-load path"), "Path/Automation/Autoload");
+
+	const wxString tl_arr[6] = { _("Fatal"), _("Error"), _("Warning"), _("Hint"), _("Debug"), _("Trace") };
+	wxArrayString tl_choice(6, tl_arr);
+	OptionChoice(panel, general_flex, _("Trace level"), tl_choice, "Automation/Trace Level");
+
+	const wxString tp_arr[3] = { _("Normal"), _("Below Normal (recommended)"), _("Lowest") };
+	wxArrayString tp_choice(3, tp_arr);
+	OptionChoice(panel, general_flex, _("Thread priority"), tp_choice, "Automation/Lua/Thread Priority");
+
+	const wxString ar_arr[4] = { _("No scripts"), _("Subtitle-local scripts"), _("Global autoload scripts"), _("All scripts") };
+	wxArrayString ar_choice(4, ar_arr);
+	OptionChoice(panel, general_flex, _("Autoreload on Export"), ar_choice, "Automation/Autoreload Mode");
+
+
+	PAGE_END()
+}
+
 
 void Preferences::Advanced(wxTreebook *book) {
 	PAGE_CREATE(_("Advanced"))

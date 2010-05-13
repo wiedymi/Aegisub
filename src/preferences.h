@@ -52,6 +52,7 @@ class Preferences: public wxDialog {
 	void Paths(wxTreebook *book);
 	void File_Associations(wxTreebook *book);
 	void Backup(wxTreebook *book);
+	void Automation(wxTreebook *book);
 	void Advanced(wxTreebook *book);
 	void Advanced_Interface(wxTreebook *book);
 	void Advanced_Audio(wxTreebook *book);
