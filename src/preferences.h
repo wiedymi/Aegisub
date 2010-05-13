@@ -26,6 +26,8 @@
 #include <wx/listctrl.h>
 #endif
 
+#include "browse_button.h"
+
 class Preferences: public wxDialog {
 	wxTreebook *book;
 
@@ -38,6 +40,7 @@ class Preferences: public wxDialog {
 //	void OptionAdd(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, const char *opt_name);
 	void OptionAdd(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, const char *opt_name, double min=0, double max=100, double inc=1);
 	void OptionChoice(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, const wxArrayString &choices, const char *opt_name);
+	void OptionBrowse(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, BrowseType browse_type, const char *opt_name);
 
 	void General(wxTreebook *book);
 	void Subtitles(wxTreebook *book);
