@@ -44,7 +44,7 @@ DEFINE_BASE_EXCEPTION_NOINNER(PreferencesError, agi::Exception)
 DEFINE_SIMPLE_EXCEPTION_NOINNER(PreferenceIncorrectType, PreferencesError, "preferences/incorrect_type")
 DEFINE_SIMPLE_EXCEPTION_NOINNER(PreferenceNotSupported, PreferencesError, "preferences/not_supported")
 
-Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"), wxDefaultPosition, wxSize(500,500)) {
+Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"), wxDefaultPosition, wxSize(-1, 500)) {
 //	SetIcon(BitmapToIcon(GETIMAGE(options_button_24)));
 
 	book = new wxTreebook(this, -1, wxDefaultPosition, wxDefaultSize);
@@ -68,7 +68,7 @@ Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"
 	book->Fit();
 
 	/// @todo Save the last page and start with that page on next launch.
-	book->ChangeSelection(12);
+	book->ChangeSelection(5);
 
 	// Bottom Buttons
 	wxStdDialogButtonSizer *stdButtonSizer = new wxStdDialogButtonSizer();
@@ -89,7 +89,8 @@ Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"
 	mainSizer->Add(buttonSizer,0,wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,5);
 //	mainSizer->SetSizeHints(this);
 	SetSizerAndFit(mainSizer);
-	this->SetMinSize(wxSize(500,500));
+	this->SetMinSize(wxSize(-1, 500));
+	this->SetMaxSize(wxSize(-1, 500));
 	CenterOnParent();
 
 
@@ -241,6 +242,14 @@ void Preferences::OnCancel(wxCommandEvent &event) {
 
 void Preferences::Subtitles(wxTreebook *book) {
 	PAGE_CREATE(_("Subtitles"))
+
+	PAGE_SIZER(_("Options"), general)
+
+	OptionAdd(panel, general_flex, _("Enable call tips"), "App/Call Tips");
+	OptionAdd(panel, general_flex, _("Enable syntax highlighting"), "Subtitle/Highlight/Syntax");
+	OptionAdd(panel, general_flex, _("Link commiting of times"), "Subtitle/Edit Box/Link Time Boxes Commit");
+	OptionAdd(panel, general_flex, _("Overwrite-Insertion in time boxes"), "Subtitle/Time Edit/Insert Mode");
+
 	PAGE_END()
 }
 
@@ -338,7 +347,14 @@ void Preferences::Interface(wxTreebook *book) {
 }
 
 void Preferences::Interface_Colours(wxTreebook *book) {
-	SUBPAGE_CREATE(_("Colours"))
+
+	wxScrolled<wxPanel> *panel = new wxScrolled<wxPanel>(book, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+	panel->SetScrollbars(0, 20, 0, 50);
+	book->AddSubPage(panel, _("Colours"), true);
+	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+
+	PAGE_SIZER(_("General"), general)
+	OptionAdd(panel, general_flex, _("Modified Background"), "Colour/Background/Modified");
 
 	PAGE_SIZER(_("Audio Display"), audio)
 
@@ -357,6 +373,18 @@ void Preferences::Interface_Colours(wxTreebook *book) {
 	OptionAdd(panel, audio_flex, _("Syllable text"), "Colour/Audio Display/Syllable Text");
 	OptionAdd(panel, audio_flex, _("Syllable boundaries"), "Colour/Audio Display/Syllable Boundaries");
 
+	PAGE_SIZER(_("Syntax Highlighting"), syntax)
+
+	OptionAdd(panel, syntax_flex, _("Normal"), "Colour/Subtitle/Syntax/Normal");
+	OptionAdd(panel, syntax_flex, _("Brackets"), "Colour/Subtitle/Syntax/Brackets");
+	OptionAdd(panel, syntax_flex, _("Slashes and Parentheses"), "Colour/Subtitle/Syntax/Slashes");
+	OptionAdd(panel, syntax_flex, _("Tags"), "Colour/Subtitle/Syntax/Highlight Tags");
+	OptionAdd(panel, syntax_flex, _("Parameters"), "Colour/Subtitle/Syntax/Parameters");
+	OptionAdd(panel, syntax_flex, _("Error"), "Colour/Subtitle/Syntax/Error");
+	OptionAdd(panel, syntax_flex, _("Error Background"), "Colour/Subtitle/Syntax/Background/Error");
+	OptionAdd(panel, syntax_flex, _("Line Break"), "Colour/Subtitle/Syntax/Line Break");
+	OptionAdd(panel, syntax_flex, _("Karaoke templates"), "Colour/Subtitle/Syntax/Karaoke Template");
+
 	PAGE_END()
 }
 
@@ -367,6 +395,9 @@ void Preferences::Interface_Hotkeys(wxTreebook *book) {
 
 void Preferences::Paths(wxTreebook *book) {
 	PAGE_CREATE(_("Paths"))
+
+//	OptionBrowse(panel, general_flex, _("Dictionaries path"), BROWSE_FOLDER, "Path/Dictionary")
+
 	PAGE_END()
 }
 
