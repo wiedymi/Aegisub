@@ -104,10 +104,8 @@
 			"Waveform Modified" : "rgb(255, 230, 230)",
 			"Waveform Selected" : "rgb(255,255,255)"
 		},
-		"Edit Box" : {
-			"Background" : {
-				"Need Enter" : "rgb(192, 192, 255)"
-			}
+		"Background" : {
+			"Modified" : "rgb(192, 192, 255)"
 		},
 		"Style Editor" : {
 			"Background" : {

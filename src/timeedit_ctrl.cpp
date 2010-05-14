@@ -153,7 +153,7 @@ void TimeEdit::Modified(bool byUser) {
 
 	// Colour
 	if (showModified && !modified) {
-		SetBackgroundColour(lagi_wxColour(OPT_GET("Edit Box/Background/Need Enter")->GetColour()));
+		SetBackgroundColour(lagi_wxColour(OPT_GET("Colour/Background/Modified")->GetColour()));
 	}
 	modified = true;
 

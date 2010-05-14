@@ -113,7 +113,7 @@ void HiliModTextCtrl::Modified() {
 	// Different from original
 	if (!isModified && !match) {
 		isModified = true;
-		SetBackgroundColour(lagi_wxColour(OPT_GET("Edit Box/Background/Need Enter")->GetColour()));
+		SetBackgroundColour(lagi_wxColour(OPT_GET("Colour/Background/Modified")->GetColour()));
 		Refresh(false);
 	}
 

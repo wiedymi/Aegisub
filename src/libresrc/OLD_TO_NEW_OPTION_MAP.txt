@@ -78,7 +78,7 @@ Detached video last y				Video/Detached/Last/Y
 Detached video maximized			Video/Detached/Maximized
 Dictionaries path					Path/Dictionary
 Disable Dragging Times				Audio/Display/Dragging Times
-Edit Box Need Enter Background		Edit Box/Background/Need Enter
+Edit Box Need Enter Background		Color/Background/Modified
 Edit Font Face						Subtitle/Edit Box/Font Face
 Edit Font Size						Subtitle/Edit Box/Font Size
 FFmpeg allow unsafe seeking			Provider/Video/FFMpegSource/Unsafe Seeking
@@ -146,6 +146,7 @@ Style editor preview background		Colour/Style Editor/Background/Preview
 Style editor preview text			Tool/Style Editor/Preview Text
 Subtitles provider					Subtitle/Provider
 Sync video with subs				Video/Subtitle Sync
+
 Syntax Highlight Brackets			Colour/Subtitle/Syntax/Brackets
 Syntax Highlight Enabled			Subtitle/Highlight/Syntax
 Syntax Highlight Error				Syntax Highlight Error Background
@@ -156,6 +157,7 @@ Syntax Highlight Parameters			Colour/Subtitle/Syntax/Parameters
 Syntax Highlight Slashes			Colour/Subtitle/Syntax/Slashes
 Syntax Highlight Tags				Colour/Subtitle/Syntax/Highlight Tags
 Text actor separator				Tool/Import/Text/Actor Separator
+
 Text comment starter				Tool/Import/Text/Comment Starter
 Thesaurus Language					Tool/Thesaurus/Language
 Timing Default Duration				Timing/Default Duration
