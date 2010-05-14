@@ -87,7 +87,6 @@ Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"
 	wxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
 	mainSizer->Add(book, 1 ,wxEXPAND | wxALL, 5);
 	mainSizer->Add(buttonSizer,0,wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,5);
-//	mainSizer->SetSizeHints(this);
 	SetSizerAndFit(mainSizer);
 	this->SetMinSize(wxSize(-1, 500));
 	this->SetMaxSize(wxSize(-1, 500));
@@ -224,12 +223,14 @@ void Preferences::OnCancel(wxCommandEvent &event) {
 
 
 #define PAGE_SIZER(name, name_value)                                                           \
-	wxSizer *name_value##_sizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, name);            \
+	wxSizer *name_value##_sizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, name);             \
 	sizer->Add(name_value##_sizer, 0,wxEXPAND, 5);                                             \
 	wxFlexGridSizer *name_value##_flex = new wxFlexGridSizer(2,5,5);                           \
 	name_value##_flex->AddGrowableCol(0,1);                                                    \
 	name_value##_sizer->Add(name_value##_flex, 1, wxEXPAND, 5);                                \
 	sizer->AddSpacer(8);
+
+// name_value##_flex->SetFlexibleDirection(wxVERTICAL); \
 
 #define PAGE_END() \
 	panel->SetSizerAndFit(sizer);
@@ -357,7 +358,6 @@ void Preferences::Interface_Colours(wxTreebook *book) {
 	OptionAdd(panel, general_flex, _("Modified Background"), "Colour/Background/Modified");
 
 	PAGE_SIZER(_("Audio Display"), audio)
-
 	OptionAdd(panel, audio_flex, _("Play cursor"), "Colour/Audio Display/Play Cursor");
 	OptionAdd(panel, audio_flex, _("Background"), "Colour/Audio Display/Background/Background");
 	OptionAdd(panel, audio_flex, _("Selection background"), "Colour/Audio Display/Background/Selection");
@@ -374,7 +374,6 @@ void Preferences::Interface_Colours(wxTreebook *book) {
 	OptionAdd(panel, audio_flex, _("Syllable boundaries"), "Colour/Audio Display/Syllable Boundaries");
 
 	PAGE_SIZER(_("Syntax Highlighting"), syntax)
-
 	OptionAdd(panel, syntax_flex, _("Normal"), "Colour/Subtitle/Syntax/Normal");
 	OptionAdd(panel, syntax_flex, _("Brackets"), "Colour/Subtitle/Syntax/Brackets");
 	OptionAdd(panel, syntax_flex, _("Slashes and Parentheses"), "Colour/Subtitle/Syntax/Slashes");
@@ -408,6 +407,19 @@ void Preferences::File_Associations(wxTreebook *book) {
 
 void Preferences::Backup(wxTreebook *book) {
 	PAGE_CREATE(_("Backup"))
+
+
+	PAGE_SIZER(_("Automatic Save"), save)
+	OptionAdd(panel, save_flex, _("Enable"), "App/Auto/Backup");
+	CELL_SKIP(save_flex)
+	OptionAdd(panel, save_flex, _("Interval in seconds."), "App/Auto/Save Every Seconds");
+	OptionBrowse(panel, save_flex, _("Path"), BROWSE_FOLDER, "Path/Auto/Save");
+
+	PAGE_SIZER(_("Automatic Backup"), backup)
+	CELL_SKIP(backup_flex)
+	OptionAdd(panel, backup_flex, _("Enable"), "App/Auto/Backup");
+	OptionBrowse(panel, backup_flex, _("Path"), BROWSE_FOLDER, "Path/Auto/Backup");
+
 	PAGE_END()
 }
 
