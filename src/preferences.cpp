@@ -251,6 +251,10 @@ void Preferences::Subtitles(wxTreebook *book) {
 	OptionAdd(panel, general_flex, _("Link commiting of times"), "Subtitle/Edit Box/Link Time Boxes Commit");
 	OptionAdd(panel, general_flex, _("Overwrite-Insertion in time boxes"), "Subtitle/Time Edit/Insert Mode");
 
+	PAGE_SIZER(_("Grid"), grid)
+	OptionAdd(panel, grid_flex, _("Allow grid to take focus"), "Subtitle/Grid/Focus Allow");
+	OptionAdd(panel, grid_flex, _("Highlight visible subtitles"), "Subtitle/Grid/Highlight Subtitles in Frame");
+
 	PAGE_END()
 }
 
@@ -344,6 +348,13 @@ void Preferences::Video(wxTreebook *book) {
 
 void Preferences::Interface(wxTreebook *book) {
 	PAGE_CREATE(_("Interface"))
+
+	PAGE_SIZER(_("Subtitle Grid"), grid)
+	OptionBrowse(panel, grid_flex, _("Font face"), BROWSE_FONT, "Subtitle/Grid/Font Face");
+	OptionAdd(panel, grid_flex, _("Font size"), "Subtitle/Grid/Font Size", 3, 42);
+
+	OptionAdd(panel, grid_flex, _("Hide overrides symbol"), "Subtitle/Grid/Hide Overrides Char");
+
 	PAGE_END()
 }
 
@@ -384,6 +395,16 @@ void Preferences::Interface_Colours(wxTreebook *book) {
 	OptionAdd(panel, syntax_flex, _("Line Break"), "Colour/Subtitle/Syntax/Line Break");
 	OptionAdd(panel, syntax_flex, _("Karaoke templates"), "Colour/Subtitle/Syntax/Karaoke Template");
 
+	PAGE_SIZER(_("Subtitle Grid"), grid)
+	OptionAdd(panel, grid_flex, _("Standard foreground"), "Colour/Subtitle Grid/Standard");
+	OptionAdd(panel, grid_flex, _("Standard background"), "Colour/Subtitle Grid/Background/Background");
+	OptionAdd(panel, grid_flex, _("Selection foreground"), "Colour/Subtitle Grid/Selection");
+	OptionAdd(panel, grid_flex, _("Selection background"), "Colour/Subtitle Grid/Background/Selection");
+	OptionAdd(panel, grid_flex, _("Comment background"), "Colour/Subtitle Grid/Background/Comment");
+	OptionAdd(panel, grid_flex, _("Selected comment background"), "Colour/Subtitle Grid/Background/Selected Comment");
+	OptionAdd(panel, grid_flex, _("Left Column"), "Colour/Subtitle Grid/Left Column");
+	OptionAdd(panel, grid_flex, _("Active Line Border"), "Colour/Subtitle Grid/Active Border");
+	OptionAdd(panel, grid_flex, _("Lines"), "Colour/Subtitle Grid/Lines");
 	PAGE_END()
 }
 
