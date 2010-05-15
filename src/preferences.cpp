@@ -410,6 +410,10 @@ void Preferences::Interface_Colours(wxTreebook *book) {
 
 void Preferences::Interface_Hotkeys(wxTreebook *book) {
 	SUBPAGE_CREATE(_("Hotkeys"))
+
+	PAGE_SIZER(_("Hotkeys"), hotkey)
+	hotkey_flex->Add(new wxStaticText(panel, wxID_ANY , _T("To be added after hotkey rewrite.")), 0, wxALL, 5);
+
 	PAGE_END()
 }
 
