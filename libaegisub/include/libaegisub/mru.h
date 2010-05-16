@@ -49,7 +49,7 @@ public:
 	/// @brief Map for time->value pairs.
 	/// @param int         Last time loaded
 	/// @param std::string File or value that was last loaded.
-	typedef std::multimap<int, std::string, std::greater_equal<int> > MRUListMap;
+	typedef std::multimap<time_t, std::string, std::greater_equal<time_t> > MRUListMap;
 
 	/// @brief Constructor
 	/// @param config File to load MRU values from

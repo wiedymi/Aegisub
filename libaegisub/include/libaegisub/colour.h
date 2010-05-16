@@ -18,6 +18,9 @@
 /// @brief Colourspace class and functions.
 /// @ingroup libaegisub
 
+#ifndef LAGI_PRE
+#include <string>
+#endif
 
 // This file is a stub for now.
 

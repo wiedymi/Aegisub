@@ -20,6 +20,7 @@
 
 #ifndef LAGI_PRE
 #include <fstream>
+#include <time.h>
 #endif
 
 #include "libaegisub/access.h"
@@ -35,13 +36,13 @@ MRUManager::MRUManager(const std::string &config, const std::string &default_con
 
 	try {
 		stream = io::Open(config);
-	} catch (acs::AcsNotFound& e) {
+	} catch (const acs::AcsNotFound&) {
 		stream = new std::istringstream(default_config);
 	}
 
 	try {
 		json::Reader::Read(root, *stream);
-	} catch (json::Exception& e) {
+	} catch (const json::Exception& e) {
 		/// @todo Do something better here, maybe print the exact error
 //		std::cout << "json::Exception: " << e.what() << std::endl;
 
@@ -80,7 +81,7 @@ void MRUManager::Add(const std::string &key, const std::string &entry) {
 		// Remove the file before adding it.
 		Remove(key, entry);
 
-		map.insert(std::pair<int, std::string>(time(NULL), entry));
+		map.insert(std::pair<time_t, std::string>(time(NULL), entry));
 
 		Prune(map);
 
@@ -146,7 +147,7 @@ void MRUManager::Flush() {
 
 		for (MRUListMap::const_iterator i_lst = map_list->begin(); i_lst != map_list->end(); ++i_lst) {
 			json::Object obj;
-			obj["time"] = json::Number(i_lst->first);
+			obj["time"] = json::Number((double)i_lst->first);
 			obj["entry"] = json::String(i_lst->second);
 			array.Insert(obj);
 		}
@@ -188,10 +189,10 @@ void MRUManager::Load(const std::string &key, const json::Array& array) {
 	for (; index != indexEnd; ++index) {
 		const json::Object& obj = *index;
 
-		int time = (json::Number)obj["time"];
+		time_t time = (time_t)(json::Number)obj["time"];
 		std::string entry = (json::String)obj["entry"];
 
-		map->insert(std::pair<int, std::string>(time, entry));
+		map->insert(std::pair<time_t, std::string>(time, entry));
 	}
 
 	mru.insert(std::pair<std::string, MRUListMap*>(key, map));

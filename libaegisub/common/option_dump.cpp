@@ -20,7 +20,9 @@
 
 #ifndef LAGI_PRE
 #include <map>
-
+#include <wx/colour.h>
+#include <wx/string.h>
+#include <wx/wxcrtvararg.h>
 #endif
 
 #include <libaegisub/colour.h>

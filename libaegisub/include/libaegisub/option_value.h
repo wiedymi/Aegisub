@@ -20,6 +20,7 @@
 
 #ifndef LAGI_PRE
 #include <fstream>
+#include <stdint.h>
 
 #include "libaegisub/cajun/reader.h"
 #include "libaegisub/cajun/writer.h"
