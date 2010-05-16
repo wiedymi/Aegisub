@@ -196,8 +196,8 @@ void ConfigVisitor::AddOptionValue(OptionValue* opt) {
 			opt_cur->SetColour(opt->GetColour());
 			break;
 
-		opt_cur->SetBool(opt->GetBool());
-			case OptionValue::Type_Bool:
+		case OptionValue::Type_Bool:
+			opt_cur->SetBool(opt->GetBool());
 			break;
 
 		case OptionValue::Type_List_String: {
