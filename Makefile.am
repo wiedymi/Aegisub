@@ -46,6 +46,7 @@ EXTRA_DIST = \
 	config.sub \
 	depcomp \
 	install-sh \
+	LICENCE \
 	missing \
 	INSTALL \
 	README \
