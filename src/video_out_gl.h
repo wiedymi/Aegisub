@@ -54,8 +54,6 @@ private:
 	int maxTextureSize;
 	/// Whether rectangular textures are supported by the user's graphics card
 	bool supportsRectangularTextures;
-	/// Whether GL_CLAMP_TO_EDGE is supported by the user's drivers
-	bool supportsGlClampToEdge;
 	/// The internalformat to use
 	int internalFormat;
 
@@ -71,6 +69,8 @@ private:
 	std::vector<GLuint> textureIdList;
 	/// List of precalculated texture display information
 	std::vector<TextureInfo> textureList;
+	/// OpenGL display list which draws the frames
+	GLuint dl;
 	/// The total texture count
 	int textureCount;
 	/// The number of rows of textures
@@ -80,7 +80,6 @@ private:
 
 	void DetectOpenGLCapabilities();
 	void InitTextures(int width, int height, GLenum format, int bpp, bool flipped);
-	void CreateTexture(int w, int h, const TextureInfo& ti, GLenum format);
 
 	VideoOutGL(const VideoOutGL &);
 	VideoOutGL& operator=(const VideoOutGL&);
