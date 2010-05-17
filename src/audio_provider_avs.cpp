@@ -51,6 +51,7 @@
 
 #include "audio_provider_avs.h"
 #include "charset_conv.h"
+#include "compat.h"
 #include "main.h"
 #include "options.h"
 #include "standard_paths.h"

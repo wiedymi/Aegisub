@@ -66,7 +66,6 @@
 #include "hotkeys.h"
 #include "main.h"
 #include "libresrc/libresrc.h"
-#include "options.h"
 #include "plugin_manager.h"
 #include "standard_paths.h"
 #include "subs_grid.h"
@@ -147,25 +146,27 @@ bool AegisubApp::OnInit() {
 		const std::string conf_mru(StandardPaths::DecodePath(_T("?user/mru.json")));
 		mru = new agi::MRUManager(conf_mru, GET_DEFAULT_CONFIG(default_mru));
 
-    try {
-		const std::string conf_user(StandardPaths::DecodePath(_T("?user/config.json")));
-		opt = new agi::Options(conf_user, GET_DEFAULT_CONFIG(default_config));
-		opt->ConfigUser();
+		// Set config file
+		StartupLog(_T("Load configuration"));
+		try {
+			const std::string conf_user(StandardPaths::DecodePath(_T("?user/config.json")));
+			opt = new agi::Options(conf_user, GET_DEFAULT_CONFIG(default_config));
+			opt->ConfigUser();
 /*
 #ifdef _DEBUG
-		const std::string conf_default("default_config.json");
-		std::istream *stream = agi::io::Open(conf_default);
-		opt->ConfigDefault(*stream);
-		delete stream;
+			const std::string conf_default("default_config.json");
+			std::istream *stream = agi::io::Open(conf_default);
+			opt->ConfigDefault(*stream);
+			delete stream;
 #else
-		opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
+			opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
 #endif
 */
-//		opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
+//			opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
 
-    } catch (agi::Exception& e) {
-		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
-	}
+		} catch (agi::Exception& e) {
+			wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
+		}
 
 		// Initialize randomizer
 		StartupLog(_T("Initialize random generator"));
@@ -191,26 +192,6 @@ bool AegisubApp::OnInit() {
 #if !defined(_DEBUG) || defined(WITH_EXCEPTIONS)
 		StartupLog(_T("Install exception handler"));
 		wxHandleFatalExceptions(true);
-#endif
-
-		// Set config file
-		StartupLog(_T("Load configuration"));
-#ifdef __WXMSW__
-		// Try loading configuration from the install dir if one exists there
-		if (wxFileName::FileExists(StandardPaths::DecodePath(_T("?data/config.dat")))) {
-			Options.SetFile(StandardPaths::DecodePath(_T("?data/config.dat")));
-			Options.Load();
-
-			if (OPT_GET("App/Local Config")->GetBool()) {
-				// Local config, make ?user mean ?data so all user settings are placed in install dir
-				StandardPaths::SetPathValue(_T("?user"), StandardPaths::DecodePath(_T("?data")));
-			}
-			else {
-				// Not local config, we don't want that config.dat file here any more
-				// It might be a leftover from a really old install
-				wxRemoveFile(StandardPaths::DecodePath(_T("?data/config.dat")));
-			}
-		}
 #endif
 
 		StartupLog(_T("Store options back"));
