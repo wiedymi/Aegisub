@@ -94,7 +94,7 @@ SubtitlesPreview::~SubtitlesPreview() {
 ///
 void SubtitlesPreview::SetStyle(AssStyle *_style) {
 	// Prepare style
-	AssStyle *tmpStyle = AssEntry::GetAsStyle(_style->Clone());
+	AssStyle *tmpStyle = dynamic_cast<AssStyle*>(_style->Clone());
 	tmpStyle->name = _T("Preview");
 	tmpStyle->alignment = 5;
 	for (int i=0;i<4;i++) tmpStyle->Margin[i] = 0;
@@ -181,7 +181,7 @@ void SubtitlesPreview::UpdateBitmap(int w,int h) {
 		subs->InsertStyle((AssStyle *)style->Clone());
 		subs->SetScriptInfo(_T("PlayResX"),wxString::Format(_T("%i"),w));
 		subs->SetScriptInfo(_T("PlayResY"),wxString::Format(_T("%i"),h));
-		subs->AddLine(_T("Dialogue: 0,0:00:00.00,0:00:05.00,Preview,,0000,0000,0000,,{\\q2}") + showText,_T("[Events]"),0,ver,&outGroup);
+		subs->AddLine(_T("Dialogue: 0,0:00:00.00,0:00:05.00,Preview,,0000,0000,0000,,{\\q2}") + showText,_T("[Events]"),ver,&outGroup);
 
 		// Apply subtitles
 		try {

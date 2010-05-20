@@ -108,9 +108,6 @@ private:
 	/// DOCME
 	wxString data;		// Raw data, exactly the same line that appears on the .ass (note that this will be in ass even if source wasn't)
 
-	/// DOCME
-	int StartMS;		// This is only stored for sorting issues, in order to keep non-dialogue lines aligned
-
 public:
 
 	/// DOCME
@@ -124,29 +121,6 @@ public:
 	virtual ~AssEntry();
 
 	virtual AssEntry *Clone() const;
-
-
-	/// @brief DOCME
-	/// @return 
-	///
-	virtual int GetStartMS() const { return StartMS; }
-
-	/// @brief DOCME
-	/// @return 
-	///
-	virtual int GetEndMS() const { return StartMS; }
-
-	/// @brief DOCME
-	/// @param newStart 
-	///
-	virtual void SetStartMS(const int newStart) { StartMS = newStart; }
-
-	/// @brief DOCME
-	/// @param newEnd 
-	/// @return 
-	///
-	virtual void SetEndMS(const int newEnd) { /* do nothing */ (void)newEnd; }
-
 
 	/// @brief DOCME
 	/// @return 
@@ -164,12 +138,4 @@ public:
 	virtual void SetEntryData(wxString newData) { if (newData.IsEmpty()) data.Clear(); else data = newData; }
 
 	virtual wxString GetSSAText();
-	static AssDialogue *GetAsDialogue(AssEntry *base);	// Returns an entry base as a dialogue if it is valid, null otherwise
-	static AssStyle *GetAsStyle(AssEntry *base);		// Returns an entry base as a style if it is valid, null otherwise
-	static AssAttachment *GetAsAttachment(AssEntry *base);// Returns an entry base as an attachment if it is valid, null otherwise
 };
-
-// This operator is for sorting
-bool operator < (const AssEntry &t1, const AssEntry &t2);
-
-

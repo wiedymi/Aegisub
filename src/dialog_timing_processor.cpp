@@ -320,7 +320,7 @@ void DialogTimingProcessor::OnApply(wxCommandEvent &event) {
 	AssDialogue *tempDiag;
 	int i = 0;
 	for (std::list<AssEntry*>::iterator cur=grid->ass->Line.begin();cur!=grid->ass->Line.end();cur++) {
-		tempDiag = AssEntry::GetAsDialogue(*cur);
+		tempDiag = dynamic_cast<AssDialogue*>(*cur);
 		if (tempDiag) {
 			i++;
 			if (tempDiag->Start.GetMS() > tempDiag->End.GetMS()) {
@@ -385,14 +385,13 @@ void DialogTimingProcessor::SortDialogues() {
 		tempDiag = grid->GetDialogue(i);
 		if (tempDiag && StyleOK(tempDiag->Style) && !tempDiag->Comment) {
 			if (!onlySelection->IsChecked() || grid->IsInSelection(i)) {
-				tempDiag->FixStartMS();
 				temp.push_back(tempDiag);
 			}
 		}
 	}
 
 	// Sort temporary list
-	temp.sort(LessByPointedToValue<AssDialogue>());
+	AssFile::Sort(temp);
 
 	// Copy temporary list to final vector
 	Sorted.clear();

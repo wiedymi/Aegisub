@@ -170,8 +170,8 @@ void TXTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {	using na
 		}
 		line->Comment = isComment;
 		line->Text = value;
-		line->SetStartMS(0);
-		line->SetEndMS(0);
+		line->Start.SetMS(0);
+		line->End.SetMS(0);
 		line->UpdateData();
 		//line->ParseASSTags();
 
@@ -185,8 +185,8 @@ void TXTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {	using na
 		AssDialogue *line = new AssDialogue();
 		line->group = _T("[Events]");
 		line->Style = _T("Default");
-		line->SetStartMS(0);
-		line->SetEndMS(OPT_GET("Timing/Default Duration")->GetInt());
+		line->Start.SetMS(0);
+		line->End.SetMS(OPT_GET("Timing/Default Duration")->GetInt());
 		Line->push_back(line);
 	}
 }
@@ -202,7 +202,7 @@ void TXTSubtitleFormat::WriteFile(wxString filename,wxString encoding) {	using n
 
 	// Detect number of lines with Actor field filled out
 	for (list<AssEntry*>::iterator l = Line->begin(); l != Line->end(); ++l) {
-		AssDialogue *dia = AssEntry::GetAsDialogue(*l);
+		AssDialogue *dia = dynamic_cast<AssDialogue*>(*l);
 		if (dia && !dia->Comment) {
 			num_dialogue_lines++;
 			if (!dia->Actor.IsEmpty())
@@ -219,7 +219,7 @@ void TXTSubtitleFormat::WriteFile(wxString filename,wxString encoding) {	using n
 
 	// Write the file
 	for (list<AssEntry*>::iterator l = Line->begin(); l != Line->end(); ++l) {
-		AssDialogue *dia = AssEntry::GetAsDialogue(*l);
+		AssDialogue *dia = dynamic_cast<AssDialogue*>(*l);
 
 		if (dia) {
 			wxString out_line;

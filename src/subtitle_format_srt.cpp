@@ -170,7 +170,6 @@ void SRTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {
 				line->Comment = false;
 				line->UpdateData();
 				line->ParseSRTTags();
-				line->FixStartMS();
 				Line->push_back(line);
 				lines++;
 			}
@@ -182,8 +181,8 @@ void SRTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {
 		AssDialogue *line = new AssDialogue();
 		line->group = _T("[Events]");
 		line->Style = _T("Default");
-		line->SetStartMS(0);
-		line->SetEndMS(5000);
+		line->Start.SetMS(0);
+		line->End.SetMS(5000);
 		Line->push_back(line);
 	}
 }
@@ -216,7 +215,7 @@ void SRTSubtitleFormat::WriteFile(wxString _filename,wxString encoding) {
 	int i=1;
 	using std::list;
 	for (list<AssEntry*>::iterator cur=Line->begin();cur!=Line->end();cur++) {
-		AssDialogue *current = AssEntry::GetAsDialogue(*cur);
+		AssDialogue *current = dynamic_cast<AssDialogue*>(*cur);
 		if (current && !current->Comment) {
 			// Write line
 			file.WriteLineToFile(wxString::Format(_T("%i"),i));

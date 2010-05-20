@@ -45,12 +45,10 @@
 #include "ass_style.h"
 
 
-/// @brief Constructs AssEntry  AssEntry //////////////////////
-///
+/// @brief Constructs AssEntry
 AssEntry::AssEntry() {
 	Valid = true;
 }
-
 
 /// @brief DOCME
 /// @param _data 
@@ -60,67 +58,10 @@ AssEntry::AssEntry(wxString _data) {
 	Valid = true;
 }
 
-
-
 /// @brief Destructor for AssEntry 
 ///
 AssEntry::~AssEntry() {
 }
-
-
-
-/// @brief Comparison for STL Sort 
-/// @param t1 
-/// @param t2 
-/// @return 
-///
-bool operator < (const AssEntry &t1, const AssEntry &t2) {
-	return (t1.GetStartMS() < t2.GetStartMS());
-}
-
-
-
-/// @brief Returns an entry as dialogue if possible, else, returns NULL 
-/// @param base 
-/// @return 
-///
-AssDialogue *AssEntry::GetAsDialogue(AssEntry *base) {
-	if (!base) return NULL;
-	if (base->GetType() == ENTRY_DIALOGUE) {
-		return static_cast<AssDialogue*> (base);
-	}
-	return NULL;
-}
-
-
-
-/// @brief Returns an entry as style if possible, else, returns NULL 
-/// @param base 
-/// @return 
-///
-AssStyle *AssEntry::GetAsStyle(AssEntry *base) {
-	if (!base) return NULL;
-	if (base->GetType() == ENTRY_STYLE) {
-		return static_cast<AssStyle*> (base);
-	}
-	return NULL;
-}
-
-
-
-/// @brief Returns an entry as attachment if possible, else, returns NULL 
-/// @param base 
-/// @return 
-///
-AssAttachment *AssEntry::GetAsAttachment(AssEntry *base) {
-	if (!base) return NULL;
-	if (base->GetType() == ENTRY_ATTACHMENT) {
-		return static_cast<AssAttachment*> (base);
-	}
-	return NULL;
-}
-
-
 
 /// @brief Get SSA conversion 
 /// @return 
@@ -136,8 +77,6 @@ wxString AssEntry::GetSSAText() {
 	return GetEntryData();
 }
 
-
-
 /// @brief Clone 
 ///
 AssEntry *AssEntry::Clone() const {
@@ -147,11 +86,8 @@ AssEntry *AssEntry::Clone() const {
 	// Copy data
 	final->data = data;
 	final->group = group;
-	final->StartMS = StartMS;
 	final->Valid = Valid;
 
 	// Return
 	return final;
 }
-
-

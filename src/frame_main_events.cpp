@@ -126,6 +126,7 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_MENU(Menu_File_Close_Video, FrameMain::OnCloseVideo)
 	EVT_MENU(Menu_File_Open_Subtitles, FrameMain::OnOpenSubtitles)
 	EVT_MENU(Menu_File_Open_Subtitles_Charset, FrameMain::OnOpenSubtitlesCharset)
+	EVT_MENU(Menu_File_Open_Subtitles_From_Video, FrameMain::OnOpenSubtitlesVideo)
 	EVT_MENU(Menu_File_New_Subtitles, FrameMain::OnNewSubtitles)
 	EVT_MENU(Menu_File_Save_Subtitles, FrameMain::OnSaveSubtitles)
 	EVT_MENU(Menu_File_Save_Subtitles_As, FrameMain::OnSaveSubtitlesAs)
@@ -177,7 +178,10 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_MENU(Menu_Edit_Replace, FrameMain::OnReplace)
 	EVT_MENU(Menu_Edit_Shift, FrameMain::OnShift)
 	EVT_MENU(Menu_Edit_Select, FrameMain::OnSelect)
-	EVT_MENU(Menu_Edit_Sort, FrameMain::OnSort)
+
+	EVT_MENU(Menu_Subtitles_Sort_Start, FrameMain::OnSortStart)
+	EVT_MENU(Menu_Subtitles_Sort_End, FrameMain::OnSortEnd)
+	EVT_MENU(Menu_Subtitles_Sort_Style, FrameMain::OnSortStyle)
 
 	EVT_MENU(Menu_Tools_Properties, FrameMain::OnOpenProperties)
 	EVT_MENU(Menu_Tools_Styles_Manager, FrameMain::OnOpenStylesManager)
@@ -298,6 +302,8 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	if (curMenu == fileMenu) {
 		// Rebuild recent
 		RebuildRecentList(_T("Subtitle"),RecentSubs,Menu_File_Recent);
+
+		MenuBar->Enable(Menu_File_Open_Subtitles_From_Video,VideoContext::Get()->HasSubtitles());
 	}
 
 	// View menu
@@ -802,6 +808,11 @@ void FrameMain::OnOpenSubtitlesCharset(wxCommandEvent& WXUNUSED(event)) {
 		}
 		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filename));
 	}
+}
+
+/// @brief Open subtitles from the currently open video file
+void FrameMain::OnOpenSubtitlesVideo(wxCommandEvent&) {
+	LoadSubtitles(VideoContext::Get()->videoName);
 }
 
 
@@ -1672,31 +1683,27 @@ void FrameMain::OnSelect (wxCommandEvent &event) {
 	select.ShowModal();
 }
 
-
-
-/// @brief Sort subtitles 
-/// @param event 
-///
-void FrameMain::OnSort (wxCommandEvent &event) {
-	// Ensure that StartMS is set properly
-	AssEntry *curEntry;
-	AssDialogue *curDiag;
-	int startMS = -1;
-	for (std::list<AssEntry*>::iterator cur = AssFile::top->Line.begin(); cur != AssFile::top->Line.end(); cur++) {
-		curEntry = *cur;
-		curDiag = AssEntry::GetAsDialogue(curEntry);
-		if (curDiag) startMS = curDiag->GetStartMS();
-		curEntry->SetStartMS(startMS);
-	}
-
-	// Sort
-	AssFile::top->Line.sort(LessByPointedToValue<AssEntry>());
+/// @brief Sort subtitles by start time
+void FrameMain::OnSortStart (wxCommandEvent &) {
+	AssFile::top->Sort();
 	AssFile::top->FlagAsModified(_("sort"));
 	SubsBox->UpdateMaps();
 	SubsBox->CommitChanges();
 }
-
-
+/// @brief Sort subtitles by end time
+void FrameMain::OnSortEnd (wxCommandEvent &) {
+	AssFile::top->Sort(AssFile::CompEnd);
+	AssFile::top->FlagAsModified(_("sort"));
+	SubsBox->UpdateMaps();
+	SubsBox->CommitChanges();
+}
+/// @brief Sort subtitles by style name
+void FrameMain::OnSortStyle (wxCommandEvent &) {
+	AssFile::top->Sort(AssFile::CompStyle);
+	AssFile::top->FlagAsModified(_("sort"));
+	SubsBox->UpdateMaps();
+	SubsBox->CommitChanges();
+}
 
 /// @brief Open styling assistant 
 /// @param event 

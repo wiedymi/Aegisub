@@ -159,9 +159,16 @@ void VisualTool::OnMouseEvent (wxMouseEvent &event) {
 		if (dragging) {
 			// Dragging
 			if (event.LeftIsDown()) {
-				// Update position
 				features[curFeature].x = (video.x - dragStartX + dragOrigX);
 				features[curFeature].y = (video.y - dragStartY + dragOrigY);
+				if (shiftDown) {
+					if (abs(video.x - dragStartX) > abs(video.y - dragStartY)) {
+						features[curFeature].y = dragOrigY;
+					}
+					else {
+						features[curFeature].x = dragOrigX;
+					}
+				}
 
 				// Update drag
 				UpdateDrag(features[curFeature]);
@@ -313,7 +320,7 @@ void VisualTool::DrawAllFeatures() {
 	for (size_t i=0;i<features.size();i++) {
 		SetFillColour(colour[(signed)i == mouseOver ? 2 : 1],0.6f);
 		SetLineColour(colour[0],1.0f,2);
-		features[i].Draw(this);
+		features[i].Draw(*this);
 	}
 }
 

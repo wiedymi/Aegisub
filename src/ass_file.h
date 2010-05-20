@@ -37,9 +37,6 @@
 
 #pragma once
 
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <fstream>
 #include <list>
@@ -48,9 +45,6 @@
 #include <wx/arrstr.h>
 #endif
 
-
-//////////////
-// Prototypes
 class FrameRate;
 class AssDialogue;
 class AssStyle;
@@ -60,7 +54,7 @@ class AssDialogueBlockOverride;
 class AssDialogueBlockPlain;
 class AssEntry;
 
-
+typedef std::list<AssEntry*>::iterator entryIter;
 
 /// DOCME
 /// @class AssFile
@@ -119,6 +113,7 @@ public:
 	void Save(wxString file,bool setfilename=false,bool addToRecent=true,const wxString encoding=_T(""));	// Save to a file. Pass true to second argument if this isn't a copy
 	void SaveMemory(std::vector<char> &dst,const wxString encoding=_T(""));	// Save to a memory string
 	void Export(wxString file);							// Saves exported copy, with effects applied
+	void AddToRecent(wxString file);                    // Adds file name to list of recently opened files
 	bool CanSave();										// Returns true if the file can be saved in its current format
 	static wxString GetWildcardList(int mode);			// Returns the list of wildcards supported (0 = open, 1 = save, 2 = export)
 
@@ -127,7 +122,7 @@ public:
 	wxString GetScriptInfo(const wxString key);						// Returns the value in a [Script Info] key as string.
 	void SetScriptInfo(const wxString key,const wxString value);	// Sets the value of a [Script Info] key. Adds it if it doesn't exist.
 	void AddComment(const wxString comment);						// Adds a ";" comment under [Script Info].
-	int AddLine(wxString data,wxString group,int lasttime,int &version,wxString *outGroup=NULL);
+	void AddLine(wxString data,wxString group,int &version,wxString *outGroup=NULL);
 
 	static void StackPop();					// Pop subs from stack and sets 'top' to it
 	static void StackRedo();				// Redoes action on stack
@@ -143,33 +138,24 @@ public:
 
 	/// DOCME
 	static AssFile *top;					// Current script file. It is "above" the stack.
+
+	/// Comparison function for use when sorting
+	typedef bool (*CompFunc)(const AssDialogue* lft, const AssDialogue* rgt);
+
+	/// @brief Compare based on start time
+	static bool CompStart(const AssDialogue* lft, const AssDialogue* rgt);
+	/// @brief Compare based on end time
+	static bool CompEnd(const AssDialogue* lft, const AssDialogue* rgt);
+	/// @brief Compare based on end time
+	static bool CompStyle(const AssDialogue* lft, const AssDialogue* rgt);
+
+	/// @brief Sort the dialogue lines in this file
+	/// @param comp Comparison function to use. Defaults to sorting by start time.
+	void Sort(CompFunc comp = CompStart);
+	/// @brief Sort the dialogue lines in the given list
+	/// @param comp Comparison function to use. Defaults to sorting by start time.
+	static void Sort(std::list<AssEntry*>& lst, CompFunc comp = CompStart);
+	/// @brief Sort the dialogue lines in the given list
+	/// @param comp Comparison function to use. Defaults to sorting by start time.
+	static void Sort(std::list<AssDialogue*>& lst, CompFunc comp = CompStart);
 };
-
-
-
-/// DOCME
-typedef std::list<AssEntry*>::iterator entryIter;
-
-
-//////////////////////////////////////////////////////
-// Hack to get STL sort to work on a list of pointers
-template <typename T>
-
-/// DOCME
-/// @class LessByPointedToValue
-/// @brief DOCME
-///
-/// DOCME
-class LessByPointedToValue : std::binary_function<T const *, T const *, bool> {
-public:
-
-	/// @brief DOCME
-	/// @param x 
-	/// @param y 
-	///
-	bool operator()(T const * x, T const * y) const {
-		return std::less<T>()(*x, *y);
-	}
-};
-
-
