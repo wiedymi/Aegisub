@@ -104,7 +104,7 @@ void Options::Flush() {
 			break;
 
 			case OptionValue::Type_Int:
-				ok = PutOption(obj_out, i->first, (json::Number)i->second->GetInt());
+				ok = PutOption(obj_out, i->first, (json::Number)(const double)i->second->GetInt());
 			break;
 
 			case OptionValue::Type_Double:
@@ -145,7 +145,7 @@ void Options::Flush() {
 
 				for (std::vector<int64_t>::const_iterator i_int = array_int.begin(); i_int != array_int.end(); ++i_int) {
 					json::Object obj;
-					obj["int"] = json::Number(*i_int);
+					obj["int"] = json::Number((const double)*i_int);
 					array.Insert(obj);
 				}
 				ok = PutOption(obj_out, i->first, (json::Array)array);

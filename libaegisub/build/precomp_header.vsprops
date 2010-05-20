@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="precomp_header"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		UsePrecompiledHeader="2"
+		PrecompiledHeaderThrough="lagi_pre.h"
+		ForcedIncludeFiles="lagi_pre.h"
+	/>
+</VisualStudioPropertySheet>

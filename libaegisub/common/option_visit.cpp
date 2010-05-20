@@ -99,7 +99,7 @@ void ConfigVisitor::Visit(const json::Array& array) {
 					array_list->InsertString(val);
 
 				} else if (member_name == "int") {
-					int64_t val = (json::Number)member.element;
+					int64_t val = (int64_t)(json::Number)member.element;
 					array_list->InsertInt(val);
 
 				} else if (member_name == "double") {
@@ -118,7 +118,7 @@ void ConfigVisitor::Visit(const json::Array& array) {
 
 				AddOptionValue(array_list);
 
-			} catch (agi::Exception& e) {
+			} catch (agi::Exception&) {
 				throw OptionJsonValueArray("Attempt to insert value into array of wrong type");
 			}
 
