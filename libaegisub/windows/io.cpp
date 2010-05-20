@@ -15,8 +15,8 @@
 // $Id$
 
 /// @file io.cpp
-/// @brief Unix IO methods.
-/// @ingroup libaegisub unix
+/// @brief Windows IO methods.
+/// @ingroup libaegisub windows
 
 #ifndef LAGI_PRE
 #include <sys/stat.h>

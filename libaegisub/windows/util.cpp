@@ -15,8 +15,8 @@
 // $Id$
 
 /// @file util.cpp
-/// @brief Unix utility methods.
-/// @ingroup libaegisub unix
+/// @brief Windows utility methods.
+/// @ingroup libaegisub windows
 
 #ifndef LAGI_PRE
 #include <stdarg.h>
