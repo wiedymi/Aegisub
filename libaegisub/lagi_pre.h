@@ -1,10 +1,13 @@
 #define LAGI_PRE
 
 #include <errno.h>
+#include <io.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include <fstream>
 #include <iostream>
