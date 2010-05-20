@@ -12,7 +12,7 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
-// $Id: io.cpp 4230 2010-04-03 21:22:37Z verm $
+// $Id$
 
 /// @file access.cpp
 /// @brief Windows access methods.

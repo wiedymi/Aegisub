@@ -12,7 +12,7 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
-// $Id: util.cpp 4232 2010-04-04 11:58:38Z verm $
+// $Id$
 
 /// @file util.cpp
 /// @brief Unix utility methods.
