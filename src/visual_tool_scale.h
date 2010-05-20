@@ -34,12 +34,13 @@
 /// @ingroup visual_ts
 ///
 
+#include "visual_feature.h"
 #include "visual_tool.h"
 
 /// DOCME
 /// @class VisualToolScale
 /// @brief DOCME
-class VisualToolScale : public VisualTool {
+class VisualToolScale : public VisualTool<VisualDraggableFeature> {
 private:
 
 	/// DOCME
@@ -64,8 +65,7 @@ private:
 
 	/// @brief DOCME
 	///
-	bool CanHold() { return true; }
-	void InitializeHold();
+	bool InitializeHold();
 	void UpdateHold();
 	void CommitHold();
 

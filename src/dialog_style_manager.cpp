@@ -32,8 +32,6 @@
 /// @file dialog_style_manager.cpp
 /// @brief Style Manager dialogue box and partial logic
 /// @ingroup style_editor
-///
-
 
 #include "config.h"
 
@@ -63,7 +61,6 @@
 /// @brief Constructor 
 /// @param parent 
 /// @param _grid  
-///
 DialogStyleManager::DialogStyleManager (wxWindow *parent,SubtitlesGrid *_grid)
 : wxDialog (parent,-1,_("Styles Manager"),wxDefaultPosition,wxDefaultSize,wxDEFAULT_DIALOG_STYLE,_T("DialogStylesManager"))
 {
@@ -76,8 +73,8 @@ DialogStyleManager::DialogStyleManager (wxWindow *parent,SubtitlesGrid *_grid)
 	// Catalog
 	wxSizer *CatalogBox = new wxStaticBoxSizer(wxHORIZONTAL,this,_("Catalog of available storages"));
 	CatalogList = new wxComboBox(this,LIST_CATALOG, _T(""), wxDefaultPosition, wxSize(-1,-1), 0, NULL, wxCB_READONLY | wxCB_READONLY, wxDefaultValidator, _T("Catalog List"));
-	wxButton *CatalogNew = new wxButton(this, BUTTON_CATALOG_NEW, _("New"), wxDefaultPosition, wxSize(-1,-1));
-	wxButton *CatalogDelete = new wxButton(this, BUTTON_CATALOG_DELETE, _("Delete"), wxDefaultPosition, wxSize(-1,-1));
+	wxButton *CatalogNew = new wxButton(this, BUTTON_CATALOG_NEW, _("New"));
+	wxButton *CatalogDelete = new wxButton(this, BUTTON_CATALOG_DELETE, _("Delete"));
 	CatalogBox->Add(CatalogList,1,wxEXPAND | wxRIGHT | wxALIGN_RIGHT,5);
 	CatalogBox->Add(CatalogNew,0,wxRIGHT,5);
 	CatalogBox->Add(CatalogDelete,0,0,0);
@@ -88,11 +85,11 @@ DialogStyleManager::DialogStyleManager (wxWindow *parent,SubtitlesGrid *_grid)
 	wxSizer *StorageButtons = new wxBoxSizer(wxHORIZONTAL);
 	wxSizer *StorageButtonsLow = new wxBoxSizer(wxVERTICAL);
 	wxSizer *StorageListSizer = new wxBoxSizer(wxHORIZONTAL);
-	MoveToLocal = new wxButton(this, BUTTON_STORAGE_COPYTO, _("Copy to current script ->"), wxDefaultPosition, wxSize(205,-1));
-	StorageNew = new wxButton(this, BUTTON_STORAGE_NEW, _("New"), wxDefaultPosition, wxSize(40,-1));
-	StorageEdit = new wxButton(this, BUTTON_STORAGE_EDIT, _("Edit"), wxDefaultPosition, wxSize(40,-1));
-	StorageCopy = new wxButton(this, BUTTON_STORAGE_COPY, _("Copy"), wxDefaultPosition, wxSize(40,-1));
-	StorageDelete = new wxButton(this, BUTTON_STORAGE_DELETE, _("Delete"), wxDefaultPosition, wxSize(40,-1));
+	MoveToLocal = new wxButton(this, BUTTON_STORAGE_COPYTO, _("Copy to current script ->"));
+	StorageNew = new wxButton(this, BUTTON_STORAGE_NEW, _("New"));
+	StorageEdit = new wxButton(this, BUTTON_STORAGE_EDIT, _("Edit"));
+	StorageCopy = new wxButton(this, BUTTON_STORAGE_COPY, _("Copy"));
+	StorageDelete = new wxButton(this, BUTTON_STORAGE_DELETE, _("Delete"));
 	StorageButtons->Add(StorageNew,1,wxEXPAND | wxRIGHT,5);
 	StorageButtons->Add(StorageEdit,1,wxEXPAND | wxRIGHT,5);
 	StorageButtons->Add(StorageCopy,1,wxEXPAND | wxRIGHT,5);
@@ -131,13 +128,13 @@ DialogStyleManager::DialogStyleManager (wxWindow *parent,SubtitlesGrid *_grid)
 	wxSizer *CurrentButtonsLow = new wxBoxSizer(wxVERTICAL);
 	wxSizer *CurrentListSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxSizer *MoveImportSizer = new wxBoxSizer(wxHORIZONTAL);
-	MoveToStorage = new wxButton(this, BUTTON_CURRENT_COPYTO, _("<- Copy to storage"), wxDefaultPosition, wxSize(-1,25));
+	MoveToStorage = new wxButton(this, BUTTON_CURRENT_COPYTO, _("<- Copy to storage"));
 	MoveImportSizer->Add(MoveToStorage,1,wxEXPAND | wxRIGHT,5);
 	MoveImportSizer->Add(new wxButton(this, BUTTON_CURRENT_IMPORT, _("Import from script...")),1,wxEXPAND,0);
-	CurrentNew = new wxButton(this, BUTTON_CURRENT_NEW, _("New"), wxDefaultPosition, wxSize(40,-1));
-	CurrentEdit = new wxButton(this, BUTTON_CURRENT_EDIT, _("Edit"), wxDefaultPosition, wxSize(40,-1));
-	CurrentCopy = new wxButton(this, BUTTON_CURRENT_COPY, _("Copy"), wxDefaultPosition, wxSize(40,-1));
-	CurrentDelete = new wxButton(this, BUTTON_CURRENT_DELETE, _("Delete"), wxDefaultPosition, wxSize(40,-1));
+	CurrentNew = new wxButton(this, BUTTON_CURRENT_NEW, _("New"));
+	CurrentEdit = new wxButton(this, BUTTON_CURRENT_EDIT, _("Edit"));
+	CurrentCopy = new wxButton(this, BUTTON_CURRENT_COPY, _("Copy"));
+	CurrentDelete = new wxButton(this, BUTTON_CURRENT_DELETE, _("Delete"));
 	CurrentButtons->Add(CurrentNew,1,wxEXPAND | wxRIGHT,5);
 	CurrentButtons->Add(CurrentEdit,1,wxEXPAND | wxRIGHT,5);
 	CurrentButtons->Add(CurrentCopy,1,wxEXPAND | wxRIGHT,5);
@@ -369,7 +366,6 @@ BEGIN_EVENT_TABLE(DialogStyleManager, wxDialog)
 	EVT_BUTTON(BUTTON_STORAGE_BOTTOM, DialogStyleManager::OnStorageMoveBottom)
 	EVT_BUTTON(BUTTON_STORAGE_SORT, DialogStyleManager::OnStorageSort)
 END_EVENT_TABLE()
-
 
 //////////
 // Events
@@ -1161,8 +1157,6 @@ int DialogStyleManager::lastx = -1;
 /// DOCME
 int DialogStyleManager::lasty = -1;
 
-
-
 /// @brief DialogStyleManagerEvent stuff 
 /// @param ctrl 
 DialogStyleManagerEvent::DialogStyleManagerEvent(DialogStyleManager *ctrl) {
@@ -1171,7 +1165,6 @@ DialogStyleManagerEvent::DialogStyleManagerEvent(DialogStyleManager *ctrl) {
 BEGIN_EVENT_TABLE(DialogStyleManagerEvent, wxEvtHandler)
 	EVT_KEY_DOWN(DialogStyleManagerEvent::OnKeyDown)
 END_EVENT_TABLE()
-
 
 void DialogStyleManagerEvent::OnKeyDown(wxKeyEvent &event) {
 	control->OnKeyDown(event); //we need to access controls, so rather than make the controls public...

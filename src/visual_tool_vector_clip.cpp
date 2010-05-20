@@ -32,7 +32,6 @@
 /// @file visual_tool_vector_clip.cpp
 /// @brief Vector clipping visual typesetting tool
 /// @ingroup visual_ts
-///
 
 #ifndef AGI_PRE
 #include <wx/toolbar.h>
@@ -44,7 +43,6 @@
 #include "libresrc/libresrc.h"
 #include "video_display.h"
 #include "visual_tool_vector_clip.h"
-
 
 ///////
 // IDs
@@ -78,14 +76,13 @@ enum {
 	BUTTON_LAST		// Leave this at the end and don't use it
 };
 
-
-
 /// @brief Constructor 
 /// @param parent   
 /// @param _toolBar 
-///
 VisualToolVectorClip::VisualToolVectorClip(VideoDisplay *parent, VideoState const& video, wxToolBar * toolBar)
-: VisualTool(parent, video), toolBar(toolBar), spline(*parent)
+: VisualTool<VisualToolVectorClipDraggableFeature>(parent, video)
+, toolBar(toolBar)
+, spline(*parent)
 {
 	DoRefresh();
 	mode = 0;
@@ -110,20 +107,14 @@ VisualToolVectorClip::VisualToolVectorClip(VideoDisplay *parent, VideoState cons
 	if (features.size() == 0) SetMode(1);
 }
 
-
-
 /// @brief Sub-tool pressed 
 /// @param event 
-///
 void VisualToolVectorClip::OnSubTool(wxCommandEvent &event) {
 	SetMode(event.GetId() - BUTTON_DRAG);
 }
 
-
-
 /// @brief Set mode 
 /// @param _mode 
-///
 void VisualToolVectorClip::SetMode(int _mode) {
 	// Make sure clicked is checked and everything else isn't. (Yes, this is radio behavior, but the separators won't let me use it)
 	for (int i=BUTTON_DRAG;i<BUTTON_LAST;i++) {
@@ -179,7 +170,7 @@ void VisualToolVectorClip::Draw() {
 	SetLineColour(colour[3],1.0f,2);
 	int col = 3;
 	for (size_t i=1;i<points.size();i++) {
-		int useCol = pointCurve[i] == highCurve && curFeature == -1 ? 2 : 3;
+		int useCol = pointCurve[i] == highCurve && !curFeature ? 2 : 3;
 		if (col != useCol) {
 			col = useCol;
 			SetLineColour(colour[col],1.0f,2);
@@ -213,14 +204,12 @@ void VisualToolVectorClip::Draw() {
 	if (mode == 4) DrawCircle(pt.x,pt.y,4);
 }
 
-
-
 /// @brief Populate feature list 
-///
 void VisualToolVectorClip::PopulateFeatureList() {
 	// Clear
+	ClearSelection();
 	features.clear();
-	VisualDraggableFeature feat;
+	VisualToolVectorClipDraggableFeature feat;
 	
 	// Go through each curve
 	bool isFirst = true;
@@ -232,8 +221,8 @@ void VisualToolVectorClip::PopulateFeatureList() {
 			feat.x = (int)cur->p1.x;
 			feat.y = (int)cur->p1.y;
 			feat.type = DRAG_SMALL_CIRCLE;
-			feat.value = i;
-			feat.value2 = 0;
+			feat.index = i;
+			feat.point = 0;
 			features.push_back(feat);
 		}
 
@@ -242,8 +231,8 @@ void VisualToolVectorClip::PopulateFeatureList() {
 			feat.x = (int)cur->p2.x;
 			feat.y = (int)cur->p2.y;
 			feat.type = DRAG_SMALL_CIRCLE;
-			feat.value = i;
-			feat.value2 = 1;
+			feat.index = i;
+			feat.point = 1;
 			features.push_back(feat);
 		}
 
@@ -255,71 +244,48 @@ void VisualToolVectorClip::PopulateFeatureList() {
 			// Control points
 			feat.x = (int)cur->p2.x;
 			feat.y = (int)cur->p2.y;
-			feat.value = i;
-			feat.value2 = 1;
-			feat.brother[0] = size-1;
+			feat.index = i;
+			feat.point = 1;
 			feat.type = DRAG_SMALL_SQUARE;
 			features.push_back(feat);
 			feat.x = (int)cur->p3.x;
 			feat.y = (int)cur->p3.y;
-			feat.value2 = 2;
-			feat.brother[0] = size+2;
+			feat.point = 2;
 			features.push_back(feat);
 
 			// End point
 			feat.x = (int)cur->p4.x;
 			feat.y = (int)cur->p4.y;
 			feat.type = DRAG_SMALL_CIRCLE;
-			feat.value2 = 3;
+			feat.point = 3;
 			features.push_back(feat);
 		}
 	}
 }
 
-
-
-/// @brief Can drag? 
-/// @return 
-///
-bool VisualToolVectorClip::DragEnabled() {
-	return mode <= 4;
-}
-
-
-
 /// @brief Update 
 /// @param feature 
-///
-void VisualToolVectorClip::UpdateDrag(VisualDraggableFeature &feature) {
-	spline.MovePoint(feature.value,feature.value2,wxPoint(feature.x,feature.y));
+void VisualToolVectorClip::UpdateDrag(VisualToolVectorClipDraggableFeature* feature) {
+	spline.MovePoint(feature->index,feature->point,wxPoint(feature->x,feature->y));
 }
-
-
 
 /// @brief Commit 
 /// @param feature 
-///
-void VisualToolVectorClip::CommitDrag(VisualDraggableFeature &feature) {
-	if (inverse)
-		SetOverride(L"\\iclip",L"(" + spline.EncodeToASS() + L")");
-	else
-		SetOverride(L"\\clip",L"(" + spline.EncodeToASS() + L")");
+void VisualToolVectorClip::CommitDrag(VisualToolVectorClipDraggableFeature* feature) {
+	SetOverride(GetActiveDialogueLine(), inverse ? L"\\iclip" : L"\\clip", L"(" + spline.EncodeToASS() + L")");
 }
-
-
 
 /// @brief Clicked a feature 
 /// @param feature 
 /// @return 
-///
-void VisualToolVectorClip::ClickedFeature(VisualDraggableFeature &feature) {
+bool VisualToolVectorClip::InitializeDrag(VisualToolVectorClipDraggableFeature* feature) {
 	// Delete a control point
 	if (mode == 5) {
 		int i = 0;
 		for (std::list<SplineCurve>::iterator cur=spline.curves.begin();cur!=spline.curves.end();i++,cur++) {
-			if (i == feature.value) {
+			if (i == feature->index) {
 				// Update next
-				if (i != 0 || feature.value2 != 0) {
+				if (i != 0 || feature->point != 0) {
 					std::list<SplineCurve>::iterator next = cur;
 					next++;
 					if (next != spline.curves.end()) next->p1 = cur->p1;
@@ -327,33 +293,19 @@ void VisualToolVectorClip::ClickedFeature(VisualDraggableFeature &feature) {
 
 				// Erase and save changes
 				spline.curves.erase(cur);
-				if (inverse)
-					SetOverride(L"\\iclip",L"(" + spline.EncodeToASS() + L")");
-				else
-					SetOverride(L"\\clip",L"(" + spline.EncodeToASS() + L")");
-				curFeature = -1;
+				CommitDrag(feature);
+				curFeature = NULL;
 				Commit(true);
-				return;
+				return false;
 			}
 		}
 	}
+	return true;
 }
-
-
-
-/// @brief Can hold? 
-/// @return 
-///
-bool VisualToolVectorClip::HoldEnabled() {
-	return mode <= 4 || mode == 6 || mode == 7;
-}
-
-
 
 /// @brief Initialize hold 
 /// @return 
-///
-void VisualToolVectorClip::InitializeHold() {
+bool VisualToolVectorClip::InitializeHold() {
 	// Insert line/bicubic
 	if (mode == 1 || mode == 2) {
 		SplineCurve curve;
@@ -376,10 +328,12 @@ void VisualToolVectorClip::InitializeHold() {
 
 		// Insert
 		spline.AppendCurve(curve);
+		UpdateHold();
+		return true;
 	}
 
 	// Convert and insert
-	else if (mode == 3 || mode == 4) {
+	if (mode == 3 || mode == 4) {
 		// Get closest point
 		Vector2D pt;
 		int curve;
@@ -409,7 +363,7 @@ void VisualToolVectorClip::InitializeHold() {
 		// Insert
 		else {
 			// Check if there is at least one curve to split
-			if (spline.curves.size() == 0) return;
+			if (spline.curves.size() == 0) return false;
 
 			// Split the curve
 			SplineCurve *c1 = spline.GetCurve(curve);
@@ -429,27 +383,25 @@ void VisualToolVectorClip::InitializeHold() {
 		}
 
 		// Commit
-		if (inverse)
-			SetOverride(L"\\iclip",L"(" + spline.EncodeToASS() + L")");
-		else
-			SetOverride(L"\\clip",L"(" + spline.EncodeToASS() + L")");
+		SetOverride(GetActiveDialogueLine(), inverse ? L"\\iclip" : L"\\clip", L"(" + spline.EncodeToASS() + L")");
 		Commit(true);
+		return false;
 	}
 
 	// Freehand
-	else if (mode == 6 || mode == 7) {
+	if (mode == 6 || mode == 7) {
+		ClearSelection();
 		features.clear();
 		spline.curves.clear();
-		lastX = -100000;
-		lastY = -100000;
+		lastX = INT_MIN;
+		lastY = INT_MIN;
+		return true;
 	}
+	return false;
 }
-
-
 
 /// @brief Update hold 
 /// @return 
-///
 void VisualToolVectorClip::UpdateHold() {
 	// Insert line
 	if (mode == 1) {
@@ -478,7 +430,7 @@ void VisualToolVectorClip::UpdateHold() {
 
 	// Freehand
 	if (mode == 6 || mode == 7) {
-		if (lastX !=	-100000 && lastY != -100000) {
+		if (lastX != INT_MIN && lastY != INT_MIN) {
 			// See if distance is enough
 			Vector2D delta(lastX-video.x,lastY-video.y);
 			int len = (int)delta.Len();
@@ -497,32 +449,23 @@ void VisualToolVectorClip::UpdateHold() {
 	}
 }
 
-
-
 /// @brief Commit hold 
-///
 void VisualToolVectorClip::CommitHold() {
 	// Smooth spline
 	if (!holding && mode == 7) spline.Smooth();
 
 	// Save it
 	if (mode != 3 && mode != 4) {
-		if (inverse)
-			SetOverride(L"\\iclip",L"(" + spline.EncodeToASS() + L")");
-		else
-			SetOverride(L"\\clip",L"(" + spline.EncodeToASS() + L")");
+		SetOverride(GetActiveDialogueLine(), inverse ? L"\\iclip" : L"\\clip", L"(" + spline.EncodeToASS() + L")");
 	}
 
 	// End freedraw
 	if (!holding && (mode == 6 || mode == 7)) SetMode(0);
 }
 
-
-
 /// @brief Refresh 
-///
 void VisualToolVectorClip::DoRefresh() {
-	if (!dragging) {
+	if (!dragging && !holding) {
 		// Get line
 		AssDialogue *line = GetActiveDialogueLine();
 		if (!line) return;
@@ -531,10 +474,8 @@ void VisualToolVectorClip::DoRefresh() {
 		wxString vect;
 		int scale;
 		vect = GetLineVectorClip(line,scale,inverse);
-		//if (!vect.IsEmpty()) return;
 		spline.DecodeFromASS(vect);
 		PopulateFeatureList();
 	}
 }
-
 

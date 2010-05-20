@@ -32,7 +32,6 @@
 /// @file visual_tool_rotatez.cpp
 /// @brief 2D rotation in Z axis visual typesetting tool
 /// @ingroup visual_ts
-///
 
 #include "config.h"
 
@@ -48,12 +47,10 @@
 #include "video_display.h"
 #include "visual_tool_rotatez.h"
 
-
 /// @brief Constructor 
 /// @param _parent 
-///
 VisualToolRotateZ::VisualToolRotateZ(VideoDisplay *parent, VideoState const& video, wxToolBar *)
-: VisualTool(parent, video)
+: VisualTool<VisualDraggableFeature>(parent, video)
 {
 	DoRefresh();
 }
@@ -147,29 +144,25 @@ void VisualToolRotateZ::Draw() {
 	glPopMatrix();
 
 	// Draw line to mouse
-	if (!dragging && GetHighlightedFeature() == -1) {
+	if (!dragging && !curFeature) {
 		SetLineColour(colour[0]);
 		DrawLine(dx,dy,video.x,video.y);
 	}
 }
 
-
-
 /// @brief Start holding 
-///
-void VisualToolRotateZ::InitializeHold() {
+bool VisualToolRotateZ::InitializeHold() {
 	GetLinePosition(curDiag,odx,ody,orgx,orgy);
 	startAngle = atan2(double(orgy-video.y),double(video.x-orgx)) * 180.0 / 3.1415926535897932;
 	GetLineRotation(curDiag,rx,ry,origAngle);
 	curAngle = origAngle;
 	curDiag->StripTag(L"\\frz");
 	curDiag->StripTag(L"\\fr");
+
+	return true;
 }
 
-
-
 /// @brief Update hold 
-///
 void VisualToolRotateZ::UpdateHold() {
 	// Find angle
 	float screenAngle = atan2(double(orgy-video.y),double(video.x-orgx)) * 180.0 / 3.1415926535897932;
@@ -182,18 +175,12 @@ void VisualToolRotateZ::UpdateHold() {
 	}
 }
 
-
-
 /// @brief Commit hold 
-///
 void VisualToolRotateZ::CommitHold() {
-	SetOverride(L"\\frz",wxString::Format(L"(%0.3g)",curAngle));
+	SetOverride(GetActiveDialogueLine(), L"\\frz",wxString::Format(L"(%0.3g)",curAngle));
 }
 
-
-
 /// @brief Get \\org pivot 
-///
 void VisualToolRotateZ::PopulateFeatureList() {
 	// Get line
 	curDiag = GetActiveDialogueLine();
@@ -208,36 +195,26 @@ void VisualToolRotateZ::PopulateFeatureList() {
 	feat.type = DRAG_BIG_TRIANGLE;
 }
 
-
-
 /// @brief Update dragging of \\org 
 /// @param feature 
-///
-void VisualToolRotateZ::UpdateDrag(VisualDraggableFeature &feature) {
-	orgx = feature.x;
-	orgy = feature.y;
+void VisualToolRotateZ::UpdateDrag(VisualDraggableFeature* feature) {
+	orgx = feature->x;
+	orgy = feature->y;
 }
-
-
 
 /// @brief Commit dragging of \\org 
 /// @param feature 
-///
-void VisualToolRotateZ::CommitDrag(VisualDraggableFeature &feature) {
-	int x = feature.x;
-	int y = feature.y;
+void VisualToolRotateZ::CommitDrag(VisualDraggableFeature* feature) {
+	int x = feature->x;
+	int y = feature->y;
 	parent->ToScriptCoords(&x, &y);
-	SetOverride(L"\\org",wxString::Format(L"(%i,%i)",x,y));
+	SetOverride(feature->line, L"\\org",wxString::Format(L"(%i,%i)",x,y));
 }
 
-
-
 /// @brief Refresh 
-///
 void VisualToolRotateZ::DoRefresh() {
 	AssDialogue *line = GetActiveDialogueLine();
 	GetLinePosition(line,odx,ody,orgx,orgy);
 	GetLineRotation(line,rx,ry,curAngle);
 }
-
 

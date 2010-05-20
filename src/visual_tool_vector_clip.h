@@ -34,15 +34,33 @@
 /// @ingroup visual_ts
 ///
 
+#include "visual_feature.h"
 #include "visual_tool.h"
 #include "spline.h"
 
 class wxToolBar;
 
+/// @class VisualToolVectorClipDraggableFeature
+/// @brief VisualDraggableFeature with information about a feature's location
+///        in the spline
+class VisualToolVectorClipDraggableFeature : public VisualDraggableFeature {
+public:
+	/// Which curve in the spline this feature is a point on
+	int index;
+	/// 0-3; indicates which part of the curve this point is
+	int point;
+	/// @brief Constructor
+	VisualToolVectorClipDraggableFeature()
+		: VisualDraggableFeature()
+		, index(0)
+		, point(0)
+	{ }
+};
+
 /// DOCME
 /// @class VisualToolVectorClip
 /// @brief DOCME
-class VisualToolVectorClip : public VisualTool {
+class VisualToolVectorClip : public VisualTool<VisualToolVectorClipDraggableFeature> {
 private:
 
 	/// DOCME
@@ -68,21 +86,15 @@ private:
 	/// @brief DOCME
 	/// @return 
 	///
-	bool CanHold() { return true; }
-	bool HoldEnabled();
-	void InitializeHold();
+	bool InitializeHold();
 	void UpdateHold();
 	void CommitHold();
 
 
-	/// @brief DOCME
-	///
-	bool CanDrag() { return true; }
-	bool DragEnabled();
 	void PopulateFeatureList();
-	void UpdateDrag(VisualDraggableFeature &feature);
-	void CommitDrag(VisualDraggableFeature &feature);
-	void ClickedFeature(VisualDraggableFeature &feature);
+	void UpdateDrag(VisualToolVectorClipDraggableFeature* feature);
+	void CommitDrag(VisualToolVectorClipDraggableFeature* feature);
+	bool InitializeDrag(VisualToolVectorClipDraggableFeature* feature);
 
 	void DoRefresh();
 

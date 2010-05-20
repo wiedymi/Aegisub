@@ -34,17 +34,26 @@
 /// @ingroup visual_ts
 ///
 
-
-
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <wx/bmpbuttn.h>
 #include <wx/toolbar.h>
 #endif
 
+#include "visual_feature.h"
 #include "visual_tool.h"
+
+/// @class VisualToolDragDraggableFeature
+/// @brief VisualDraggableFeature with a time value
+class VisualToolDragDraggableFeature : public VisualDraggableFeature {
+public:
+	int time;
+	VisualToolDragDraggableFeature* parent;
+	VisualToolDragDraggableFeature()
+		: VisualDraggableFeature()
+		, time(0)
+		, parent(NULL)
+	{ }
+};
 
 
 /// DOCME
@@ -52,24 +61,21 @@
 /// @brief DOCME
 ///
 /// DOCME
-class VisualToolDrag : public VisualTool {
+class VisualToolDrag : public VisualTool<VisualToolDragDraggableFeature> {
 private:
-
 	/// DOCME
-	wxBitmapButton *toggleMove;
+	wxToolBar *toolBar;
 
 	/// DOCME
 	bool toggleMoveOnMove;
-
 
 	/// @brief DOCME
 	///
 	bool CanDrag() { return true; }
 	void PopulateFeatureList();
-	void UpdateDrag(VisualDraggableFeature &feature);
-	void CommitDrag(VisualDraggableFeature &feature);
+	void UpdateDrag(VisualToolDragDraggableFeature* feature);
+	void CommitDrag(VisualToolDragDraggableFeature* feature);
 
-	void OnButton(wxCommandEvent &event);
 	void UpdateToggleButtons();
 	void DoRefresh();
 
@@ -77,4 +83,5 @@ public:
 	VisualToolDrag(VideoDisplay *parent, VideoState const& video, wxToolBar *toolbar);
 
 	void Draw();
+	void OnSubTool(wxCommandEvent &event);
 };
