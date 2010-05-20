@@ -6,7 +6,7 @@
 	>
 	<Tool
 		Name="VCCLCompilerTool"
-		AdditionalIncludeDirectories="&quot;$(SolutionDir)/wxlib/include/&quot;;&quot;$(ProjectDir)/include/&quot;"
+		AdditionalIncludeDirectories="&quot;$(SolutionDir)/wxlib/include/&quot;;&quot;$(ProjectDir)../../libaegisub/include/&quot;"
 	/>
 	<Tool
 		Name="VCResourceCompilerTool"

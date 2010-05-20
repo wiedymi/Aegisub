@@ -21,7 +21,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			ConfigurationType="4"
-			InheritedPropertySheets=".\build\wxlib_include.vsprops;.\build\libraries_outdirs.vsprops;.\build\compiler_options_debug.vsprops;.\build\wxlib_lib32.vsprops;.\build\suffix_debug32.vsprops;.\build\precomp_header.vsprops"
+			InheritedPropertySheets=".\wxlib_include.vsprops;.\libraries_outdirs.vsprops;.\compiler_options_debug.vsprops;..\aegisub_vs2008\wxlib_lib32.vsprops;..\aegisub_vs2008\suffix_debug32.vsprops;.\precomp_header.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -37,7 +37,7 @@
 		<Configuration
 			Name="Release|Win32"
 			ConfigurationType="4"
-			InheritedPropertySheets=".\build\wxlib_include.vsprops;.\build\libraries_outdirs.vsprops;.\build\compiler_options.vsprops;.\build\wxlib_lib32.vsprops;.\build\suffix_release32.vsprops;.\build\precomp_header.vsprops"
+			InheritedPropertySheets=".\wxlib_include.vsprops;.\libraries_outdirs.vsprops;.\compiler_options.vsprops;..\aegisub_vs2008\wxlib_lib32.vsprops;..\aegisub_vs2008\suffix_release32.vsprops;.\precomp_header.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -54,7 +54,7 @@
 		<Configuration
 			Name="Debug|x64"
 			ConfigurationType="4"
-			InheritedPropertySheets=".\build\wxlib_include.vsprops;.\build\libraries_outdirs.vsprops;.\build\compiler_options_debug.vsprops;.\build\wxlib_lib64.vsprops;.\build\suffix_debug64.vsprops;.\build\precomp_header.vsprops"
+			InheritedPropertySheets=".\wxlib_include.vsprops;.\libraries_outdirs.vsprops;.\compiler_options_debug.vsprops;..\aegisub_vs2008\wxlib_lib64.vsprops;..\aegisub_vs2008\suffix_debug64.vsprops;.\precomp_header.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -74,7 +74,7 @@
 		<Configuration
 			Name="Release|x64"
 			ConfigurationType="4"
-			InheritedPropertySheets=".\build\wxlib_include.vsprops;.\build\libraries_outdirs.vsprops;.\build\compiler_options.vsprops;.\build\wxlib_lib64.vsprops;.\build\suffix_release64.vsprops;.\build\precomp_header.vsprops"
+			InheritedPropertySheets=".\wxlib_include.vsprops;.\libraries_outdirs.vsprops;.\compiler_options.vsprops;..\aegisub_vs2008\wxlib_lib64.vsprops;..\aegisub_vs2008\suffix_release64.vsprops;.\precomp_header.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -102,23 +102,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\common\mru.cpp"
+				RelativePath="..\..\libaegisub\common\mru.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\common\option.cpp"
+				RelativePath="..\..\libaegisub\common\option.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\common\option_visit.cpp"
+				RelativePath="..\..\libaegisub\common\option_visit.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\common\option_visit.h"
+				RelativePath="..\..\libaegisub\common\option_visit.h"
 				>
 			</File>
 			<File
-				RelativePath=".\common\validator.cpp"
+				RelativePath="..\..\libaegisub\common\validator.cpp"
 				>
 			</File>
 		</Filter>
@@ -128,15 +128,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\windows\access.cpp"
+				RelativePath="..\..\libaegisub\windows\access.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\windows\io.cpp"
+				RelativePath="..\..\libaegisub\windows\io.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\windows\lagi_pre.cpp"
+				RelativePath="..\..\libaegisub\windows\lagi_pre.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -172,7 +172,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\windows\util.cpp"
+				RelativePath="..\..\libaegisub\windows\util.cpp"
 				>
 			</File>
 		</Filter>
@@ -180,44 +180,44 @@
 			Name="Include"
 			>
 			<File
-				RelativePath=".\include\libaegisub\access.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\access.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\libaegisub\colour.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\colour.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\libaegisub\exception.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\exception.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\libaegisub\io.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\io.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\libaegisub\mru.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\mru.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\libaegisub\option.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\option.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\libaegisub\option_value.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\option_value.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\libaegisub\util.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\include\libaegisub\validator.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\validator.h"
 				>
 			</File>
 		</Filter>
 		<File
-			RelativePath=".\lagi_pre.h"
+			RelativePath="..\..\libaegisub\lagi_pre.h"
 			>
 		</File>
 	</Files>

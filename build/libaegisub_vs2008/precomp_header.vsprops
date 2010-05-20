@@ -7,7 +7,7 @@
 	<Tool
 		Name="VCCLCompilerTool"
 		UsePrecompiledHeader="2"
-		PrecompiledHeaderThrough="lagi_pre.h"
-		ForcedIncludeFiles="lagi_pre.h"
+		PrecompiledHeaderThrough="../../libaegisub/lagi_pre.h"
+        ForcedIncludeFiles="../../libaegisub/lagi_pre.h"
 	/>
 </VisualStudioPropertySheet>
