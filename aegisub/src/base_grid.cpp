@@ -1216,6 +1216,7 @@ wxArrayInt BaseGrid::GetRangeArray(int n1,int n2) {
 
 void BaseGrid::AnnounceActiveLineChanged()
 {
+	Refresh();
 	this->BaseSubtitleSelectionController::AnnounceActiveLineChanged(GetActiveLine());
 }
 
@@ -1253,6 +1254,7 @@ void BaseGrid::SetActiveLine(AssDialogue *new_line)
 AssDialogue * BaseGrid::GetActiveLine() const
 {
 	/// @todo non-horrible implementation
+	if (!editBox) return 0;
 	return GetDialogue(editBox->linen);
 }
 
