@@ -570,6 +570,7 @@ void FrameMain::InitMenu() {
 #endif
 	AppendBitmapMenuItem(helpMenu,Menu_Help_Check_Updates, _("&Check for Updates..."), _("Check to see if there is a new version of Aegisub available"),GETIMAGE(blank_button_16));
 	AppendBitmapMenuItem(helpMenu,Menu_Help_About, _("&About..."), _("About Aegisub"),GETIMAGE(about_menu_16));
+	AppendBitmapMenuItem(helpMenu,Menu_Help_Log, _("&Log window..."), _("Aegisub event log"),GETIMAGE(about_menu_16));
 	MenuBar->Append(helpMenu, _("&Help"));
 
 	// Set the bar as this frame's
@@ -712,8 +713,7 @@ void FrameMain::LoadSubtitles (wxString filename,wxString charset) {
 			// Make sure that file isn't actually a timecode file
 			try {
 				TextFileReader testSubs(filename,charset);
-				charset = testSubs.GetCurrentEncoding();
-				isBinary = charset == _T("binary");
+				isBinary = testSubs.IsBinary();
 				if (!isBinary && testSubs.HasMoreLines()) {
 					wxString cur = testSubs.ReadLineFromFile();
 					if (cur.Left(10) == _T("# timecode")) {
@@ -816,8 +816,7 @@ bool FrameMain::SaveSubtitles(bool saveas,bool withCharset) {
 		// Get charset
 		wxString charset = _T("");
 		if (withCharset) {
-			wxArrayString choices = AegisubCSConv::GetEncodingsList();
-			charset = wxGetSingleChoice(_("Choose charset code:"), _T("Charset"),choices,this,-1, -1,true,250,200);
+			charset = wxGetSingleChoice(_("Choose charset code:"), _T("Charset"),agi::charset::GetEncodingsList<wxArrayString>(),this,-1, -1,true,250,200);
 			if (charset.IsEmpty()) return false;
 		}
 

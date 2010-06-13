@@ -29,6 +29,7 @@
 #include <libaegisub/exception.h>
 
 #include "colour_button.h"
+#include "compat.h"
 #include "libresrc/libresrc.h"
 #include "preferences.h"
 #include "main.h"
@@ -172,17 +173,14 @@ void Preferences::OptionAdd(wxPanel *parent, wxFlexGridSizer *flex, const wxStri
 
 		case agi::OptionValue::Type_String: {
 			flex->Add(new wxStaticText(parent, wxID_ANY, name), 1, wxALIGN_CENTRE_VERTICAL);
-			wxTextCtrl *text = new wxTextCtrl(parent, wxID_ANY , opt->GetString(), wxDefaultPosition, wxDefaultSize);
+			wxTextCtrl *text = new wxTextCtrl(parent, wxID_ANY , lagi_wxString(opt->GetString()), wxDefaultPosition, wxDefaultSize);
 			flex->Add(text, 1, wxEXPAND);
 			break;
 		}
 
 		case agi::OptionValue::Type_Colour: {
 			flex->Add(new wxStaticText(parent, wxID_ANY, name), 1, wxALIGN_CENTRE_VERTICAL);
-			ColourButton *colour = new ColourButton(parent, wxID_ANY, wxSize(40,10));
-			wxColour current(opt->GetColour());
-			colour->SetColour(current);
-			flex->Add(colour);
+			flex->Add(new ColourButton(parent, wxID_ANY, wxSize(40,10), lagi_wxColour(opt->GetColour())));
 			break;
 		}
 
@@ -230,7 +228,7 @@ void Preferences::OnCancel(wxCommandEvent &event) {
 	name_value##_sizer->Add(name_value##_flex, 1, wxEXPAND, 5);                                \
 	sizer->AddSpacer(8);
 
-// name_value##_flex->SetFlexibleDirection(wxVERTICAL); \
+// name_value##_flex->SetFlexibleDirection(wxVERTICAL);
 
 #define PAGE_END() \
 	panel->SetSizerAndFit(sizer);

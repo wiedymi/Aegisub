@@ -35,43 +35,22 @@
 ///
 
 
-///////////
-// Headers
 #include "config.h"
+
+#include "gl_wrap.h"
 
 #ifndef AGI_PRE
 #include <wx/msgdlg.h>
-#endif
-
-#include "gl_wrap.h"
-#include "options.h"
 
 #ifdef __APPLE__
-#include <OpenGL/GL.h>
 #include <OpenGL/glext.h>
 #else
-#include <GL/gl.h>
 #include "gl/glext.h"
 #endif
 
-
-//////////////////////////
-// Extension get function
-#ifdef __WIN32__
-
-/// @brief DOCME
-/// @param str 
-/// @return 
-///
-void* glGetProc(const char *str) { return wglGetProcAddress(str); }
-#else
-
-/// DOCME
-#define glGetProc(a) glXGetProcAddress((const GLubyte *)(a))
 #endif
 
-
-
+#include "options.h"
 
 /// @brief Constructor 
 ///

@@ -18,6 +18,7 @@
 /// @brief Common utilities used in tests.
 /// @ingroup util
 
+#include <string>
 namespace util {
 
 void copy(const std::string from, const std::string to);

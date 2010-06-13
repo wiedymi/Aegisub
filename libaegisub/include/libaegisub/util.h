@@ -21,16 +21,18 @@
 #ifndef LAGI_PRE
 #include <string>
 #include <stdio.h>
-#endif
+#include <time.h>
+#endif // LAGI_PRE
 
 #include <libaegisub/access.h>
+#include <libaegisub/types.h>
 
 namespace agi {
 	namespace util {
 
 	const std::string DirName(const std::string& path);
 	void Rename(const std::string& from, const std::string& to);
-
+	void time_log(agi_timeval &tv);
 
 	} // namespace util
 } // namespace agi

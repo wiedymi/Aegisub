@@ -35,7 +35,7 @@
 ///
 
 
-
+#pragma once
 
 ////////////
 // Includes
@@ -57,6 +57,11 @@ class FrameMain;
 
 /// DOCME
 typedef std::list<AssEntry*>::iterator entryIter;
+
+class SelectionChangeSubscriber {
+public:
+	virtual void OnSelectionChange(bool clear, int row, bool selected) = 0;
+};
 
 
 
@@ -92,6 +97,8 @@ private:
 	/// DOCME
 	wxBitmap *bmp;
 
+	SelectionChangeSubscriber* selChangeSub;
+
 	void OnPaint(wxPaintEvent &event);
 	void OnSize(wxSizeEvent &event);
 	void OnScroll(wxScrollEvent &event);
@@ -118,6 +125,9 @@ protected:
 	/// DOCME
 	int yPos;
 
+	/// DOCME
+	std::vector<bool> selMap;
+
 public:
 
 	/// DOCME
@@ -133,9 +143,6 @@ public:
 	/// DOCME
 	std::vector<AssDialogue *> diagPtrMap;
 
-	/// DOCME
-	std::vector<bool> selMap;
-
 	void AdjustScrollbar();
 	void SetColumnWidths();
 	void BeginBatch();
@@ -145,22 +152,26 @@ public:
 	void SelectRow(int row, bool addToSelected = false, bool select=true);
 	void ClearSelection();
 	bool IsInSelection(int row, int col=0) const;
-	bool IsDisplayed(AssDialogue *line);
-	int GetNumberSelection();
-	int GetFirstSelRow();
-	int GetLastSelRow();
+	static bool IsDisplayed(AssDialogue *line);
+	int GetNumberSelection() const;
+	int GetFirstSelRow() const;
+	int GetLastSelRow() const;
 	void SelectVisible();
-	wxArrayInt GetSelection(bool *continuous=NULL);
+	wxArrayInt GetSelection(bool *continuous=NULL) const;
 
 	void Clear();
 	void UpdateMaps();
 	void UpdateStyle();
 
 	int GetRows() const;
-	wxArrayInt GetRangeArray(int n1,int n2);
+	wxArrayInt GetRangeArray(int n1,int n2) const;
 	void MakeCellVisible(int row, int col,bool center=true);
 
-	AssDialogue *GetDialogue(int n);
+	AssDialogue *GetDialogue(int n) const;
+
+	void RegisterSelectionChange(SelectionChangeSubscriber* sel) {
+		selChangeSub = sel;
+	}
 
 	BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxWANTS_CHARS, const wxString& name = wxPanelNameStr);
 	~BaseGrid();

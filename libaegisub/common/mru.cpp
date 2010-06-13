@@ -21,15 +21,21 @@
 #ifndef LAGI_PRE
 #include <fstream>
 #include <time.h>
+
+#include "libaegisub/cajun/reader.h"
+#include "libaegisub/cajun/writer.h"
+#include "libaegisub/cajun/elements.h"
 #endif
 
 #include "libaegisub/access.h"
+#include "libaegisub/log.h"
 #include "libaegisub/mru.h"
 #include "libaegisub/io.h"
 
 namespace agi {
 
 MRUManager::MRUManager(const std::string &config, const std::string &default_config): config_name(config) {
+	LOG_D("agi/mru") << "Loading MRU List";
 
 	json::UnknownElement root;
 	std::istream *stream;
@@ -46,6 +52,7 @@ MRUManager::MRUManager(const std::string &config, const std::string &default_con
 		/// @todo Do something better here, maybe print the exact error
 //		std::cout << "json::Exception: " << e.what() << std::endl;
 
+		delete stream;
 		stream = new std::istringstream(default_config);
 		json::Reader::Read(root, *stream);
 	}
@@ -68,6 +75,10 @@ MRUManager::MRUManager(const std::string &config, const std::string &default_con
 
 MRUManager::~MRUManager() {
 	Flush();
+
+	for (MRUMap::iterator i = mru.begin(); i != mru.end(); ++i) {
+		delete i->second;
+	}
 }
 
 
@@ -96,7 +107,7 @@ void MRUManager::Remove(const std::string &key, const std::string &entry) {
 	MRUMap::iterator index;
 
 	if ((index = mru.find(key)) != mru.end()) {
-		MRUListMap map = *index->second;
+		MRUListMap &map = *index->second;
 		for (MRUListMap::iterator map_idx = map.begin(); map_idx != map.end();) {
 			if (map_idx->second == entry)
 				map.erase(map_idx++);

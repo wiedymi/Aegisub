@@ -172,12 +172,13 @@ void AegiVideoFrame::SetTo(const unsigned char *const source[], int width, int h
 	
 }
 
-/// @brief This function is only used on screenshots, so it doesn't have to be fast ------ Get wxImage 
+/// @brief Get wxImage 
 /// @return 
 wxImage AegiVideoFrame::GetImage() const {
 	if (format == FORMAT_RGB32 || format == FORMAT_RGB24) {
 		// Create
 		unsigned char *buf = (unsigned char*)malloc(w*h*3);
+		if (!buf) throw std::bad_alloc();
 		const unsigned char *src = data[0];
 		unsigned char *dst = buf;
 

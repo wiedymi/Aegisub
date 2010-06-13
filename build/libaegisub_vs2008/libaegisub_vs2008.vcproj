@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="libaegisub_vs2008"
-	ProjectGUID="{8732F2B6-B3C6-4AE8-986A-2A334E33334B}"
+	ProjectGUID="{7BECBDEF-9935-4E9D-8958-CCAA39D8B178}"
 	RootNamespace="libaegisub_vs2008"
 	TargetFrameworkVersion="196613"
 	>
@@ -20,10 +20,26 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
-			InheritedPropertySheets=".\wxlib_include.vsprops;.\libraries_outdirs.vsprops;.\compiler_options_debug.vsprops;..\aegisub_vs2008\wxlib_lib32.vsprops;..\aegisub_vs2008\suffix_debug32.vsprops;.\precomp_header.vsprops;.\src_msvc_include_dir.vsprops"
+			InheritedPropertySheets=".\wxlib_include.vsprops;.\libraries_outdirs.vsprops;.\compiler_options_debug.vsprops;..\aegisub_vs2008\wxlib_lib32.vsprops;..\aegisub_vs2008\suffix_debug32.vsprops;.\precomp_header.vsprops;.\src_msvc_include_dir.vsprops;.\contrib_includedirs.vsprops"
 			CharacterSet="1"
 			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -33,14 +49,56 @@
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			ConfigurationType="4"
-			InheritedPropertySheets=".\wxlib_include.vsprops;.\libraries_outdirs.vsprops;.\compiler_options.vsprops;..\aegisub_vs2008\wxlib_lib32.vsprops;..\aegisub_vs2008\suffix_release32.vsprops;.\precomp_header.vsprops"
+			InheritedPropertySheets=".\wxlib_include.vsprops;.\libraries_outdirs.vsprops;.\compiler_options.vsprops;..\aegisub_vs2008\wxlib_lib32.vsprops;..\aegisub_vs2008\suffix_release32.vsprops;.\precomp_header.vsprops;.\contrib_includedirs.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
@@ -49,6 +107,33 @@
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
 		<Configuration
@@ -102,11 +187,31 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\libaegisub\common\charset.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\common\charset_conv.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\common\charset_ucd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\common\log.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libaegisub\common\mru.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\libaegisub\common\option.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\common\option_value.cpp"
 				>
 			</File>
 			<File
@@ -129,6 +234,10 @@
 			>
 			<File
 				RelativePath="..\..\libaegisub\windows\access.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\windows\charset_conv_win.cpp"
 				>
 			</File>
 			<File
@@ -172,6 +281,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\libaegisub\windows\log.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\log_windows"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						ObjectFile="$(IntDir)\log_windows"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="..\..\libaegisub\windows\util.cpp"
 				>
 			</File>
@@ -184,7 +313,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libaegisub\include\libaegisub\charset_conv.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\include\libaegisub\charset_conv_win.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\include\libaegisub\charsets.def"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libaegisub\include\libaegisub\colour.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\config.h"
 				>
 			</File>
 			<File
@@ -209,6 +354,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libaegisub\include\libaegisub\util.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libaegisub\include\libaegisub\util_win.h"
 				>
 			</File>
 			<File

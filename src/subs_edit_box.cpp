@@ -261,9 +261,8 @@ void SubsEditBox::SetSplitLineMode(wxSize newSize) {
 
 
 /// @brief Update function 
-/// @param timeOnly If true, only update the time fields
-/// @param weak     ?
-/// @param video    If true, update the video display
+/// @param timeOnly 
+/// @param weak     
 ///
 void SubsEditBox::Update (bool timeOnly,bool weak,bool video) {
 	if (enabled) {
@@ -353,12 +352,10 @@ void SubsEditBox::SetToLine(int n,bool weak) {
 	// Set to nothing
 	if (n == -1) {
 		enabled = false;
-		SetControlsState(false);
-		return;
 	}
 
 	// Set line
-	if (grid->GetDialogue(n)) {
+	else if (grid->GetDialogue(n)) {
 		enabled = true;
 		if (n != linen) {
 			linen = n;
@@ -369,7 +366,7 @@ void SubsEditBox::SetToLine(int n,bool weak) {
 	}
 
 	// Update controls
-	Update(false, false, false);
+	Update();
 
 	// Set video
 	if (VideoContext::Get()->IsLoaded() && !weak) {
@@ -1181,7 +1178,7 @@ void SubsEditBox::SetOverride (wxString tagname,wxString preValue,int forcePos,b
 	AssOverrideTag *tag;
 	if (isFont || isColor || isFlag) {
 		for (size_t i=0;i<=blockn;i++) {
-			override = AssDialogueBlock::GetAsOverride(line->Blocks.at(i));
+			override = dynamic_cast<AssDialogueBlockOverride*>(line->Blocks.at(i));
 			if (override) {
 				for (size_t j=0;j<override->Tags.size();j++) {
 					tag = override->Tags.at(j);
@@ -1281,8 +1278,8 @@ void SubsEditBox::SetOverride (wxString tagname,wxString preValue,int forcePos,b
 	}
 
 	// Get current block as plain or override
-	AssDialogueBlockPlain *plain = AssDialogueBlock::GetAsPlain(block);
-	override = AssDialogueBlock::GetAsOverride(block);
+	AssDialogueBlockPlain *plain = dynamic_cast<AssDialogueBlockPlain*>(block);
+	override = dynamic_cast<AssDialogueBlockOverride*>(block);
 
 	// Plain
 	if (plain) {
@@ -1324,8 +1321,8 @@ void SubsEditBox::SetOverride (wxString tagname,wxString preValue,int forcePos,b
 		TextEdit->SetTextTo(line->Text);
 		blockn = BlockAtPos(selstart);
 		block = line->Blocks.at(blockn);
-		plain = AssDialogueBlock::GetAsPlain(block);
-		override = AssDialogueBlock::GetAsOverride(block);
+		plain = dynamic_cast<AssDialogueBlockPlain*>(block);
+		override = dynamic_cast<AssDialogueBlockOverride*>(block);
 
 		// Plain
 		if (plain) {

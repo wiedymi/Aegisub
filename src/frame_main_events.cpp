@@ -66,6 +66,7 @@
 #include "dialog_fonts_collector.h"
 #include "dialog_jumpto.h"
 #include "dialog_kara_timing_copy.h"
+#include "dialog_log.h"
 #include "dialog_progress.h"
 #include "dialog_properties.h"
 #include "dialog_resample.h"
@@ -212,6 +213,7 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_MENU(Menu_Help_IRCChannel, FrameMain::OnIRCChannel)
 	EVT_MENU(Menu_Help_Check_Updates, FrameMain::OnCheckUpdates)
 	EVT_MENU(Menu_Help_About, FrameMain::OnAbout)
+	EVT_MENU(Menu_Help_Log, FrameMain::OnLog)
 
 	EVT_MENU(Menu_View_Language, FrameMain::OnChooseLanguage)
 	EVT_MENU(Menu_View_Standard, FrameMain::OnViewStandard)
@@ -536,7 +538,7 @@ int FrameMain::AddMacroMenuItems(wxMenu *menu, const std::vector<Automation4::Fe
 ///
 void FrameMain::OnOpenRecentSubs(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_File_Recent;
-	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Subtitle", number));
+	LoadSubtitles(lagi_wxString(AegisubApp::Get()->mru->GetEntry("Subtitle", number)));
 }
 
 
@@ -546,7 +548,7 @@ void FrameMain::OnOpenRecentSubs(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenRecentVideo(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Video_Recent;
-	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Video", number));
+	LoadVideo(lagi_wxString(AegisubApp::Get()->mru->GetEntry("Video", number)));
 }
 
 
@@ -556,7 +558,7 @@ void FrameMain::OnOpenRecentVideo(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Timecodes_Recent;
-	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Timecodes", number));
+	LoadVFR(lagi_wxString(AegisubApp::Get()->mru->GetEntry("Timecodes", number)));
 }
 
 
@@ -566,7 +568,7 @@ void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Keyframes_Recent;
-	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Keyframes", number));
+	KeyFrameFile::Load(lagi_wxString(AegisubApp::Get()->mru->GetEntry("Keyframes", number)));
 	videoBox->videoSlider->Refresh();
 	audioBox->audioDisplay->Update();
 	Refresh();
@@ -579,7 +581,7 @@ void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenRecentAudio(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Audio_Recent;
-	LoadSubtitles(AegisubApp::Get()->mru->GetEntry("Audio", number));
+	LoadAudio(lagi_wxString(AegisubApp::Get()->mru->GetEntry("Audio", number)));
 }
 
 
@@ -611,6 +613,13 @@ void FrameMain::OnAbout(wxCommandEvent &event) {
 	About.ShowModal();
 }
 
+
+/// @brief Open log window
+/// @param event 
+void FrameMain::OnLog(wxCommandEvent &event) {
+	LogWindow *log = new LogWindow(this);
+	log->Show(1);
+}
 
 
 /// @brief Open check updates
@@ -796,13 +805,12 @@ void FrameMain::OnOpenSubtitles(wxCommandEvent& WXUNUSED(event)) {
 ///
 void FrameMain::OnOpenSubtitlesCharset(wxCommandEvent& WXUNUSED(event)) {
 	// Initialize charsets
-	wxArrayString choices = AegisubCSConv::GetEncodingsList();
 	wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString());
 
 	// Get options and load
 	wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (!filename.empty()) {
-		wxString charset = wxGetSingleChoice(_("Choose charset code:"), _("Charset"),choices,this,-1, -1,true,250,200);
+		wxString charset = wxGetSingleChoice(_("Choose charset code:"), _("Charset"),agi::charset::GetEncodingsList<wxArrayString>(),this,-1, -1,true,250,200);
 		if (!charset.empty()) {
 			LoadSubtitles(filename,charset);
 		}
@@ -812,7 +820,7 @@ void FrameMain::OnOpenSubtitlesCharset(wxCommandEvent& WXUNUSED(event)) {
 
 /// @brief Open subtitles from the currently open video file
 void FrameMain::OnOpenSubtitlesVideo(wxCommandEvent&) {
-	LoadSubtitles(VideoContext::Get()->videoName);
+	LoadSubtitles(VideoContext::Get()->videoName, "binary");
 }
 
 

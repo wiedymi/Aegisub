@@ -45,14 +45,21 @@
 #include <string>
 #endif
 
+#include <libaegisub/log.h>
+
 #include "charset_conv.h"
-#ifdef WITH_UNIVCHARDET
 #include "charset_detect.h"
-#endif
 #include "text_file_reader.h"
 
-TextFileReader::TextFileReader(wxString filename, wxString enc, bool trim)
-: encoding(enc), conv((iconv_t)-1), trim(trim), readComplete(false), currout(0), outptr(0), currentLine(0) {
+TextFileReader::TextFileReader(wxString const& filename, wxString encoding, bool trim)
+: isBinary(false)
+, conv()
+, trim(trim)
+, readComplete(false)
+, currout(0)
+, outptr(0)
+, currentLine(0)
+{
 #ifdef __WINDOWS__
 	file.open(filename.wc_str(),std::ios::in | std::ios::binary);
 #else
@@ -60,63 +67,15 @@ TextFileReader::TextFileReader(wxString filename, wxString enc, bool trim)
 #endif
 	if (!file.is_open()) throw L"Failed opening file for reading.";
 
-	if (encoding.IsEmpty()) encoding = GetEncoding(filename);
-	if (encoding == L"binary") return;
-	encoding = AegisubCSConv::GetRealEncodingName(encoding);
-	conv = iconv_open(WCHAR_T_ENCODING, encoding.ToAscii());
-	if (conv == (iconv_t)-1) {
-		throw wxString::Format(L"Character set '%s' is not supported.", enc.c_str());
+	if (encoding.IsEmpty()) encoding = CharSetDetect::GetEncoding(filename);
+	if (encoding == L"binary") {
+		isBinary = true;
+		return;
 	}
+	conv.reset(new agi::charset::IconvWrapper(encoding.c_str(), "wchar_t"));
 }
 
 TextFileReader::~TextFileReader() {
-	if (conv != (iconv_t)-1) iconv_close(conv);
-}
-
-wxString TextFileReader::GetEncoding(wxString const& filename) {
-	// Prepare
-	unsigned char b[4];
-	memset(b, 0, sizeof(b));
-
-	// Read four bytes from file
-	std::ifstream ifile;
-#ifdef __WINDOWS__
-	ifile.open(filename.wc_str());
-#else
-	ifile.open(wxFNCONV(filename));
-#endif
-	if (!ifile.is_open()) {
-		return L"unknown";
-	}
-	ifile.read(reinterpret_cast<char *>(b),4);
-	ifile.close();
-
-	// Try to get the byte order mark from them
-	if (b[0] == 0xEF && b[1] == 0xBB && b[2] == 0xBF) return L"UTF-8";
-	else if (b[0] == 0xFF && b[1] == 0xFE && b[2] == 0x00 && b[3] == 0x00) return L"UTF-32LE";
-	else if (b[0] == 0x00 && b[1] == 0x00 && b[2] == 0xFE && b[3] == 0xFF) return L"UTF-32BE";
-	else if (b[0] == 0xFF && b[1] == 0xFE) return L"UTF-16LE";
-	else if (b[0] == 0xFE && b[1] == 0xFF) return L"UTF-16BE";
-	else if (b[0] == 0x2B && b[1] == 0x2F && b[2] == 0x76) return L"UTF-7";
-
-	// Try to guess UTF-16
-	else if (b[0] == 0 && b[1] >= 32 && b[2] == 0 && b[3] >= 32) return L"UTF-16BE";
-	else if (b[0] >= 32 && b[1] == 0 && b[2] >= 32 && b[3] == 0) return L"UTF-16LE";
-
-	// If any of the first four bytes are under 0x20 (the first printable character),
-	// except for 9-13 range, assume binary
-	for (int i=0;i<4;i++) {
-		if (b[i] < 9 || (b[i] > 13 && b[i] < 32)) return L"binary";
-	}
-
-#ifdef WITH_UNIVCHARDET
-	// Use universalchardet library to detect charset
-	CharSetDetect det;
-	return det.GetEncoding(filename);
-#else
-	// Fall back to local
-	return L"local";
-#endif
 }
 
 wchar_t TextFileReader::GetWChar() {
@@ -144,7 +103,8 @@ wchar_t TextFileReader::GetWChar() {
 		return 0;
 
 	do {
-		size_t ret = iconv(conv, &inptr, &inbytesleft, reinterpret_cast<char **>(&outptr), &outbytesleft);
+		// Without this const_cast the wrong overload is chosen
+		size_t ret = conv->Convert(const_cast<const char**>(&inptr), &inbytesleft, reinterpret_cast<char **>(&outptr), &outbytesleft);
 		if (ret != (size_t)-1) break;
 
 		int err = errno;
@@ -190,7 +150,6 @@ wxString TextFileReader::ReadLineFromFile() {
 	if (ch == 0)
 		readComplete = true;
 
-	// Trim
 	if (trim) {
 		buffer.Trim(true);
 		buffer.Trim(false);
@@ -200,8 +159,4 @@ wxString TextFileReader::ReadLineFromFile() {
 
 bool TextFileReader::HasMoreLines() {
 	return !readComplete;
-}
-
-wxString TextFileReader::GetCurrentEncoding() {
-	return encoding;
 }

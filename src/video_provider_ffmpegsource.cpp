@@ -209,7 +209,7 @@ void FFmpegSourceVideoProvider::LoadVideo(wxString filename) {
 	// set seekmode
 	// TODO: give this its own option?
 	int SeekMode;
-	if (OPT_GET("Provider/Video/FFMpegSource/Unsafe Seeking")->GetBool())
+	if (OPT_GET("Provider/Video/FFmpegSource/Unsafe Seeking")->GetBool())
 		SeekMode = FFMS_SEEK_UNSAFE;
 	else 
 		SeekMode = FFMS_SEEK_NORMAL;
@@ -233,7 +233,7 @@ void FFmpegSourceVideoProvider::LoadVideo(wxString filename) {
 	Width	= TempFrame->EncodedWidth;
 	Height	= TempFrame->EncodedHeight;
 
-	if (FFMS_SetOutputFormatV(VideoSource, 1 << FFMS_GetPixFmt("bgra"), Width, Height, FFMS_RESIZER_BICUBIC, &ErrInfo)) {
+	if (FFMS_SetOutputFormatV(VideoSource, 1LL << FFMS_GetPixFmt("bgra"), Width, Height, FFMS_RESIZER_BICUBIC, &ErrInfo)) {
 		ErrorMsg.Append(wxString::Format(_T("Failed to set output format: %s"), ErrInfo.Buffer));
 		throw ErrorMsg;
 	}

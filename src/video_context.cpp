@@ -120,6 +120,7 @@ VideoContext::VideoContext()
 , arValue(1.)
 , arType(0)
 , hasSubtitles(false)
+, playAudioOnStep(OPT_GET("Audio/Plays When Stepping Video"))
 , grid(NULL)
 , curLine(NULL)
 , audio(NULL)
@@ -331,7 +332,8 @@ void VideoContext::UpdateDisplays(bool full) {
 
 	// Update audio display
 	if (audio && audio->loaded && audio->IsShownOnScreen()) {
-		if (OPT_GET("Audio/Display/Draw/Video Position")->GetBool()) {
+		static agi::OptionValue* opt = OPT_GET("Audio/Display/Draw/Video Position");
+		if (opt->GetBool()) {
 			audio->UpdateImage(false);
 		}
 	}
@@ -348,7 +350,8 @@ void VideoContext::Refresh (bool video, bool subtitles) {
 		AssExporter exporter(grid->ass);
 		exporter.AddAutoFilters();
 		try {
-			subsProvider->LoadSubtitles(exporter.ExportTransform());
+			std::auto_ptr<AssFile> exported(exporter.ExportTransform());
+			subsProvider->LoadSubtitles(exported.get());
 		}
 		catch (wxString err) { wxMessageBox(_T("Error while invoking subtitles provider: ") + err,_T("Subtitles provider")); }
 		catch (const wchar_t *err) { wxMessageBox(_T("Error while invoking subtitles provider: ") + wxString(err),_T("Subtitles provider")); }
@@ -376,7 +379,8 @@ void VideoContext::JumpToFrame(int n) {
 	UpdateDisplays(false);
 
 	// Update grid
-	if (!isPlaying && OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame")->GetBool()) grid->Refresh(false);
+	static agi::OptionValue* highlight = OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame");
+	if (!isPlaying && highlight->GetBool()) grid->Refresh(false);
 }
 
 
@@ -441,7 +445,8 @@ AegiVideoFrame VideoContext::GetFrame(int n,bool raw) {
 ///
 void VideoContext::SaveSnapshot(bool raw) {
 	// Get folder
-	wxString option = lagi_wxString(OPT_GET("Path/Screenshot")->GetString());
+	static agi::OptionValue* ssPath = OPT_GET("Path/Screenshot");
+	wxString option = lagi_wxString(ssPath->GetString());
 	wxFileName videoFile(videoName);
 	wxString basepath;
 	// Is it a path specifier and not an actual fixed path?
@@ -495,7 +500,7 @@ void VideoContext::PlayNextFrame() {
 	int thisFrame = frame_n;
 	JumpToFrame(frame_n + 1);
 	// Start playing audio
-	if (OPT_GET("Audio/Plays When Stepping")->GetBool())
+	if (playAudioOnStep->GetBool())
 		audio->Play(VFR_Output.GetTimeAtFrame(thisFrame),VFR_Output.GetTimeAtFrame(thisFrame + 1));
 }
 
@@ -509,7 +514,7 @@ void VideoContext::PlayPrevFrame() {
 	int thisFrame = frame_n;
 	JumpToFrame(frame_n -1);
 	// Start playing audio
-	if (OPT_GET("Audio/Plays When Stepping")->GetBool())
+	if (playAudioOnStep->GetBool())
 		audio->Play(VFR_Output.GetTimeAtFrame(thisFrame - 1),VFR_Output.GetTimeAtFrame(thisFrame));
 }
 

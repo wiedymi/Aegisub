@@ -123,6 +123,7 @@ using std::min;
 
 VideoDisplay::VideoDisplay(VideoBox *box, VideoSlider *ControlSlider, wxTextCtrl *PositionDisplay, wxTextCtrl *SubsPosition, wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
 : wxGLCanvas (parent, id, attribList, pos, size, style, name)
+, alwaysShowTools(OPT_GET("Tool/Visual/Always Show"))
 , origSize(size)
 , currentFrame(-1)
 , w(8), h(8), viewport_x(0), viewport_width(0), viewport_bottom(0), viewport_top(0), viewport_height(0)
@@ -278,9 +279,7 @@ void VideoDisplay::Render() try {
 		}
 	}
 
-	if (video.x > INT_MIN ||
-	    video.y > INT_MIN ||
-		OPT_GET("Tool/Visual/Always Show")->GetBool()) {
+	if (video.x > INT_MIN || video.y > INT_MIN || alwaysShowTools->GetBool()) {
 		tool->Draw();
 	}
 
@@ -489,7 +488,6 @@ void VideoDisplay::OnMouseEvent(wxMouseEvent& event) {
 
 	tool->OnMouseEvent(event);
 	ShowCursor(activeMode != Video_Mode_Standard);
-	Render();
 }
 void VideoDisplay::OnKey(wxKeyEvent &event) {
 	int key = event.GetKeyCode();
@@ -530,6 +528,7 @@ double VideoDisplay::GetZoom() const {
 
 template<class T>
 void VideoDisplay::SetTool() {
+	tool.reset();
 	tool.reset(new T(this, video, toolBar));
 	box->Bind(wxEVT_COMMAND_TOOL_CLICKED, &T::OnSubTool, static_cast<T*>(tool.get()), VISUAL_SUB_TOOL_START, VISUAL_SUB_TOOL_END);
 }

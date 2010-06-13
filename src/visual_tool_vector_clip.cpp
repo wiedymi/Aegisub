@@ -35,6 +35,7 @@
 
 #ifndef AGI_PRE
 #include <wx/toolbar.h>
+#include "gl/glext.h"
 #endif
 
 #include "config.h"
@@ -44,36 +45,16 @@
 #include "video_display.h"
 #include "visual_tool_vector_clip.h"
 
-///////
-// IDs
 enum {
-
-	/// DOCME
 	BUTTON_DRAG = VISUAL_SUB_TOOL_START,
-
-	/// DOCME
 	BUTTON_LINE,
-
-	/// DOCME
 	BUTTON_BICUBIC,
-
-	/// DOCME
 	BUTTON_CONVERT,
-
-	/// DOCME
 	BUTTON_INSERT,
-
-	/// DOCME
 	BUTTON_REMOVE,
-
-	/// DOCME
 	BUTTON_FREEHAND,
-
-	/// DOCME
 	BUTTON_FREEHAND_SMOOTH,
-
-	/// DOCME
-	BUTTON_LAST		// Leave this at the end and don't use it
+	BUTTON_LAST // Leave this at the end and don't use it
 };
 
 /// @brief Constructor 
@@ -81,8 +62,8 @@ enum {
 /// @param _toolBar 
 VisualToolVectorClip::VisualToolVectorClip(VideoDisplay *parent, VideoState const& video, wxToolBar * toolBar)
 : VisualTool<VisualToolVectorClipDraggableFeature>(parent, video)
-, toolBar(toolBar)
 , spline(*parent)
+, toolBar(toolBar)
 {
 	DoRefresh();
 	mode = 0;
@@ -107,96 +88,127 @@ VisualToolVectorClip::VisualToolVectorClip(VideoDisplay *parent, VideoState cons
 	if (features.size() == 0) SetMode(1);
 }
 
-/// @brief Sub-tool pressed 
-/// @param event 
 void VisualToolVectorClip::OnSubTool(wxCommandEvent &event) {
 	SetMode(event.GetId() - BUTTON_DRAG);
 }
 
-/// @brief Set mode 
-/// @param _mode 
-void VisualToolVectorClip::SetMode(int _mode) {
-	// Make sure clicked is checked and everything else isn't. (Yes, this is radio behavior, but the separators won't let me use it)
+void VisualToolVectorClip::SetMode(int newMode) {
+	// Manually enforce radio behavior as we want one selection in the bar
+	// rather than one per group
 	for (int i=BUTTON_DRAG;i<BUTTON_LAST;i++) {
-		toolBar->ToggleTool(i,i == _mode + BUTTON_DRAG);
+		toolBar->ToggleTool(i,i == newMode + BUTTON_DRAG);
 	}
-	mode = _mode;
+	mode = newMode;
 }
 
-/// @brief Draw 
+// Substitute for glMultiDrawArrays for sub-1.4 OpenGL
+static void APIENTRY glMultiDrawArraysFallback(GLenum mode, GLint *first, GLsizei *count, GLsizei primcount) {
+	for (int i = 0; i < primcount; ++i) {
+		glDrawArrays(mode, *first++, *count++);
+	}
+}
+
 void VisualToolVectorClip::Draw() {
+	if (spline.empty()) return;
+
+	GL_EXT(PFNGLMULTIDRAWARRAYSPROC, glMultiDrawArrays);
+
 	// Get line
 	AssDialogue *line = GetActiveDialogueLine();
 	if (!line) return;
 
 	// Parse vector
-	std::vector<Vector2D> points;
-	std::vector<int> pointCurve;
-	spline.GetPointList(points,pointCurve);
+	std::vector<float> points;
+	std::vector<int> start;
+	std::vector<int> count;
 
-	// Draw stencil mask
+	spline.GetPointList(points, start, count);
+	assert(!start.empty());
+	assert(!count.empty());
+	
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(2, GL_FLOAT, 0, &points[0]);
+
+	// The following is nonzero winding-number PIP based on stencils
+
+	// Draw to stencil only
 	glEnable(GL_STENCIL_TEST);
-	glColorMask(0,0,0,0);
-	glStencilFunc(GL_NEVER,1,1);
-	glStencilOp(GL_INVERT,GL_INVERT,GL_INVERT);
-	for (size_t i=2;i<points.size();i++) {
-		glBegin(GL_TRIANGLES);
-			glVertex2f(points[0].x,points[0].y);
-			glVertex2f(points[i-1].x,points[i-1].y);
-			glVertex2f(points[i].x,points[i].y);
-		glEnd();
-	}
+	glColorMask(0, 0, 0, 0);
 
-	// Draw "outside clip" mask
+	// GL_INCR_WRAP was added in 1.4, so instead set the entire stencil to 128
+	// and wobble from there
+	glStencilFunc(GL_NEVER, 128, 0xFF);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+	DrawRectangle(0,0,video.w,video.h);
+
+	// Increment the winding number for each forward facing triangle
+	glStencilOp(GL_INCR, GL_INCR, GL_INCR);
+	glEnable(GL_CULL_FACE);
+
+	glCullFace(GL_BACK);
+	glMultiDrawArrays(GL_TRIANGLE_FAN, &start[0], &count[0], start.size());
+
+	// Decrement the winding number for each backfacing triangle
+	glStencilOp(GL_DECR, GL_DECR, GL_DECR);
+	glCullFace(GL_FRONT);
+	glMultiDrawArrays(GL_TRIANGLE_FAN, &start[0], &count[0], start.size());
+	glDisable(GL_CULL_FACE);
+
+	// Draw the actual rectangle
 	glColorMask(1,1,1,1);
-	if (inverse) glStencilFunc(GL_EQUAL, 1, 1);
-	else glStencilFunc(GL_EQUAL, 0, 1);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 	SetLineColour(colour[3],0.0f);
 	SetFillColour(wxColour(0,0,0),0.5f);
+
+	// VSFilter draws when the winding number is nonzero, so we want to draw the
+	// mask when the winding number is zero (where 128 is zero due to the lack of
+	// wrapping combined with unsigned numbers)
+	glStencilFunc(inverse ? GL_NOTEQUAL : GL_EQUAL, 128, 0xFF);
 	DrawRectangle(0,0,video.w,video.h);
 	glDisable(GL_STENCIL_TEST);
-
-	// Get current position information for modes 3 and 4
-	Vector2D pt;
-	int highCurve = -1;
-	if (mode == 3 || mode == 4) {
-		float t;
-		spline.GetClosestParametricPoint(Vector2D(video.x,video.y),highCurve,t,pt);
-	}
 
 	// Draw lines
 	SetFillColour(colour[3],0.0f);
 	SetLineColour(colour[3],1.0f,2);
-	int col = 3;
-	for (size_t i=1;i<points.size();i++) {
-		int useCol = pointCurve[i] == highCurve && !curFeature ? 2 : 3;
-		if (col != useCol) {
-			col = useCol;
-			SetLineColour(colour[col],1.0f,2);
+	SetModeLine();
+	glMultiDrawArrays(GL_LINE_LOOP, &start[0], &count[0], start.size());
+
+	Vector2D pt;
+	float t;
+	Spline::iterator highCurve;
+	spline.GetClosestParametricPoint(Vector2D(video.x, video.y), highCurve, t, pt);
+
+	// Draw highlighted line
+	if ((mode == 3 || mode == 4) && !curFeature && points.size() > 2) {
+		std::vector<float> highPoints;
+		spline.GetPointList(highPoints, highCurve);
+		if (!highPoints.empty()) {
+			glVertexPointer(2, GL_FLOAT, 0, &highPoints[0]);
+			SetLineColour(colour[2], 1.f, 2);
+			SetModeLine();
+			glDrawArrays(GL_LINE_STRIP, 0, highPoints.size() / 2);
 		}
-		DrawLine(points[i-1].x,points[i-1].y,points[i].x,points[i].y);
 	}
+
+	glDisableClientState(GL_VERTEX_ARRAY);
 
 	// Draw lines connecting the bicubic features
 	SetLineColour(colour[3],0.9f,1);
-	for (std::list<SplineCurve>::iterator cur=spline.curves.begin();cur!=spline.curves.end();cur++) {
+	for (Spline::iterator cur=spline.begin();cur!=spline.end();cur++) {
 		if (cur->type == CURVE_BICUBIC) {
 			DrawDashedLine(cur->p1.x,cur->p1.y,cur->p2.x,cur->p2.y,6);
 			DrawDashedLine(cur->p3.x,cur->p3.y,cur->p4.x,cur->p4.y,6);
 		}
 	}
 
-	// Draw features
 	DrawAllFeatures();
 
 	// Draw preview of inserted line
 	if (mode == 1 || mode == 2) {
-		if (spline.curves.size()) {
-			SplineCurve *c0 = &spline.curves.front();
-			SplineCurve *c1 = &spline.curves.back();
+		if (spline.size() && video.x > INT_MIN && video.y > INT_MIN) {
+			SplineCurve *c0 = &spline.front();
+			SplineCurve *c1 = &spline.back();
 			DrawDashedLine(video.x,video.y,c0->p1.x,c0->p1.y,6);
-			DrawDashedLine(video.x,video.y,c1->GetEndPoint().x,c1->GetEndPoint().y,6);
+			DrawDashedLine(video.x,video.y,c1->EndPoint().x,c1->EndPoint().y,6);
 		}
 	}
 	
@@ -206,45 +218,40 @@ void VisualToolVectorClip::Draw() {
 
 /// @brief Populate feature list 
 void VisualToolVectorClip::PopulateFeatureList() {
-	// Clear
-	ClearSelection();
+	ClearSelection(false);
 	features.clear();
+	// This is perhaps a bit conservative as there can be up to 3N+1 features
+	features.reserve(spline.size());
 	VisualToolVectorClipDraggableFeature feat;
 	
 	// Go through each curve
-	bool isFirst = true;
-	int i = 0;
-	for (std::list<SplineCurve>::iterator cur=spline.curves.begin();cur!=spline.curves.end();cur++,i++) {
-		// First point
-		if (isFirst) {
-			isFirst = false;
+	int j = 0;
+	for (Spline::iterator cur=spline.begin();cur!=spline.end();cur++) {
+		if (cur->type == CURVE_POINT) {
 			feat.x = (int)cur->p1.x;
 			feat.y = (int)cur->p1.y;
 			feat.type = DRAG_SMALL_CIRCLE;
-			feat.index = i;
+			feat.curve = cur;
 			feat.point = 0;
 			features.push_back(feat);
+			AddSelection(j++);
 		}
 
-		// Line
-		if (cur->type == CURVE_LINE) {
+		else if (cur->type == CURVE_LINE) {
 			feat.x = (int)cur->p2.x;
 			feat.y = (int)cur->p2.y;
 			feat.type = DRAG_SMALL_CIRCLE;
-			feat.index = i;
+			feat.curve = cur;
 			feat.point = 1;
 			features.push_back(feat);
+			AddSelection(j++);
 		}
 
-		// Bicubic
-		if (cur->type == CURVE_BICUBIC) {
-			// Current size
-			int size = features.size();
-
+		else if (cur->type == CURVE_BICUBIC) {
 			// Control points
 			feat.x = (int)cur->p2.x;
 			feat.y = (int)cur->p2.y;
-			feat.index = i;
+			feat.curve = cur;
 			feat.point = 1;
 			feat.type = DRAG_SMALL_SQUARE;
 			features.push_back(feat);
@@ -259,6 +266,10 @@ void VisualToolVectorClip::PopulateFeatureList() {
 			feat.type = DRAG_SMALL_CIRCLE;
 			feat.point = 3;
 			features.push_back(feat);
+
+			AddSelection(j++);
+			AddSelection(j++);
+			AddSelection(j++);
 		}
 	}
 }
@@ -266,7 +277,7 @@ void VisualToolVectorClip::PopulateFeatureList() {
 /// @brief Update 
 /// @param feature 
 void VisualToolVectorClip::UpdateDrag(VisualToolVectorClipDraggableFeature* feature) {
-	spline.MovePoint(feature->index,feature->point,wxPoint(feature->x,feature->y));
+	spline.MovePoint(feature->curve,feature->point,Vector2D(feature->x,feature->y));
 }
 
 /// @brief Commit 
@@ -281,24 +292,26 @@ void VisualToolVectorClip::CommitDrag(VisualToolVectorClipDraggableFeature* feat
 bool VisualToolVectorClip::InitializeDrag(VisualToolVectorClipDraggableFeature* feature) {
 	// Delete a control point
 	if (mode == 5) {
-		int i = 0;
-		for (std::list<SplineCurve>::iterator cur=spline.curves.begin();cur!=spline.curves.end();i++,cur++) {
-			if (i == feature->index) {
-				// Update next
-				if (i != 0 || feature->point != 0) {
-					std::list<SplineCurve>::iterator next = cur;
-					next++;
-					if (next != spline.curves.end()) next->p1 = cur->p1;
-				}
-
-				// Erase and save changes
-				spline.curves.erase(cur);
-				CommitDrag(feature);
-				curFeature = NULL;
-				Commit(true);
-				return false;
+		// Update next
+		Spline::iterator next = feature->curve;
+		next++;
+		if (next != spline.end()) {
+			if (feature->curve->type == CURVE_POINT) {
+				next->p1 = next->EndPoint();
+				next->type = CURVE_POINT;
+			}
+			else {
+				next->p1 = feature->curve->p1;
 			}
 		}
+
+		// Erase and save changes
+		spline.erase(feature->curve);
+		CommitDrag(feature);
+		PopulateFeatureList();
+		curFeature = NULL;
+		Commit(true);
+		return false;
 	}
 	return true;
 }
@@ -311,13 +324,10 @@ bool VisualToolVectorClip::InitializeHold() {
 		SplineCurve curve;
 
 		// Set start position
-		if (spline.curves.size()) {
-			curve.p1 = spline.curves.back().GetEndPoint();
+		if (!spline.empty()) {
+			curve.p1 = spline.back().EndPoint();
 			if (mode == 1) curve.type = CURVE_LINE;
 			else curve.type = CURVE_BICUBIC;
-
-			// Remove point if that's all there is
-			if (spline.curves.size()==1 && spline.curves.front().type == CURVE_POINT) spline.curves.clear();
 		}
 		
 		// First point
@@ -327,7 +337,7 @@ bool VisualToolVectorClip::InitializeHold() {
 		}
 
 		// Insert
-		spline.AppendCurve(curve);
+		spline.push_back(curve);
 		UpdateHold();
 		return true;
 	}
@@ -336,26 +346,23 @@ bool VisualToolVectorClip::InitializeHold() {
 	if (mode == 3 || mode == 4) {
 		// Get closest point
 		Vector2D pt;
-		int curve;
+		Spline::iterator curve;
 		float t;
 		spline.GetClosestParametricPoint(Vector2D(video.x,video.y),curve,t,pt);
 
 		// Convert
 		if (mode == 3) {
-			SplineCurve *c1 = spline.GetCurve(curve);
-			if (!c1) {
-			}
-			else {
-				if (c1->type == CURVE_LINE) {
-					c1->type = CURVE_BICUBIC;
-					c1->p4 = c1->p2;
-					c1->p2 = c1->p1 * 0.75 + c1->p4 * 0.25;
-					c1->p3 = c1->p1 * 0.25 + c1->p4 * 0.75;
+			if (curve != spline.end()) {
+				if (curve->type == CURVE_LINE) {
+					curve->type = CURVE_BICUBIC;
+					curve->p4 = curve->p2;
+					curve->p2 = curve->p1 * 0.75 + curve->p4 * 0.25;
+					curve->p3 = curve->p1 * 0.25 + curve->p4 * 0.75;
 				}
 
-				else if (c1->type == CURVE_BICUBIC) {
-					c1->type = CURVE_LINE;
-					c1->p2 = c1->p4;
+				else if (curve->type == CURVE_BICUBIC) {
+					curve->type = CURVE_LINE;
+					curve->p2 = curve->p4;
 				}
 			}
 		}
@@ -363,59 +370,61 @@ bool VisualToolVectorClip::InitializeHold() {
 		// Insert
 		else {
 			// Check if there is at least one curve to split
-			if (spline.curves.size() == 0) return false;
+			if (spline.empty()) return false;
 
 			// Split the curve
-			SplineCurve *c1 = spline.GetCurve(curve);
-			SplineCurve c2;
-			if (!c1) {
+			if (curve == spline.end()) {
 				SplineCurve ct;
 				ct.type = CURVE_LINE;
-				ct.p1 = spline.curves.back().GetEndPoint();
-				ct.p2 = spline.curves.front().p1;
+				ct.p1 = spline.back().EndPoint();
+				ct.p2 = spline.front().p1;
 				ct.p2 = ct.p1*(1-t) + ct.p2*t;
-				spline.AppendCurve(ct);
+				spline.push_back(ct);
 			}
 			else {
-				c1->Split(*c1,c2,t);
-				spline.InsertCurve(c2,curve+1);
+				SplineCurve c2;
+				curve->Split(*curve,c2,t);
+				spline.insert(++curve, c2);
 			}
 		}
 
 		// Commit
 		SetOverride(GetActiveDialogueLine(), inverse ? L"\\iclip" : L"\\clip", L"(" + spline.EncodeToASS() + L")");
 		Commit(true);
+		DoRefresh();
 		return false;
 	}
 
 	// Freehand
 	if (mode == 6 || mode == 7) {
-		ClearSelection();
+		ClearSelection(false);
 		features.clear();
-		spline.curves.clear();
-		lastX = INT_MIN;
-		lastY = INT_MIN;
+		spline.clear();
+		SplineCurve curve;
+		curve.type = CURVE_POINT;
+		curve.p1.x = video.x;
+		curve.p1.y = video.y;
+		spline.push_back(curve);
 		return true;
 	}
 	return false;
 }
 
 /// @brief Update hold 
-/// @return 
 void VisualToolVectorClip::UpdateHold() {
 	// Insert line
 	if (mode == 1) {
-		spline.curves.back().p2 = Vector2D(video.x,video.y);
+		spline.back().p2 = Vector2D(video.x,video.y);
 	}
 
 	// Insert bicubic
 	if (mode == 2) {
-		SplineCurve &curve = spline.curves.back();
+		SplineCurve &curve = spline.back();
 		curve.p4 = Vector2D(video.x,video.y);
 
 		// Control points
-		if (spline.curves.size() > 1) {
-			std::list<SplineCurve>::reverse_iterator iter = spline.curves.rbegin();
+		if (spline.size() > 1) {
+			std::list<SplineCurve>::reverse_iterator iter = spline.rbegin();
 			iter++;
 			SplineCurve &c0 = *iter;
 			Vector2D prevVector;
@@ -430,22 +439,18 @@ void VisualToolVectorClip::UpdateHold() {
 
 	// Freehand
 	if (mode == 6 || mode == 7) {
-		if (lastX != INT_MIN && lastY != INT_MIN) {
-			// See if distance is enough
-			Vector2D delta(lastX-video.x,lastY-video.y);
-			int len = (int)delta.Len();
-			if (mode == 6 && len < 30) return;
-			if (mode == 7 && len < 60) return;
-		
-			// Generate curve and add it
-			SplineCurve curve;
-			curve.type = CURVE_LINE;
-			curve.p1 = Vector2D(lastX,lastY);
-			curve.p2 = Vector2D(video.x,video.y);
-			spline.AppendCurve(curve);
-		}
-		lastX = video.x;
-		lastY = video.y;
+		// See if distance is enough
+		Vector2D const& last = spline.back().EndPoint();
+		int len = (int)Vector2D(last.x-video.x, last.y-video.y).Len();
+		if (mode == 6 && len < 30) return;
+		if (mode == 7 && len < 60) return;
+
+		// Generate curve and add it
+		SplineCurve curve;
+		curve.type = CURVE_LINE;
+		curve.p1 = Vector2D(last.x,last.y);
+		curve.p2 = Vector2D(video.x,video.y);
+		spline.push_back(curve);
 	}
 }
 
@@ -456,11 +461,13 @@ void VisualToolVectorClip::CommitHold() {
 
 	// Save it
 	if (mode != 3 && mode != 4) {
-		SetOverride(GetActiveDialogueLine(), inverse ? L"\\iclip" : L"\\clip", L"(" + spline.EncodeToASS() + L")");
+		SetOverride(curDiag, inverse ? L"\\iclip" : L"\\clip", L"(" + spline.EncodeToASS() + L")");
 	}
 
 	// End freedraw
 	if (!holding && (mode == 6 || mode == 7)) SetMode(0);
+
+	PopulateFeatureList();
 }
 
 /// @brief Refresh 
@@ -478,4 +485,3 @@ void VisualToolVectorClip::DoRefresh() {
 		PopulateFeatureList();
 	}
 }
-

@@ -28,7 +28,7 @@ AM_CXXFLAGS += -DAEGISUB -Iinclude -I../libffms/include -I../libaegisub/include 
 bin_PROGRAMS = aegisub-2.2
 aegisub_2_2_LDADD = libresrc/libresrc.a $(libosxutil_lib) -L../libaegisub -laegisub-2.2
 aegisub_2_2_CPPFLAGS = @FREETYPE_CFLAGS@
-aegisub_2_2_LDFLAGS = @DEBUG_FLAGS@ @PROFILE_FLAGS@ @GL_LIBS@ @PTHREAD_LIBS@ @WX_LIBS@ @ICONV_LDFLAGS@ $(libosxutil_ldflags) @CCMALLOC_LDFLAGS@ @EFENCE_LDFLAGS@
+aegisub_2_2_LDFLAGS = @DEBUG_FLAGS@ @PROFILE_FLAGS@ @GL_LIBS@ @PTHREAD_LIBS@ @WX_LIBS@ $(libosxutil_ldflags) @CCMALLOC_LDFLAGS@ @EFENCE_LDFLAGS@
 LIBS += @FREETYPE_LIBS@ @FONTCONFIG_LIBS@ @CCMALLOC_LIBS@
 
 if PRECOMPILED_HEADER
@@ -141,15 +141,6 @@ aegisub_2_2_LDFLAGS += @HUNSPELL_LIBS@
 aegisub_2_2_LDADD += libmisc_hunspell.a
 endif
 
-if HAVE_UNIVCHARDET
-noinst_LIBRARIES += libmisc_universalchardet.a
-libmisc_universalchardet_a_SOURCES = charset_detect.cpp text_file_reader.cpp
-libmisc_universalchardet_a_CPPFLAGS = -D_X86_
-aegisub_2_2_LDADD += libmisc_universalchardet.a ../universalchardet/libuniversalchardet.a
-else
-UNIVCHARSET = charset_detect.cpp text_file_reader.cpp
-endif
-
 if FONTLISTER_FREETYPE
   FONT_LISTER = font_file_lister_freetype.cpp
 endif
@@ -158,6 +149,10 @@ if FONTLISTER_FONTCONFIG
   FONT_LISTER = font_file_lister_fontconfig.cpp
 endif
 
+noinst_LIBRARIES += libmisc_universalchardet.a
+libmisc_universalchardet_a_SOURCES = charset_detect.cpp text_file_reader.cpp
+libmisc_universalchardet_a_CPPFLAGS = -D_X86_
+aegisub_2_2_LDADD += libmisc_universalchardet.a ../universalchardet/libuniversalchardet.a
 
 ## These aren't built, but are listed here so 'make dist' can always find all the sources
 ## This should also list all Win32 specific files
@@ -187,7 +182,6 @@ aegisub_2_2_SOURCES = \
 	$(FFMPEG) \
 	$(HUNSPELL) \
 	$(LIBASS) \
-	$(UNIVCHARSET) \
 	font_file_lister.cpp \
 	$(FONT_LISTER) \
 	MatroskaParser.c \
@@ -233,6 +227,7 @@ aegisub_2_2_SOURCES = \
 	dialog_fonts_collector.cpp \
 	dialog_jumpto.cpp \
 	dialog_kara_timing_copy.cpp \
+	dialog_log.cpp \
 	dialog_paste_over.cpp \
 	dialog_progress.cpp \
 	dialog_properties.cpp \

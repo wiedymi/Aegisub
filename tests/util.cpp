@@ -16,10 +16,10 @@
 
 /// @file util.cpp
 /// @brief Common utilities used in tests.
-/// @ingroup util
+/// @ingroup util common
 
-#include <unistd.h>
 #include <fstream>
+#include "util.h"
 
 namespace util {
 
@@ -28,10 +28,6 @@ void copy(const std::string from, const std::string to) {
 	std::ofstream ofs(to.c_str(), std::ios::binary);
 
 	ofs << ifs.rdbuf();
-}
-
-void remove(const std::string& file) {
-	unlink(file.c_str());
 }
 
 } // namespace util

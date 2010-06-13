@@ -39,6 +39,8 @@
 // Headers
 #include "config.h"
 
+#include <libaegisub/log.h>
+
 #include "compat.h"
 #include "main.h"
 #include "options.h"
@@ -69,16 +71,16 @@ VideoProvider *VideoProviderFactoryManager::GetProvider(wxString video) {
 	}
 
 	try {
-		VideoProvider *y4m_provider = new YUV4MPEGVideoProvider(video.wc_str());
+		VideoProvider *y4m_provider = new YUV4MPEGVideoProvider(video);
 		if (y4m_provider)
 			y4m_provider = new VideoProviderCache(y4m_provider);
 		return y4m_provider;
 	}
 	catch (wxString temp) {
-		wxLogDebug(_T("YUV4MPEG provider creation failed with reason: %s; trying other providers"), temp.c_str());
+		LOG_E("manager/video/provider/yuv4mpeg") << "Provider creation failed with reason: "<< temp.c_str() << " trying other providers";
 	}
 	catch (...) {
-		wxLogDebug(_T("YUV4MPEG provider creation failed for unknown reasons, trying other providers"));
+		LOG_E("manager/video/provider/yuv4mpeg") << "Provider creation failed (uknown reason) trying other providers";
 	}
 
 	// List of providers
@@ -92,7 +94,7 @@ VideoProvider *VideoProviderFactoryManager::GetProvider(wxString video) {
 	for (unsigned int i=0;i<list.Count();i++) {
 		try {
 			// Create provider
-			VideoProvider *provider = GetFactory(list[i])->CreateProvider(video.wc_str());
+			VideoProvider *provider = GetFactory(list[i])->CreateProvider(video);
 			if (provider) {
 				// Cache if necessary
 				if (provider->WantsCaching()) {

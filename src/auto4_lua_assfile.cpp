@@ -46,6 +46,8 @@
 #include <wx/log.h>
 #endif
 
+#include <libaegisub/log.h>
+
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "ass_override.h"
@@ -822,7 +824,7 @@ namespace Automation4 {
 	{
 		LuaAssFile *laf = GetObjPointer(L, 1);
 		delete laf;
-		wxLogDebug(_T(">>gc<< Garbage collected LuaAssFile"));
+		LOG_D("automation/lua") << "Garbage collected LuaAssFile";
 		return 0;
 	}
 
@@ -897,7 +899,7 @@ namespace Automation4 {
 
 				case BLOCK_OVERRIDE: {
 					bool brackets_open = false;
-					AssDialogueBlockOverride *ovr = block->GetAsOverride(block);
+					AssDialogueBlockOverride *ovr = dynamic_cast<AssDialogueBlockOverride*>(block);
 
 					for (int j = 0; j < (int)ovr->Tags.size(); j++) {
 						AssOverrideTag *tag = ovr->Tags[j];

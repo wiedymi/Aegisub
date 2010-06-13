@@ -50,6 +50,7 @@
 #include "ass_file.h"
 #include "ass_override.h"
 #include "ass_style.h"
+#include "charset_detect.h"
 #include "compat.h"
 #include "main.h"
 #include "options.h"
@@ -74,7 +75,7 @@ AssFile::~AssFile() {
 /// @param file
 /// @param charset     
 /// @param addToRecent 
-void AssFile::Load (const wxString _filename,const wxString charset,bool addToRecent) {
+void AssFile::Load (const wxString &_filename,wxString charset,bool addToRecent) {
 	bool ok = true;
 
 	try {
@@ -91,9 +92,9 @@ void AssFile::Load (const wxString _filename,const wxString charset,bool addToRe
 		fclose(file);
 
 		// Find file encoding
-		wxString enc;
-		if (charset.IsEmpty()) enc = TextFileReader::GetEncoding(_filename);
-		else enc = charset;
+		if (charset.empty()) {
+			charset = CharSetDetect::GetEncoding(_filename);
+		}
 
 		// Generic preparation
 		Clear();
@@ -104,7 +105,7 @@ void AssFile::Load (const wxString _filename,const wxString charset,bool addToRe
 		// Read file
 		if (reader) {
 			reader->SetTarget(this);
-			reader->ReadFile(_filename,enc);
+			reader->ReadFile(_filename,charset);
 		}
 
 		// Couldn't find a type
@@ -311,7 +312,7 @@ void AssFile::AddLine (wxString data,wxString group,int &version,wxString *outGr
 		}
 
 		// Is the filename line?
-		bool isFilename = (data.Left(10) == _T("fontname: ") || data.Left(10) == _T("filename: "));
+		bool isFilename = (data.StartsWith(_T("fontname: ")) || data.StartsWith(_T("filename: ")));
 
 		// The attachment file is static, since it is built through several calls to this
 		// After it's done building, it's reset to NULL
@@ -359,13 +360,13 @@ void AssFile::AddLine (wxString data,wxString group,int &version,wxString *outGr
 
 	// Dialogue
 	if (lowGroup == _T("[events]")) {
-		if ((data.Left(9) == _T("Dialogue:") || data.Left(8) == _T("Comment:"))) {
+		if (data.StartsWith(_T("Dialogue:")) || data.StartsWith(_T("Comment:"))) {
 			AssDialogue *diag = new AssDialogue(data,version);
 			//diag->ParseASSTags();
 			entry = diag;
 			entry->group = group;
 		}
-		if (data.Left(7) == _T("Format:")) {
+		else if (data.StartsWith(_T("Format:"))) {
 			entry = new AssEntry(_T("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"));
 			entry->group = group;
 		}
@@ -373,12 +374,12 @@ void AssFile::AddLine (wxString data,wxString group,int &version,wxString *outGr
 
 	// Style
 	else if (lowGroup == _T("[v4+ styles]")) {
-		if (data.Left(6) == _T("Style:")) {
+		if (data.StartsWith(_T("Style:"))) {
 			AssStyle *style = new AssStyle(data,version);
 			entry = style;
 			entry->group = group;
 		}
-		if (data.Left(7) == _T("Format:")) {
+		if (data.StartsWith(_T("Format:"))) {
 			entry = new AssEntry(_T("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"));
 			entry->group = group;
 		}
@@ -387,14 +388,14 @@ void AssFile::AddLine (wxString data,wxString group,int &version,wxString *outGr
 	// Script info
 	else if (lowGroup == _T("[script info]")) {
 		// Comment
-		if (data.Left(1) == _T(";")) {
+		if (data.StartsWith(_T(";"))) {
 			// Skip stupid comments added by other programs
 			// Of course, we'll add our own in place later... ;)
 			return;
 		}
 
 		// Version
-		if (data.Left(11) == _T("ScriptType:")) {
+		if (data.StartsWith(_T("ScriptType:"))) {
 			wxString versionString = data.Mid(11);
 			versionString.Trim(true);
 			versionString.Trim(false);
@@ -428,8 +429,8 @@ void AssFile::AddLine (wxString data,wxString group,int &version,wxString *outGr
 
 /// @brief Clears contents of assfile 
 void AssFile::Clear () {
-	for (std::list<AssEntry*>::iterator cur=Line.begin();cur != Line.end();cur++) {
-		if (*cur) delete *cur;
+	for (entryIter cur=Line.begin();cur != Line.end();cur++) {
+		delete *cur;
 	}
 	Line.clear();
 
@@ -614,7 +615,7 @@ wxString AssFile::GetScriptInfo(const wxString _key) {
 			curText.Lower();
 
 			// Found
-			if (curText.Left(key.length()) == key) {
+			if (curText.StartsWith(key)) {
 				wxString result = curText.Mid(key.length());
 				result.Trim(false);
 				result.Trim(true);
@@ -663,7 +664,7 @@ void AssFile::SetScriptInfo(const wxString _key,const wxString value) {
 			curText.Lower();
 
 			// Found
-			if (curText.Left(key.length()) == key) {
+			if (curText.StartsWith(key)) {
 				// Set value
 				if (value != _T("")) {
 					wxString result = _key;
@@ -755,7 +756,7 @@ void AssFile::AddComment(const wxString _comment) {
 		if (step == 0 && (*cur)->group == _T("[Script Info]")) step = 1;
 
 		// First line after a ;
-		else if (step == 1 && (*cur)->GetEntryData().Left(1) != _T(";")) {
+		else if (step == 1 && !(*cur)->GetEntryData().StartsWith(_T(";"))) {
 			AssEntry *prev = *cur;
 			AssEntry *comm = new AssEntry(comment);
 			comm->group = prev->group;

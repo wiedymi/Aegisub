@@ -93,11 +93,6 @@
 #define WITH_CSRI
 
 
-// Enable universal charset detector, so Aegisub can automatically detect the encoding of non-unicode subtitles
-// Requires: universalcharset (in repository)
-#define WITH_UNIVCHARDET
-
-
 // Enable Hunspell-based spellchecker
 // Requires: hunspell (in repository for Win32)
 // If you have an old version of Hunspell (that uses Hunspell::put_word() instead of Hunspell::add()),
@@ -110,6 +105,18 @@
 // Displays different versions numbers in About box and title bar, and omits detailed version information from
 // the title bar. Only core developers should enable then, and only when making builds for mass consumption.
 //#define FINAL_RELEASE
+
+
+// Specify tags the update checker accepts
+// See <http://devel.aegisub.org/wiki/Technical/UpdateChecker> for details on tags.
+// Depending on who will be using your build, you may or may not want to have the
+// "source" tag in here. If the string is empty, the update checker will reject any
+// update offered.
+#if defined(_M_IX86)
+# define UPDATE_CHECKER_ACCEPT_TAGS "windows source"
+#elif defined(_M_X64)
+# define UPDATE_CHECKER_ACCEPT_TAGS "win64 source"
+#endif
 
 
 
