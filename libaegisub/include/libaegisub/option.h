@@ -23,6 +23,8 @@
 #include <fstream>
 #endif
 
+#pragma once
+
 #include <libaegisub/exception.h>
 #include <libaegisub/option_value.h>
 

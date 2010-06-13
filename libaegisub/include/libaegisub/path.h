@@ -21,9 +21,15 @@
 #ifndef AGI_PRE
 #endif
 
+#include <libaegisub/exception.h>
 #include <libaegisub/option.h>
 
 namespace agi {
+
+DEFINE_BASE_EXCEPTION_NOINNER(PathError, Exception)
+DEFINE_SIMPLE_EXCEPTION_NOINNER(PathErrorNotFound, PathError, "path/not_found")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(PathErrorInvalid, PathError, "path/invalid")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(PathErrorInternal, PathError, "path")
 
 /// @class Path
 // Internal representation of all paths in aegisub.
@@ -36,6 +42,27 @@ public:
 	/// Destructor
 	~Path();
 
+	/// @brief Get a path, this is automatically decoded.
+	/// @param name Path to get
+	/// @return Full path name in UTF-8
+	std::string Get(const char *name);
+
+	/// @brief Set a path, this will be automaticalled encoded if a cookie matches.
+	/// @param[in] name Path name to save to.
+	void Set(const char *name, const std::string &path);
+
+	/// @brief Check if a path is sane.
+	/// @param path Path to check.
+	void Check(const std::string &path);
+
+	/// @brief Get the default 'open' directory when no alternative is available.
+	/// @return Directory
+	/// This returns several different values based on OS:
+	///   Windows: Documents folder
+	///   OS X: ~/Documents
+	///   Unix: ~ or Documents folder if set in the environment
+	std::string Default();
+
 private:
 	/// Location of path config file.
 	const std::string path_file;
@@ -43,10 +70,25 @@ private:
 	/// Internal default config.
 	const std::string path_default;
 
+	/// @brief Decode a path
+	/// @param path Decode a path in-place.
+	void Decode(std::string &path);
+
+	/// @brief Encode a path.
+	/// @param path Encode a path in-place.
+	///   ^CONFIG   - Configuration directory (not changable)
+	///   ^USER     - Users home directory
+	///   ^DATA     - Aegisub data files
+	///   ^VIDEO    - Last opened video directory
+	///   ^SUBTITLE - Last opened subtitle directory
+	///   ^AUDIO    - Last opened audio directory
+	void Encode(std::string &path);
+
 	/// Options object.
 	Options *opt;
 
 	const char *Data();		///< Shared resources
+	const char *Config();	///< Configuration directory
 	const char *Doc();		///< Documents
 	const char *User();		///< User config directory
 	const char *Locale();	///< Locale files

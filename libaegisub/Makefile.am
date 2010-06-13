@@ -28,12 +28,14 @@ libaegisub_2_2_la_SOURCES = \
 	common/option.cpp \
 	common/option_value.cpp \
 	common/option_visit.cpp \
+	common/path.cpp \
 	common/log.cpp \
 	common/validator.cpp \
 	unix/util.cpp \
 	unix/io.cpp \
 	unix/access.cpp \
-	unix/log.cpp
+	unix/log.cpp \
+	unix/path.cpp
 
 noinst_HEADERS = *.h
 

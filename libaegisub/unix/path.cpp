@@ -24,6 +24,12 @@
 
 namespace agi {
 
+void Path::Check(const std::string &path) {
+
+//	throw PathErrorInvalid("Invalid path");
+
+}
+
 const char *Path::Data() {
 	std::string tmp;
 	tmp.assign(INSTALL_PREFIX);
@@ -54,10 +60,22 @@ const char *Path::Locale() {
 	return tmp.c_str();
 }
 
+std::string Path::Default() {
+	std::string tmp("~/");
+	return tmp;
+}
+
+const char *Path::Config() {
+	std::string tmp;
+	tmp.assign("~/.aegisub-");
+	tmp.append(AEGISUB_VERSION_DATA);
+	return tmp.c_str();
+}
 
 const char *Path::Temp() {
 	const char *tmp = "/tmp";
 	return tmp;
 }
+
 
 } // namespace agi
