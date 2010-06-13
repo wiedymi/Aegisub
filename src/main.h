@@ -46,6 +46,7 @@
 #include "aegisublocale.h"
 #include <libaegisub/mru.h>
 #include <libaegisub/option.h>
+#include <libaegisub/path.h>
 
 //////////////
 // Prototypes
@@ -60,6 +61,10 @@ namespace Automation4 { class AutoloadScriptManager; }
 
 /// Macro to set OptionValue object.
 #define OPT_SET(x) AegisubApp::Get()->opt->Get(x)
+
+#define PATH_GET(x) AegisubApp::Get()->path->Get(x)
+
+#define PATH_SET(x, y) AegisubApp::Get()->path->Set(x, y)
 
 /// DOCME
 /// @class AegisubApp
@@ -82,6 +87,7 @@ public:
 
 	agi::MRUManager *mru;
 	agi::Options *opt;
+	agi::Path *path;
 
 	/// DOCME
 	FrameMain *frame;

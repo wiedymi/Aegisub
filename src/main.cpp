@@ -154,6 +154,8 @@ emit_stdout->Enable();
 		SetAppName(_T("aegisub"));
 #endif
 
+		path = new agi::Path("/usr/home/verm/.aegisub-2.2/path.json", GET_DEFAULT_CONFIG(default_path));
+
 		const std::string conf_mru(StandardPaths::DecodePath(_T("?user/mru.json")));
 		mru = new agi::MRUManager(conf_mru, GET_DEFAULT_CONFIG(default_mru));
 
@@ -288,6 +290,7 @@ int AegisubApp::OnExit() {
 	delete plugins;
 	delete opt;
 	delete mru;
+	delete path;
 #ifdef WITH_AUTOMATION
 	delete global_scripts;
 #endif
