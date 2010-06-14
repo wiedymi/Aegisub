@@ -32,18 +32,12 @@ void Path::Check(const std::string &path) {
 }
 
 const std::string Path::Data() {
-	std::string tmp;
-	tmp.assign(INSTALL_PREFIX);
-	tmp.append("-");
-	tmp.append(AEGISUB_VERSION_DATA);
+	std::string tmp(AGI_DIR_DATA);
 	return tmp;
 }
 
 const std::string Path::Doc() {
-	std::string tmp;
-	tmp.assign(INSTALL_PREFIX);
-	tmp.append("-");
-	tmp.append(AEGISUB_VERSION_DATA);
+	std::string tmp(AGI_DIR_DOC);
 	return tmp;
 }
 

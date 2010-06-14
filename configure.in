@@ -143,10 +143,14 @@ AC_DEFINE_UNQUOTED(AEGISUB_VERSION_DATA, ["$AEGISUB_VERSION_DATA"], [Data path s
 AC_SUBST(AEGISUB_VERSION_DATA)
 
 # Shared data and Documents location.
-aegisubdatadir="$datadir/$PACKAGE/aegisub_version_data"
-AC_SUBST(aegisubdatadir)
-aegisubdocdir="$datadir/doc/$PACKAGE/aegisub_version_data"
-AC_SUBST(aegisubdocdir)
+agi_dir_data="$prefix/share/$PACKAGE/aegisub_version_data"
+AC_SUBST(agi_dir_data)
+AC_DEFINE_UNQUOTED([AGI_DIR_DATA], ["$agi_dir_data"], ["Data directory"])
+
+agi_dir_doc="$prefix/share/doc/$PACKAGE/aegisub_version_data"
+AC_SUBST(agi_dir_doc)
+AC_DEFINE_UNQUOTED([AGI_DIR_DOC], ["$agi_dir_doc"], ["Document directory"])
+
 
 # Name of aegisub binary.
 AEGISUB_COMMAND="aegisub-$AEGISUB_VERSION_MAJOR.$AEGISUB_VERSION_MINOR"
