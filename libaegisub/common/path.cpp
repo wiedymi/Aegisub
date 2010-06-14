@@ -47,6 +47,13 @@ void Path::Set(const char *name, const std::string &path) {
 	Check(path);
 	std::string set(path);
 	Encode(set);
+
+	if (path[0] == 94) {
+		// Make sure any cookies that are being used exist.
+		std::string tmp(path);
+		Decode(tmp);
+	}
+
 	try {
 		opt->Get(name)->SetString(set);
 	} catch (OptionErrorNotFound& e) {
