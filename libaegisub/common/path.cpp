@@ -80,6 +80,14 @@ void Path::Decode(std::string &path) {
 			return;
 		}
 
+		if (path.find("^DOC") == 0) {
+			std::string path_str(opt->Get("Doc")->GetString());
+			if (path == "^DOC")
+				path_str = Doc();
+			path.replace(0, 4, path_str);
+			return;
+		}
+
 		if (path.find("^TEMP") == 0) {
 			std::string path_str(opt->Get("Temp")->GetString());
 			if (path_str == "^TEMP")

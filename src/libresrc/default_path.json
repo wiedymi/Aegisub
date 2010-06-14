@@ -3,6 +3,7 @@
 	"Catalog" : "^CONFIG/catalog",
 	"Autosave" : "^CONFIG/autosave",
 	"Data" : "^DATA",
+	"Doc" : "^DOC",
 	"User" : "^USER",
 	"Temp" : "^TEMP",
 	"Dictionary" : {
