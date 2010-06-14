@@ -95,3 +95,9 @@ TEST_F(lagi_path, CheckCookieTemp) {
 	PathTest path("data/path_cookie.json", default_path);
 	ASSERT_EQ(path.Get("Temp"), path.temp);
 }
+
+TEST_F(lagi_path, SetCookieLastVideo) {
+	PathTest path("data/path_last.json", default_path);
+	path.Set("Last/Video", "/video/path/");
+	ASSERT_EQ(path.Get("Last/Video"), "/video/path/");
+}

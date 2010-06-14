@@ -42,4 +42,4 @@ echo '{"Bool" : [{"bool" : true}, {"bool" : true}]}' > data/option_array_bool
 echo '{"Config" : "/a/real/path"}' > data/path_ok.json
 echo '{"Config : "/a/real/\\\\\path"}' > data/path_invalid.json
 echo '{"Config" : "^CONFIG", "Data" : "^DATA", "Doc" : "^DOC", "User" : "^USER", "Temp" : "^TEMP"}' > data/path_cookie.json
-
+echo '{"Last" : { "Video" : "^VIDEO", "Subtitle" : "^VIDEO", "Audio" : "^VIDEO"} }' > data/path_last.json
