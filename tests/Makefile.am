@@ -14,7 +14,8 @@ run_SOURCES = \
 		libaegisub_cajun.cpp \
 		libaegisub_iconv.cpp \
 		libaegisub_util.cpp \
-		libaegisub_mru.cpp
+		libaegisub_mru.cpp \
+		libaegisub_path.cpp
 		
 run_SOURCES += \
 	*.h

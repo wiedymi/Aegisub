@@ -35,6 +35,8 @@ DEFINE_SIMPLE_EXCEPTION_NOINNER(PathErrorInternal, PathError, "path")
 // Internal representation of all paths in aegisub.
 class Path {
 public:
+	// For unit testing.
+	friend class PathTest;
 
 	/// Constructor
 	Path(const std::string &file, const std::string& default_path);
@@ -87,6 +89,7 @@ private:
 	/// Options object.
 	Options *opt;
 
+protected:
 	const std::string Data();		///< Shared resources
 	const std::string Config();	///< Configuration directory
 	const std::string Doc();		///< Documents

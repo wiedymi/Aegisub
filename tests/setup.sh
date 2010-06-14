@@ -1,4 +1,4 @@
-chmod 664 data/*
+if test -d data; then chmod 664 data/*; fi
 rm -rf data
 mkdir -p data
 
@@ -38,3 +38,8 @@ echo '{"String" : [{"string" : "This is a test"}, {"string" : "This is a test"}]
 echo '{"Integer" : [{"int" : 1}, {"int" : 1}]}' > data/option_array_integer
 echo '{"Double" : [{"double" : 2.1}, {"double" : 2.1}]}' > data/option_array_double
 echo '{"Bool" : [{"bool" : true}, {"bool" : true}]}' > data/option_array_bool
+
+echo '{"Config" : "/a/real/path"}' > data/path_ok.json
+echo '{"Config : "/a/real/\\\\\path"}' > data/path_invalid.json
+echo '{"Config" : "^CONFIG", "Data" : "^DATA", "User" : "^USER", "Temp" : "^TEMP"}' > data/path_cookie.json
+
