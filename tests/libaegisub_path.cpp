@@ -38,12 +38,14 @@ public:
 	PathTest(const std::string &file, const std::string& default_path) :
 	Path(file, default_path),
 	data(Data()),
+	doc(Doc()),
 	config(Config()),
 	user(User()),
 	temp(Temp())
 	{}
 
 	const std::string data;
+	const std::string doc;
 	const std::string config;
 	const std::string user;
 	const std::string temp;
@@ -56,6 +58,11 @@ TEST_F(lagi_path, ConstructFromFile) {
 TEST_F(lagi_path, CheckCookieData) {
 	PathTest path("data/path_cookie.json", default_path);
 	ASSERT_EQ(path.Get("Data"), path.data);
+}
+
+TEST_F(lagi_path, CheckCookieDoc) {
+	PathTest path("data/path_cookie.json", default_path);
+	ASSERT_EQ(path.Get("Doc"), path.doc);
 }
 
 TEST_F(lagi_path, CheckCookieConfig) {

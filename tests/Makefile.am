@@ -10,12 +10,13 @@ run_SOURCES = \
 		main.cpp \
 		util.cpp \
 		util_unix.cpp \
-		libaegisub_access.cpp \
-		libaegisub_cajun.cpp \
-		libaegisub_iconv.cpp \
-		libaegisub_util.cpp \
-		libaegisub_mru.cpp \
 		libaegisub_path.cpp
+#		libaegisub_access.cpp \
+#		libaegisub_cajun.cpp \
+#		libaegisub_iconv.cpp \
+#		libaegisub_util.cpp \
+#		libaegisub_mru.cpp \
+#		libaegisub_path.cpp
 		
 run_SOURCES += \
 	*.h
