@@ -2,9 +2,9 @@
 	"Backup" : "^CONFIG/backup",
 	"Catalog" : "^CONFIG/catalog",
 	"Autosave" : "^CONFIG/autosave",
-	"Data" : "",
-	"User" : "",
-	"Temp" : "",
+	"Data" : "^DATA",
+	"User" : "^USER",
+	"Temp" : "^TEMP",
 	"Dictionary" : {
 		"Local" : {
 			"Lang" : "^CONFIG/dictionary/lang",
@@ -25,7 +25,7 @@
 		}
 	},
 	"Last" : {
-		"Video" : "",
+		"Video" : "^VIDEO",
 		"Subtitle" : "^VIDEO",
 		"Audio" : "^VIDEO"
 	},
