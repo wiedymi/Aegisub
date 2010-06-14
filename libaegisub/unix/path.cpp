@@ -42,9 +42,7 @@ const std::string Path::Doc() {
 }
 
 const std::string Path::User() {
-	std::string tmp;
-	tmp.assign("~/.aegisub-");
-	tmp.append(AEGISUB_VERSION_DATA);
+	std::string tmp("~/");
 	return tmp;
 }
 
