@@ -59,57 +59,62 @@ void Path::Decode(std::string &path) {
 	if (path[0] != 94) // "^"
 		return;
 	try {
-		if (path.find_first_of("^CONFIG", 0)) {
+		if (path.find("^CONFIG") == 0) {
 			path.replace(0, 7, Config());
 			return;
 		}
 
-		if (path.find_first_of("^USER", 0)) {
+		if (path.find("^USER") == 0) {
 			std::string path_str(opt->Get("User")->GetString());
-			if (path_str.empty())
+			if (path_str == "^USER")
 				path_str = User();
 			path.replace(0, 5, path_str);
+			return;
 		}
 
-			return;
-		if (path.find_first_of("^DATA", 0)) {
+		if (path.find("^DATA") == 0) {
 			std::string path_str(opt->Get("Data")->GetString());
-			if (path_str.empty())
+			if (path == "^DATA")
 				path_str = Data();
 			path.replace(0, 5, path_str);
 			return;
 		}
 
-		if (path.find_first_of("^AUDIO", 0)) {
+		if (path.find("^TEMP") == 0) {
+			std::string path_str(opt->Get("Temp")->GetString());
+			if (path_str == "^TEMP")
+				path_str = Temp();
+			path.replace(0, 5, path_str);
+			return;
+		}
+
+		if (path.find("^AUDIO") == 0) {
 			std::string path_str(opt->Get("Last/Audio")->GetString());
-			if (path_str.empty()) {
+			if (path_str == "^AUDIO") {
 				path_str = Default();
 			} else {
-				path_str.substr(6, path_str.size()); // Strip the current cookie.
 				Decode(path_str);
 			}
 			path.replace(0, 6, path_str);
 			return;
 		}
 
-		if (path.find_first_of("^VIDEO", 0)) {
+		if (path.find("^VIDEO") == 0) {
 			std::string path_str(opt->Get("Last/Video")->GetString());
-			if (path_str.empty()) {
+			if (path_str == "^VIDEO") {
 				path_str = Default();
 			} else {
-				path_str.substr(6, path_str.size()); // Strip the current cookie.
 				Decode(path_str);
 			}
 			path.replace(0, 6, path_str);
 			return;
 		}
 
-		if (path.find_first_of("^SUBTITLE", 0)) {
+		if (path.find("^SUBTITLE") == 0) {
 			std::string path_str(opt->Get("Last/Subtitle")->GetString());
 			if (path_str.empty()) {
 				path_str = Default();
 			} else {
-				path_str.substr(9, path_str.size()); // Strip the current cookie.
 				Decode(path_str);
 			}
 			path.replace(0, 5, path_str);
