@@ -52,7 +52,23 @@ public:
 };
 
 TEST_F(lagi_path, ConstructFromFile) {
-	EXPECT_NO_THROW(agi::Path path(conf_ok, default_path));
+	EXPECT_NO_THROW(PathTest path(conf_ok, default_path));
+}
+
+TEST_F(lagi_path, Set) {
+	PathTest path(conf_ok, default_path);
+	path.Set("Config", "/a/changed/path/");
+	ASSERT_EQ(path.Get("Config"), "/a/changed/path/");
+}
+
+TEST_F(lagi_path, InvalidCookie) {
+	PathTest path(conf_ok, default_path);
+	EXPECT_THROW(path.Set("Config", "^INVALID"), agi::PathErrorInvalid);
+}
+
+TEST_F(lagi_path, InvalidName) {
+	PathTest path(conf_ok, default_path);
+	EXPECT_THROW(path.Get("Invalid"), agi::PathErrorNotFound);
 }
 
 TEST_F(lagi_path, CheckCookieData) {
