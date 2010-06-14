@@ -30,38 +30,38 @@ protected:
 
 namespace agi {
 
-TEST_F(lagi_util, UtilDirnameEmpty) {
+TEST_F(lagi_util, DirnameEmpty) {
 	EXPECT_STREQ(".", util::DirName("").c_str());
 }
 
-TEST_F(lagi_util, UtilDirnameNoTrailingSlash) {
+TEST_F(lagi_util, DirnameNoTrailingSlash) {
 	EXPECT_STREQ(".", util::DirName("dot").c_str());
 }
 
-TEST_F(lagi_util, UtilDirnameRoot) {
+TEST_F(lagi_util, DirnameRoot) {
 	EXPECT_STREQ("/", util::DirName("/").c_str());
 }
 
-TEST_F(lagi_util, UtilDirnameHeir) {
+TEST_F(lagi_util, DirnameHeir) {
 	EXPECT_STREQ("/last/part/not_stripped/", util::DirName("/last/part/not_stripped/").c_str());
 }
 
-TEST_F(lagi_util, UtilDirnameHeirNoTrailingSlash) {
+TEST_F(lagi_util, DirnameHeirNoTrailingSlash) {
 	EXPECT_STREQ("/last/part/", util::DirName("/last/part/stripped").c_str());
 }
 
-TEST_F(lagi_util, UtilRenameOverwrite) {
+TEST_F(lagi_util, RenameOverwrite) {
 	util::Rename("./data/rename_me_overwrite", "./data/rename_me_overwrite_renamed");
 	util::Rename("./data/rename_me_overwrite_renamed", "./data/rename_me_overwrite");
 	std::ofstream fp_touch("./data/rename_me_overwrite_renamed");
 }
 
-TEST_F(lagi_util, UtilRenameNew) {
+TEST_F(lagi_util, RenameNew) {
 	util::Rename("./data/rename_me", "./data/rename_me_renamed");
 	util::Rename("./data/rename_me_renamed", "./data/rename_me");
 }
 
-TEST_F(lagi_util, UtilRenameExNotFound) {
+TEST_F(lagi_util, RenameExNotFound) {
 	EXPECT_THROW(util::Rename("./data/nonexistent", ""), acs::AcsNotFound);
 }
 

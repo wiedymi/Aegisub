@@ -34,11 +34,11 @@ protected:
 };
 
 
-TEST_F(lagi_mru, MRUConstructFromFile) {
+TEST_F(lagi_mru, ConstructFromFile) {
 	EXPECT_NO_THROW(agi::MRUManager mru(conf_ok, default_mru));
 }
 
-TEST_F(lagi_mru, MRUConstructFromString) {
+TEST_F(lagi_mru, ConstructFromString) {
 	util::remove("data/mru_tmp");
 
 	const std::string nonexistent("data/mru_tmp");
@@ -46,7 +46,7 @@ TEST_F(lagi_mru, MRUConstructFromString) {
 }
 
 
-TEST_F(lagi_mru, MRUConstructInvalid) {
+TEST_F(lagi_mru, ConstructInvalid) {
 	util::copy("data/mru_invalid.json", "data/mru_tmp");
 
 	const std::string nonexistent("data/mru_tmp");
@@ -57,26 +57,26 @@ TEST_F(lagi_mru, MRUConstructInvalid) {
 	EXPECT_NO_THROW(mru.Add("Valid_Int", "/path/to/file"));
 }
 
-TEST_F(lagi_mru, MRUEntryAdd) {
+TEST_F(lagi_mru, EntryAdd) {
 	util::copy("data/mru_ok.json", "data/mru_tmp");
 	agi::MRUManager mru("data/mru_tmp", default_mru);
 	EXPECT_NO_THROW(mru.Add("Valid", "/path/to/file"));
 }
 
-TEST_F(lagi_mru, MRUEntryRemove) {
+TEST_F(lagi_mru, EntryRemove) {
 	util::copy("data/mru_ok.json", "data/mru_tmp");
 	agi::MRUManager mru("data/mru_tmp", default_mru);
 	EXPECT_NO_THROW(mru.Add("Valid", "/path/to/file"));
 	EXPECT_NO_THROW(mru.Remove("Valid", "/path/to/file"));
 }
 
-TEST_F(lagi_mru, MRUKeyInvalid) {
+TEST_F(lagi_mru, KeyInvalid) {
 	util::copy("data/mru_ok.json", "data/mru_tmp");
 	agi::MRUManager mru("data/mru_tmp", default_mru);
 	EXPECT_THROW(mru.Add("Invalid", "/path/to/file"), agi::MRUErrorInvalidKey);
 }
 
-TEST_F(lagi_mru, MRUKeyValid) {
+TEST_F(lagi_mru, KeyValid) {
 	util::copy("data/mru_ok.json", "data/mru_tmp");
 	agi::MRUManager mru("data/mru_tmp", default_mru);
 	EXPECT_NO_THROW(mru.Add("Valid", "/path/to/file"));
@@ -85,7 +85,7 @@ TEST_F(lagi_mru, MRUKeyValid) {
 
 // Check to make sure an entry is really removed.  This was fixed in
 // r4347, the entry was being removed from a copy of the map internally.
-TEST_F(lagi_mru, MRUEntryRemove_r4347) {
+TEST_F(lagi_mru, EntryRemove_r4347) {
 
 	agi::MRUManager mru(conf_ok, default_mru);
 	EXPECT_NO_THROW(mru.Add("Valid", "/path/to/file"));
