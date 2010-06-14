@@ -20,6 +20,7 @@
 
 #include "acconf.h"
 
+#include <string>
 #include <libaegisub/path.h>
 
 namespace agi {
@@ -30,49 +31,49 @@ void Path::Check(const std::string &path) {
 
 }
 
-const char *Path::Data() {
+const std::string Path::Data() {
 	std::string tmp;
 	tmp.assign(INSTALL_PREFIX);
 	tmp.append("-");
 	tmp.append(AEGISUB_VERSION_DATA);
-	return tmp.c_str();
+	return tmp;
 }
 
-const char *Path::Doc() {
+const std::string Path::Doc() {
 	std::string tmp;
 	tmp.assign(INSTALL_PREFIX);
 	tmp.append("-");
 	tmp.append(AEGISUB_VERSION_DATA);
-	return tmp.c_str();
+	return tmp;
 }
 
-const char *Path::User() {
+const std::string Path::User() {
 	std::string tmp;
 	tmp.assign("~/.aegisub-");
 	tmp.append(AEGISUB_VERSION_DATA);
-	return tmp.c_str();
+	return tmp;
 }
 
-const char *Path::Locale() {
+const std::string Path::Locale() {
 	std::string tmp;
 	tmp.assign("~/.aegisub-");
 	tmp.append(AEGISUB_VERSION_DATA);
-	return tmp.c_str();
+	return tmp;
 }
 
-std::string Path::Default() {
+const std::string Path::Default() {
 	std::string tmp("~/");
 	return tmp;
 }
 
-const char *Path::Config() {
+const std::string Path::Config() {
 	std::string tmp;
 	tmp.assign("~/.aegisub-");
 	tmp.append(AEGISUB_VERSION_DATA);
-	return tmp.c_str();
+	return tmp;
 }
 
-const char *Path::Temp() {
+const std::string Path::Temp() {
 	const char *tmp = "/tmp";
 	return tmp;
 }

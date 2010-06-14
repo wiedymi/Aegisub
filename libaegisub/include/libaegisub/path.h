@@ -61,7 +61,7 @@ public:
 	///   Windows: Documents folder
 	///   OS X: ~/Documents
 	///   Unix: ~ or Documents folder if set in the environment
-	std::string Default();
+	const std::string Default();
 
 private:
 	/// Location of path config file.
@@ -87,12 +87,12 @@ private:
 	/// Options object.
 	Options *opt;
 
-	const char *Data();		///< Shared resources
-	const char *Config();	///< Configuration directory
-	const char *Doc();		///< Documents
-	const char *User();		///< User config directory
-	const char *Locale();	///< Locale files
-	const char *Temp();		///< Temporary storage
+	const std::string Data();		///< Shared resources
+	const std::string Config();	///< Configuration directory
+	const std::string Doc();		///< Documents
+	const std::string User();		///< User config directory
+	const std::string Locale();	///< Locale files
+	const std::string Temp();		///< Temporary storage
 };
 
 } // namespace agi
