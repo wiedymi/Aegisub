@@ -1238,7 +1238,7 @@ void BaseGrid::SetActiveLine(AssDialogue *new_line)
 		AnnounceSelectedSetChanged();
 		return;
 	}
-	for (int i = 0; i < diagPtrMap.size(); ++i)
+	for (int i = 0; i < (int)diagPtrMap.size(); ++i)
 	{
 		if (diagPtrMap[i] == new_line)
 		{
@@ -1263,7 +1263,7 @@ void BaseGrid::SetSelectedSet(const SubtitleSelection &new_selection)
 {
 	/// @todo non-horrible implementation
 	std::set<AssDialogue*> newselset(new_selection.begin(), new_selection.end());
-	for (int i = 0; i < selMap.size(); ++i)
+	for (int i = 0; i < (int)selMap.size(); ++i)
 	{
 		selMap[i] = newselset.find(diagPtrMap[i]) != newselset.end();
 	}
@@ -1276,7 +1276,7 @@ void BaseGrid::GetSelectedSet(SubtitleSelection &selection) const
 {
 	/// @todo non-horrible implementation?
 	// this is the least horrible I think... though it still depends on the crazy structures
-	for (int i = 0; i < diagPtrMap.size(); ++i)
+	for (int i = 0; i < (int)diagPtrMap.size(); ++i)
 	{
 		if (selMap[i])
 			selection.push_back(diagPtrMap[i]);
@@ -1288,7 +1288,7 @@ void BaseGrid::NextLine()
 {
 	/// @todo non-horrible implementation
 	int newn = editBox->linen + 1;
-	if (newn < diagMap.size())
+	if (newn < (int)diagMap.size())
 	{
 		editBox->SetToLine(newn);
 		SelectRow(newn, false, true);
