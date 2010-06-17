@@ -31,6 +31,7 @@ extern "C" {
 #include <sys/utsname.h>
 }
 
+
 wxString PlatformUnix::OSVersion() {
 	struct utsname name;
 	if (uname(&name) != -1) {
@@ -68,10 +69,6 @@ wxString PlatformUnix::CPUFeatures2() {
 };
 
 wxString PlatformUnix::Memory() {
-	return "";
-};
-
-wxString PlatformUnix::Video() {
 	return "";
 };
 

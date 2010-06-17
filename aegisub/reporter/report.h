@@ -33,20 +33,25 @@ public:
 	Report();
 	~Report() {};
 
+	/// Fill wxListView with report contents.
+	/// @param text pointer to text buffer
+	/// @param listview wxListview to fill
 	void Fill(wxString *text, wxListView *listView);
-	wxString AsText();
+
+	/// Save XML report to a file.
+	void Save(wxString file);
 
 private:
 	/// Comparison callback for nameMap.
 	struct lst_comp {
-		bool operator() (const wxString &a, const wxString &b) { return a.Cmp(b) < 0; }
+		bool operator() (const wxString &a, const wxString &b) const { return a.Cmp(b) < 0; }
 	};
 
 	/// Map of internal XML elements to human readable names.
-	typedef std::map<std::string, std::string, lst_comp> nameMap;
+	typedef std::map<wxString, wxString, lst_comp> nameMap;
 
 	/// element->human name pairs.
-	typedef std::pair<std::string, std::string> nPair;
+	typedef std::pair<wxString, wxString> nPair;
 
 	/// Struct to hold generatex XML Report.
 	struct XMLReport {

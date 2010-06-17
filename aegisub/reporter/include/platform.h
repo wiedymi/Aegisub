@@ -170,6 +170,7 @@ public:
 	/// CPU Features2
 	/// @return Features set 2
 	/// @retval CPU-specific features
+	/// @note "EST,TM2" on my P-M, or "SYSCALL,NX,MMX+,LM,3DNow!+,3DNow!" on an Opteron
 	virtual wxString CPUFeatures2()=0;
 
 	/// System memory
@@ -177,10 +178,25 @@ public:
 	/// @retval Integer in bytes
 	virtual wxString Memory()=0;
 
-	/// Video card
-	/// @return Video card
+	/// OpenGL vendor
+	/// @return Vendor
 	/// @retval Any
-	virtual wxString Video()=0;
+	virtual wxString OpenGLVendor();
+
+	/// OpenGL renderer
+	/// @return Renderer
+	/// @retval Any
+	virtual wxString OpenGLRenderer();
+
+	/// OpenGL version
+	/// @return Renderer version
+	/// @retval Any
+	virtual wxString OpenGLVersion();
+
+	/// OpenGL extensions
+	/// @return OpenGL extensions
+	/// @retval Space delimited list of extensions
+	virtual wxString OpenGLExt();
 	//@}
 
 	/// @name Windows
@@ -215,7 +231,7 @@ public:
 	/// Firewall installed
 	/// @return true/false
 	/// @retval 1,0
-	virtual wxString FireWall()=0;
+	virtual wxString Firewall()=0;
 
 	/// DLL versions used
 	/// @return wxXmlNode of DLLs used
@@ -252,7 +268,7 @@ public:
 
 	/// @name OS X
 	//@{
-#ifdef __OSX__
+#ifdef __APPLE__
 
 	/// OS patch level
 	/// @return Patch level
@@ -284,4 +300,19 @@ private:
 
 	/// wxLocale instance.
 	wxLocale *locale;
+
+
+	/// Available video information.
+	enum VideoInfo {
+		VIDEO_RENDERER,	///< Renderer
+		VIDEO_VENDOR,	///< Vendor
+		VIDEO_VERSION,	///< Version
+		VIDEO_EXT		///< Extensions
+	};
+
+	/// Retrieve OpenGL video information.
+	/// @param which Requested information
+	/// @return Video info.
+	wxString GetVideoInfo(enum Platform::VideoInfo which);
+
 };

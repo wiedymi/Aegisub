@@ -25,15 +25,20 @@
 #endif
 
 #include "aegisub.h"
+
+#ifdef __WINDOWS__
+#include "../src/config.h"
+#else
 #include "../acconf.h"
+#endif
 
 Aegisub::Aegisub() {
 	wxStandardPathsBase &paths = wxStandardPaths::Get();
 // Using ifdefs is a pain but it's much easier to centralise this.
-#ifdef __UNIX__
+#if defined(__APPLE__)
+	wxString configdir =  wxString::Format("%s-%s", paths.GetUserDataDir(), _T(AEGISUB_VERSION_DATA));
+#elif defined(__UNIX__)
 	wxString configdir =  wxString::Format("%s/.aegisub-%s", paths.GetUserConfigDir(), _T(AEGISUB_VERSION_DATA));
-#elif __APPLE__
-	wxString configdir =  wxString::Format("%s/Aegisub-%s", paths.GetUserConfigDir(), _T(AEGISUB_VERSION_DATA));
 #else
 	wxString configdir =  wxString::Format("%s/Aegisub", paths.GetUserConfigDir());
 #endif

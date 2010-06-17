@@ -41,26 +41,34 @@
 /// @brief Init the reporter.
 bool Reporter::OnInit()
 {
-	if ( !wxApp::OnInit() )
-		return false;
+//	if ( !wxApp::OnInit() )
+//		return false;
 
 	wxApp::CheckBuildOptions(WX_BUILD_OPTIONS_SIGNATURE, _("Reporter"));
 
+
 	static const wxCmdLineEntryDesc cmdLineDesc[] = {
-		{ wxCMD_LINE_SWITCH, "c", "crash",      "Launch in crash mode.",    wxCMD_LINE_VAL_NONE, NULL },
-		{ wxCMD_LINE_SWITCH, "r", "report",     "Launch in Report mode.",   wxCMD_LINE_VAL_NONE, NULL },
-		{ wxCMD_LINE_SWITCH, "h", "help",       "This help message",    wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
+		{ wxCMD_LINE_SWITCH, "c", "crash",      "Launch in crash mode.",	wxCMD_LINE_VAL_NONE, NULL },
+		{ wxCMD_LINE_SWITCH, "r", "report",     "Launch in Report mode.",	wxCMD_LINE_VAL_NONE, NULL },
+		{ wxCMD_LINE_SWITCH, "x", "xml",		"Dump XML file",			wxCMD_LINE_VAL_NONE, NULL },
+		{ wxCMD_LINE_SWITCH, "h", "help",       "This help message",		wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 		{ wxCMD_LINE_NONE, NULL, NULL, NULL, wxCMD_LINE_VAL_NONE, NULL}
 	};
 
+
 	wxCmdLineParser parser(cmdLineDesc, argc, argv);
+
+	parser.SetLogo("Aegisub Reporter version x.x");
+	parser.SetCmdLine(argc, argv);
 	switch ( parser.Parse() ) {
 		case -1:
+			return false;
 			break; // Help
 		case  0:
 			break; // OK
 		default:
 			wxLogMessage(_T("Syntax error."));
+			return false;
 		break;
 	}
 
@@ -69,7 +77,8 @@ bool Reporter::OnInit()
 	wxLocale *locale = new wxLocale();
 	locale->Init(wxLANGUAGE_ENGLISH);
 #ifdef __WINDOWS__
-	locale->AddCatalogLookupPathPrefix(StandardPaths::DecodePath(_T("?data/locale")));
+	wxStandardPathsBase &paths = wxStandardPaths::Get();
+	locale->AddCatalogLookupPathPrefix(wxString::Format("%s/locale", paths.GetDataDir()));
 	locale->AddCatalog(_T("reporter"));
 #else
 	locale->AddCatalog("reporter");
@@ -79,9 +88,16 @@ bool Reporter::OnInit()
 	setlocale(LC_CTYPE, "C");
 
 	mFrame *frame = new mFrame(_("Aegisub Reporter"));
+	Report *r = new Report;
+
+	if (parser.Found("x")) {
+		r->Save("report.xml");
+		wxPrintf("Report saved to report.xml\n");
+		return false;
+	}
+
 	SetTopWindow(frame);
 
-	Report *r = new Report;
 	frame->SetReport(r);
 
 	return true;
@@ -106,9 +122,9 @@ mFrame::mFrame(const wxString &window_title)
 	msgSizer->Add(msg, 1, wxALL, 5);
 
 	wxStaticText *notice = new wxStaticText(this, -1,_("This information is completely anonymous, no personal information is sent along it is strictly used for targeting new features and the future direction of Aegisub."));
-	notice->Wrap(325);
 	msgSizer->Add(notice, 1, wxALL, 5);
 	notice->SetFont(wxFont(11, wxFONTFAMILY_SWISS, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_NORMAL));
+	notice->Wrap(325);
 	msgSizer->Add(new wxButton(this, 42, "View Report"), 0, wxALL, 10 );
 
 
@@ -121,7 +137,6 @@ mFrame::mFrame(const wxString &window_title)
 	this->SetSizerAndFit(topSizer);
 
 	// Is there a better way to do this?
-	this->SetMinSize(wxSize(360,-1));
 	this->SetMaxSize(this->GetEffectiveMinSize());
 	this->SetMinSize(this->GetEffectiveMinSize());
 
@@ -142,8 +157,8 @@ void mFrame::Cancel(wxCommandEvent& WXUNUSED(event)) {
 
 /// @brief Submit report
 void mFrame::Submit(wxCommandEvent& WXUNUSED(event)) {
-	Progress *progress = new Progress::Progress(this);
-	Upload *upload = new Upload::Upload(progress);
+	Progress *progress = new Progress(this);
+	Upload *upload = new Upload(progress);
 	upload->Report(_("./test.xml"));
 }
 

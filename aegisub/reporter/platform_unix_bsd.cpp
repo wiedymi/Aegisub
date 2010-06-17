@@ -23,7 +23,6 @@
 #endif
 
 extern "C" {
-#include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
 }
@@ -68,10 +67,6 @@ wxString PlatformUnixBSD::Memory() {
 	size_t len = sizeof(memory);
 	sysctlbyname("hw.physmem", &memory, &len, NULL, 0);
 	return wxString::Format("%d", memory);
-	return "";
-};
-
-wxString PlatformUnixBSD::Video() {
 	return "";
 };
 

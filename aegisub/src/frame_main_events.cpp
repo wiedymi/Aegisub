@@ -107,8 +107,6 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 
 	EVT_CLOSE(FrameMain::OnCloseWindow)
 
-	EVT_KEY_DOWN(FrameMain::OnKeyDown)
-
 	EVT_SASH_DRAGGED(Main_AudioSash, FrameMain::OnAudioBoxResize)
 
 	EVT_MENU_OPEN(FrameMain::OnMenuOpen)
@@ -302,7 +300,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	else if (curMenu == viewMenu) {
 		// Flags
 		bool aud = audioController->IsAudioOpen();
-		bool vid = VideoContext::Get()->IsLoaded();
+		bool vid = VideoContext::Get()->IsLoaded() && !detachedVideo;
 
 		// Set states
 		MenuBar->Enable(Menu_View_Audio,aud);
@@ -319,23 +317,24 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	// Video menu
 	else if (curMenu == videoMenu) {
 		bool state = VideoContext::Get()->IsLoaded();
+		bool attached = state && !detachedVideo;
 
 		// Set states
 		MenuBar->Enable(Menu_Video_JumpTo,state);
 		MenuBar->Enable(Menu_Subs_Snap_Video_To_Start,state);
 		MenuBar->Enable(Menu_Subs_Snap_Video_To_End,state);
-		MenuBar->Enable(Menu_View_Zoom,state);
-		MenuBar->Enable(Menu_View_Zoom_50,state);
-		MenuBar->Enable(Menu_View_Zoom_100,state);
-		MenuBar->Enable(Menu_View_Zoom_200,state);
+		MenuBar->Enable(Menu_View_Zoom,attached);
+		MenuBar->Enable(Menu_View_Zoom_50,attached);
+		MenuBar->Enable(Menu_View_Zoom_100,attached);
+		MenuBar->Enable(Menu_View_Zoom_200,attached);
 		MenuBar->Enable(Menu_File_Close_Video,state);
-		MenuBar->Enable(Menu_Video_AR,state);
-		MenuBar->Enable(Menu_Video_AR_Default,state);
-		MenuBar->Enable(Menu_Video_AR_Full,state);
-		MenuBar->Enable(Menu_Video_AR_Wide,state);
-		MenuBar->Enable(Menu_Video_AR_235,state);
-		MenuBar->Enable(Menu_Video_AR_Custom,state);
-		MenuBar->Enable(Menu_Video_Detach,state && !detachedVideo);
+		MenuBar->Enable(Menu_Video_AR,attached);
+		MenuBar->Enable(Menu_Video_AR_Default,attached);
+		MenuBar->Enable(Menu_Video_AR_Full,attached);
+		MenuBar->Enable(Menu_Video_AR_Wide,attached);
+		MenuBar->Enable(Menu_Video_AR_235,attached);
+		MenuBar->Enable(Menu_Video_AR_Custom,attached);
+		MenuBar->Enable(Menu_Video_Detach,state);
 		MenuBar->Enable(Menu_File_Save_VFR,VFR_Output.GetFrameRateType() == VFR);
 		MenuBar->Enable(Menu_File_Close_VFR,VFR_Output.GetFrameRateType() == VFR);
 		MenuBar->Enable(Menu_Video_Close_Keyframes,VideoContext::Get()->OverKeyFramesLoaded());
@@ -1038,7 +1037,7 @@ void FrameMain::OnSetZoom(wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnDetachVideo(wxCommandEvent &event) {
-	DetachVideo();
+	DetachVideo(!detachedVideo);
 }
 
 
@@ -1518,7 +1517,7 @@ void FrameMain::OnReplace(wxCommandEvent &event) {
 void FrameMain::OnSetARDefault (wxCommandEvent &event) {
 	VideoContext::Get()->Stop();
 	VideoContext::Get()->SetAspectRatio(0);
-	SetDisplayMode(-1,-2);
+	SetDisplayMode(1,-1);
 }
 
 
@@ -1529,7 +1528,7 @@ void FrameMain::OnSetARDefault (wxCommandEvent &event) {
 void FrameMain::OnSetARFull (wxCommandEvent &event) {
 	VideoContext::Get()->Stop();
 	VideoContext::Get()->SetAspectRatio(1);
-	SetDisplayMode(-1,-2);
+	SetDisplayMode(1,-1);
 }
 
 
@@ -1540,7 +1539,7 @@ void FrameMain::OnSetARFull (wxCommandEvent &event) {
 void FrameMain::OnSetARWide (wxCommandEvent &event) {
 	VideoContext::Get()->Stop();
 	VideoContext::Get()->SetAspectRatio(2);
-	SetDisplayMode(-1,-2);
+	SetDisplayMode(1,-1);
 }
 
 
@@ -1551,7 +1550,7 @@ void FrameMain::OnSetARWide (wxCommandEvent &event) {
 void FrameMain::OnSetAR235 (wxCommandEvent &event) {
 	VideoContext::Get()->Stop();
 	VideoContext::Get()->SetAspectRatio(3);
-	SetDisplayMode(-1,-2);
+	SetDisplayMode(1,-1);
 }
 
 
@@ -1604,7 +1603,7 @@ void FrameMain::OnSetARCustom (wxCommandEvent &event) {
 	// Set value
 	else {
 		VideoContext::Get()->SetAspectRatio(4,numval);
-		SetDisplayMode(-1,-1);
+		SetDisplayMode(1,-1);
 	}
 }
 
@@ -1795,19 +1794,6 @@ void FrameMain::OnStatusClear(wxTimerEvent &event) {
 	SetStatusText(_T(""),1);
 }
 
-
-
-/// @brief Key down 
-/// @param event 
-///
-void FrameMain::OnKeyDown(wxKeyEvent &event) {
-	/// @todo Figure out a better way to send keys to the audio display
-	//audioBox->audioDisplay->GetEventHandler()->ProcessEvent(event);
-	event.Skip();
-}
-
-
-
 /// @brief Next frame hotkey 
 /// @param event 
 ///
@@ -1990,7 +1976,6 @@ void FrameMain::OnViewStandard (wxCommandEvent &event) {
 /// @return 
 ///
 void FrameMain::OnViewVideo (wxCommandEvent &event) {
-	if (!VideoContext::Get()->IsLoaded()) return;
 	SetDisplayMode(1,0);
 }
 

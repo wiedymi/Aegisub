@@ -36,7 +36,6 @@ public:
 	virtual wxString CPUFeatures();
 	virtual wxString CPUFeatures2();
 	virtual wxString Memory();
-	virtual wxString Video();
 
 	// Unix Specific
 	virtual wxString UnixLibraries();

@@ -34,18 +34,12 @@
 /// @ingroup main_ui
 ///
 
-
-
-
 #ifndef AGI_PRE
 #include <wx/dialog.h>
 #endif
 
-//////////////
-// Prototypes
 class VideoBox;
 class FrameMain;
-
 
 
 /// DOCME
@@ -62,7 +56,6 @@ private:
 	/// DOCME
 	FrameMain *parent;
 
-	void OnKey(wxKeyEvent &event);
 	void OnClose(wxCloseEvent &event);
 	void OnMove(wxMoveEvent &event);
 
@@ -72,5 +65,3 @@ public:
 
 	DECLARE_EVENT_TABLE()
 };
-
-

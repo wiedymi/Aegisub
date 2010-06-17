@@ -272,7 +272,7 @@ void FrameMain::InitToolbar () {
 	Toolbar->AddTool(Menu_Video_Zoom_In,_("Zoom in"),GETIMAGE(zoom_in_button_24),wxNullBitmap,wxITEM_NORMAL,_("Zoom video in"));
 	Toolbar->AddTool(Menu_Video_Zoom_Out,_("Zoom out"),GETIMAGE(zoom_out_button_24),wxNullBitmap,wxITEM_NORMAL,_("Zoom video out"));
 	wxArrayString choices;
-	for (int i=1;i<=16;i++) {
+	for (int i=1;i<=24;i++) {
 		wxString toAdd = wxString::Format(_T("%i"),int(i*12.5));
 		if (i%2) toAdd += _T(".5");
 		toAdd += _T("%");
@@ -688,9 +688,9 @@ void FrameMain::UpdateToolbar() {
 	// Update
 	wxToolBar* toolbar = GetToolBar();
 	toolbar->FindById(Menu_Video_JumpTo)->Enable(isVideo);
-	toolbar->FindById(Menu_Video_Zoom_In)->Enable(isVideo);
-	toolbar->FindById(Menu_Video_Zoom_Out)->Enable(isVideo);
-	ZoomBox->Enable(isVideo);
+	toolbar->FindById(Menu_Video_Zoom_In)->Enable(isVideo && !detachedVideo);
+	toolbar->FindById(Menu_Video_Zoom_Out)->Enable(isVideo && !detachedVideo);
+	ZoomBox->Enable(isVideo && !detachedVideo);
 	toolbar->FindById(Menu_Subs_Snap_Start_To_Video)->Enable(isVideo && selRows > 0);
 	toolbar->FindById(Menu_Subs_Snap_End_To_Video)->Enable(isVideo && selRows > 0);
 	toolbar->FindById(Menu_Subs_Snap_Video_To_Start)->Enable(isVideo && selRows == 1);
@@ -879,27 +879,25 @@ int FrameMain::TryToCloseSubs(bool enableCancel) {
 
 
 
-/// @brief Set display mode 
-/// @param _showVid   
-/// @param _showAudio 
-/// @return 
-///
-void FrameMain::SetDisplayMode(int _showVid,int _showAudio) {
-	// Shown?
-	static bool firstRun = true;
-	if (!IsShownOnScreen() && !firstRun) return;
-	firstRun = false;
+/// @brief Set the video and audio display visibilty
+/// @param video -1: leave unchanged; 0: hide; 1: show
+/// @param audio -1: leave unchanged; 0: hide; 1: show
+void FrameMain::SetDisplayMode(int video, int audio) {
+	if (!IsShownOnScreen()) return;
 
-	// Automatic
-	if (_showVid == -1) _showVid = (VideoContext::Get()->IsLoaded() && !detachedVideo) ? 1 : 0;
-	else if (_showVid == -2) _showVid = showVideo?1:0;
-	if (_showAudio == -1) _showAudio = audioController->IsAudioOpen() ? 1 : 0;
-	else if (_showAudio == -2) _showAudio = showAudio?1:0;
+	bool sv = false, sa = false;
+
+	if (video == -1) sv = showVideo;
+	else if (video)  sv = VideoContext::Get()->IsLoaded() && !detachedVideo;
+
+	if (audio == -1) sa = showAudio;
+	else if (audio)  sa = audioController->IsAudioOpen();
 
 	// See if anything changed
-	if (_showVid == (showVideo?1:0) && _showAudio == (showAudio?1:0)) return;
-	showAudio = _showAudio == 1;
-	showVideo = _showVid == 1;
+	if (sv == showVideo && sa == showAudio) return;
+
+	showVideo = sv;
+	showAudio = sa;
 
 	// Stop
 	Freeze();
@@ -914,7 +912,6 @@ void FrameMain::SetDisplayMode(int _showVid,int _showAudio) {
 	EditBox->SetSplitLineMode();
 	MainSizer->CalcMin();
 	MainSizer->RecalcSizes();
-	//videoBox->VideoSizer->Layout();
 	MainSizer->Layout();
 	Layout();
 	Show(true);
@@ -1083,7 +1080,7 @@ void FrameMain::SynchronizeProject(bool fromSubs) {
 		}
 
 		// Display
-		SetDisplayMode(-1,-1);
+		SetDisplayMode(1,1);
 	}
 
 	// Store data on subs
@@ -1093,7 +1090,7 @@ void FrameMain::SynchronizeProject(bool fromSubs) {
 		wxString ar = _T("0");
 		wxString zoom = _T("6");
 		if (VideoContext::Get()->IsLoaded()) {
-			seekpos = wxString::Format(_T("%i"),videoBox->videoDisplay->ControlSlider->GetValue());
+			seekpos = wxString::Format(_T("%i"),videoBox->videoDisplay->GetFrame());
 			zoom = wxString::Format(_T("%i"),videoBox->videoDisplay->zoomBox->GetSelection()+1);
 
 			int arType = VideoContext::Get()->GetAspectRatioType();
@@ -1174,9 +1171,7 @@ void FrameMain::LoadVideo(wxString file,bool autoload) {
 				VFR_Output.Unload();
 			}
 		}
-		SetDisplayMode(1,-1);
 		VideoContext::Get()->SetVideo(file);
-		SetDisplayMode(0,-1);
 	}
 	catch (const wchar_t *error) {
 		wxString err(error);
@@ -1214,7 +1209,7 @@ void FrameMain::LoadVideo(wxString file,bool autoload) {
 	}
 
 	SubsBox->CommitChanges(true);
-	SetDisplayMode(-1,-1);
+	SetDisplayMode(1,-1);
 	EditBox->UpdateFrameTiming();
 
 	DetachVideo(VideoContext::Get()->IsLoaded() && Options.AsBool(_T("Detached Video")));
@@ -1277,7 +1272,6 @@ void FrameMain::OpenHelp(wxString page) {
 
 /// @brief Detach video window 
 /// @param detach 
-///
 void FrameMain::DetachVideo(bool detach) {
 	if (detach) {
 		if (!detachedVideo) {
@@ -1285,13 +1279,12 @@ void FrameMain::DetachVideo(bool detach) {
 			detachedVideo->Show();
 		}
 	}
-	else {
-		if (detachedVideo) {
-			detachedVideo->Destroy();
-			SetDisplayMode(-1,-1);
-			detachedVideo = NULL;
-		}
+	else if (detachedVideo) {
+		detachedVideo->Destroy();
+		detachedVideo = NULL;
+		SetDisplayMode(1,-1);
 	}
+	UpdateToolbar();
 }
 
 

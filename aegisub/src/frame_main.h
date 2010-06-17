@@ -195,7 +195,6 @@ private:
 	void OnStatusClear(wxTimerEvent &event);
 
 	void OnVideoPlay(wxCommandEvent &event);
-	void OnKeyDown(wxKeyEvent &event);
 
 	void OnAudioBoxResize(wxSashEvent &event);
 

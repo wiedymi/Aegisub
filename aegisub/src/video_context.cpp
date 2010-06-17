@@ -76,7 +76,6 @@
 #include "video_context.h"
 #include "video_display.h"
 #include "video_provider_manager.h"
-#include "video_slider.h"
 #include "visual_tool.h"
 
 
@@ -95,12 +94,8 @@ BEGIN_EVENT_TABLE(VideoContext, wxEvtHandler)
 	EVT_TIMER(VIDEO_PLAY_TIMER,VideoContext::OnPlayTimer)
 END_EVENT_TABLE()
 
-
-
 /// DOCME
 VideoContext *VideoContext::instance = NULL;
-
-
 
 /// @brief Constructor 
 ///
@@ -108,8 +103,6 @@ VideoContext::VideoContext() {
 	// Set GL context
 	glContext = NULL;
 	ownGlContext = false;
-	lastTex = 0;
-	lastFrame = -1;
 
 	// Set options
 	audio = NULL;
@@ -128,15 +121,7 @@ VideoContext::VideoContext() {
 	isPlaying = false;
 	nextFrame = -1;
 	keepAudioSync = true;
-
-	// Threads
-	//threaded = Options.AsBool(_T("Threaded Video"));
-	threaded = false;
-	threadLocked = false;
-	threadNextFrame = -1;
 }
-
-
 
 /// @brief Destructor 
 ///
@@ -146,8 +131,6 @@ VideoContext::~VideoContext () {
 		delete glContext;
 	glContext = NULL;
 }
-
-
 
 /// @brief Get Instance 
 /// @return 
@@ -159,8 +142,6 @@ VideoContext *VideoContext::Get() {
 	return instance;
 }
 
-
-
 /// @brief Clear 
 ///
 void VideoContext::Clear() {
@@ -169,15 +150,11 @@ void VideoContext::Clear() {
 	instance = NULL;
 }
 
-
-
 /// @brief Reset 
 ///
 void VideoContext::Reset() {
-	// Reset ?video path
 	StandardPaths::SetPathValue(_T("?video"),_T(""));
 
-	// Clear keyframes
 	KeyFrames.Clear();
 	keyFramesLoaded = false;
 	keyframesRevision++;
@@ -196,9 +173,6 @@ void VideoContext::Reset() {
 	// Update displays
 	UpdateDisplays(true);
 
-	// Remove textures
-	UnloadTexture();
-
 	// Clean up video data
 	wxRemoveFile(tempfile);
 	tempfile = _T("");
@@ -214,8 +188,6 @@ void VideoContext::Reset() {
 	subsProvider = NULL;
 }
 
-
-
 /// @brief Reload video 
 ///
 void VideoContext::Reload() {
@@ -228,29 +200,13 @@ void VideoContext::Reload() {
 	}
 }
 
-
-
-/// @brief Unload texture 
-///
-void VideoContext::UnloadTexture() {
-	// Remove textures
-	if (lastTex != 0) {
-		glDeleteTextures(1,&lastTex);
-		lastTex = 0;
-	}
-	lastFrame = -1;
-}
-
-
-
 /// @brief Sets video filename 
 /// @param filename 
 ///
 void VideoContext::SetVideo(const wxString &filename) {
 	// Unload video
 	Reset();
-	threaded = Options.AsBool(_T("Threaded Video"));
-	
+
 	// Load video
 	if (!filename.IsEmpty()) {
 		try {
@@ -325,8 +281,6 @@ void VideoContext::SetVideo(const wxString &filename) {
 	loaded = provider != NULL;
 }
 
-
-
 /// @brief Add new display 
 /// @param display 
 /// @return 
@@ -338,8 +292,6 @@ void VideoContext::AddDisplay(VideoDisplay *display) {
 	displayList.push_back(display);
 }
 
-
-
 /// @brief Remove display 
 /// @param display 
 ///
@@ -347,35 +299,18 @@ void VideoContext::RemoveDisplay(VideoDisplay *display) {
 	displayList.remove(display);
 }
 
-
-
 /// @brief Update displays 
 /// @param full 
 ///
 void VideoContext::UpdateDisplays(bool full) {
 	for (std::list<VideoDisplay*>::iterator cur=displayList.begin();cur!=displayList.end();cur++) {
-		// Get display
 		VideoDisplay *display = *cur;
 
-		// Update slider
 		if (full) {
 			display->UpdateSize();
-			display->ControlSlider->SetRange(0,GetLength()-1);
+			display->SetFrameRange(0,GetLength()-1);
 		}
-		display->ControlSlider->SetValue(GetFrameN());
-		//display->ControlSlider->Update();
-		display->UpdatePositionDisplay();
-
-		// If not shown, don't update the display itself
-		if (!display->IsShownOnScreen()) continue;
-
-		// Update visual controls
-		if (display->visual) display->visual->Refresh();
-
-		// Update controls
-		//display->Refresh();
-		//display->Update();
-		display->Render();
+		display->SetFrame(GetFrameN());
 	}
 
 	// Update audio display
@@ -389,16 +324,11 @@ void VideoContext::UpdateDisplays(bool full) {
 	*/
 }
 
-
-
 /// @brief Refresh subtitles 
 /// @param video     
 /// @param subtitles 
 ///
 void VideoContext::Refresh (bool video, bool subtitles) {
-	// Reset frame
-	lastFrame = -1;
-
 	// Update subtitles
 	if (subtitles && subsProvider) {
 		// Re-export
@@ -415,8 +345,6 @@ void VideoContext::Refresh (bool video, bool subtitles) {
 	JumpToFrame(frame_n);
 }
 
-
-
 /// @brief Jumps to a frame and update display 
 /// @param n 
 /// @return 
@@ -428,46 +356,30 @@ void VideoContext::JumpToFrame(int n) {
 	// Prevent intervention during playback
 	if (isPlaying && n != playNextFrame) return;
 
-	// Threaded
-	if (threaded && false) {	// Doesn't work, so it's disabled
-		wxMutexLocker lock(vidMutex);
-		threadNextFrame = n;
-		if (!threadLocked) {
-			threadLocked = true;
-			thread = new VideoContextThread(this);
-			thread->Create();
-			thread->Run();
-		}
+	try {
+		// Set frame number
+		frame_n = n;
+
+		// Display
+		UpdateDisplays(false);
+
+		// Update grid
+		if (!isPlaying && Options.AsBool(_T("Highlight subs in frame"))) grid->Refresh(false);
 	}
-
-	// Not threaded
-	else {
-		try {
-			// Set frame number
-			frame_n = n;
-			GetFrameAsTexture(n);
-
-			// Display
-			UpdateDisplays(false);
-
-			// Update grid
-			if (!isPlaying && Options.AsBool(_T("Highlight subs in frame"))) grid->Refresh(false);
-		}
-		catch (const wxChar *err) {
-			wxLogError(
-				_T("Failed seeking video. The video will be closed because of this.\n")
-				_T("If you get this error regardless of which video file you use, and also if you use dummy video, Aegisub might not work with your graphics card's OpenGL driver.\n")
-				_T("Error message reported: %s"),
-				err);
-			Reset();
-		}
-		catch (...) {
-			wxLogError(
-				_T("Failed seeking video. The video will be closed because of this.\n")
-				_T("If you get this error regardless of which video file you use, and also if you use dummy video, Aegisub might not work with your graphics card's OpenGL driver.\n")
-				_T("No further error message given."));
-			Reset();
-		}
+	catch (const wxChar *err) {
+		wxLogError(
+			_T("Failed seeking video. The video will be closed because of this.\n")
+			_T("If you get this error regardless of which video file you use, and also if you use dummy video, Aegisub might not work with your graphics card's OpenGL driver.\n")
+			_T("Error message reported: %s"),
+			err);
+		Reset();
+	}
+	catch (...) {
+		wxLogError(
+			_T("Failed seeking video. The video will be closed because of this.\n")
+			_T("If you get this error regardless of which video file you use, and also if you use dummy video, Aegisub might not work with your graphics card's OpenGL driver.\n")
+			_T("No further error message given."));
+		Reset();
 	}
 }
 
@@ -523,91 +435,6 @@ AegiVideoFrame VideoContext::GetFrame(int n,bool raw) {
 	else return frame;
 }
 
-
-
-/// @brief Get GL Texture of frame 
-/// @param n 
-/// @return 
-///
-GLuint VideoContext::GetFrameAsTexture(int n) {
-	// Already uploaded
-	if (n == lastFrame || n == -1) return lastTex;
-
-	// Get frame
-	AegiVideoFrame frame = GetFrame(n);
-
-	// Set frame
-	lastFrame = n;
-
-	// Set context
-	GetGLContext(displayList.front())->SetCurrent(*displayList.front());
-	glEnable(GL_TEXTURE_2D);
-	if (glGetError() != 0) throw _T("Error enabling texture.");
-
-	// Image type
-	GLenum format;
-	if (frame.invertChannels) format = GL_BGRA_EXT;
-	else format = GL_RGBA;
-	isInverted = frame.flipped;
-
-	if (lastTex == 0) {
-		// Enable
-		glShadeModel(GL_FLAT);
-
-		// Generate texture with GL
-		//glActiveTexture(GL_TEXTURE0);
-		glGenTextures(1, &lastTex);
-		if (glGetError() != 0) throw _T("Error generating texture.");
-		glBindTexture(GL_TEXTURE_2D, lastTex);
-		if (glGetError() != 0) throw _T("Error binding texture.");
-
-		// Texture parameters
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-		if (glGetError() != 0) throw _T("Error setting min_filter texture parameter.");
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-		if (glGetError() != 0) throw _T("Error setting mag_filter texture parameter.");
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		if (glGetError() != 0) throw _T("Error setting wrap_s texture parameter.");
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-		if (glGetError() != 0) throw _T("Error setting wrap_t texture parameter.");
-
-		// Allocate texture
-		int height = frame.h;
-		int tw = SmallestPowerOf2(MAX(frame.pitch[0]/frame.GetBpp(0),frame.pitch[1]+frame.pitch[2]));
-		int th = SmallestPowerOf2(height);
-		glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,tw,th,0,format,GL_UNSIGNED_BYTE,NULL);
-		if (glGetError() != 0) {
-			tw = MAX(tw,th);
-			th = tw;
-			glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,tw,th,0,format,GL_UNSIGNED_BYTE,NULL);
-			if (glGetError() != 0) {
-				glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,tw,th,0,format,GL_UNSIGNED_BYTE,NULL);
-				if (glGetError() != 0) throw _T("Error allocating texture.");
-			}
-		}
-		texW = float(frame.w)/float(tw);
-		texH = float(frame.h)/float(th);
-
-		// Set texture
-		//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-		//if (glGetError() != 0) throw _T("Error setting hinting.");
-
-		// Set priority
-		float priority = 1.0f;
-		glPrioritizeTextures(1,&lastTex,&priority);
-	}
-	
-	// Load texture data
-	glBindTexture(GL_TEXTURE_2D, lastTex);
-	glTexSubImage2D(GL_TEXTURE_2D,0,0,0,frame.pitch[0]/frame.GetBpp(0),frame.h,format,GL_UNSIGNED_BYTE,frame.data[0]);
-	if (glGetError() != 0) throw _T("Error uploading primary plane");
-
-	// Return texture number
-	return lastTex;
-}
-
-
-
 /// @brief Save snapshot 
 /// @param raw 
 ///
@@ -649,8 +476,6 @@ void VideoContext::SaveSnapshot(bool raw) {
 	GetFrame(frame_n,raw).GetImage().SaveFile(path,wxBITMAP_TYPE_PNG);
 }
 
-
-
 /// @brief Get dimensions of script 
 /// @param sw 
 /// @param sh 
@@ -658,8 +483,6 @@ void VideoContext::SaveSnapshot(bool raw) {
 void VideoContext::GetScriptSize(int &sw,int &sh) {
 	grid->ass->GetResolution(sw,sh);
 }
-
-
 
 /// @brief Play 
 /// @return 
@@ -686,8 +509,6 @@ void VideoContext::Play() {
 	playback.SetOwner(this,VIDEO_PLAY_TIMER);
 	playback.Start(10);
 }
-
-
 
 /// @brief Play line 
 /// @return 
@@ -719,8 +540,6 @@ void VideoContext::PlayLine() {
 	playback.Start(10);
 }
 
-
-
 /// @brief Stop 
 ///
 void VideoContext::Stop() {
@@ -730,8 +549,6 @@ void VideoContext::Stop() {
 		audio->Stop();
 	}
 }
-
-
 
 /// @brief Play timer 
 /// @param event 
@@ -793,8 +610,6 @@ void VideoContext::OnPlayTimer(wxTimerEvent &event) {
 	}
 }
 
-
-
 /// @brief Get name of temp work file 
 /// @return 
 ///
@@ -807,8 +622,6 @@ wxString VideoContext::GetTempWorkFile () {
 	return tempfile;
 }
 
-
-
 /// @brief Get keyframes 
 /// @return 
 ///
@@ -817,8 +630,6 @@ const wxArrayInt & VideoContext::GetKeyFrames() {
 	return KeyFrames;
 }
 
-
-
 /// @brief Set keyframes 
 /// @param frames 
 ///
@@ -826,8 +637,6 @@ void VideoContext::SetKeyFrames(wxArrayInt frames) {
 	KeyFrames = frames;
 	keyframesRevision++;
 }
-
-
 
 /// @brief Set keyframe override 
 /// @param frames 
@@ -838,8 +647,6 @@ void VideoContext::SetOverKeyFrames(wxArrayInt frames) {
 	keyframesRevision++;
 }
 
-
-
 /// @brief Close keyframes 
 ///
 void VideoContext::CloseOverKeyFrames() {
@@ -848,8 +655,6 @@ void VideoContext::CloseOverKeyFrames() {
 	keyframesRevision++;
 }
 
-
-
 /// @brief Check if override keyframes are loaded 
 /// @return 
 ///
@@ -857,16 +662,12 @@ bool VideoContext::OverKeyFramesLoaded() {
 	return overKeyFramesLoaded;
 }
 
-
-
 /// @brief Check if keyframes are loaded 
 /// @return 
 ///
 bool VideoContext::KeyFramesLoaded() {
 	return overKeyFramesLoaded || keyFramesLoaded;
 }
-
-
 
 /// @brief Calculate aspect ratio 
 /// @param type 
@@ -879,8 +680,6 @@ double VideoContext::GetARFromType(int type) {
 	if (type == 3) return 2.35;
 	return 1.0;  //error
 }
-
-
 
 /// @brief Sets aspect ratio 
 /// @param _type 
@@ -897,56 +696,3 @@ void VideoContext::SetAspectRatio(int _type, double value) {
 	arValue = value;
 	UpdateDisplays(true);
 }
-
-
-
-/// @brief Thread constructor 
-/// @param par 
-///
-VideoContextThread::VideoContextThread(VideoContext *par)
-: wxThread(wxTHREAD_DETACHED)
-{
-	parent = par;
-}
-
-
-
-/// @brief Thread entry point 
-///
-wxThread::ExitCode VideoContextThread::Entry() {
-	// Set up thread
-	int frame = parent->threadNextFrame;
-	int curFrame = parent->frame_n;
-	bool highSubs = Options.AsBool(_T("Highlight subs in frame"));
-
-	// Loop while there is work to do
-	while (true) {
-		// Get frame and set frame number
-		{
-			wxMutexLocker glLock(OpenGLWrapper::glMutex);
-			parent->GetFrameAsTexture(frame);
-			parent->frame_n = frame;
-		}
-
-		// Display
-		parent->UpdateDisplays(false);
-
-		// Update grid
-		if (!parent->isPlaying && highSubs) parent->grid->Refresh(false);
-
-		// Get lock and check if there is more to do
-		wxMutexLocker lock(parent->vidMutex);
-		curFrame = parent->frame_n;
-		frame = parent->threadNextFrame;
-
-		// Work done, kill thread and release context
-		if (curFrame == frame) {
-			parent->threadLocked = false;
-			parent->threadNextFrame = -1;
-			Delete();
-			return 0;
-		}
-	}
-}
-
-
