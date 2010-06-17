@@ -30,5 +30,7 @@
 		"Subtitle" : "^VIDEO",
 		"Audio" : "^VIDEO"
 	},
-	"Log" : "^CONFIG/log"
+	"Log" : "^CONFIG/log",
+	"Shift History" : "^CONFIG/shift_history.txt"
+
 }
