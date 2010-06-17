@@ -47,6 +47,7 @@
 #include <wx/filename.h>
 #include <wx/log.h>
 #include <wx/msgdlg.h>
+#include <wx/tokenzr.h>
 #include <wx/window.h>
 #endif
 
@@ -58,6 +59,7 @@
 #include "auto4_lua_factory.h"
 #include "auto4_lua_scriptreader.h"
 #include "options.h"
+#include "standard_paths.h"
 #include "text_file_reader.h"
 #include "vfr.h"
 #include "video_context.h"
@@ -188,6 +190,31 @@ namespace Automation4 {
 			lua_pushcfunction(L, LuaInclude);
 			lua_setglobal(L, "include");
 
+			// add include_path to the module load path
+			lua_getglobal(L, "package");
+			lua_pushstring(L, "path");
+			lua_pushstring(L, "path");
+			lua_gettable(L, -3);
+
+			wxStringTokenizer toker(Options.AsText(_T("Automation Include Path")), _T("|"), wxTOKEN_STRTOK);
+			while (toker.HasMoreTokens()) {
+				wxFileName path(StandardPaths::DecodePath(toker.GetNextToken()));
+				if (path.IsOk() && !path.IsRelative() && path.DirExists()) {
+					wxCharBuffer p = path.GetLongPath().utf8_str();
+					lua_pushfstring(L, ";%s?.lua;%s?/init.lua", p.data(), p.data());
+					lua_concat(L, 2);
+				}
+			}
+
+			lua_settable(L, -3);
+
+			// Replace the default lua module loader with our utf-8 compatible one
+			lua_getfield(L, -1, "loaders");
+			lua_pushcfunction(L, LuaModuleLoader);
+			lua_rawseti(L, -2, 2);
+			lua_pop(L, 2);
+			_stackcheck.check_stack(0);
+
 			// prepare stuff in the registry
 			// reference to the script object
 			lua_pushlightuserdata(L, this);
@@ -229,7 +256,7 @@ namespace Automation4 {
 			if (lua_load(L, script_reader.reader_func, &script_reader, GetPrettyFilename().mb_str(wxConvUTF8))) {
 				wxString *err = new wxString(lua_tostring(L, -1), wxConvUTF8);
 				err->Prepend(_T("Error loading Lua script \"") + GetPrettyFilename() + _T("\":\n\n"));
-				throw err->c_str();
+				throw err->wx_str();
 			}
 			_stackcheck.check_stack(1);
 			// and execute it
@@ -239,7 +266,7 @@ namespace Automation4 {
 				// error occurred, assumed to be on top of Lua stack
 				wxString *err = new wxString(lua_tostring(L, -1), wxConvUTF8);
 				err->Prepend(_T("Error initialising Lua script \"") + GetPrettyFilename() + _T("\":\n\n"));
-				throw err->c_str();
+				throw err->wx_str();
 			}
 			_stackcheck.check_stack(0);
 			lua_getglobal(L, "version");
@@ -386,6 +413,36 @@ namespace Automation4 {
 		return 4;
 	}
 
+	/// @brief Module loader which uses our include rather than Lua's, for unicode file support
+	/// @param L The Lua state
+	/// @return Always 1 per loader_Lua?
+	int LuaScript::LuaModuleLoader(lua_State *L)
+	{
+		int pretop = lua_gettop(L);
+		wxString module(lua_tostring(L, -1), wxConvUTF8);
+		module.Replace(".", LUA_DIRSEP);
+
+		lua_getglobal(L, "package");
+		lua_pushstring(L, "path");
+		lua_gettable(L, -2);
+		wxString package_paths(lua_tostring(L, -1), wxConvUTF8);
+		lua_pop(L, 2);
+
+		wxStringTokenizer toker(package_paths, L";", wxTOKEN_STRTOK);
+		while (toker.HasMoreTokens()) {
+			wxString filename = toker.GetNextToken();
+			filename.Replace(L"?", module);
+			if (wxFileName::FileExists(filename)) {
+				LuaScriptReader script_reader(filename);
+				if (lua_load(L, script_reader.reader_func, &script_reader, filename.utf8_str())) {
+					lua_pushfstring(L, "Error loading Lua module \"%s\":\n\n%s", filename.utf8_str().data(), lua_tostring(L, -1));
+					lua_error(L);
+					return lua_gettop(L) - pretop;
+				}
+			}
+		}
+		return lua_gettop(L) - pretop;
+	}
 
 	/// @brief DOCME
 	/// @param L 
@@ -1152,5 +1209,3 @@ namespace Automation4 {
 };
 
 #endif // WITH_AUTO4_LUA
-
-

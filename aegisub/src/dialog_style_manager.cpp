@@ -602,7 +602,7 @@ void DialogStyleManager::OnCopyToStorage (wxCommandEvent &event) {
 		for (std::list<AssStyle *>::iterator style = Store.style.begin(); style != Store.style.end(); ++style) {
 			if ((*style)->name.CmpNoCase(styleName) == 0) {
 				addStyle = false;
-				if (wxYES == wxMessageBox(wxString::Format(_T("There is already a style with the name \"%s\" on the current storage. Proceed and overwrite anyway?"),styleName), _T("Style name collision."), wxYES_NO)) {
+				if (wxYES == wxMessageBox(wxString::Format(_T("There is already a style with the name \"%s\" on the current storage. Proceed and overwrite anyway?"),styleName.c_str()), _T("Style name collision."), wxYES_NO)) {
 					**style = *styleMap.at(selections[i]);
 				}
 				break;
@@ -633,7 +633,7 @@ void DialogStyleManager::OnCopyToCurrent (wxCommandEvent &event) {
 		for (std::vector<AssStyle *>::iterator style = styleMap.begin(); style != styleMap.end(); ++style) {
 			if ((*style)->name.CmpNoCase(styleName) == 0) {
 				addStyle = false;
-				if (wxYES == wxMessageBox(wxString::Format(_T("There is already a style with the name \"%s\" on the current script. Proceed and overwrite anyway?"),styleName), _T("Style name collision."), wxYES_NO)) {
+				if (wxYES == wxMessageBox(wxString::Format(_T("There is already a style with the name \"%s\" on the current script. Proceed and overwrite anyway?"),styleName.c_str()), _T("Style name collision."), wxYES_NO)) {
 					**style = *styleStorageMap.at(selections[i]);
 				}
 				break;
@@ -658,13 +658,14 @@ void DialogStyleManager::OnCopyToCurrent (wxCommandEvent &event) {
 void DialogStyleManager::OnStorageCopy (wxCommandEvent &event) {
 	wxArrayInt selections;
 	StorageList->GetSelections(selections);
+	if (selections.size() == 0) return;
 	AssStyle *temp = new AssStyle(*(styleStorageMap.at(selections[0])));
 
 	wxString newName = _("Copy of ");
 	newName += temp->name;
 	temp->name = newName;
 
-	DialogStyleEditor editor(this,temp,grid,false,&Store);
+	DialogStyleEditor editor(this,temp,grid,false,&Store,true);
 	int modified = editor.ShowModal();
 	if (modified) {
 		Store.style.push_back(temp);
@@ -684,13 +685,14 @@ void DialogStyleManager::OnStorageCopy (wxCommandEvent &event) {
 void DialogStyleManager::OnCurrentCopy (wxCommandEvent &event) {
 	wxArrayInt selections;
 	CurrentList->GetSelections(selections);
+	if (selections.size() == 0) return;
 
 	AssStyle *temp = new AssStyle(styleMap.at(selections[0])->GetEntryData());
 	wxString newName = _("Copy of ");
 	newName += temp->name;
 	temp->name = newName;
 
-	DialogStyleEditor editor(this,temp,grid,true,&Store);
+	DialogStyleEditor editor(this,temp,grid,true,&Store,true);
 	int modified = editor.ShowModal();
 	if (modified) {
 		AssFile::top->InsertStyle(temp);
@@ -813,7 +815,7 @@ void DialogStyleManager::PasteToStorage() {
 void DialogStyleManager::OnStorageNew (wxCommandEvent &event) {
 	AssStyle *temp = new AssStyle;
 
-	DialogStyleEditor editor(this,temp,grid,false,&Store);
+	DialogStyleEditor editor(this,temp,grid,false,&Store,true);
 	int modified = editor.ShowModal();
 	if (modified) {
 		Store.style.push_back(temp);
@@ -832,7 +834,7 @@ void DialogStyleManager::OnStorageNew (wxCommandEvent &event) {
 void DialogStyleManager::OnCurrentNew (wxCommandEvent &event) {
 	AssStyle *temp = new AssStyle;
 
-	DialogStyleEditor editor(this,temp,grid,true,&Store);
+	DialogStyleEditor editor(this,temp,grid,true,&Store,true);
 	int modified = editor.ShowModal();
 	if (modified) {
 		AssFile::top->InsertStyle(temp);

@@ -276,6 +276,8 @@ public:
 	wxString GetTempWorkFile ();
 
 	void Play();
+	void PlayNextFrame();
+	void PlayPrevFrame();
 	void PlayLine();
 	void Stop();
 

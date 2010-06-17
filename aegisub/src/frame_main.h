@@ -211,6 +211,7 @@ private:
 	void OnAbout (wxCommandEvent &event);
 	void OnCheckUpdates (wxCommandEvent &event);
 	void OnContents (wxCommandEvent &event);
+	void OnFiles (wxCommandEvent &event);
 	void OnWebsite (wxCommandEvent &event);
 	void OnForums (wxCommandEvent &event);
 	void OnBugTracker (wxCommandEvent &event);
@@ -257,7 +258,6 @@ private:
 #endif
 
 	void OnChooseLanguage (wxCommandEvent &event);
-	void OnPickAssociations (wxCommandEvent &event);
 	void OnViewStandard (wxCommandEvent &event);
 	void OnViewVideo (wxCommandEvent &event);
 	void OnViewAudio (wxCommandEvent &event);
@@ -613,9 +613,6 @@ enum {
 	Menu_View_Language,
 
 	/// DOCME
-	Menu_View_Associations,
-
-	/// DOCME
 	Menu_View_Standard,
 
 	/// DOCME
@@ -680,6 +677,9 @@ enum {
 
 	/// DOCME
 	Menu_Help_Contents,
+
+	/// DOCME
+	Menu_Help_Files,
 
 	/// DOCME
 	Menu_Help_IRCChannel,

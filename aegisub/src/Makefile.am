@@ -2,6 +2,7 @@ AUTOMAKE_OPTIONS = foreign
 SUFFIXES = .c .cpp .rc
 noinst_LIBRARIES= 
 AM_CXXFLAGS = 
+DISTCLEANFILES =
 
 if BUILD_DARWIN
 libosxutil_subdir = libosxutil
@@ -14,6 +15,7 @@ BUILT_SOURCES = agi_pre.h.gch
 precompiled_header = agi_pre.h
 AM_CXXFLAGS += -Winvalid-pch -fpch-deps -fpch-preprocess -include agi_pre.h
 nodist_aegisub_2_2_SOURCES = agi_pre.h.gch
+DISTCLEANFILES += agi_pre.h.gch
 endif
 
 SUBDIRS = \
@@ -93,6 +95,14 @@ aegisub_2_2_LDADD += libaudiovideo_ffmpegsource.a ../libffms/libffmpegsource_aeg
 aegisub_2_2_LDFLAGS += @LIBPOSTPROC_LIBS@
 endif
 
+if HAVE_QUICKTIME
+noinst_LIBRARIES += libaudiovideo_quicktime.a
+libaudiovideo_quicktime_a_SOURCES = audio_provider_quicktime.cpp quicktime_common.cpp video_provider_quicktime.cpp
+libaudiovideo_quicktime_a_CPPFLAGS = -I/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/QuickTime.framework/Versions/A/Headers
+aegisub_2_2_LDADD += libaudiovideo_quicktime.a
+aegisub_2_2_LDFLAGS += -framework QuickTime
+endif
+
 noinst_LIBRARIES += libsubtitle_provider.a
 libsubtitle_provider_a_SOURCES = subtitles_provider.cpp
 libsubtitle_provider_a_CPPFLAGS = @CSRI_CFLAGS@
@@ -166,10 +176,8 @@ EXTRA_aegisub_2_2_SOURCES = \
 	auto4_lua_dialog.cpp \
 	auto4_lua_scriptreader.cpp \
 	avisynth_wrap.cpp \
-	dialog_associations.cpp \
 	setup.cpp \
 	spellchecker_hunspell.cpp \
-	subtitle_format_prs.cpp \
 	subtitles_provider_csri.cpp \
 	subtitles_provider_libass.cpp \
 	video_provider_avs.cpp
@@ -205,7 +213,6 @@ aegisub_2_2_SOURCES = \
 	audio_provider_downmix.cpp \
 	audio_provider_hd.cpp \
 	audio_provider_pcm.cpp \
-	audio_provider_quicktime.cpp \
 	audio_provider_ram.cpp \
 	audio_provider_stream.cpp \
 	audio_renderer.cpp \
@@ -271,7 +278,6 @@ aegisub_2_2_SOURCES = \
 	mythes.cxx \
 	options.cpp \
 	plugin_manager.cpp \
-	quicktime_common.cpp \
 	scintilla_text_ctrl.cpp \
 	spellchecker.cpp \
 	spline.cpp \
@@ -313,7 +319,6 @@ aegisub_2_2_SOURCES = \
 	video_provider_cache.cpp \
 	video_provider_dummy.cpp \
 	video_provider_manager.cpp \
-	video_provider_quicktime.cpp \
 	video_provider_yuv4mpeg.cpp \
 	video_slider.cpp \
 	visual_feature.cpp \

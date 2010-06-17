@@ -98,6 +98,12 @@ FFMatroskaVideo::FFMatroskaVideo(const char *SourceFile, int Track,
 	VP.FPSNumerator = 30;
 	VP.RFFDenominator = CodecContext->time_base.num;
 	VP.RFFNumerator = CodecContext->time_base.den;
+	if (CodecContext->codec_id == CODEC_ID_H264) {
+		if (VP.RFFNumerator & 1)
+			VP.RFFDenominator *= 2;
+		else
+			VP.RFFNumerator /= 2;
+	}
 	VP.NumFrames = Frames.size();
 	VP.TopFieldFirst = DecodeFrame->top_field_first;
 #ifdef FFMS_HAVE_FFMPEG_COLORSPACE_INFO
@@ -107,8 +113,8 @@ FFMatroskaVideo::FFMatroskaVideo(const char *SourceFile, int Track,
 	VP.ColorSpace = 0;
 	VP.ColorRange = 0;
 #endif
-	VP.FirstTime = ((Frames.front().DTS * Frames.TB.Num) / (double)Frames.TB.Den) / 1000;
-	VP.LastTime = ((Frames.back().DTS * Frames.TB.Num) / (double)Frames.TB.Den) / 1000;
+	VP.FirstTime = ((Frames.front().PTS * Frames.TB.Num) / (double)Frames.TB.Den) / 1000;
+	VP.LastTime = ((Frames.back().PTS * Frames.TB.Num) / (double)Frames.TB.Den) / 1000;
 
 	if (CodecContext->width <= 0 || CodecContext->height <= 0)
 		throw FFMS_Exception(FFMS_ERROR_DECODING, FFMS_ERROR_CODEC,
@@ -116,8 +122,8 @@ FFMatroskaVideo::FFMatroskaVideo(const char *SourceFile, int Track,
 
 	// Calculate the average framerate
 	if (Frames.size() >= 2) {
-		double DTSDiff = (double)(Frames.back().DTS - Frames.front().DTS);
-		VP.FPSDenominator = (unsigned int)(DTSDiff * mkv_TruncFloat(TI->TimecodeScale) / (double)1000 / (double)(VP.NumFrames - 1) + 0.5);
+		double PTSDiff = (double)(Frames.back().PTS - Frames.front().PTS);
+		VP.FPSDenominator = (unsigned int)(PTSDiff * mkv_TruncFloat(TI->TimecodeScale) / (double)1000 / (double)(VP.NumFrames - 1) + 0.5);
 		VP.FPSNumerator = 1000000; 
 	}
 
@@ -159,10 +165,17 @@ void FFMatroskaVideo::DecodeNextFrame() {
 
 		PacketNumber++;
 
-		if (CodecContext->codec_id == CODEC_ID_MPEG4 && IsNVOP(Packet))
-			goto Done;
-
 		avcodec_decode_video2(CodecContext, DecodeFrame, &FrameFinished, &Packet);
+
+		if (CodecContext->codec_id == CODEC_ID_MPEG4) {
+			if (IsPackedFrame(Packet)) {
+				MPEG4Counter++;
+			} else if (IsNVOP(Packet) && MPEG4Counter && FrameFinished) {
+				MPEG4Counter--;
+			} else if (IsNVOP(Packet) && !MPEG4Counter && !FrameFinished) {
+				goto Done;
+			}
+		}
 
 		if (FrameFinished)
 			goto Done;
@@ -190,6 +203,7 @@ FFMS_Frame *FFMatroskaVideo::GetFrame(int n) {
 
 	int ClosestKF = Frames.FindClosestVideoKeyFrame(n);
 	if (CurrentFrame > n || ClosestKF > CurrentFrame + 10) {
+		MPEG4Counter = 0;
 		PacketNumber = ClosestKF;
 		CurrentFrame = ClosestKF;
 		avcodec_flush_buffers(CodecContext);

@@ -63,7 +63,6 @@ public:
 };
 
 
-
 /// DOCME
 /// @class VideoProviderCache
 /// @brief DOCME
@@ -89,12 +88,11 @@ private:
 
 protected:
 	// Cache functions
-	void SetCacheMax(int n_frames);
+	unsigned GetCurCacheSize();
 	void ClearCache();
 
 public:
 	// Base methods
-	void GetFloatFrame(float* Buffer, int n);	// Get frame as float
 	const AegiVideoFrame GetFrame(int n);
 	VideoProviderCache(VideoProvider *master);
 	virtual ~VideoProviderCache();

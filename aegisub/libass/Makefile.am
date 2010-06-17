@@ -1,6 +1,6 @@
 noinst_LIBRARIES = libass_aegisub.a
 
-AM_CPPFLAGS = -I../src @FREETYPE_CFLAGS@ -DCONFIG_ICONV -DCONFIG_FONTCONFIG @FONTCONFIG_CFLAGS@ @ICONV_CFLAGS@
+AM_CPPFLAGS = @FREETYPE_CFLAGS@ -DCONFIG_ICONV -DCONFIG_FONTCONFIG @FONTCONFIG_CFLAGS@ @ICONV_CFLAGS@
 
 if BUILD_DARWIN
 AM_CPPFLAGS += -DBUILD_DARWIN
@@ -16,6 +16,7 @@ libass_aegisub_a_SOURCES = \
 	ass_library.c \
 	ass_parse.c \
 	ass_render.c \
+	ass_strtod.c \
 	ass_utils.c
 
 libass_aegisub_a_SOURCES += \

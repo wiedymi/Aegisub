@@ -103,8 +103,6 @@ BEGIN_EVENT_TABLE(VideoDisplay, wxGLCanvas)
 	EVT_MENU(VIDEO_MENU_SAVE_SNAPSHOT_RAW,VideoDisplay::OnSaveSnapshotRaw)
 END_EVENT_TABLE()
 
-
-
 /// Attribute list for gl canvases; set the canvases to doublebuffered rgba with an 8 bit stencil buffer
 int attribList[] = { WX_GL_RGBA , WX_GL_DOUBLEBUFFER, WX_GL_STENCIL_SIZE, 8, 0 };
 
@@ -129,10 +127,10 @@ VideoDisplay::VideoDisplay(VideoBox *box, VideoSlider *ControlSlider, wxTextCtrl
 , SubsPosition(SubsPosition)
 , PositionDisplay(PositionDisplay)
 , visual(NULL)
+, videoOut(new VideoOutGL())
 , box(box)
 , freeSize(false)
 {
-	videoOut = new VideoOutGL();
 	SetCursor(wxNullCursor);
 }
 
@@ -154,6 +152,7 @@ void VideoDisplay::ShowCursor(bool show) {
 }
 
 void VideoDisplay::SetFrame(int frameNumber) {
+	VideoContext *context = VideoContext::Get();
 	ControlSlider->SetValue(frameNumber);
 
 	// Get time for frame
@@ -165,7 +164,7 @@ void VideoDisplay::SetFrame(int frameNumber) {
 
 	// Set the text box for frame number and time
 	PositionDisplay->SetValue(wxString::Format(_T("%01i:%02i:%02i.%03i - %i"), h, m, s, ms, frameNumber));
-	if (VideoContext::Get()->GetKeyFrames().Index(frameNumber) != wxNOT_FOUND) {
+	if (context->GetKeyFrames().Index(frameNumber) != wxNOT_FOUND) {
 		// Set the background color to indicate this is a keyframe
 		PositionDisplay->SetBackgroundColour(Options.AsColour(_T("Grid selection background")));
 		PositionDisplay->SetForegroundColour(Options.AsColour(_T("Grid selection foreground")));
@@ -180,7 +179,7 @@ void VideoDisplay::SetFrame(int frameNumber) {
 	int startOff = 0;
 	int endOff = 0;
 
-	if (AssDialogue *curLine = VideoContext::Get()->curLine) {
+	if (AssDialogue *curLine = context->curLine) {
 		startOff = time - curLine->Start.GetMS();
 		endOff = time - curLine->End.GetMS();
 	}
@@ -192,13 +191,43 @@ void VideoDisplay::SetFrame(int frameNumber) {
 	// Set the text box for time relative to active subtitle line
 	SubsPosition->SetValue(wxString::Format(_T("%s%ims; %s%ims"), startSign.c_str(), startOff, endSign.c_str(), endOff));
 
-	if (IsShownOnScreen()) {
-		// Update the visual typesetting tools
-		if (visual) visual->Refresh();
+	if (IsShownOnScreen() && visual) visual->Refresh();
 
-		// Render the new frame
-		Render(frameNumber);
+	// Render the new frame
+	if (context->IsLoaded()) {
+		AegiVideoFrame frame;
+		try {
+			frame = context->GetFrame(frameNumber);
+		}
+		catch (const wxChar *err) {
+			wxLogError(
+				_T("Failed seeking video. The video file may be corrupt or incomplete.\n")
+				_T("Error message reported: %s"),
+				err);
+		}
+		catch (...) {
+			wxLogError(
+				_T("Failed seeking video. The video file may be corrupt or incomplete.\n")
+				_T("No further error message given."));
+		}
+		try {
+			videoOut->UploadFrameData(frame);
+		}
+		catch (const VideoOutInitException& err) {
+			wxLogError(
+				L"Failed to initialize video display. Closing other running programs and updating your video card drivers may fix this.\n"
+				L"Error message reported: %s",
+				err.GetMessage().c_str());
+			context->Reset();
+		}
+		catch (const VideoOutRenderException& err) {
+			wxLogError(
+				L"Could not upload video frame to graphics card.\n"
+				L"Error message reported: %s",
+				err.GetMessage().c_str());
+		}
 	}
+	Render();
 
 	currentFrame = frameNumber;
 }
@@ -209,9 +238,9 @@ void VideoDisplay::SetFrameRange(int from, int to) {
 
 
 /// @brief Render the currently visible frame
-void VideoDisplay::Render(int frameNumber) try {
+void VideoDisplay::Render() try {
 	if (!IsShownOnScreen()) return;
-	if (!wxIsMainThread()) throw _T("Error: trying to render from non-primary thread");
+	wxASSERT(wxIsMainThread());
 
 	VideoContext *context = VideoContext::Get();
 	wxASSERT(context);
@@ -230,14 +259,6 @@ void VideoDisplay::Render(int frameNumber) try {
 	ph = context->GetHeight();
 	wxASSERT(pw > 0);
 	wxASSERT(ph > 0);
-
-	// Clear frame buffer
-	glClearColor(0,0,0,0);
-	if (glGetError()) throw _T("Error setting glClearColor().");
-	glClearStencil(0);
-	if (glGetError()) throw _T("Error setting glClearStencil().");
-	glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	if (glGetError()) throw _T("Error calling glClear().");
 
 	// Freesized transform
 	dx1 = 0;
@@ -264,22 +285,8 @@ void VideoDisplay::Render(int frameNumber) try {
 		}
 	}
 
-	// Set viewport
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glViewport(dx1,dy1,dx2,dy2);
-	if (glGetError()) throw _T("Error setting GL viewport.");
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0.0f,sw,sh,0.0f,-1000.0f,1000.0f);
-	glMatrixMode(GL_MODELVIEW);
-	if (glGetError()) throw _T("Error setting up matrices (wtf?).");
-	glShadeModel(GL_FLAT);
-
-	glDisable(GL_BLEND);
-	if (glGetError()) throw _T("Error disabling blending.");
-
-	videoOut->DisplayFrame(context->GetFrame(frameNumber), sw, sh);
+	videoOut->SetViewport(dx1, dy1, dx2, dy2);
+	videoOut->Render(sw, sh);
 
 	DrawTVEffects();
 
@@ -289,39 +296,19 @@ void VideoDisplay::Render(int frameNumber) try {
 	glFinish();
 	SwapBuffers();
 }
-catch (const VideoOutUnsupportedException &err) {
-		wxLogError(
-		_T("An error occurred trying to render the video frame to screen.\n")
-		_T("Your graphics card does not appear to have a functioning OpenGL driver.\n")
-		_T("Error message reported: %s"),
-		err.GetMessage());
-	VideoContext::Get()->Reset();
-}
 catch (const VideoOutException &err) {
-		wxLogError(
-		_T("An error occurred trying to render the video frame to screen.\n")
-		_T("If you get this error regardless of which video file you use, and also if you use dummy video, Aegisub might not work with your graphics card's OpenGL driver.\n")
-		_T("Error message reported: %s"),
-		err.GetMessage());
-	VideoContext::Get()->Reset();
-}
-catch (const wxChar *err) {
 	wxLogError(
-		_T("An error occurred trying to render the video frame to screen.\n")
-		_T("If you get this error regardless of which video file you use, and also if you use dummy video, Aegisub might not work with your graphics card's OpenGL driver.\n")
+		_T("An error occurred trying to render the video frame on the screen.\n")
 		_T("Error message reported: %s"),
-		err);
+		err.GetMessage().c_str());
 	VideoContext::Get()->Reset();
 }
 catch (...) {
 	wxLogError(
 		_T("An error occurred trying to render the video frame to screen.\n")
-		_T("If you get this error regardless of which video file you use, and also if you use dummy video, Aegisub might not work with your graphics card's OpenGL driver.\n")
 		_T("No further error message given."));
 	VideoContext::Get()->Reset();
 }
-
-
 
 /// @brief Draw the appropriate overscan masks for the current aspect ratio
 void VideoDisplay::DrawTVEffects() {
@@ -400,11 +387,24 @@ void VideoDisplay::UpdateSize() {
 		if (con->GetAspectRatioType() == 0) w = int(con->GetWidth() * zoomValue);
 		else w = int(con->GetHeight() * zoomValue * con->GetAspectRatioValue());
 		h = int(con->GetHeight() * zoomValue);
-		SetSizeHints(w,h,w,h);
+
+		// Sizers ignore SetClientSize/SetSize, so only use them to calculate
+		// what size is required after including the borders
+		SetClientSize(w,h);
+		GetSize(&w,&h);
+		wxSize size(w,h);
+		SetMinSize(size);
+		SetMaxSize(size);
 
 		locked = true;
 		box->VideoSizer->Fit(box);
 		box->GetParent()->Layout();
+
+		// The sizer makes us use the full width, which at very low zoom levels
+		// results in stretched video, so after using the sizer to update the 
+		// parent window sizes, reset our size to the correct value
+		SetSize(w,h);
+
 		locked = false;
 	}
 	Refresh(false);
@@ -528,8 +528,6 @@ void VideoDisplay::OnCopyToClipboard(wxCommandEvent &event) {
 	}
 }
 
-
-
 /// @brief Copy the currently display frame to the clipboard, without subtitles
 /// @param event Unused
 void VideoDisplay::OnCopyToClipboardRaw(wxCommandEvent &event) {
@@ -539,23 +537,17 @@ void VideoDisplay::OnCopyToClipboardRaw(wxCommandEvent &event) {
 	}
 }
 
-
-
 /// @brief Save the currently display frame to a file, with subtitles
 /// @param event Unused
 void VideoDisplay::OnSaveSnapshot(wxCommandEvent &event) {
 	VideoContext::Get()->SaveSnapshot(false);
 }
 
-
-
 /// @brief Save the currently display frame to a file, without subtitles
 /// @param event Unused
 void VideoDisplay::OnSaveSnapshotRaw(wxCommandEvent &event) {
 	VideoContext::Get()->SaveSnapshot(true);
 }
-
-
 
 /// @brief Copy coordinates of the mouse to the clipboard
 /// @param event Unused
@@ -570,8 +562,6 @@ void VideoDisplay::OnCopyCoords(wxCommandEvent &event) {
 	}
 }
 
-
-
 /// @brief Convert mouse coordinates relative to the display to coordinates relative to the video
 /// @param x X coordinate
 /// @param y Y coordinate
@@ -585,8 +575,6 @@ void VideoDisplay::ConvertMouseCoords(int &x,int &y) {
 	x = (x-dx1)*w/dx2;
 	y = (y-dy1)*h/dy2;
 }
-
-
 
 /// @brief Set the current visual typesetting mode
 /// @param mode The new mode
@@ -621,6 +609,7 @@ void VideoDisplay::SetVisualMode(int mode, bool render) {
 
 		// Update size as the new typesetting tool may have changed the subtoolbar size
 		UpdateSize();
+		ControlSlider->Refresh(false);
 	}
 	if (render) Render();
 }

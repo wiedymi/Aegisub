@@ -3,10 +3,13 @@ AC_PREREQ(2.57)
 ######################
 # aegisub version info 
 ######################
+# MAKE SURE YOU UPDATE THE VERSION INFO BELOW WHEN YOU SET THIS TO '1'
+m4_define([aegisub_FINAL_RELEASE], [0])
+
 m4_define([aegisub_version_major], [2])
 m4_define([aegisub_version_minor], [2])
 m4_define([aegisub_version_revision], [0])
-m4_define([aegisub_version], [aegisub_version_major.aegisub_version_minor.aegisub_version_revision-dev])
+m4_define([aegisub_version], [aegisub_version_major.aegisub_version_minor.aegisub_version_revision])
 m4_define([aegisub_version_data], [aegisub_version_major.aegisub_version_minor])
 
 
@@ -38,6 +41,7 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER([acconf.h])
 AC_GNU_SOURCE
 AC_CANONICAL_HOST
+
 
 ###########################
 # Check target architecture
@@ -73,10 +77,12 @@ esac
 case "$target_or_host" in
   ppc-*-* | powerpc-*)
     arch_ppc="yes"
+    arch_bundle="ppc"
   ;;
 
   i*86-*-*)
     arch_x86="yes"
+    arch_bundle="intel"
   ;;
 
   x86_64-*-*)
@@ -193,6 +199,7 @@ AM_PROG_CC_C_O
 define([AC_LIBTOOL_LANG_F77_CONFIG], [:])
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
+AC_PROG_RANLIB
 PKG_PROG_PKG_CONFIG([pkgconfig_required_version])
 
 
@@ -219,10 +226,21 @@ fi
 # This is required in order for the config file to work correctly.
 AC_DEFINE_UNQUOTED([BUILD_SVN_REVISION], [$SVN_REVISION], [SVN Revision number, used for config.dat and verison.cpp])
 
-# Used on OSX and Unix for packing building.
-PACKAGE_STRING="${PACKAGE_STRING}-r$SVN_REVISION"
-PACKAGE_VERSION="${PACKAGE_VERSION}-r$SVN_REVISION"
-VERSION="${VERSION}-r$SVN_REVISION"
+
+# Release information.
+if test "aegisub_FINAL_RELEASE" = "1"; then
+  AC_DEFINE([FINAL_RELEASE], [aegisub_FINAL_RELEASE], [This is only set to 1 for a RELEASE VERSION.])
+  BUNDLE_STRING="Aegisub"
+  DMG_STRING="Aegisub-${PACKAGE_VERSION}-${arch_bundle}"
+else
+  PACKAGE_STRING="${PACKAGE_STRING}-dev-r${SVN_REVISION}"
+  PACKAGE_VERSION="${PACKAGE_VERSION}-dev-r${SVN_REVISION}"
+  VERSION="${VERSION}-dev-r${SVN_REVISION}"
+
+  BUNDLE_STRING="Aegisub-${PACKAGE_VERSION}-dev-${SVN_REVISION}"
+  DMG_STRING="Aegisub-${PACKAGE_VERSION}-dev-${SVN_REVISION}-${arch_bundle}"
+fi
+
 
 # Used in version.cpp
 AC_MSG_CHECKING([for build date])
@@ -231,6 +249,10 @@ AC_MSG_RESULT($BUILD_DATE)
 
 AC_SUBST(SVN_REVISION)
 AC_SUBST(BUILD_DATE)
+AC_SUBST(BUNDLE_STRING)
+AC_SUBST(DMG_STRING)
+
+
 
 
 ###################################################
@@ -261,10 +283,14 @@ if test "$enable_compiler_flags" != "no"; then
   AC_CXX_FLAG([-pipe])
 
   # -O* messes with debugging.
-  if test "$enable_debug" != "yes"; then
-    AC_C_FLAG([-O2])
-    AC_CXX_FLAG([-O2])
+  if test "$enable_debug" = "yes"; then
+    opt_flag="-O0"
+  else
+    opt_flag="-O2"
   fi
+
+  AC_C_FLAG([$opt_flag])
+  AC_CXX_FLAG([$opt_flag])
 fi
 
 
@@ -301,7 +327,6 @@ AC_PREPROC_IFELSE(
 AX_OPENMP([], [with_openmp="no"])
 AM_CONDITIONAL([HAVE_OPENMP], [test "$with_openmp" != "no"])
 AC_SUBST(OPENMP_CXXFLAGS)
-
 
 
 ##############################
@@ -343,6 +368,7 @@ int main(void) {
 if test "$agi_cv_with_openglu" = "no" && test "$build_darwin" != "yes"; then
 	AC_MSG_FAILURE([Please install a working OpenGL GLU library.])
 fi
+
 
 #######
 ## cURL
@@ -406,7 +432,6 @@ AC_SUBST(FONTCONFIG_CFLAGS)
 AC_SUBST(FONTCONFIG_LIBS)
 
 
-
 ########
 ## iconv
 ########
@@ -436,7 +461,6 @@ int main(void) {
 
 AC_SUBST(ICONV_LDFLAGS)
 AC_SUBST(ICONV_CFLAGS)
-
 
 
 ###############
@@ -717,6 +741,17 @@ AC_SUBST(LIBPOSTPROC_LIBS)
 AC_SUBST(LIBPOSTPROC_CFLAGS)
 
 
+###################
+# QuickTime Support
+# (mac/windows only)
+###################
+
+AM_CONDITIONAL([HAVE_QUICKTIME], [test "$build_darwin" = "yes"])
+
+if test "$build_darwin" = "yes"; then
+  AC_DEFINE([WITH_QUICKTIME], [1], [QuickTime support.]),
+fi
+
 
 ###################
 # Subtitle Provider
@@ -814,11 +849,16 @@ AM_CONDITIONAL([HAVE_UNIVCHARDET], [test "$with_univchardet" != "no"])
 AC_ARG_WITH(lua,
 [  --without-lua           build without lua 5.1 (auto4)], [lua51_disabled="(disabled)"])
 
-AC_ARG_VAR([LUA_CFLAGS], [CFLAGS to use for LUA 5.1 (default: CPPFLAGS)])
-AC_ARG_VAR([LUA_LDFLAGS], [LDFLAGS to use for LUA 5.1 (default: -llua)])
+AC_ARG_VAR([LUA_CFLAGS], [CFLAGS to use for LUA 5.1 (default: autodetect)])
+AC_ARG_VAR([LUA_LDFLAGS], [LDFLAGS to use for LUA 5.1 (default: autodetect)])
+AC_ARG_VAR([LUA_LIBDIR], [Location of LUA 5.1 library. (default: none)])
+
+if test -z "$LUA_CFLAGS"; then
+  AGI_FIND_HEADER([LUA], [lua.hpp], [/usr/include/lua5.1 /usr/include/lua51 /usr/local/include/lua51 /usr/local/include/lua5.1 /usr/include /usr/local/include])
+fi
 
 if test -z "$LUA_LDFLAGS"; then
-  LUA_LDFLAGS="-llua";
+  AGI_FIND_LIB([LUA], [lua51 lua-5.1 lua5.1 lua], [$LUA_LIBDIR])
 fi
 
 aegisub_save_LIBS="$LIBS"
@@ -826,10 +866,6 @@ LIBS="$LUA_LDFLAGS"
 if test "$with_lua" != no; then
   AC_AGI_COMPILE([Lua 5.1 (auto4)], [lua], [$LUA_CFLAGS], [],[
 #include <lua.hpp>
-
-extern "C" {
-#include <lauxlib.h>
-}
 
 int main () {
   lua_State *L = luaL_newstate();
@@ -994,23 +1030,29 @@ fi
 # gcov
 ######
 
-AC_ARG_VAR([GCOV_FLAGS], [gcov flag(s) to use with --enable-gcov (default: -ftest-coverage -fprofile-arcs)])
+AC_ARG_VAR([GCOV_CFLAGS], [gcov cflag(s) to use with --enable-gcov (default: -ftest-coverage -fprofile-arcs)])
+AC_ARG_VAR([GCOV_LDFLAGS], [gcov ldflag(s) to use with --enable-gcov (default: -lgcov)])
 
 AC_MSG_CHECKING([whether to turn on gcov])
 AC_ARG_ENABLE(gcov, [  --enable-gcov           enable gcov (default=no)])
 
 if test "$enable_gcov" = "yes"; then
-  if test -z "$GCOV_FLAGS"; then
-    GCOV_FLAGS="-fprofile-arcs -ftest-coverage";
+  if test -z "$GCOV_CFLAGS"; then
+    GCOV_CFLAGS="-fprofile-arcs -ftest-coverage";
   fi
+
+  if test -z "$GCOV_LDFLAGS"; then
+    GCOV_LDFLAGS="-lgcov";
+  fi
+
   AC_MSG_RESULT([yes ($GCOV_FLAGS)])
-  CFLAGS="$CFLAGS $GCOV_FLAGS"
-  CPPFLAGS="$CPPFLAGS $GCOV_FLAGS"
+  CFLAGS="$CFLAGS $GCOV_CFLAGS"
+  LDFLAGS="$LDFLAGS $GCOV_LDFLAGS"
+  CPPFLAGS="$CPPFLAGS $GCOV_CFLAGS"
 else
   enable_gcov="no"
   AC_MSG_RESULT([no])
 fi
-
 
 
 ################
@@ -1257,3 +1299,4 @@ Misc Packages
   Hunspell:              $with_hunspell $with_hunspell_version $hunspell_disabled
   universalchardet:      $with_univchardet $univchardet_disabled
 ]);
+

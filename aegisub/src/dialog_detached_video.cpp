@@ -38,6 +38,8 @@
 
 #ifndef AGI_PRE
 #include <wx/filename.h>
+#include <wx/settings.h>
+#include <wx/display.h> /// Must be included last.
 #endif
 
 #include "audio_controller.h"
@@ -48,6 +50,9 @@
 #include "video_context.h"
 #include "video_display.h"
 #include "video_slider.h"
+
+#undef min
+#undef max
 
 
 /// @brief Constructor
@@ -91,8 +96,40 @@ DialogDetachedVideo::DialogDetachedVideo(FrameMain *par, const wxSize &initialDi
 	videoBox->SetMinSize(wxSize(1,1));
 	SetMinSize(wxSize(1,1));
 
+	int display_index = wxDisplay::GetFromWindow(this);
+	if (display_index == wxNOT_FOUND)
+	{
+		int caption_size = wxSystemSettings::GetMetric(wxSYS_CAPTION_Y, this);
+		Move(par->GetPosition() + wxPoint(caption_size, caption_size));
+	}
+	else
+	{
+		wxRect bounds_rect = GetRect();
+		wxRect disp_rect = wxDisplay(display_index).GetClientArea();
+
+		// Ensure our x/y position is past the top left of the display
+		int new_x = std::max(bounds_rect.x, disp_rect.x);
+		int new_y = std::max(bounds_rect.y, disp_rect.y);
+		// Pick the smallest size of display and window.
+		// By doing this, we're guaranteed to get a width/height that fits on the display
+		// and won't have to adjust width/height any further.
+		int new_w = std::min(bounds_rect.width, disp_rect.width);
+		int new_h = std::min(bounds_rect.height, disp_rect.height);
+
+		// Check if bottom right corner is outside display and move inside then
+		if (new_x + new_w > disp_rect.x + disp_rect.width)
+			new_x = disp_rect.x + disp_rect.width - new_w;
+		if (new_y + new_h > disp_rect.y + disp_rect.height)
+			new_y = disp_rect.y + disp_rect.height - new_h;
+
+		SetSize(new_x, new_y, new_w, new_h, wxSIZE_ALLOW_MINUS_ONE);
+	}
+
 	// Update
 	parent->SetDisplayMode(0, -1);
+	GetPosition(&x, &y);
+	Options.SetInt(_T("Detached video last x"), x);
+	Options.SetInt(_T("Detached video last y"), y);
 	Options.SetBool(_T("Detached video"),true);
 	Options.Save();
 
@@ -111,6 +148,7 @@ DialogDetachedVideo::~DialogDetachedVideo() {
 BEGIN_EVENT_TABLE(DialogDetachedVideo,wxDialog)
 	EVT_CLOSE(DialogDetachedVideo::OnClose)
 	EVT_MOVE(DialogDetachedVideo::OnMove)
+	EVT_ICONIZE(DialogDetachedVideo::OnMinimize)
 END_EVENT_TABLE()
 
 /// @brief Close window
@@ -129,4 +167,15 @@ void DialogDetachedVideo::OnMove(wxMoveEvent &event) {
 	wxPoint pos = event.GetPosition();
 	Options.SetInt(_T("Detached video last x"),pos.x);
 	Options.SetInt(_T("Detached video last y"),pos.y);
+}
+
+/// @brief Minimize event handler
+/// @param event
+void DialogDetachedVideo::OnMinimize(wxIconizeEvent &event) {
+	if (event.IsIconized()) {
+		// Force the video display to repaint as otherwise the last displayed
+		// frame stays visible even though the dialog is minimized
+		Hide();
+		Show();
+	}
 }

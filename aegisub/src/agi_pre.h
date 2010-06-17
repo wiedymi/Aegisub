@@ -174,6 +174,7 @@
 #include <wx/glcanvas.h>
 #include <wx/grid.h>
 #include <wx/hashmap.h>
+#include <wx/hyperlink.h>
 #include <wx/icon.h>
 #include <wx/image.h>
 #include <wx/intl.h>
@@ -189,6 +190,7 @@
 #include <wx/notebook.h>
 #include <wx/panel.h>
 #include <wx/power.h>
+#include <wx/protocol/http.h>
 #include <wx/radiobox.h>
 #include <wx/radiobut.h>
 #include <wx/rawbmp.h>
@@ -237,7 +239,7 @@
 #include <GL/glu.h>
 #endif
 
-#ifndef _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_WARNINGS_DEFINED
 #undef _CRT_SECURE_NO_WARNINGS
 #endif
 

@@ -36,31 +36,39 @@
 
 #include "include/aegisub/exception.h"
 
+#ifndef AGI_PRE
+#include <vector>
+#endif
+
 class AegiVideoFrame;
-namespace {
-	struct TextureInfo;
-}
 
 /// @class VideoOutGL
 /// @brief OpenGL based video renderer
 class VideoOutGL {
 private:
+	struct TextureInfo;
+
 	/// The maximum texture size supported by the user's graphics card
 	int maxTextureSize;
 	/// Whether rectangular textures are supported by the user's graphics card
 	bool supportsRectangularTextures;
+	/// Whether GL_CLAMP_TO_EDGE is supported by the user's drivers
+	bool supportsGlClampToEdge;
 	/// The internalformat to use
 	int internalFormat;
+
 	/// The frame height which the texture grid has been set up for
 	int frameWidth;
 	/// The frame width which the texture grid has been set up for
 	int frameHeight;
 	/// The frame format which the texture grid has been set up for
 	GLenum frameFormat;
+	/// Whether the grid is set up for flipped video
+	bool frameFlipped;
 	/// List of OpenGL texture ids used in the grid
-	GLuint *textureIdList;
+	std::vector<GLuint> textureIdList;
 	/// List of precalculated texture display information
-	TextureInfo *textureList;
+	std::vector<TextureInfo> textureList;
 	/// The total texture count
 	int textureCount;
 	/// The number of rows of textures
@@ -68,16 +76,28 @@ private:
 	/// The number of columns of textures
 	int textureCols;
 
-	void InitTextures(int width, int height, GLenum format, int bpp);
+	void DetectOpenGLCapabilities();
+	void InitTextures(int width, int height, GLenum format, int bpp, bool flipped);
+	void CreateTexture(int w, int h, const TextureInfo& ti, GLenum format);
 
 	VideoOutGL(const VideoOutGL &);
 	VideoOutGL& operator=(const VideoOutGL&);
 public:
-	/// @brief Render a frame
+	/// @brief Set the viewport
+	/// @param x Bottom left x coordinate
+	/// @param y Bottom left y coordinate
+	/// @param width Width in pixels of viewport
+	/// @param height Height in pixels of viewport
+	void SetViewport(int x, int y, int width, int height);
+
+	/// @brief Set the frame to be displayed when Render() is called
 	/// @param frame The frame to be displayed
+	void UploadFrameData(const AegiVideoFrame& frame);
+
+	/// @brief Render a frame
 	/// @param sw The current script width
 	/// @param sh The current script height
-	void DisplayFrame(AegiVideoFrame frame, int sw, int sh);
+	void Render(int sw, int sh);
 
 	/// @brief Constructor
 	VideoOutGL();
@@ -90,22 +110,26 @@ public:
 /// @brief Base class for all exceptions thrown by VideoOutGL
 DEFINE_BASE_EXCEPTION_NOINNER(VideoOutException, Aegisub::Exception)
 
-/// @class VideoOutUnsupportedException
+/// @class VideoOutRenderException
 /// @extends VideoOutException
-/// @brief The user's video card does not support OpenGL to any usable extent
-DEFINE_SIMPLE_EXCEPTION_NOINNER(VideoOutUnsupportedException, VideoOutException, "videoout/unsupported")
-
-/// @class VideoOutOpenGLException
-/// @extends VideoOutException
-/// @brief An OpenGL error occured.
-///
-/// Unlike VideoOutUnsupportedException, these errors are likely to be video-specific
-/// and/or due to an Aegisub bug.
-class VideoOutOpenGLException : public VideoOutException {
+/// @brief An OpenGL error occured while uploading or displaying a frame
+class VideoOutRenderException : public VideoOutException {
 public:
-	VideoOutOpenGLException(const wxChar *func, int err)
+	VideoOutRenderException(const wxChar *func, int err)
 		: VideoOutException(wxString::Format("%s failed with error code %d", func, err))
 	{ }
-	const wxChar * GetName() const { return L"videoout/opengl"; }
-	Exception * Copy() const { return new VideoOutOpenGLException(*this); }
+	const wxChar * GetName() const { return L"videoout/opengl/render"; }
+	Exception * Copy() const { return new VideoOutRenderException(*this); }
+};
+/// @class VideoOutOpenGLException
+/// @extends VideoOutException
+/// @brief An OpenGL error occured while setting up the video display
+class VideoOutInitException : public VideoOutException {
+public:
+	VideoOutInitException(const wxChar *func, int err)
+		: VideoOutException(wxString::Format("%s failed with error code %d", func, err))
+	{ }
+	VideoOutInitException(const wxChar *err) : VideoOutException(err) { }
+	const wxChar * GetName() const { return L"videoout/opengl/init"; }
+	Exception * Copy() const { return new VideoOutInitException(*this); }
 };

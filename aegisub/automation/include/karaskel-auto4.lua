@@ -1,5 +1,5 @@
 ﻿--[[
- Copyright (c) 2007, Niels Martin Hansen, Rodrigo Braz Monteiro
+ Copyright (c) 2007, 2010, Niels Martin Hansen, Rodrigo Braz Monteiro
  All rights reserved.
 
  Redistribution and use in source and binary forms, with or without
@@ -37,7 +37,12 @@ end
 
 -- Collect styles and metadata from the subs
 function karaskel.collect_head(subs, generate_furigana)
-	local meta = { res_x = 0, res_y = 0 }
+	local meta = {
+		-- X and Y script resolution
+		res_x = 0, res_y = 0,
+		-- Aspect ratio correction factor for video/script resolution mismatch
+		video_x_correct_factor = 1.0
+	}
 	local styles = { n = 0 }
 	local toinsert = {}
 	local first_style_line = nil
@@ -115,6 +120,17 @@ function karaskel.collect_head(subs, generate_furigana)
 			meta.res_y = meta.res_x * 3 / 4
 		end
 	end
+	
+	local video_x, video_y = aegisub.video_size()
+	if video_y then
+		-- Correction factor for TextSub weirdness when render resolution does
+		-- not match script resolution. Text pixels are considered square in
+		-- render resolution rather than in script resolution, which is
+		-- logically inconsistent. Correct for that.
+		meta.video_x_correct_factor =
+			(video_y / video_x) / (meta.res_y / meta.res_x)
+	end
+	aegisub.debug.out(4, "Karaskel: Video X correction factor = %f\n\n", meta.video_x_correct_factor)
 	
 	return meta, styles
 end
@@ -270,14 +286,16 @@ function karaskel.preproc_line_size(meta, styles, line)
 	
 	-- Calculate whole line sizing
 	line.width, line.height, line.descent, line.extlead = aegisub.text_extents(line.styleref, line.text_stripped)
+	line.width = line.width * meta.video_x_correct_factor
 
 	-- Calculate syllable sizing
 	for s = 0, line.kara.n do
 		local syl = line.kara[s]
 		syl.style = line.styleref
 		syl.width, syl.height = aegisub.text_extents(syl.style, syl.text_spacestripped)
-		syl.prespacewidth = aegisub.text_extents(syl.style, syl.prespace)
-		syl.postspacewidth = aegisub.text_extents(syl.style, syl.postspace)
+		syl.width = syl.width * meta.video_x_correct_factor
+		syl.prespacewidth = aegisub.text_extents(syl.style, syl.prespace) * meta.video_x_correct_factor
+		syl.postspacewidth = aegisub.text_extents(syl.style, syl.postspace) * meta.video_x_correct_factor
 	end
 	
 	-- Calculate furigana sizing
@@ -292,6 +310,7 @@ function karaskel.preproc_line_size(meta, styles, line)
 			local furi = line.furi[f]
 			furi.style = line.furistyle
 			furi.width, furi.height = aegisub.text_extents(furi.style, furi.text)
+			furi.width = furi.width * meta.video_x_correct_factor
 			furi.prespacewidth = 0
 			furi.postspacewidth = 0
 		end
@@ -429,12 +448,14 @@ function karaskel.do_furigana_layout(meta, styles, line)
 	-- And end-sentinel
 	table.insert(lgroups, lgsentinel)
 
+	aegisub.debug.out(5, "\nProducing layout from %d layout groups\n", #lgroups-1)
 	-- Layout the groups at macro-level
 	-- Skip sentinel at ends in loop
 	local curx = 0
 	for i = 2, #lgroups-1 do
 		local lg = lgroups[i]
 		local prev = lgroups[i-1]
+		aegisub.debug.out(5, "Layout group, nsyls=%d, nfuri=%d, syl1text='%s', basewidth=%f furiwidth=%f, ", #lg.syls, #lg.furi, lg.syls[1] and lg.syls[1].text or "", lg.basewidth, lg.furiwidth)
 		
 		-- Three cases: No furigana, furigana smaller than base and furigana larger than base
 		if lg.furiwidth == 0 then
@@ -443,14 +464,16 @@ function karaskel.do_furigana_layout(meta, styles, line)
 			lg.right = lg.left + lg.basewidth
 			-- If there was any spillover from a previous group, add it to here
 			if prev.rightspill  and prev.rightspill > 0 then
+				aegisub.debug.out(5, "eat rightspill=%f, ", prev.rightspill)
 				lg.leftspill = 0
-				lg.rightspill = lg.basewidth - prev.rightspill
+				lg.rightspill = prev.rightspill - lg.basewidth
 				prev.rightspill = 0
 			end
 			curx = curx + lg.basewidth
 		elseif lg.furiwidth <= lg.basewidth then
 			-- If there was any rightspill from previous group, we have to stay 100% clear of that
 			if prev.rightspill and prev.rightspill > 0 then
+				aegisub.debug.out(5, "skip rightspill=%f, ", prev.rightspill)
 				curx = curx + prev.rightspill
 				prev.rightspill = 0
 			end
@@ -463,6 +486,7 @@ function karaskel.do_furigana_layout(meta, styles, line)
 		else
 			-- Furigana is wider than base, we'll have to spill in some direction
 			if prev.rightspill and prev.rightspill > 0 then
+				aegisub.debug.out(5, "skip rightspill=%f, ", prev.rightspill)
 				curx = curx + prev.rightspill
 				prev.rightspill = 0
 			end
@@ -471,6 +495,7 @@ function karaskel.do_furigana_layout(meta, styles, line)
 				-- Both directions
 				lg.leftspill = (lg.furiwidth - lg.basewidth) / 2
 				lg.rightspill = lg.leftspill
+				aegisub.debug.out(5, "spill left=%f right=%f, ", lg.leftspill, lg.rightspill)
 				-- If there was any furigana or spill on previous syllable we can't overlap it
 				if prev.rightspill then
 					lg.left = curx + lg.leftspill
@@ -481,11 +506,13 @@ function karaskel.do_furigana_layout(meta, styles, line)
 				-- Only to the right
 				lg.leftspill = 0
 				lg.rightspill = lg.furiwidth - lg.basewidth
+				aegisub.debug.out(5, "spill right=%f, ", lg.rightspill)
 				lg.left = curx
 			end
 			lg.right = lg.left + lg.basewidth
 			curx = lg.right
 		end
+		aegisub.debug.out(5, "left=%f, right=%f\n", lg.left, lg.right)
 	end
 	
 	-- Now the groups are layouted, so place the individual syllables/furigana

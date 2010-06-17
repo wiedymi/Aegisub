@@ -39,6 +39,7 @@
 #include <wx/glcanvas.h>
 #include <wx/combobox.h>
 #include <wx/textctrl.h>
+#include <memory>
 #endif
 
 
@@ -69,17 +70,15 @@ private:
 	/// The height of the display
 	int h;
 
-	/// The x-coordinate of the top left of the area containing video.
+	/// The x-coordinate of the bottom left of the area containing video.
 	/// Always zero unless the display is detatched and is wider than the video.
 	int dx1;
-	/// The x-coordinate of the bottom right of the area containing video.
-	/// Always equal to the width of the video unless the display is detatched and is wider than the video.
+	/// The width of the screen area containing video
 	int dx2;
-	/// The y-coordinate of the top left of the area containing video.
+	/// The y-coordinate of the bottom left of the area containing video.
 	/// Always zero unless the display is detatched and is taller than the video.
 	int dy1;
-	/// The y-coordinate of the bottom of the area containing video.
-	/// Always equal to the height of the video unless the display is detatched and is taller than the video.
+	/// The height of the screen area containing video
 	int dy2;
 
 	/// The x position of the mouse
@@ -124,7 +123,7 @@ private:
 	VisualTool *visual;
 
 	/// The video renderer
-	VideoOutGL *videoOut;
+	std::auto_ptr<VideoOutGL> videoOut;
 
 public:
 	/// The VideoBox this display is contained in
@@ -144,7 +143,7 @@ public:
 	int GetFrame() const { return currentFrame; }
 	void SetFrameRange(int from, int to);
 
-	void Render(int frameNumber = -1);
+	void Render();
 
 	void ShowCursor(bool show);
 	void ConvertMouseCoords(int &x,int &y);

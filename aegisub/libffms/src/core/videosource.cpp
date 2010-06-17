@@ -162,6 +162,7 @@ FFMS_VideoSource::FFMS_VideoSource(const char *SourceFile, FFMS_Index *Index, in
 	SWS = NULL;
 	LastFrameNum = 0;
 	CurrentFrame = 1;
+	MPEG4Counter = 0;
 	CodecContext = NULL;
 	LastFrameHeight = -1;
 	LastFrameWidth = -1;
@@ -194,7 +195,7 @@ FFMS_VideoSource::~FFMS_VideoSource() {
 }
 
 FFMS_Frame *FFMS_VideoSource::GetFrameByTime(double Time) {
-	int Frame = Frames.ClosestFrameFromDTS(static_cast<int64_t>((Time * 1000 * Frames.TB.Den) / Frames.TB.Num));
+	int Frame = Frames.ClosestFrameFromPTS(static_cast<int64_t>((Time * 1000 * Frames.TB.Den) / Frames.TB.Num));
 	return GetFrame(Frame);
 }
 

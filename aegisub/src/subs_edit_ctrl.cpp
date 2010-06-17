@@ -201,6 +201,7 @@ void SubsTextEditCtrl::OnLoseFocus(wxFocusEvent &event) {
 void SubsTextEditCtrl::SetStyles() {
 	// Styles
 	wxFont font = wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT);
+	font.SetEncoding(wxFONTENCODING_DEFAULT); // this solves problems with some fonts not working properly
 	wxString fontname = Options.AsText(_T("Edit Font Face"));
 	if (fontname != _T("")) font.SetFaceName(fontname);
 	int size = Options.AsInt(_T("Edit Font Size"));
@@ -829,15 +830,17 @@ void SubsTextEditCtrl::ShowPopupMenu(int activePos) {
 
 			// Build menu
 			for (int i=0;i<nSugs;i++) {
-				wxMenuItem *itm;
-				itm = menu.Append(EDIT_MENU_SUGGESTIONS+i,sugs[i]);
+				wxMenuItem *itm = new wxMenuItem(&menu, EDIT_MENU_SUGGESTIONS+i, sugs[i]);
 #ifdef __WINDOWS__
 				itm->SetFont(font);
 #endif
+				menu.Append(itm);
 			}
 
 			// Append "add word"
-			menu.Append(EDIT_MENU_ADD_TO_DICT,wxString::Format(_("Add \"%s\" to dictionary"),currentWord.c_str()))->Enable(spellchecker->CanAddWord(currentWord));
+			wxString add_to_dict_text(_("Add \"%s\" to dictionary"));
+			add_to_dict_text.Replace(_T("%s"), currentWord);
+			menu.Append(EDIT_MENU_ADD_TO_DICT,add_to_dict_text)->Enable(spellchecker->CanAddWord(currentWord));
 		}
 
 		// Spelled right
@@ -934,7 +937,10 @@ void SubsTextEditCtrl::ShowPopupMenu(int activePos) {
 			}
 
 			// Thesaurus menu
-			menu.Append(-1,wxString::Format(_("Thesaurus suggestions for \"%s\""),currentWord.c_str()), thesMenu);
+			wxString thes_suggestion_text(_("Thesaurus suggestions for \"%s\""));
+			thes_suggestion_text.Replace(_T("%s"), currentWord);
+			menu.Append(-1,thes_suggestion_text,thesMenu);
+
 		}
 
 		// No suggestions

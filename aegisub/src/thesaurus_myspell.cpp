@@ -42,6 +42,7 @@
 #ifndef AGI_PRE
 #include <wx/dir.h>
 #include <wx/filename.h>
+#include <wx/log.h>
 #endif
 
 #include "mythes.hxx"
@@ -160,6 +161,8 @@ void MySpellThesaurus::SetLanguage(wxString language) {
 
 	// Check if language is available
 	if (!wxFileExists(idxpath) || !wxFileExists(datpath)) return;
+
+	wxLogDebug(_("Using thesarus: %ls"), datpath.c_str());
 
 	// Load
 	mythes = new MyThes(idxpath.mb_str(wxConvLocal),datpath.mb_str(wxConvLocal));

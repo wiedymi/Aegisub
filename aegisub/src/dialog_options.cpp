@@ -113,7 +113,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 	SetIcon(BitmapToIcon(GETIMAGE(options_button_24)));
 
 	// Create book
-	book = new wxTreebook(this,-1,wxDefaultPosition,wxSize(400,300));
+	book = new wxTreebook(this,-1,wxDefaultPosition,wxDefaultSize);
 	needsRestart = false;
 
 	// Panels
@@ -133,7 +133,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 	{
 		wxSizer *genMainSizer = new wxBoxSizer(wxVERTICAL);
 		wxSizer *genSizer1 = new wxStaticBoxSizer(wxHORIZONTAL,generalPage,_("Startup"));
-		wxFlexGridSizer *genSizer4 = new wxFlexGridSizer(2,2,5,5);
+		wxFlexGridSizer *genSizer4 = new wxFlexGridSizer(2,5,5);
 
 		AddCheckBox(generalPage,genSizer4,_("Show Splash Screen"),_T("Show splash"));
 #ifdef __WXMSW__
@@ -143,7 +143,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 
 		genSizer1->Add(genSizer4,1,wxEXPAND|wxALL,5);
 		wxSizer *genSizer2 = new wxStaticBoxSizer(wxVERTICAL,generalPage,_("Limits for levels and recent files"));
-		wxFlexGridSizer *genSizer3 = new wxFlexGridSizer(8,2,5,5);
+		wxFlexGridSizer *genSizer3 = new wxFlexGridSizer(2,5,5);
 		wxString options[8] = { _T("Undo levels"), _T("Recent timecodes max"), _T("Recent keyframes max"), _T("Recent sub max"), _T("Recent vid max"), _T("Recent aud max"), _T("Recent find max"), _T("Recent replace max") };
 		wxString labels[8] = { _("Maximum undo levels"), _("Maximum recent timecode files"), _("Maximum recent keyframe files"), _("Maximum recent subtitle files"), _("Maximum recent video files"), _("Maximum recent audio files"), _("Maximum recent find strings"), _("Maximum recent replace strings") };
 		for (int i=0;i<8;i++) {
@@ -157,8 +157,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		genMainSizer->Add(genSizer1,0,wxEXPAND | wxBOTTOM,5);
 		genMainSizer->Add(genSizer2,0,wxEXPAND,0);
 		genMainSizer->AddStretchSpacer(1);
-		genMainSizer->Fit(generalPage);
-		generalPage->SetSizer(genMainSizer);
+		generalPage->SetSizerAndFit(genMainSizer);
 	}
 
 	// File save/load page
@@ -168,9 +167,9 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		wxSizer *fileSizer1 = new wxStaticBoxSizer(wxVERTICAL,filePage,_("Auto-save"));
 		wxSizer *fileSizer2 = new wxBoxSizer(wxHORIZONTAL);
 		wxSizer *fileSizer3 = new wxStaticBoxSizer(wxHORIZONTAL,filePage,_("File paths"));
-		wxFlexGridSizer *fileSizer4 = new wxFlexGridSizer(3,3,5,5);
+		wxFlexGridSizer *fileSizer4 = new wxFlexGridSizer(3,5,5);
 		wxSizer *fileSizer5 = new wxStaticBoxSizer(wxHORIZONTAL,filePage,_("Miscellanea"));
-		wxFlexGridSizer *fileSizer6 = new wxFlexGridSizer(3,2,5,5);
+		wxFlexGridSizer *fileSizer6 = new wxFlexGridSizer(2,5,5);
 
 		// First static box
 		wxCheckBox *check = new wxCheckBox(filePage,-1,_("Auto-backup"));
@@ -217,8 +216,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		fileMainSizer->Add(fileSizer3,0,wxEXPAND | wxTOP,5);
 		fileMainSizer->Add(fileSizer5,0,wxEXPAND | wxTOP,5);
 		fileMainSizer->AddStretchSpacer(1);
-		fileMainSizer->Fit(filePage);
-		filePage->SetSizer(fileMainSizer);
+		filePage->SetSizerAndFit(fileMainSizer);
 	}
 
 	// Edit box page
@@ -227,9 +225,9 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		wxSizer *editMainSizer = new wxBoxSizer(wxVERTICAL);
 		wxSizer *editSizer1 = new wxStaticBoxSizer(wxVERTICAL,editPage,_("Options"));
 		wxSizer *editSizer6 = new wxBoxSizer(wxHORIZONTAL);
-		wxFlexGridSizer *editSizer2 = new wxFlexGridSizer(4,2,5,5);
+		wxFlexGridSizer *editSizer2 = new wxFlexGridSizer(2,5,5);
 		wxSizer *editSizer3 = new wxStaticBoxSizer(wxVERTICAL,editPage,_("Style"));
-		wxFlexGridSizer *editSizer4 = new wxFlexGridSizer(10,2,2,2);
+		wxFlexGridSizer *editSizer4 = new wxFlexGridSizer(2,2,2);
 		wxSizer *editSizer5 = new wxBoxSizer(wxHORIZONTAL);
 
 		// First static box
@@ -291,8 +289,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		editMainSizer->Add(editSizer1,0,wxEXPAND | wxALL,0);
 		editMainSizer->Add(editSizer3,0,wxEXPAND | wxTOP,5);
 		editMainSizer->AddStretchSpacer(1);
-		editMainSizer->Fit(editPage);
-		editPage->SetSizer(editMainSizer);
+		editPage->SetSizerAndFit(editMainSizer);
 	}
 
 	// Grid page
@@ -301,7 +298,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		wxSizer *gridMainSizer = new wxBoxSizer(wxVERTICAL);
 		wxSizer *gridSizer1 = new wxStaticBoxSizer(wxVERTICAL,gridPage,_("Options"));
 		wxSizer *gridSizer2 = new wxStaticBoxSizer(wxVERTICAL,gridPage,_("Style"));
-		wxFlexGridSizer *gridSizer3 = new wxFlexGridSizer(12,2,2,2);
+		wxFlexGridSizer *gridSizer3 = new wxFlexGridSizer(2,2,2);
 		wxSizer *gridSizer4 = new wxBoxSizer(wxHORIZONTAL);
 		wxSizer *gridSizer5 = new wxBoxSizer(wxHORIZONTAL);
 
@@ -360,8 +357,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		gridMainSizer->Add(gridSizer1,0,wxEXPAND | wxALL,0);
 		gridMainSizer->Add(gridSizer2,0,wxEXPAND | wxTOP,5);
 		gridMainSizer->AddStretchSpacer(1);
-		gridMainSizer->Fit(gridPage);
-		gridPage->SetSizer(gridMainSizer);
+		gridPage->SetSizerAndFit(gridMainSizer);
 	}
 
 	// Video page
@@ -370,8 +366,8 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		wxSizer *videoMainSizer = new wxBoxSizer(wxVERTICAL);
 		wxSizer *videoSizer1 = new wxStaticBoxSizer(wxVERTICAL,videoPage,_("Options"));
 		wxSizer *videoSizer2 = new wxStaticBoxSizer(wxVERTICAL,videoPage,_("Advanced - EXPERT USERS ONLY"));
-		wxFlexGridSizer *videoSizer3 = new wxFlexGridSizer(5,2,5,5);
-		wxFlexGridSizer *videoSizer4 = new wxFlexGridSizer(5,2,5,5);
+		wxFlexGridSizer *videoSizer3 = new wxFlexGridSizer(2,5,5);
+		wxFlexGridSizer *videoSizer4 = new wxFlexGridSizer(2,5,5);
 		wxControl *control;
 
 		// First sizer
@@ -438,8 +434,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		videoMainSizer->Add(videoSizer1,0,wxEXPAND | wxALL,0);
 		videoMainSizer->Add(videoSizer2,0,wxEXPAND | wxTOP,5);
 		videoMainSizer->AddStretchSpacer(1);
-		videoMainSizer->Fit(videoPage);
-		videoPage->SetSizer(videoMainSizer);
+		videoPage->SetSizerAndFit(videoMainSizer);
 	}
 
 	// Audio page
@@ -447,8 +442,8 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		// Sizers
 		wxSizer *audioMainSizer = new wxBoxSizer(wxVERTICAL);
 		wxSizer *audioSizer1 = new wxStaticBoxSizer(wxVERTICAL,audioPage,_("Options"));
-		wxFlexGridSizer *audioSizer3 = new wxFlexGridSizer(3,2,5,5);
-		wxFlexGridSizer *audioSizer4 = new wxFlexGridSizer(4,2,5,5);
+		wxFlexGridSizer *audioSizer3 = new wxFlexGridSizer(2,5,5);
+		wxFlexGridSizer *audioSizer4 = new wxFlexGridSizer(2,5,5);
 
 		// First sizer
 		AddCheckBox(audioPage,audioSizer3,_("Grab times from line upon selection"),_T("Audio grab times on select"));
@@ -457,6 +452,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		AddCheckBox(audioPage,audioSizer3,_("Snap to keyframes"),_T("Audio snap to keyframes"));
 		AddCheckBox(audioPage,audioSizer3,_("Snap to adjacent lines"),_T("Audio snap to other lines"));
 		AddCheckBox(audioPage,audioSizer3,_("Auto-focus on mouse over"),_T("Audio Autofocus"));
+		AddCheckBox(audioPage,audioSizer3,_("Play audio when stepping in video"),_T("Audio Plays When Stepping Video"));
 		audioSizer3->AddGrowableCol(1,1);
 
 		// Second sizer
@@ -473,8 +469,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		audioSizer1->Add(audioSizer4,1,wxEXPAND | wxALL,5);
 		audioMainSizer->Add(audioSizer1,0,wxEXPAND | wxALL,0);
 		audioMainSizer->AddStretchSpacer(1);
-		audioMainSizer->Fit(audioPage);
-		audioPage->SetSizer(audioMainSizer);
+		audioPage->SetSizerAndFit(audioMainSizer);
 	}
 
 	// Audio display page
@@ -483,8 +478,8 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		wxSizer *displayMainSizer = new wxBoxSizer(wxVERTICAL);
 		wxSizer *displaySizer1 = new wxStaticBoxSizer(wxVERTICAL,displayPage,_("Options"));
 		wxSizer *displaySizer2 = new wxStaticBoxSizer(wxVERTICAL,displayPage,_("Style"));
-		wxFlexGridSizer *displaySizer3 = new wxFlexGridSizer(3,2,2,2);
-		wxFlexGridSizer *displaySizer4 = new wxFlexGridSizer(14,2,2,2);
+		wxFlexGridSizer *displaySizer3 = new wxFlexGridSizer(2,2,2);
+		wxFlexGridSizer *displaySizer4 = new wxFlexGridSizer(2,2,2);
 
 		// First sizer
 		wxString labels1[6] = { _("Draw secondary lines"), _("Draw selection background"), _("Draw timeline"),
@@ -525,14 +520,13 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		displayMainSizer->Add(displaySizer1,0,wxEXPAND | wxALL,0);
 		displayMainSizer->Add(displaySizer2,0,wxEXPAND | wxTOP,5);
 		displayMainSizer->AddStretchSpacer(1);
-		displayMainSizer->Fit(displayPage);
-		displayPage->SetSizer(displayMainSizer);
+		displayPage->SetSizerAndFit(displayMainSizer);
 	}
 
 	// Audio advanced page
 	{
 		// Sizers
-		wxFlexGridSizer *audioAdvSizer1 = new wxFlexGridSizer(9,2,5,5);
+		wxFlexGridSizer *audioAdvSizer1 = new wxFlexGridSizer(2,5,5);
 		wxSizer *audioAdvSizer2 = new wxStaticBoxSizer(wxVERTICAL,audioAdvPage,_("Advanced - EXPERT USERS ONLY"));
 		wxSizer *audioAdvSizer3 = new wxBoxSizer(wxVERTICAL);
 
@@ -561,8 +555,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		audioAdvSizer2->Add(audioAdvSizer1,1,wxEXPAND | wxALL,5);
 		audioAdvSizer3->Add(audioAdvSizer2,0,wxEXPAND);
 		audioAdvSizer3->AddStretchSpacer(1);
-		audioAdvSizer3->Fit(audioAdvPage);
-		audioAdvPage->SetSizer(audioAdvSizer3);
+		audioAdvPage->SetSizerAndFit(audioAdvSizer3);
 	}
 
 	// Automation page
@@ -570,7 +563,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		// Sizers
 		wxSizer *autoMainSizer = new wxBoxSizer(wxVERTICAL);
 		wxSizer *autoSizer1 = new wxStaticBoxSizer(wxVERTICAL,autoPage,_("Options"));
-		wxFlexGridSizer *autoSizer2 = new wxFlexGridSizer(6,2,5,5);
+		wxFlexGridSizer *autoSizer2 = new wxFlexGridSizer(2,5,5);
 
 		// First sizer
 		AddTextControl(autoPage,autoSizer2,_("Base path"),_T("Automation Base Path"));
@@ -588,8 +581,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		autoSizer1->Add(autoSizer2,1,wxEXPAND | wxALL,5);
 		autoMainSizer->Add(autoSizer1,0,wxEXPAND | wxALL,0);
 		autoMainSizer->AddStretchSpacer(1);
-		autoMainSizer->Fit(autoPage);
-		autoPage->SetSizer(autoMainSizer);
+		autoPage->SetSizerAndFit(autoMainSizer);
 	}
 
 	// Hotkeys page
@@ -599,7 +591,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		origKeys = Hotkeys.key;
 
 		// List of shortcuts
-		Shortcuts = new wxListView(hotkeysPage,HOTKEY_LIST,wxDefaultPosition,wxSize(250,150),wxLC_REPORT | wxLC_SINGLE_SEL);
+		Shortcuts = new wxListView(hotkeysPage,HOTKEY_LIST,wxDefaultPosition,wxDefaultSize,wxLC_REPORT | wxLC_SINGLE_SEL);
 		Shortcuts->InsertColumn(0,_("Function"),wxLIST_FORMAT_LEFT,200);
 		Shortcuts->InsertColumn(1,_("Key"),wxLIST_FORMAT_LEFT,120);
 
@@ -624,8 +616,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 		wxSizer *hotkeysSizer = new wxBoxSizer(wxVERTICAL);
 		hotkeysSizer->Add(Shortcuts,1,wxLEFT|wxRIGHT|wxTOP|wxEXPAND,5);
 		hotkeysSizer->Add(buttons,0,wxALL|wxEXPAND,5);
-		hotkeysSizer->Fit(hotkeysPage);
-		hotkeysPage->SetSizer(hotkeysSizer);
+		hotkeysPage->SetSizerAndFit(hotkeysSizer);
 	}
 
 	// List book
@@ -642,6 +633,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 	#ifdef wxUSE_TREEBOOK
 	book->ChangeSelection(Options.AsInt(_T("Options page")));
 	#endif
+	book->Fit();
 
 	// Buttons Sizer
 	wxStdDialogButtonSizer *stdButtonSizer = new wxStdDialogButtonSizer();
@@ -661,7 +653,7 @@ DialogOptions::DialogOptions(wxWindow *parent)
 	mainSizer->Add(book,1,wxEXPAND | wxALL,5);
 	mainSizer->Add(buttonSizer,0,wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,5);
 	mainSizer->SetSizeHints(this);
-	SetSizer(mainSizer);
+	SetSizerAndFit(mainSizer);
 	CenterOnParent();
 
 	// Read
@@ -1070,7 +1062,7 @@ void DialogOptions::OnEditHotkey(wxCommandEvent &event) {
 	int oldFlags = curKey->flags;
 
 	// Open dialog
-	DialogInputHotkey input(curKey,Shortcuts->GetItemText(sel),Shortcuts);
+	DialogInputHotkey input(this, curKey, Shortcuts->GetItemText(sel), Shortcuts);
 	input.ShowModal();
 
 	// Update stuff if it changed
@@ -1167,44 +1159,31 @@ void DialogOptions::OnDefaultAllHotkey(wxCommandEvent &event) {
 /// @param name   
 /// @param shorts 
 ///
-DialogInputHotkey::DialogInputHotkey(HotkeyType *_key,wxString name,wxListView *shorts)
-: wxDialog(NULL, -1, _("Press Key"), wxDefaultPosition, wxSize(200,50), wxCAPTION | wxWANTS_CHARS , _T("Press key"))
+DialogInputHotkey::DialogInputHotkey(wxWindow *parent, HotkeyType *_key, wxString name, wxListView *shorts)
+: wxDialog(parent, -1, _("Press Key"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxWANTS_CHARS)
 {
 	// Key
 	key = _key;
 	shortcuts = shorts;
 
-	// Text
-	wxStaticText *text = new wxStaticText(this,-1,wxString::Format(_("Press key to bind to \"%s\" or Esc to cancel."), name.c_str()));
-
-	// Key capturer
-	capture = new CaptureKey(this);
+	wxButton *cancel_button = new wxButton(this, wxID_CANCEL);
+	cancel_button->Connect(wxEVT_KEY_DOWN, (wxObjectEventFunction)&DialogInputHotkey::OnKeyDown, 0, this);
 
 	// Main sizer
 	wxSizer *MainSizer = new wxBoxSizer(wxVERTICAL);
-	MainSizer->Add(text,1,wxALL,5);
+	MainSizer->Add(new wxStaticText(this,-1,wxString::Format(_("Press key to bind to \"%s\" or Esc to cancel."), name.c_str())), 0, wxALL, 12);
+	MainSizer->Add(cancel_button, 0, wxALIGN_CENTER|wxALL&~wxTOP, 12);
 	MainSizer->SetSizeHints(this);
 	SetSizer(MainSizer);
+	CentreOnParent();
 }
 
-
-
-/// @brief Capturer constructor 
-/// @param _parent 
-///
-CaptureKey::CaptureKey(DialogInputHotkey *_parent)
-: wxTextCtrl(_parent,-1,_T(""),wxDefaultPosition,wxSize(0,0),wxTE_PROCESS_ENTER | wxTE_PROCESS_TAB)
-{
-	parent = _parent;
-	SetFocus();
-}
 
 
 /////////////////////
 // Input event table
-BEGIN_EVENT_TABLE(CaptureKey,wxTextCtrl)
-	EVT_KEY_DOWN(CaptureKey::OnKeyDown)
-	EVT_KILL_FOCUS(CaptureKey::OnLoseFocus)
+BEGIN_EVENT_TABLE(DialogInputHotkey,wxDialog)
+	EVT_KEY_DOWN(DialogInputHotkey::OnKeyDown)
 END_EVENT_TABLE()
 
 
@@ -1213,10 +1192,10 @@ END_EVENT_TABLE()
 /// @param event 
 /// @return 
 ///
-void CaptureKey::OnKeyDown(wxKeyEvent &event) {
+void DialogInputHotkey::OnKeyDown(wxKeyEvent &event) {
 	// Get key
 	int keycode = event.GetKeyCode();
-	if (keycode == WXK_ESCAPE) parent->EndModal(0);
+	if (keycode == WXK_ESCAPE) EndModal(0);
 	else if (keycode != WXK_SHIFT && keycode != WXK_CONTROL && keycode != WXK_ALT) {
 		// Get modifier
 		int mod = 0;
@@ -1233,32 +1212,22 @@ void CaptureKey::OnKeyDown(wxKeyEvent &event) {
 		if (dup) {
 			int result = wxMessageBox(wxString::Format(_("The hotkey %s is already mapped to %s. If you proceed, that hotkey will be cleared. Proceed?"),dup->GetText().c_str(),dup->origName.c_str()),_("Hotkey conflict"),wxYES_NO | wxICON_EXCLAMATION);
 			if (result == wxNO) {
-				parent->EndModal(0);
+				EndModal(0);
 				return;
 			}
 			dup->keycode = 0;
 			dup->flags = 0;
-			int item = parent->shortcuts->FindItem(-1,wxPtrToUInt(dup));
-			if (item != -1) parent->shortcuts->SetItem(item,1,dup->GetText());
+			int item = shortcuts->FindItem(-1,wxPtrToUInt(dup));
+			if (item != -1) shortcuts->SetItem(item,1,dup->GetText());
 		}
 
 		// Set keycode
-		parent->key->keycode = keycode;
-		parent->key->flags = mod;
+		key->keycode = keycode;
+		key->flags = mod;
 
 		// End dialogue
-		parent->EndModal(0);
+		EndModal(0);
 	}
 	else event.Skip();
 }
-
-
-
-/// @brief Keep focus 
-/// @param event 
-///
-void CaptureKey::OnLoseFocus(wxFocusEvent &event) {
-	SetFocus();
-}
-
 

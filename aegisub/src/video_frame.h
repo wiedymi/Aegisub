@@ -43,30 +43,29 @@
 
 /// DOCME
 enum VideoFrameFormat {
-
 	/// DOCME
 	FORMAT_NONE		= 0x0000,
 
-	/// DOCME
-	FORMAT_RGB24	= 0x0001, // RGB, interleaved
+	/// RGB, interleaved
+	FORMAT_RGB24	= 0x0001,
 
-	/// DOCME
-	FORMAT_RGB32	= 0x0002, // RGBA, interleaved
+	/// RGBA, interleaved
+	FORMAT_RGB32	= 0x0002,
 
-	/// DOCME
-	FORMAT_YUY2		= 0x0004, // YCbCr 4:2:2, planar
+	/// YCbCr 4:2:2, planar
+	FORMAT_YUY2		= 0x0004,
 
-	/// DOCME
-	FORMAT_YV12		= 0x0008, // YCbCr 4:2:0, planar
+	/// YCbCr 4:2:0, planar
+	FORMAT_YV12		= 0x0008,
 
-	/// DOCME
-	FORMAT_YUV444	= 0x0010, // YCbCr 4:4:4, planar
+	/// YCbCr 4:4:4, planar
+	FORMAT_YUV444	= 0x0010,
 
-	/// DOCME
-	FORMAT_YUV444A	= 0x0020, // YCbCr 4:4:4 plus alpha, planar
+	/// YCbCr 4:4:4 plus alpha, planar
+	FORMAT_YUV444A	= 0x0020,
 
-	/// DOCME
-	FORMAT_YUVMONO	= 0x0040, // Y only (greyscale)
+	/// Y only (greyscale)
+	FORMAT_YUVMONO	= 0x0040,
 };
 
 
@@ -78,48 +77,46 @@ enum VideoFrameFormat {
 /// DOCME
 class AegiVideoFrame {
 private:
-
-	/// DOCME
-	unsigned int memSize;
+	/// Whether the object owns its buffer. If this is false, **data should never be modified
+	bool ownMem;
 	void Reset();
 
 public:
+	void Allocate();
 
-	/// DOCME
-	unsigned char *data[4];		// Pointers to the data planes. Interleaved formats only use data[0]
+	unsigned int memSize; /// The size in bytes of the frame buffer
 
-	/// DOCME
-	VideoFrameFormat format;	// Data format
+	/// Pointers to the data planes. Interleaved formats only use data[0]
+	unsigned char *data[4];
 
-	/// DOCME
-	unsigned int w;				// Width in pixels
+	/// Data format
+	VideoFrameFormat format;
 
-	/// DOCME
-	unsigned int h;				// Height in pixels
+	/// Width in pixels
+	unsigned int w;
 
-	/// DOCME
-	unsigned int pitch[4];		// Pitch, that is, the number of bytes used by each row.
+	/// Height in pixels
+	unsigned int h;
 
+	// Pitch, that is, the number of bytes used by each row.
+	unsigned int pitch[4];
 
-	/// DOCME
-	bool flipped;				// First row is actually the bottom one
+	/// First row is actually the bottom one
+	bool flipped;
 
-	/// DOCME
-	bool invertChannels;		// Swap Red and Blue channels or U and V planes (controls RGB versus BGR ordering etc)
-
-	/// DOCME
-	bool cppAlloc;				// Allocated with C++'s "new" operator, instead of "malloc"
+	/// Swap Red and Blue channels or U and V planes (controls RGB versus BGR ordering etc)
+	bool invertChannels;
 
 	AegiVideoFrame();
 	AegiVideoFrame(int width,int height,VideoFrameFormat format=FORMAT_RGB32);
 
-	void Allocate();
 	void Clear();
 	void CopyFrom(const AegiVideoFrame &source);
-	void ConvertFrom(const AegiVideoFrame &source);
+	void ConvertFrom(const AegiVideoFrame &source, VideoFrameFormat newFormat=FORMAT_RGB32);
+	void SetTo(const unsigned char *const source[], int width, int height, const int pitch[4], VideoFrameFormat format);
+
 
 	wxImage GetImage() const;
-	void GetFloat(float *buffer) const;
 	int GetBpp(int plane=0) const;
 };
 

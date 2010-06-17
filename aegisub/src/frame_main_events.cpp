@@ -59,7 +59,6 @@
 #endif
 #include "charset_conv.h"
 #include "dialog_about.h"
-#include "dialog_associations.h"
 #include "dialog_attachments.h"
 #include "dialog_automation.h"
 #include "dialog_dummy_video.h"
@@ -98,6 +97,11 @@
 #include "video_display.h"
 #include "video_slider.h"
 
+#ifdef __APPLE__
+extern "C" {
+#include "libosxutil/libosxutil.h"
+}
+#endif
 
 ////////////////////
 // Menu event table
@@ -200,6 +204,7 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_MENU(Menu_Video_Shift_To_Frame, FrameMain::OnShiftToFrame)
 
 	EVT_MENU(Menu_Help_Contents, FrameMain::OnContents)
+	EVT_MENU(Menu_Help_Files, FrameMain::OnFiles)
 	EVT_MENU(Menu_Help_Website, FrameMain::OnWebsite)
 	EVT_MENU(Menu_Help_Forums, FrameMain::OnForums)
 	EVT_MENU(Menu_Help_BugTracker, FrameMain::OnBugTracker)
@@ -208,7 +213,6 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_MENU(Menu_Help_About, FrameMain::OnAbout)
 
 	EVT_MENU(Menu_View_Language, FrameMain::OnChooseLanguage)
-	EVT_MENU(Menu_View_Associations, FrameMain::OnPickAssociations)
 	EVT_MENU(Menu_View_Standard, FrameMain::OnViewStandard)
 	EVT_MENU(Menu_View_Audio, FrameMain::OnViewAudio)
 	EVT_MENU(Menu_View_Video, FrameMain::OnViewVideo)
@@ -440,13 +444,17 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		// Undo state
 		editMenu->Remove(Menu_Edit_Undo);
 		editMenu->Remove(Menu_Edit_Redo);
-		AppendBitmapMenuItem(editMenu,Menu_Edit_Undo, wxString::Format(_T("%s %s\t%s"), _("&Undo"), AssFile::GetUndoDescription().c_str(), Hotkeys.GetText(_T("Undo")).c_str()), _("Undoes last action"),GETIMAGE(undo_button_16),0)->Enable(!AssFile::IsUndoStackEmpty());
-		AppendBitmapMenuItem(editMenu,Menu_Edit_Redo, wxString::Format(_T("%s %s\t%s"), _("&Redo"), AssFile::GetRedoDescription().c_str(), Hotkeys.GetText(_T("Redo")).c_str()), _("Redoes last action"),GETIMAGE(redo_button_16),1)->Enable(!AssFile::IsRedoStackEmpty());
+
+		wxString undo_text = _("&Undo") + wxString(_T(" ")) + AssFile::GetUndoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Undo"));
+		AppendBitmapMenuItem(editMenu,Menu_Edit_Undo, undo_text, _("Undoes last action"),GETIMAGE(undo_button_16),0)->Enable(!AssFile::IsUndoStackEmpty());
+
+		wxString redo_text = _("&Redo") + wxString(_T(" ")) + AssFile::GetRedoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Redo"));
+		AppendBitmapMenuItem(editMenu,Menu_Edit_Redo, redo_text, _("Redoes last action"),GETIMAGE(redo_button_16),1)->Enable(!AssFile::IsRedoStackEmpty());
 
 		// Copy/cut/paste
 		wxArrayInt sels = SubsBox->GetSelection();
 		bool can_copy = (sels.Count() > 0);
-		
+
 		bool can_paste = true;
 		if (wxTheClipboard->Open()) {
 			can_paste = wxTheClipboard->IsSupported(wxDF_TEXT);
@@ -604,12 +612,11 @@ void FrameMain::OnAbout(wxCommandEvent &event) {
 
 
 
-/// @brief Open check updates 
+/// @brief Open check updates
 /// @param event 
 ///
 void FrameMain::OnCheckUpdates(wxCommandEvent &event) {
-	DialogVersionCheck *check = new DialogVersionCheck(this,false);
-	(void)check;
+	PerformVersionCheck(true);
 }
 
 
@@ -621,13 +628,24 @@ void FrameMain::OnContents(wxCommandEvent& WXUNUSED(event)) {
 	OpenHelp(_T(""));
 }
 
+/// @brief Open help files on OSX.
+/// @param event
+///
+void FrameMain::OnFiles(wxCommandEvent& WXUNUSED(event)) {
+#ifdef __WXMAC__
+	char *shared_path = OSX_GetBundleSharedSupportDirectory();
+	wxString help_path = wxString::Format(_T("%s/doc"), wxString(shared_path, wxConvUTF8).c_str());
+	OSX_OpenLocation(help_path.c_str());
+#endif
+}
+
 
 
 /// @brief Open website 
 /// @param event 
 ///
 void FrameMain::OnWebsite(wxCommandEvent& WXUNUSED(event)) {
-	AegisubApp::OpenURL(_T("http://www.aegisub.net/"));
+	AegisubApp::OpenURL(_T("http://www.aegisub.org/"));
 }
 
 
@@ -636,7 +654,7 @@ void FrameMain::OnWebsite(wxCommandEvent& WXUNUSED(event)) {
 /// @param event 
 ///
 void FrameMain::OnForums(wxCommandEvent& WXUNUSED(event)) {
-	AegisubApp::OpenURL(_T("http://forum.aegisub.net/"));
+	AegisubApp::OpenURL(_T("http://forum.aegisub.org/"));
 }
 
 
@@ -685,7 +703,7 @@ void FrameMain::OnVideoPlay(wxCommandEvent &event) {
 ///
 void FrameMain::OnOpenVideo(wxCommandEvent& WXUNUSED(event)) {
 	wxString path = Options.AsText(_T("Last open video path"));
-	wxString str = wxString(_("Video Formats")) + _T(" (*.avi,*.mkv,*.mp4,*.avs,*.d2v,*.ogm,*.mpeg,*.mpg,*.vob)|*.avi;*.avs;*.d2v;*.mkv;*.ogm;*.mp4;*.mpeg;*.mpg;*.vob|")
+	wxString str = wxString(_("Video Formats")) + _T(" (*.avi,*.mkv,*.mp4,*.avs,*.d2v,*.ogm,*.mpeg,*.mpg,*.vob,*.mov)|*.avi;*.avs;*.d2v;*.mkv;*.ogm;*.mp4;*.mpeg;*.mpg;*.vob;*.mov|")
 				 + _("All Files") + _T(" (*.*)|*.*");
 	wxString filename = wxFileSelector(_("Open video file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 	if (!filename.empty()) {
@@ -1300,12 +1318,8 @@ void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnSnapSubsStartToVid (wxCommandEvent &event) {
-	if (VideoContext::Get()->IsLoaded()) {
-		wxArrayInt sel = SubsBox->GetSelection();
-		if (sel.Count() > 0) {
-			wxCommandEvent dummy;
-			SubsBox->SetSubsToVideo(true);
-		}
+	if (VideoContext::Get()->IsLoaded() && SubsBox->GetSelection().Count() > 0) {
+		SubsBox->SetSubsToVideo(true);
 	}
 }
 
@@ -1314,12 +1328,8 @@ void FrameMain::OnSnapSubsStartToVid (wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnSnapSubsEndToVid (wxCommandEvent &event) {
-	if (VideoContext::Get()->IsLoaded()) {
-		wxArrayInt sel = SubsBox->GetSelection();
-		if (sel.Count() > 0) {
-			wxCommandEvent dummy;
-			SubsBox->SetSubsToVideo(false);
-		}
+	if (VideoContext::Get()->IsLoaded() && SubsBox->GetSelection().Count() > 0) {
+		SubsBox->SetSubsToVideo(false);
 	}
 }
 
@@ -1329,12 +1339,8 @@ void FrameMain::OnSnapSubsEndToVid (wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnSnapVidToSubsStart (wxCommandEvent &event) {
-	if (VideoContext::Get()->IsLoaded()) {
-		wxArrayInt sel = SubsBox->GetSelection();
-		if (sel.Count() > 0) {
-			wxCommandEvent dummy;
-			SubsBox->SetVideoToSubs(true);
-		}
+	if (VideoContext::Get()->IsLoaded() && SubsBox->GetSelection().Count() > 0) {
+		SubsBox->SetVideoToSubs(true);
 	}
 }
 
@@ -1343,12 +1349,8 @@ void FrameMain::OnSnapVidToSubsStart (wxCommandEvent &event) {
 /// @param event 
 ///
 void FrameMain::OnSnapVidToSubsEnd (wxCommandEvent &event) {
-	if (VideoContext::Get()->IsLoaded()) {
-		wxArrayInt sel = SubsBox->GetSelection();
-		if (sel.Count() > 0) {
-			wxCommandEvent dummy;
-			SubsBox->SetVideoToSubs(false);
-		}
+	if (VideoContext::Get()->IsLoaded() && SubsBox->GetSelection().Count() > 0) {
+		SubsBox->SetVideoToSubs(false);
 	}
 }
 
@@ -1944,18 +1946,6 @@ void FrameMain::OnChooseLanguage (wxCommandEvent &event) {
 			}
 		}
 	}
-}
-
-
-
-/// @brief Pick associations 
-/// @param event 
-///
-void FrameMain::OnPickAssociations(wxCommandEvent &event) {
-#ifdef WIN32
-	DialogAssociations diag(NULL);
-	diag.ShowModal();
-#endif
 }
 
 

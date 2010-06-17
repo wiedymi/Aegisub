@@ -1,4 +1,4 @@
-// Copyright (c) 2008, Niels Martin Hansen
+// Copyright (c) 2008, 2010, Niels Martin Hansen
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -56,31 +56,29 @@
 #include "utils.h"
 
 
-/// DOCME
+
+/// @brief RAII support class to init and de-init the COM library
 struct COMInitialization {
 
-	/// DOCME
+	/// Flag set if an inited COM library is managed
 	bool inited;
 
 
-	/// @brief DOCME
-	///
+	/// @brief Constructor, sets inited false
 	COMInitialization()
 	{
 		inited = false;
 	}
 
 
-	/// @brief DOCME
-	///
+	/// @brief Destructor, de-inits COM if it is inited
 	~COMInitialization()
 	{
 		if (inited) CoUninitialize();
 	}
 
 
-	/// @brief DOCME
-	///
+	/// @brief Initialise the COM library as single-threaded apartment if isn't already inited by us
 	void Init()
 	{
 		if (!inited)
@@ -93,43 +91,40 @@ struct COMInitialization {
 };
 
 
-template<class T>
 
-/// DOCME
+/// @class COMObjectRetainer
+/// @brief Simple auto_ptr-like class for COM objects
+template<class T>
 struct COMObjectRetainer {
 
-	/// DOCME
+	/// Managed object
 	T *obj;
 
 
-	/// @brief DOCME
-	///
+	/// @brief Constructor for null object
 	COMObjectRetainer()
 	{
 		obj = 0;
 	}
 
 
-	/// @brief DOCME
-	/// @param _obj 
-	///
+	/// @brief Constructor to take object immediately
+	/// @param _obj Object to manage
 	COMObjectRetainer(T *_obj)
 	{
 		obj = _obj;
 	}
 
 
-	/// @brief DOCME
-	///
+	/// @brief Destructor, releases object if there is one
 	~COMObjectRetainer()
 	{
 		if (obj) obj->Release();
 	}
 
 
-	/// @brief DOCME
-	/// @return 
-	///
+	/// @brief Dereference the managed object
+	/// @return The managed object
 	T * operator -> ()
 	{
 		return obj;
@@ -138,11 +133,34 @@ struct COMObjectRetainer {
 
 
 
-/// DOCME
+/// @brief RAII wrapper around Win32 HANDLE type
+struct Win32KernelHandle {
+	/// HANDLE value being managed
+	HANDLE handle;
+
+	/// @brief Create with a managed handle
+	/// @param handle Win32 handle to manage
+	Win32KernelHandle(HANDLE handle = 0)
+		: handle(handle)
+	{
+	}
+
+	/// @brief Destructor, closes the managed handle
+	~Win32KernelHandle()
+	{
+		if (handle) CloseHandle(handle);
+	}
+
+	/// @brief Returns the managed handle
+	operator HANDLE () const { return handle; }
+};
+
+
+
 /// @class DirectSoundPlayer2Thread
-/// @brief DOCME
+/// @brief Playback thread class for DirectSoundPlayer2
 ///
-/// DOCME
+/// Not based on wxThread, but uses Win32 threads directly
 class DirectSoundPlayer2Thread {
 	static unsigned int __stdcall ThreadProc(void *parameter);
 	void Run();
@@ -152,65 +170,58 @@ class DirectSoundPlayer2Thread {
 	void CheckError();
 
 
-	/// DOCME
-	HANDLE thread_handle;
+	/// Win32 handle to the thread
+	Win32KernelHandle thread_handle;
 
-	// Used to signal state-changes to thread
-	HANDLE
+	/// Event object, world to thread, set to start playback
+	Win32KernelHandle event_start_playback;
 
-		/// DOCME
-		event_start_playback,
+	/// Event object, world to thread, set to stop playback
+	Win32KernelHandle event_stop_playback;
 
-		/// DOCME
-		event_stop_playback,
+	/// Event object, world to thread, set if playback end time was updated
+	Win32KernelHandle event_update_end_time;
 
-		/// DOCME
-		event_update_end_time,
+	/// Event object, world to thread, set if the volume was changed
+	Win32KernelHandle event_set_volume;
 
-		/// DOCME
-		event_set_volume,
+	/// Event object, world to thread, set if the thread should end as soon as possible
+	Win32KernelHandle event_kill_self;
 
-		/// DOCME
-		event_kill_self;
+	/// Event object, thread to world, set when the thread has entered its main loop
+	Win32KernelHandle thread_running;
 
-	// Thread communicating back
-	HANDLE
+	/// Event object, thread to world, set when playback is ongoing
+	Win32KernelHandle is_playing;
 
-		/// DOCME
-		thread_running,
+	/// Event object, thread to world, set if an error state has occurred (implies thread is dying)
+	Win32KernelHandle error_happened;
 
-		/// DOCME
-		is_playing,
+	/// Statically allocated error message text describing reason for error_happened being set
+	const wxChar *error_message;
 
-		/// DOCME
-		error_happened;
-
-
-	/// DOCME
-	wxChar *error_message;
-
-	/// DOCME
+	/// Playback volume, 1.0 is "unchanged"
 	double volume;
 
-	/// DOCME
+	/// Audio frame to start playback at
 	int64_t start_frame;
 
-	/// DOCME
+	/// Audio frame to end playback at
 	int64_t end_frame;
 
 
-	/// DOCME
+	/// Desired length in milliseconds to write ahead of the playback cursor
 	int wanted_latency;
 
-	/// DOCME
+	/// Multiplier for WantedLatency to get total buffer length
 	int buffer_length;
 
 
-	/// DOCME
+	/// System millisecond timestamp of last playback start, used to calculate playback position
 	DWORD last_playback_restart;
 
 
-	/// DOCME
+	/// Audio provider to take sample data from
 	AudioProvider *provider;
 
 public:
@@ -232,9 +243,9 @@ public:
 
 
 
-/// @brief DOCME
-/// @param parameter 
-/// @return 
+/// @brief Win32 thread entry point
+/// @param parameter Pointer to our thread object
+/// @return Thread return value, always 0 here
 ///
 unsigned int __stdcall DirectSoundPlayer2Thread::ThreadProc(void *parameter)
 {
@@ -244,13 +255,11 @@ unsigned int __stdcall DirectSoundPlayer2Thread::ThreadProc(void *parameter)
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Thread entry point
 void DirectSoundPlayer2Thread::Run()
 {
 
-/// DOCME
+/// Macro used to set error_message, error_happened and end the thread
 #define REPORT_ERROR(msg) { error_message = _T("DirectSoundPlayer2Thread: ") _T(msg); SetEvent(error_happened); return; }
 
 	COMInitialization COM_library;
@@ -346,22 +355,21 @@ void DirectSoundPlayer2Thread::Run()
 					REPORT_ERROR("Could not reset playback buffer cursor before filling first buffer.")
 
 				HRESULT res = bfr->Lock(buffer_offset, 0, &buf, &buf_size, 0, 0, DSBLOCK_ENTIREBUFFER);
-				while (FAILED(res)) // yes, while, so I can break out of it without a goto!
+				if (FAILED(res))
 				{
 					if (res == DSERR_BUFFERLOST)
 					{
 						// Try to regain the buffer
-						if (SUCCEEDED(bfr->Restore()) &&
-							SUCCEEDED(bfr->Lock(buffer_offset, 0, &buf, &buf_size, 0, 0, DSBLOCK_ENTIREBUFFER)))
+						if (FAILED(bfr->Restore()) ||
+							FAILED(bfr->Lock(buffer_offset, 0, &buf, &buf_size, 0, 0, DSBLOCK_ENTIREBUFFER)))
 						{
-							//wxLogDebug(_T("DirectSoundPlayer2: Lost and restored buffer"));
-							break;
+							REPORT_ERROR("Lost buffer and could not restore it.")
 						}
-
-						REPORT_ERROR("Lost buffer and could not restore it.")
 					}
-
-					REPORT_ERROR("Could not lock buffer for playback.")
+					else
+					{
+						REPORT_ERROR("Could not lock buffer for playback.")
+					}
 				}
 
 				// Clear the buffer in case we can't fill it completely
@@ -413,6 +421,13 @@ void DirectSoundPlayer2Thread::Run()
 					ResetEvent(is_playing);
 					playback_should_be_running = false;
 				}
+				else
+				{
+					// If the user is dragging the start or end point in the audio display
+					// the set end frame events might come in faster than the timeouts happen
+					// and then new data never get filled into the buffer. See bug #915.
+					goto do_fill_buffer;
+				}
 				break;
 			}
 
@@ -422,7 +437,7 @@ void DirectSoundPlayer2Thread::Run()
 				// We aren't thread safe right now, filling the buffers grabs volume directly
 				// from the field set by the controlling thread, but it shouldn't be a major
 				// problem if race conditions do occur, just some momentary distortion.
-				break;
+				goto do_fill_buffer;
 			}
 
 		case WAIT_OBJECT_0+4:
@@ -436,6 +451,7 @@ void DirectSoundPlayer2Thread::Run()
 			}
 
 		case WAIT_TIMEOUT:
+do_fill_buffer:
 			{
 				// Time to fill more into buffer
 
@@ -463,28 +479,47 @@ void DirectSoundPlayer2Thread::Run()
 				int bytes_needed = (int)play_cursor - (int)buffer_offset;
 				if (bytes_needed < 0) bytes_needed += (int)bufSize;
 
+				// Requesting zero buffer makes Windows cry, and zero buffer seemed to be
+				// a common request on Windows 7. (Maybe related to the new timer coalescing?)
+				// We'll probably get non-zero bytes requested on the next iteration.
+				if (bytes_needed == 0)
+					break;
+
 				DWORD buf1sz, buf2sz;
 				void *buf1, *buf2;
 
+				assert(bytes_needed > 0);
+				assert(buffer_offset < bufSize);
+				assert((DWORD)bytes_needed <= bufSize);
+
 				HRESULT res = bfr->Lock(buffer_offset, bytes_needed, &buf1, &buf1sz, &buf2, &buf2sz, 0);
-				while (FAILED(res)) // yes, while, so I can break out of it without a goto!
+				switch (res)
 				{
-					if (res == DSERR_BUFFERLOST)
+				case DSERR_BUFFERLOST:
+					// Try to regain the buffer
+					// When the buffer was lost the entire contents was lost too, so we have to start over
+					if (SUCCEEDED(bfr->Restore()) &&
+					    SUCCEEDED(bfr->Lock(0, bufSize, &buf1, &buf1sz, &buf2, &buf2sz, 0)) &&
+					    SUCCEEDED(bfr->Play(0, 0, DSBPLAY_LOOPING)))
 					{
-						// Try to regain the buffer
-						// When the buffer was lost the entire contents was lost too, so we have to start over
-						if (SUCCEEDED(bfr->Restore()) &&
-						    SUCCEEDED(bfr->Lock(0, bufSize, &buf1, &buf1sz, &buf2, &buf2sz, 0)) &&
-						    SUCCEEDED(bfr->Play(0, 0, DSBPLAY_LOOPING)))
-						{
-							wxLogDebug(_T("DirectSoundPlayer2: Lost and restored buffer"));
-							break;
-						}
-
-						REPORT_ERROR("Lost buffer and could not restore it.")
+						wxLogDebug(_T("DirectSoundPlayer2: Lost and restored buffer"));
+						break;
 					}
+					REPORT_ERROR("Lost buffer and could not restore it.")
 
-					REPORT_ERROR("Could not lock buffer for filling.")
+				case DSERR_INVALIDPARAM:
+					REPORT_ERROR("Invalid parameters to IDirectSoundBuffer8::Lock().")
+
+				case DSERR_INVALIDCALL:
+					REPORT_ERROR("Invalid call to IDirectSoundBuffer8::Lock().")
+
+				case DSERR_PRIOLEVELNEEDED:
+					REPORT_ERROR("Incorrect priority level set on DirectSoundBuffer8 object.")
+
+				default:
+					if (FAILED(res))
+						REPORT_ERROR("Could not lock audio buffer, unknown error.")
+					break;
 				}
 
 				DWORD bytes_filled = FillAndUnlockBuffers(buf1, buf1sz, buf2, buf2sz, next_input_frame, bfr.obj);
@@ -517,21 +552,19 @@ void DirectSoundPlayer2Thread::Run()
 		}
 	}
 
-
-/// DOCME
 #undef REPORT_ERROR
 }
 
 
 
-/// @brief DOCME
-/// @param buf1        
-/// @param buf1sz      
-/// @param buf2        
-/// @param buf2sz      
-/// @param input_frame 
-/// @param bfr         
-/// @return 
+/// @brief Fill audio data into a locked buffer-pair and unlock the buffers
+/// @param buf1        First buffer in pair
+/// @param buf1sz      Byte-size of first buffer in pair
+/// @param buf2        Second buffer in pair, or null
+/// @param buf2sz      Byte-size of second buffer in pair
+/// @param input_frame First audio frame to fill into buffers
+/// @param bfr         DirectSound buffer object owning the buffer pair
+/// @return Number of bytes written
 ///
 DWORD DirectSoundPlayer2Thread::FillAndUnlockBuffers(void *buf1, DWORD buf1sz, void *buf2, DWORD buf2sz, int64_t &input_frame, IDirectSoundBuffer8 *bfr)
 {
@@ -593,9 +626,7 @@ DWORD DirectSoundPlayer2Thread::FillAndUnlockBuffers(void *buf1, DWORD buf1sz, v
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Check for error state and throw exception if one occurred
 void DirectSoundPlayer2Thread::CheckError()
 {
 	try
@@ -626,23 +657,20 @@ void DirectSoundPlayer2Thread::CheckError()
 
 
 
-/// @brief DOCME
-/// @param provider       
-/// @param _WantedLatency 
-/// @param _BufferLength  
-///
+/// @brief Constructor, creates and starts playback thread
+/// @param provider       Audio provider to take sample data from
+/// @param _WantedLatency Desired length in milliseconds to write ahead of the playback cursor
+/// @param _BufferLength  Multiplier for WantedLatency to get total buffer length
 DirectSoundPlayer2Thread::DirectSoundPlayer2Thread(AudioProvider *provider, int _WantedLatency, int _BufferLength)
+: event_start_playback  (CreateEvent(0, FALSE, FALSE, 0))
+, event_stop_playback   (CreateEvent(0, FALSE, FALSE, 0))
+, event_update_end_time (CreateEvent(0, FALSE, FALSE, 0))
+, event_set_volume      (CreateEvent(0, FALSE, FALSE, 0))
+, event_kill_self       (CreateEvent(0, FALSE, FALSE, 0))
+, thread_running        (CreateEvent(0,  TRUE, FALSE, 0))
+, is_playing            (CreateEvent(0,  TRUE, FALSE, 0))
+, error_happened        (CreateEvent(0, FALSE, FALSE, 0))
 {
-	event_start_playback  = CreateEvent(0, FALSE, FALSE, 0);
-	event_stop_playback   = CreateEvent(0, FALSE, FALSE, 0);
-	event_update_end_time = CreateEvent(0, FALSE, FALSE, 0);
-	event_set_volume      = CreateEvent(0, FALSE, FALSE, 0);
-	event_kill_self       = CreateEvent(0, FALSE, FALSE, 0);
-
-	thread_running        = CreateEvent(0,  TRUE, FALSE, 0);
-	is_playing            = CreateEvent(0,  TRUE, FALSE, 0);
-	error_happened        = CreateEvent(0, FALSE, FALSE, 0);
-
 	error_message = 0;
 	volume = 1.0;
 	start_frame = 0;
@@ -653,20 +681,30 @@ DirectSoundPlayer2Thread::DirectSoundPlayer2Thread(AudioProvider *provider, int 
 
 	this->provider = provider;
 
-	thread_handle = (HANDLE)_beginthreadex(0, 0, ThreadProc, this, 0, 0);
+	thread_handle.handle = (HANDLE)_beginthreadex(0, 0, ThreadProc, this, 0, 0);
 
 	if (!thread_handle)
 		throw _T("Failed creating playback thread in DirectSoundPlayer2. This is bad.");
 
-	CheckError();
+	HANDLE running_or_error[] = { thread_running, error_happened };
+	switch (WaitForMultipleObjects(2, running_or_error, FALSE, INFINITE))
+	{
+	case WAIT_OBJECT_0:
+		// running, all good
+		return;
 
-	WaitForSingleObject(thread_running, INFINITE);
+	case WAIT_OBJECT_0 + 1:
+		// error happened, we fail
+		throw error_message;
+
+	default:
+		throw _T("Failed wait for thread start or thread error in DirectSoundPlayer2. This is bad.");
+	}
 }
 
 
 
-/// @brief DOCME
-///
+/// @brief Destructor, waits for thread to have died
 DirectSoundPlayer2Thread::~DirectSoundPlayer2Thread()
 {
 	SetEvent(event_kill_self);
@@ -675,10 +713,9 @@ DirectSoundPlayer2Thread::~DirectSoundPlayer2Thread()
 
 
 
-/// @brief DOCME
-/// @param start 
-/// @param count 
-///
+/// @brief Start audio playback
+/// @param start Audio frame to start playback at
+/// @param count Number of audio frames to play
 void DirectSoundPlayer2Thread::Play(int64_t start, int64_t count)
 {
 	CheckError();
@@ -692,8 +729,7 @@ void DirectSoundPlayer2Thread::Play(int64_t start, int64_t count)
 
 
 
-/// @brief DOCME
-///
+/// @brief Stop audio playback
 void DirectSoundPlayer2Thread::Stop()
 {
 	CheckError();
@@ -703,9 +739,10 @@ void DirectSoundPlayer2Thread::Stop()
 
 
 
-/// @brief DOCME
-/// @param new_end_frame 
+/// @brief Change audio playback end point
+/// @param new_end_frame New last audio frame to play
 ///
+/// Playback stops instantly if new_end_frame is before the current playback position
 void DirectSoundPlayer2Thread::SetEndFrame(int64_t new_end_frame)
 {
 	CheckError();
@@ -716,9 +753,8 @@ void DirectSoundPlayer2Thread::SetEndFrame(int64_t new_end_frame)
 
 
 
-/// @brief DOCME
-/// @param new_volume 
-///
+/// @brief Change audio playback volume
+/// @param new_volume New playback amplification factor, 1.0 is "unchanged"
 void DirectSoundPlayer2Thread::SetVolume(double new_volume)
 {
 	CheckError();
@@ -729,9 +765,8 @@ void DirectSoundPlayer2Thread::SetVolume(double new_volume)
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Tell whether audio playback is active
+/// @return True if audio is being played back, false if it is not
 bool DirectSoundPlayer2Thread::IsPlaying()
 {
 	CheckError();
@@ -755,9 +790,8 @@ bool DirectSoundPlayer2Thread::IsPlaying()
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Get first audio frame in current playback range
+/// @return Audio frame index
 int64_t DirectSoundPlayer2Thread::GetStartFrame()
 {
 	CheckError();
@@ -767,9 +801,10 @@ int64_t DirectSoundPlayer2Thread::GetStartFrame()
 
 
 
-/// @brief DOCME
-/// @return 
+/// @brief Get approximate current audio frame being heard by the user
+/// @return Audio frame index
 ///
+/// Returns 0 if not playing
 int64_t DirectSoundPlayer2Thread::GetCurrentFrame()
 {
 	CheckError();
@@ -783,9 +818,8 @@ int64_t DirectSoundPlayer2Thread::GetCurrentFrame()
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Get audio playback end point
+/// @return Audio frame index
 int64_t DirectSoundPlayer2Thread::GetEndFrame()
 {
 	CheckError();
@@ -795,9 +829,8 @@ int64_t DirectSoundPlayer2Thread::GetEndFrame()
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Get current playback volume
+/// @return Audio amplification factor
 double DirectSoundPlayer2Thread::GetVolume()
 {
 	CheckError();
@@ -807,9 +840,8 @@ double DirectSoundPlayer2Thread::GetVolume()
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Tell whether playback thread has died
+/// @return True if thread is no longer running
 bool DirectSoundPlayer2Thread::IsDead()
 {
 	switch (WaitForSingleObject(thread_running, 0))
@@ -826,8 +858,7 @@ bool DirectSoundPlayer2Thread::IsDead()
 
 
 
-/// @brief DOCME
-///
+/// @brief Constructor
 DirectSoundPlayer2::DirectSoundPlayer2()
 {
 	thread = 0;
@@ -845,8 +876,7 @@ DirectSoundPlayer2::DirectSoundPlayer2()
 
 
 
-/// @brief DOCME
-///
+/// @brief Destructor
 DirectSoundPlayer2::~DirectSoundPlayer2()
 {
 	CloseStream();
@@ -854,9 +884,8 @@ DirectSoundPlayer2::~DirectSoundPlayer2()
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Tell whether playback thread is alive
+/// @return True if there is a playback thread and it's ready
 bool DirectSoundPlayer2::IsThreadAlive()
 {
 	if (!thread) return false;
@@ -873,9 +902,9 @@ bool DirectSoundPlayer2::IsThreadAlive()
 
 
 
-/// @brief DOCME
-/// @return 
+/// @brief Prepare for playback
 ///
+/// This means creating the playback thread
 void DirectSoundPlayer2::OpenStream()
 {
 	if (IsThreadAlive()) return;
@@ -893,9 +922,7 @@ void DirectSoundPlayer2::OpenStream()
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Shutdown playback
 void DirectSoundPlayer2::CloseStream()
 {
 	if (!IsThreadAlive()) return;
@@ -913,9 +940,10 @@ void DirectSoundPlayer2::CloseStream()
 
 
 
-/// @brief DOCME
-/// @param provider 
+/// @brief Change audio provider used
+/// @param provider New audio provider to use
 ///
+/// Will re-create the playback thread if the provider changed and playback was open
 void DirectSoundPlayer2::SetProvider(AudioProvider *provider)
 {
 	try
@@ -936,10 +964,9 @@ void DirectSoundPlayer2::SetProvider(AudioProvider *provider)
 
 
 
-/// @brief DOCME
-/// @param start 
-/// @param count 
-///
+/// @brief Start playback
+/// @param start First audio frame to play
+/// @param count Number of audio frames to play
 void DirectSoundPlayer2::Play(int64_t start,int64_t count)
 {
 	try
@@ -957,8 +984,8 @@ void DirectSoundPlayer2::Play(int64_t start,int64_t count)
 
 
 
-/// @brief DOCME
-/// @param timerToo 
+/// @brief Stop audio playback
+/// @param timerToo Whether to also stop the playback update timer
 ///
 void DirectSoundPlayer2::Stop(bool timerToo)
 {
@@ -978,9 +1005,8 @@ void DirectSoundPlayer2::Stop(bool timerToo)
 
 
 
-/// @brief DOCME
-/// @return 
-///
+/// @brief Tell whether playback is active
+/// @return True if audio is playing back
 bool DirectSoundPlayer2::IsPlaying()
 {
 	try
@@ -997,9 +1023,10 @@ bool DirectSoundPlayer2::IsPlaying()
 
 
 
-/// @brief DOCME
-/// @return 
+/// @brief Get first audio frame in playback range
+/// @return Audio frame index
 ///
+/// Returns 0 if playback is stopped or there is no playback thread
 int64_t DirectSoundPlayer2::GetStartPosition()
 {
 	try
@@ -1016,9 +1043,10 @@ int64_t DirectSoundPlayer2::GetStartPosition()
 
 
 
-/// @brief DOCME
-/// @return 
+/// @brief Get playback end position
+/// @return Audio frame index
 ///
+/// Returns 0 if playback is stopped or there is no playback thread
 int64_t DirectSoundPlayer2::GetEndPosition()
 {
 	try
@@ -1035,9 +1063,10 @@ int64_t DirectSoundPlayer2::GetEndPosition()
 
 
 
-/// @brief DOCME
-/// @return 
+/// @brief Get approximate playback position
+/// @return Index of audio frame user is currently hearing
 ///
+/// Returns 0 if playback is stopped or there is no playback thread
 int64_t DirectSoundPlayer2::GetCurrentPosition()
 {
 	try
@@ -1054,9 +1083,8 @@ int64_t DirectSoundPlayer2::GetCurrentPosition()
 
 
 
-/// @brief DOCME
-/// @param pos 
-///
+/// @brief Change playback end position
+/// @param pos New end position
 void DirectSoundPlayer2::SetEndPosition(int64_t pos)
 {
 	try
@@ -1071,9 +1099,10 @@ void DirectSoundPlayer2::SetEndPosition(int64_t pos)
 
 
 
-/// @brief DOCME
-/// @param pos 
+/// @brief Seek playback to new position
+/// @param pos New position to seek to
 ///
+/// This is done by simply restarting playback
 void DirectSoundPlayer2::SetCurrentPosition(int64_t pos)
 {
 	try
@@ -1088,9 +1117,8 @@ void DirectSoundPlayer2::SetCurrentPosition(int64_t pos)
 
 
 
-/// @brief DOCME
-/// @param vol 
-///
+/// @brief Change playback volume
+/// @param vol Amplification factor
 void DirectSoundPlayer2::SetVolume(double vol)
 {
 	try
@@ -1105,8 +1133,8 @@ void DirectSoundPlayer2::SetVolume(double vol)
 
 
 
-/// @brief DOCME
-///
+/// @brief Get playback volume
+/// @return Amplification factor
 double DirectSoundPlayer2::GetVolume()
 {
 	try

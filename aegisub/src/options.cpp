@@ -130,7 +130,11 @@ void OptionsManager::LoadDefaults(bool onlyDefaults,bool doOverride) {
 
 	// Edit Box
 	SetModificationType(MOD_RESTART);
+#if defined(__WINDOWS__) || defined(__APPLE__)
 	SetText(_T("Dictionaries path"),_T("?data/dictionaries"));
+#else
+	SetText(_T("Dictionaries path"),wxString::Format(_T("%s/%s"), _T(INSTALL_PREFIX),_T("/share/myspell")));
+#endif
 	SetText(_T("Spell Checker"),_T("hunspell"));
 	SetModificationType(MOD_AUTOMATIC);
 	SetBool(_T("Link time boxes commit"),true);
@@ -184,15 +188,18 @@ void OptionsManager::LoadDefaults(bool onlyDefaults,bool doOverride) {
 	#else
 	SetText(_T("Subtitles Provider"),_T(DEFAULT_PROVIDER_SUBTITLE));
 	#endif
+	SetInt(_T("Video cache size"), 32);
 	SetInt(_T("FFmpegSource max cache size"),42);
 	SetInt(_T("FFmpegSource max cache files"),20);
 	SetInt(_T("FFmpegSource always index all tracks"), true);
 	SetText(_T("FFmpegSource log level"), _T("quiet"));
+	SetText(_T("FFmpegSource audio decoding error handling"), _T("stop"));
 
 	// Audio Options
 	SetModificationType(MOD_AUTOMATIC);
 	SetBool(_T("Audio grab times on select"),true);
 	SetBool(_T("Audio Autofocus"),false);
+	SetBool(_T("Audio Plays When Stepping Video"),false);
 	SetBool(_T("Audio Wheel Default To Zoom"),false);
 	SetBool(_T("Audio lock scroll on cursor"),false);
 	SetBool(_T("Audio snap to keyframes"),false);
@@ -348,7 +355,6 @@ void OptionsManager::LoadDefaults(bool onlyDefaults,bool doOverride) {
 		SetBool(_T("Shift Times Direction"),true);
 
 		SetInt(_T("Tips current"),0);
-		SetBool(_T("Show associations"),true,1700);
 		SetBool(_T("Maximized"),false);
 
 		SetBool(_T("Find Match Case"),false);
@@ -414,6 +420,8 @@ void OptionsManager::LoadDefaults(bool onlyDefaults,bool doOverride) {
 		previewText += 0x8a9e; // kanji "speak"
 		SetText(_T("Style editor preview text"),previewText);
 		SetColour(_T("Style editor preview background"),wxColour(125,153,176));
+
+		SetInt(_T("Updates Next Check Time"), 0);
 	}
 
 	lastVersion = -1;

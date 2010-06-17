@@ -73,6 +73,7 @@ protected:
 	FFMS_Track Frames;
 	int VideoTrack;
 	int	CurrentFrame;
+	int MPEG4Counter;
 	AVCodecContext *CodecContext;
 
 	FFMS_VideoSource(const char *SourceFile, FFMS_Index *Index, int Track);
@@ -99,7 +100,7 @@ private:
 	int SeekMode;
 	FFSourceResources<FFMS_VideoSource> Res;
 
-	void DecodeNextFrame(int64_t *DTS);
+	void DecodeNextFrame(int64_t *PTS);
 protected:
 	void Free(bool CloseCodec);
 public:

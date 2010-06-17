@@ -67,6 +67,7 @@ VideoSlider::VideoSlider (wxWindow* parent, wxWindowID id)
 	max = 1;
 	Display = NULL;
 	SetClientSize(20,25);
+	SetMinSize(wxSize(20, 25));
 	locked = false;
 	SetRange(0,1);
 }
@@ -154,7 +155,7 @@ void VideoSlider::NextFrame() {
 	if (VideoContext::Get()->IsPlaying()) return;
 
 	//don't request out of range frames
-	if (GetValue() < max) VideoContext::Get()->JumpToFrame(GetValue()+1);
+	if (GetValue() < max) VideoContext::Get()->PlayNextFrame();
 	Refresh(false);
 	Update();
 }
@@ -168,7 +169,7 @@ void VideoSlider::PrevFrame() {
 	if (VideoContext::Get()->IsPlaying()) return;
 
 	//don't request out of range frames
-	if (GetValue() > min) VideoContext::Get()->JumpToFrame(GetValue()-1);
+	if (GetValue() > min) VideoContext::Get()->PlayPrevFrame();
 	Refresh(false);
 	Update();
 }

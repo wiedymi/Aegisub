@@ -1045,14 +1045,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\dialog_associations.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\dialog_associations.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\dialog_attachments.cpp"
 				>
 			</File>
@@ -1582,14 +1574,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\subtitle_format_mkv.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\subtitle_format_prs.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\subtitle_format_prs.h"
 				>
 			</File>
 			<File

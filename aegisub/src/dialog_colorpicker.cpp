@@ -660,12 +660,10 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 
 	recent_box = new ColorPickerRecent(this, SELECTOR_RECENT, 8, 4, 16);
 
-#ifdef __WXMSW__
 	eyedropper_bitmap = GETIMAGE(eyedropper_tool_24);
 	eyedropper_bitmap.SetMask(new wxMask(eyedropper_bitmap, wxColour(255, 0, 255)));
 	screen_dropper_icon = new wxStaticBitmap(this, SELECTOR_DROPPER, eyedropper_bitmap, wxDefaultPosition, wxDefaultSize, wxRAISED_BORDER);
 	screen_dropper = new ColorPickerScreenDropper(this, SELECTOR_DROPPER_PICK, 7, 7, 8, false);
-#endif
 
 	// Arrange the controls in a nice way
 	wxSizer *spectop_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -673,14 +671,14 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 	spectop_sizer->Add(colorspace_choice, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_LEFT);
 	spectop_sizer->Add(5, 5, 1, wxEXPAND);
 	spectop_sizer->Add(preview_box, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT);
-	wxSizer *spectrum_sizer = new wxFlexGridSizer(2, 2, 5, 5);
+	wxSizer *spectrum_sizer = new wxFlexGridSizer(2, 5, 5);
 	spectrum_sizer->Add(spectop_sizer, wxEXPAND);
 	spectrum_sizer->AddStretchSpacer(1);
 	spectrum_sizer->Add(spectrum);
 	spectrum_sizer->Add(slider);
 	spectrum_box->Add(spectrum_sizer, 0, wxALL, 3);
 
-	wxFlexGridSizer *rgb_sizer = new wxFlexGridSizer(3, 2, 5, 5);
+	wxFlexGridSizer *rgb_sizer = new wxFlexGridSizer(2, 5, 5);
 	rgb_sizer->Add(new wxStaticText(this, -1, _("Red:"), wxDefaultPosition, colorinput_labelsize), 1, wxALIGN_CENTER_VERTICAL|wxEXPAND);
 	rgb_sizer->Add(rgb_input[0], 0);
 	rgb_sizer->Add(new wxStaticText(this, -1, _("Green:"), wxDefaultPosition, colorinput_labelsize), 1, wxALIGN_CENTER_VERTICAL|wxEXPAND);
@@ -690,7 +688,7 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 	rgb_sizer->AddGrowableCol(0,1);
 	rgb_box->Add(rgb_sizer, 1, wxEXPAND | wxALL, 3);
 
-	wxFlexGridSizer *ass_input_sizer = new wxFlexGridSizer(2, 2, 5, 5);
+	wxFlexGridSizer *ass_input_sizer = new wxFlexGridSizer(2, 5, 5);
 	ass_input_sizer->Add(new wxStaticText(this, -1, _T("ASS:"), wxDefaultPosition, colorinput_labelsize), 1, wxALIGN_CENTER_VERTICAL|wxEXPAND);
 	ass_input_sizer->Add(ass_input, 0);
 	ass_input_sizer->Add(new wxStaticText(this, -1, _T("HTML:"), wxDefaultPosition, colorinput_labelsize), 1, wxALIGN_CENTER_VERTICAL|wxEXPAND);
@@ -698,7 +696,7 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 	ass_input_sizer->AddGrowableCol(0,1);
 	rgb_box->Add(ass_input_sizer, 0, wxALL|wxCENTER|wxEXPAND, 3);
 
-	wxFlexGridSizer *hsl_sizer = new wxFlexGridSizer(3, 2, 5, 5);
+	wxFlexGridSizer *hsl_sizer = new wxFlexGridSizer(2, 5, 5);
 	hsl_sizer->Add(new wxStaticText(this, -1, _("Hue:"), wxDefaultPosition, colorinput_labelsize), 1, wxALIGN_CENTER_VERTICAL|wxEXPAND);
 	hsl_sizer->Add(hsl_input[0], 0);
 	hsl_sizer->Add(new wxStaticText(this, -1, _("Sat.:"), wxDefaultPosition, colorinput_labelsize), 1, wxALIGN_CENTER_VERTICAL|wxEXPAND);
@@ -708,7 +706,7 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 	hsl_sizer->AddGrowableCol(0,1);
 	hsl_box->Add(hsl_sizer, 0, wxALL|wxEXPAND, 3);
 
-	wxFlexGridSizer *hsv_sizer = new wxFlexGridSizer(3, 2, 5, 5);
+	wxFlexGridSizer *hsv_sizer = new wxFlexGridSizer(2, 5, 5);
 	hsv_sizer->Add(new wxStaticText(this, -1, _("Hue:"), wxDefaultPosition, colorinput_labelsize), 1, wxALIGN_CENTER_VERTICAL|wxEXPAND);
 	hsv_sizer->Add(hsv_input[0], 0);
 	hsv_sizer->Add(new wxStaticText(this, -1, _("Sat.:"), wxDefaultPosition, colorinput_labelsize), 1, wxALIGN_CENTER_VERTICAL|wxEXPAND);
@@ -728,11 +726,9 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 	if (Options.AsBool(_T("RGBAdjust Tool"))) recent_sizer->Add(new wxButton(this,BUTTON_RGBADJUST,_T("rgbadjust()")), 0, wxEXPAND);
 
 	wxSizer *picker_sizer = new wxBoxSizer(wxHORIZONTAL);
-#ifdef __WXMSW__
 	picker_sizer->AddStretchSpacer();
 	picker_sizer->Add(screen_dropper_icon, 0, wxALIGN_CENTER|wxRIGHT, 5);
 	picker_sizer->Add(screen_dropper, 0, wxALIGN_CENTER);
-#endif
 	picker_sizer->AddStretchSpacer();
 	picker_sizer->Add(recent_sizer, 0, wxALIGN_CENTER);
 	picker_sizer->AddStretchSpacer();
@@ -774,13 +770,11 @@ DialogColorPicker::DialogColorPicker(wxWindow *parent, wxColour initial_color)
 	SetColor(initial_color);
 	recent_box->LoadFromString(Options.AsText(_T("Color Picker Recent")));
 
-#ifdef __WXMSW__
 	// The mouse event handler for the Dropper control must be manually assigned
 	// The EVT_MOUSE_EVENTS macro can't take a control id
 	screen_dropper_icon->Connect(wxEVT_MOTION, wxMouseEventHandler(DialogColorPicker::OnDropperMouse), 0, this);
 	screen_dropper_icon->Connect(wxEVT_LEFT_DOWN, wxMouseEventHandler(DialogColorPicker::OnDropperMouse), 0, this);
 	screen_dropper_icon->Connect(wxEVT_LEFT_UP, wxMouseEventHandler(DialogColorPicker::OnDropperMouse), 0, this);
-#endif
 }
 
 
@@ -801,6 +795,8 @@ DialogColorPicker::~DialogColorPicker()
 	delete rgb_slider[2];
 	delete hsl_slider;
 	delete hsv_slider;
+
+	if (screen_dropper_icon->HasCapture()) screen_dropper_icon->ReleaseMouse();
 }
 
 
@@ -1222,6 +1218,7 @@ BEGIN_EVENT_TABLE(DialogColorPicker, wxDialog)
 	EVT_COMMAND(SELECTOR_RECENT, wxRECENT_SELECT, DialogColorPicker::OnRecentSelect)
 	EVT_COMMAND(SELECTOR_DROPPER_PICK, wxDROPPER_SELECT, DialogColorPicker::OnRecentSelect)
 	EVT_BUTTON(BUTTON_RGBADJUST, DialogColorPicker::OnRGBAdjust)
+	EVT_MOUSE_EVENTS(DialogColorPicker::OnMouse)
 END_EVENT_TABLE()
 
 
@@ -1438,15 +1435,15 @@ void DialogColorPicker::OnRecentSelect(wxCommandEvent &evt)
 void DialogColorPicker::OnDropperMouse(wxMouseEvent &evt)
 {
 	if (evt.LeftDown() && !screen_dropper_icon->HasCapture()) {
-		screen_dropper_icon->CaptureMouse();
-		eyedropper_grab_point = evt.GetPosition();
-		eyedropper_is_grabbed = false;
 #ifdef WIN32
 		screen_dropper_icon->SetCursor(wxCursor(_T("eyedropper_cursor")));
 #else
 		screen_dropper_icon->SetCursor(*wxCROSS_CURSOR);
 #endif
 		screen_dropper_icon->SetBitmap(wxNullBitmap);
+		screen_dropper_icon->CaptureMouse();
+		eyedropper_grab_point = evt.GetPosition();
+		eyedropper_is_grabbed = false;
 	}
 
 	if (evt.LeftUp()) {
@@ -1469,6 +1466,23 @@ void DialogColorPicker::OnDropperMouse(wxMouseEvent &evt)
 		wxPoint scrpos = screen_dropper_icon->ClientToScreen(evt.GetPosition());
 		screen_dropper->DropFromScreenXY(scrpos.x, scrpos.y);
 	}
+}
+
+
+
+/// @brief Hack to redirect events to the screen dropper icon
+/// @param evt 
+///
+void DialogColorPicker::OnMouse(wxMouseEvent &evt)
+{
+	if (screen_dropper_icon->HasCapture()) {
+		wxPoint dropper_pos = screen_dropper_icon->ScreenToClient(ClientToScreen(evt.GetPosition()));
+		evt.m_x = dropper_pos.x;
+		evt.m_y = dropper_pos.y;
+		screen_dropper_icon->GetEventHandler()->ProcessEvent(evt);
+	}
+	else
+		evt.Skip();
 }
 
 

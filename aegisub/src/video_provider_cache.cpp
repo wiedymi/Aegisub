@@ -38,6 +38,7 @@
 ///////////
 // Headers
 #include "config.h"
+#include "options.h"
 
 #include "video_provider_cache.h"
 
@@ -48,7 +49,10 @@
 VideoProviderCache::VideoProviderCache(VideoProvider *parent) {
 	master = parent;
 	cacheMax = 0;
-	SetCacheMax(parent->GetDesiredCacheSize());
+	if (parent->WantsCaching())
+		cacheMax = Options.AsInt(_T("Video cache size")) << 20; // convert MB to bytes
+	else
+		cacheMax = 0;
 }
 
 
@@ -89,28 +93,6 @@ const AegiVideoFrame VideoProviderCache::GetFrame(int n) {
 }
 
 
-
-/// @brief Get as float 
-/// @param buffer 
-/// @param n      
-///
-void VideoProviderCache::GetFloatFrame(float* buffer, int n) {
-	const AegiVideoFrame frame = GetFrame(n);
-	frame.GetFloat(buffer);
-}
-
-
-
-/// @brief Set maximum cache size 
-/// @param n 
-///
-void VideoProviderCache::SetCacheMax(int n) {
-	if (n < 0) n = 0;
-	cacheMax = n;
-}
-
-
-
 /// @brief Add to cache 
 /// @param n     
 /// @param frame 
@@ -121,7 +103,7 @@ void VideoProviderCache::Cache(int n,const AegiVideoFrame frame) {
 	if (cacheMax == 0) return;
 
 	// Cache full, use frame at front
-	if (cache.size() >= cacheMax) {
+	if (GetCurCacheSize() >= cacheMax) {
 		cache.push_back(cache.front());
 		cache.pop_front();
 	}
@@ -147,6 +129,14 @@ void VideoProviderCache::ClearCache() {
 	}
 }
 
+/// @brief Get the current size of the cache
+/// @return Returns the size in bytes
+unsigned VideoProviderCache::GetCurCacheSize() {
+	int sz = 0;
+	for (std::list<CachedFrame>::iterator i = cache.begin(); i != cache.end(); i++)
+		sz += i->frame.memSize;
+	return sz;
+}
 
 
 /// @brief Wrapper methods 

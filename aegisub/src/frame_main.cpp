@@ -217,22 +217,16 @@ FrameMain::FrameMain (wxArrayString args)
 	LoadList(args);
 
 	// Version checker
-	// Fails on non-Windows platforms with a crash
-#ifdef __WXMSW__
 	StartupLog(_T("Possibly perform automatic updates check"));
 	int option = Options.AsInt(_T("Auto check for updates"));
 	if (option == -1) {
 		int result = wxMessageBox(_("Do you want Aegisub to check for updates whenever it starts? You can still do it manually via the Help menu."),_("Check for updates?"),wxYES_NO);
-		option = 0;
-		if (result == wxYES) option = 1;
+		option = (result == wxYES);
 		Options.SetInt(_T("Auto check for updates"),option);
 		Options.Save();
 	}
-	if (option == 1) {
-		DialogVersionCheck *checker = new DialogVersionCheck (this,true);
-		(void)checker;
-	}
-#endif
+
+	PerformVersionCheck(false);
 
 	//ShowFullScreen(true,wxFULLSCREEN_NOBORDER | wxFULLSCREEN_NOCAPTION);
 	StartupLog(_T("Leaving FrameMain constructor"));
@@ -328,15 +322,14 @@ void FrameMain::InitToolbar () {
 }
 
 
-
 /// @brief DOCME
 /// @param item_text   
 /// @param hotkey_name 
 /// @return 
 ///
-wxString MakeHotkeyText(const wxChar *item_text, const wxChar *hotkey_name) {
-	return wxString::Format(_T("%s\t%s"), item_text, Hotkeys.GetText(hotkey_name).c_str());
-}
+wxString MakeHotkeyText(const wxString &item_text, const wxString &hotkey_name) {
+	return item_text + wxString(_T("\t")) + Hotkeys.GetText(hotkey_name);
+ }
 
 
 /// @brief Initialize menu bar 
@@ -551,9 +544,6 @@ void FrameMain::InitMenu() {
 	viewMenu = new wxMenu();
 	AppendBitmapMenuItem(viewMenu,Menu_View_Language, _T("&Language..."), _("Select Aegisub interface language"), GETIMAGE(languages_menu_16));
 	AppendBitmapMenuItem(viewMenu,Menu_Tools_Options, MakeHotkeyText(_("&Options..."), _T("Options")), _("Configure Aegisub"), GETIMAGE(options_button_16));
-#ifdef WIN32
-	AppendBitmapMenuItem(viewMenu,Menu_View_Associations, _("&Associations..."), _("Associate file types with Aegisub"), GETIMAGE(blank_button_16));
-#endif
 	viewMenu->AppendSeparator();
 	viewMenu->AppendRadioItem(Menu_View_Subs, _("Subs Only View"), _("Display subtitles only"));
 	viewMenu->AppendRadioItem(Menu_View_Video, _("Video+Subs View"), _("Display video and subtitles only"));
@@ -564,6 +554,9 @@ void FrameMain::InitMenu() {
 	// Create help menu
 	helpMenu = new wxMenu();
 	AppendBitmapMenuItem (helpMenu,Menu_Help_Contents, MakeHotkeyText(_("&Contents..."), _T("Help")), _("Help topics"), GETIMAGE(contents_button_16));
+#ifdef __WXMAC__
+	AppendBitmapMenuItem (helpMenu,Menu_Help_Files, MakeHotkeyText(_("&All Files") + _T("..."), _T("Help")), _("Help topics"), GETIMAGE(contents_button_16));
+#endif
 	helpMenu->AppendSeparator();
 	AppendBitmapMenuItem(helpMenu,Menu_Help_Website, _("&Website..."), _("Visit Aegisub's official website"),GETIMAGE(website_button_16));
 	AppendBitmapMenuItem(helpMenu,Menu_Help_Forums, _("&Forums..."), _("Visit Aegisub's forums"),GETIMAGE(forums_button_16));
@@ -572,9 +565,7 @@ void FrameMain::InitMenu() {
 #ifndef __WXMAC__
 	helpMenu->AppendSeparator();
 #endif
-#ifdef __WXMSW__
 	AppendBitmapMenuItem(helpMenu,Menu_Help_Check_Updates, _("&Check for Updates..."), _("Check to see if there is a new version of Aegisub available"),GETIMAGE(blank_button_16));
-#endif
 	AppendBitmapMenuItem(helpMenu,Menu_Help_About, _("&About..."), _("About Aegisub"),GETIMAGE(about_menu_16));
 	MenuBar->Append(helpMenu, _("&Help"));
 
@@ -651,8 +642,6 @@ void FrameMain::InitContents() {
 	//SetSizer(MainSizer);
 
 	// Set display
-	StartupLog(_T("Set display mode"));
-	SetDisplayMode(0,0);
 	StartupLog(_T("Perform layout"));
 	Layout();
 	StartupLog(_T("Set focus to edting box"));
@@ -915,7 +904,7 @@ void FrameMain::SetDisplayMode(int video, int audio) {
 	MainSizer->Layout();
 	Layout();
 	Show(true);
-	VideoContext::Get()->UpdateDisplays(true);
+	if (showVideo) VideoContext::Get()->UpdateDisplays(true);
 	Thaw();
 }
 
@@ -935,7 +924,7 @@ void FrameMain::UpdateTitle() {
 		wxFileName file (AssFile::top->filename);
 		newTitle << file.GetFullName();
 	}
-	else newTitle << _T("Untitled");
+	else newTitle << _("Untitled");
 	newTitle << _T(" - Aegisub ") << GetAegisubLongVersionString();
 #else
 	// Apple HIG says "untitled" should not be capitalised
@@ -945,7 +934,7 @@ void FrameMain::UpdateTitle() {
 		wxFileName file (AssFile::top->filename);
 		newTitle << file.GetFullName();
 	}
-	else newTitle << _T("untitled");
+	else newTitle << _("untitled");
 #endif
 
 #if defined(__WXMAC__) && !defined(__LP64__)
@@ -1181,11 +1170,22 @@ void FrameMain::LoadVideo(wxString file,bool autoload) {
 		wxMessageBox(_T("Unknown error"), _T("Error opening video file"), wxOK | wxICON_ERROR, this);
 	}
 
-	// Check that the video size matches the script video size specified
 	if (VideoContext::Get()->IsLoaded()) {
+		int vidx = VideoContext::Get()->GetWidth(), vidy = VideoContext::Get()->GetHeight();
+
+		// Set zoom level based on video resolution and window size
+		int target_zoom = 7; // 100%
+		wxSize windowSize = GetSize();
+		if (vidx*3 > windowSize.GetX()*2 || vidy*4 > windowSize.GetY()*3)
+			target_zoom = 3; // 50%
+		if (vidx*3 > windowSize.GetX()*4 || vidy*4 > windowSize.GetY()*6)
+			target_zoom = 1; // 25%
+		videoBox->videoDisplay->zoomBox->SetSelection(target_zoom);
+		videoBox->videoDisplay->SetZoomPos(target_zoom);
+
+		// Check that the video size matches the script video size specified
 		int scriptx = SubsBox->ass->GetScriptInfoAsInt(_T("PlayResX"));
 		int scripty = SubsBox->ass->GetScriptInfoAsInt(_T("PlayResY"));
-		int vidx = VideoContext::Get()->GetWidth(), vidy = VideoContext::Get()->GetHeight();
 		if (scriptx != vidx || scripty != vidy) {
 			switch (Options.AsInt(_T("Video Check Script Res"))) {
 				case 1:
@@ -1277,6 +1277,7 @@ void FrameMain::DetachVideo(bool detach) {
 		if (!detachedVideo) {
 			detachedVideo = new DialogDetachedVideo(this, videoBox->videoDisplay->GetClientSize());
 			detachedVideo->Show();
+			VideoContext::Get()->UpdateDisplays(true);
 		}
 	}
 	else if (detachedVideo) {
