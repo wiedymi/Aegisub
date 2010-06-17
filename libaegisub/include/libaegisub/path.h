@@ -57,6 +57,16 @@ public:
 	/// @param path Path to check.
 	void Check(const std::string &path);
 
+	/// @brief Set a list of paths
+	/// @param name Path name.
+	/// @param out[out] Map to load list into
+	void ListGet(const char *name, std::vector<std::string> &out);
+
+	/// @brief Set a list of paths.
+	/// @param name Path name.
+	/// @param list List to set.
+	void ListSet(const char *name, std::vector<std::string> list);
+
 	/// @brief Get the default 'open' directory when no alternative is available.
 	/// @return Directory
 	/// This returns several different values based on OS:
@@ -89,12 +99,16 @@ private:
 	/// Options object.
 	Options *opt;
 
+	/// @brief Locale files
+	/// @return Locale location
+	/// This is directly assessibly as the Locale directory will never change on any platform.
+	const std::string Locale();
+
 protected:
 	const std::string Data();		///< Shared resources
 	const std::string Config();	///< Configuration directory
 	const std::string Doc();		///< Documents
 	const std::string User();		///< User config directory
-	const std::string Locale();	///< Locale files
 	const std::string Temp();		///< Temporary storage
 };
 
