@@ -63,7 +63,6 @@ AssDialogue::AssDialogue()
 	group = L"[Events]";
 	Valid = true;
 	for (int i=0;i<4;i++) Margin[i] = 0;
-	UpdateData();
 }
 
 /// @brief DOCME
@@ -94,8 +93,6 @@ AssDialogue::AssDialogue(wxString _data,int version)
 	if (!Valid) {
 		throw _T("Failed parsing line.");
 	}
-
-	UpdateData();
 }
 
 /// @brief Destructor 
@@ -251,10 +248,6 @@ wxString AssDialogue::MakeData() {
 
 	// Return final
 	return final;
-}
-
-/// @brief Update AssDialogue's data line 
-void AssDialogue::UpdateData () {
 }
 
 /// @brief Get entry data 
@@ -432,10 +425,6 @@ void AssDialogue::ParseSRTTags () {
 
 	// Remove double tagging
 	Text.Replace(_T("}{"),_T(""));
-
-	// Update all stuff
-	//if (total > 0) UpdateText();
-	UpdateData();
 }
 
 /// @brief Parse ASS tags 
@@ -486,7 +475,7 @@ void AssDialogue::ParseASSTags () {
 				for (curTag = block->Tags.begin();curTag != block->Tags.end();curTag++) {
 					AssOverrideTag *tag = *curTag;
 					if (tag->Name == _T("\\p")) {
-						drawingLevel = tag->Params.at(0)->AsInt();
+						drawingLevel = tag->Params.at(0)->Get<int>();
 					}
 				}
 			}
@@ -565,7 +554,6 @@ void AssDialogue::StripTag (wxString tagName) {
 	// Update
 	ClearBlocks();
 	Text = final;
-	UpdateData();
 }
 
 /// @brief  TODO: Improve this code ------------------- Convert tags to SRT 
@@ -591,7 +579,7 @@ void AssDialogue::ConvertTagsToSRT () {
 				if (curTag->IsValid()) {
 					// Italics
 					if (curTag->Name == _T("\\i")) {
-						temp = curTag->Params.at(0)->AsBool();
+						temp = curTag->Params.at(0)->Get<bool>();
 						if (temp && !isItalic) {
 							isItalic = true;
 							final += _T("<i>");
@@ -604,7 +592,7 @@ void AssDialogue::ConvertTagsToSRT () {
 
 					// Underline
 					if (curTag->Name == _T("\\u")) {
-						temp = curTag->Params.at(0)->AsBool();
+						temp = curTag->Params.at(0)->Get<bool>();
 						if (temp && !isUnder) {
 							isUnder = true;
 							final += _T("<u>");
@@ -617,7 +605,7 @@ void AssDialogue::ConvertTagsToSRT () {
 
 					// Strikeout
 					if (curTag->Name == _T("\\s")) {
-						temp = curTag->Params.at(0)->AsBool();
+						temp = curTag->Params.at(0)->Get<bool>();
 						if (temp && !isStrike) {
 							isStrike = true;
 							final += _T("<s>");
@@ -630,7 +618,7 @@ void AssDialogue::ConvertTagsToSRT () {
 
 					// Bold
 					if (curTag->Name == _T("\\b")) {
-						temp = curTag->Params.at(0)->AsBool();
+						temp = curTag->Params.at(0)->Get<bool>();
 						if (temp && !isBold) {
 							isBold = true;
 							final += _T("<b>");
@@ -664,7 +652,6 @@ void AssDialogue::ConvertTagsToSRT () {
 		final += _T("</s>");
 
 	Text = final;
-	UpdateData();
 	ClearBlocks();
 }
 

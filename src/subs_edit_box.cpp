@@ -63,7 +63,6 @@
 #include "tooltip_manager.h"
 #include "utils.h"
 #include "validators.h"
-#include "vfr.h"
 #include "video_context.h"
 #include "video_display.h"
 
@@ -377,7 +376,7 @@ void SubsEditBox::SetToLine(int n,bool weak) {
 		if (sync) {
 			VideoContext::Get()->Stop();
 			AssDialogue *cur = grid->GetDialogue(n);
-			if (cur) VideoContext::Get()->JumpToFrame(VFR_Output.GetFrameAtTime(cur->Start.GetMS(),true));
+			if (cur) VideoContext::Get()->JumpToTime(cur->Start.GetMS());
 		}
 	}
 
@@ -592,7 +591,7 @@ void SubsEditBox::SetControlsState (bool state) {
 /// @brief Disables or enables frame timing 
 ///
 void SubsEditBox::UpdateFrameTiming () {
-	if (VFR_Output.IsLoaded()) ByFrame->Enable(enabled);
+	if (VideoContext::Get()->IsLoaded()) ByFrame->Enable(enabled);
 	else {
 		ByFrame->Enable(false);
 		ByTime->SetValue(true);
@@ -616,7 +615,6 @@ void SubsEditBox::OnStyleChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Style = StyleBox->GetValue();
-			cur->UpdateData();
 		}
 	}
 	grid->ass->FlagAsModified(_("style change"));
@@ -641,7 +639,6 @@ void SubsEditBox::OnActorChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Actor = actor;
-			cur->UpdateData();
 		}
 	}
 
@@ -676,7 +673,6 @@ void SubsEditBox::OnLayerChange(wxSpinEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Layer = temp;
-			cur->UpdateData();
 		}
 	}
 
@@ -704,7 +700,6 @@ void SubsEditBox::OnLayerEnter(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Layer = temp;
-			cur->UpdateData();
 		}
 	}
 
@@ -817,7 +812,6 @@ void SubsEditBox::OnMarginLChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->SetMarginString(MarginL->GetValue(),0);
-			cur->UpdateData();
 		}
 	}
 	MarginL->SetValue(cur->GetMarginString(0,false));
@@ -841,7 +835,6 @@ void SubsEditBox::OnMarginRChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->SetMarginString(MarginR->GetValue(),1);
-			cur->UpdateData();
 		}
 	}
 	MarginR->SetValue(cur->GetMarginString(1,false));
@@ -866,7 +859,6 @@ void SubsEditBox::OnMarginVChange(wxCommandEvent &event) {
 		if (cur) {
 			cur->SetMarginString(MarginV->GetValue(),2);
 			cur->SetMarginString(MarginV->GetValue(),3); // also bottom margin for now
-			cur->UpdateData();
 		}
 	}
 	MarginV->SetValue(cur->GetMarginString(2,false));
@@ -890,7 +882,6 @@ void SubsEditBox::OnEffectChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Effect = Effect->GetValue();
-			cur->UpdateData();
 		}
 	}
 	grid->ass->FlagAsModified(_("effect change"));
@@ -912,7 +903,6 @@ void SubsEditBox::OnCommentChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Comment = CommentBox->GetValue();
-			cur->UpdateData();
 		}
 	}
 	grid->ass->FlagAsModified(_("comment change"));
@@ -1013,7 +1003,6 @@ void SubsEditBox::Commit(bool stay) {
 			newline->Start = cur->End;
 			newline->End.SetMS(cur->End.GetMS()+OPT_GET("Timing/Default Duration")->GetInt());
 			newline->Style = cur->Style;
-			newline->UpdateData();
 			grid->InsertLine(newline,next-1,true,true);
 			updated = true;
 		}
@@ -1183,14 +1172,14 @@ void SubsEditBox::SetOverride (wxString tagname,wxString preValue,int forcePos,b
 				for (size_t j=0;j<override->Tags.size();j++) {
 					tag = override->Tags.at(j);
 					if (tag->Name == tagname || tag->Name == alttagname || tagname == _T("\\fn")) {
-						if (isColor) startcolor = tag->Params.at(0)->AsColour();
-						if (isFlag) state = tag->Params.at(0)->AsBool();
+						if (isColor) startcolor = tag->Params.at(0)->Get<wxColour>();
+						if (isFlag) state = tag->Params.at(0)->Get<bool>();
 						if (isFont) {
-							if (tag->Name == _T("\\fn")) startfont.SetFaceName(tag->Params.at(0)->AsText());
-							if (tag->Name == _T("\\fs")) startfont.SetPointSize(tag->Params.at(0)->AsInt());
-							if (tag->Name == _T("\\b")) startfont.SetWeight((tag->Params.at(0)->AsInt() > 0) ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
-							if (tag->Name == _T("\\i")) startfont.SetStyle(tag->Params.at(0)->AsBool() ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
-							if (tag->Name == _T("\\u")) startfont.SetUnderlined(tag->Params.at(0)->AsBool());
+							if (tag->Name == _T("\\fn")) startfont.SetFaceName(tag->Params.at(0)->Get<wxString>());
+							if (tag->Name == _T("\\fs")) startfont.SetPointSize(tag->Params.at(0)->Get<int>());
+							if (tag->Name == _T("\\b")) startfont.SetWeight((tag->Params.at(0)->Get<int>() > 0) ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
+							if (tag->Name == _T("\\i")) startfont.SetStyle(tag->Params.at(0)->Get<bool>() ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
+							if (tag->Name == _T("\\u")) startfont.SetUnderlined(tag->Params.at(0)->Get<bool>());
 						}
 					}
 				}

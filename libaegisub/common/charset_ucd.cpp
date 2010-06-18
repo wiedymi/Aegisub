@@ -18,19 +18,18 @@
 /// @brief Character set detection using Universalchardet
 /// @ingroup libaegisub
 
+#include "charset_ucd.h"
 
 #ifndef LAGI_PRE
 #include "../../universalchardet/nsCharSetProber.h"
 #endif
 
-#include "libaegisub/charset.h"
-#include "charset_ucd.h"
 #include "libaegisub/io.h"
 
 namespace agi {
 	namespace charset {
 
-UCDetect::UCDetect(const std::string file): nsUniversalDetector(NS_FILTER_ALL) {
+UCDetect::UCDetect(const std::string &file): nsUniversalDetector(NS_FILTER_ALL) {
 	{
 		std::ifstream *fp;
 		fp = io::Open(file);

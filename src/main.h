@@ -53,14 +53,21 @@
 class FrameMain;
 class PluginManager;
 
+/// For holding all configuration-related objects and values.
+namespace config {
+	extern agi::Options *opt; 		///< Options
+	extern agi::MRUManager *mru;	///< Most Recently Used
+	extern agi::Path *path;			///< Paths
+}
+
 /// DOCME
 namespace Automation4 { class AutoloadScriptManager; }
 
 /// Macro to get OptionValue object.
-#define OPT_GET(x) AegisubApp::Get()->opt->Get(x)
+#define OPT_GET(x) config::opt->Get(x)
 
 /// Macro to set OptionValue object.
-#define OPT_SET(x) AegisubApp::Get()->opt->Get(x)
+#define OPT_SET(x) config::opt->Get(x)
 
 #define PATH_GET(x) AegisubApp::Get()->path->Get(x)
 
@@ -84,10 +91,6 @@ public:
 
 	/// DOCME
 	AegisubLocale locale;
-
-	agi::MRUManager *mru;
-	agi::Options *opt;
-	agi::Path *path;
 
 	/// DOCME
 	FrameMain *frame;

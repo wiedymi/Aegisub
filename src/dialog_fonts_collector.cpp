@@ -509,7 +509,7 @@ void FontsCollectorThread::Collect() {
 			if (oper == 3 && someOk) {
 				wxMutexGuiEnter();
 				subs->FlagAsModified(_("font attachment"));
-				collector->main->SubsBox->CommitChanges();
+				collector->main->SubsGrid->CommitChanges();
 				wxMutexGuiLeave();
 			}
 		}
@@ -639,7 +639,7 @@ bool FontsCollectorThread::AttachFont(wxString filename) {
 ///
 void FontsCollectorThread::GetFonts (wxString tagName,int par_n,AssOverrideParameter *param,void *usr) {
 	if (tagName == _T("\\fn")) {
-		if (instance) instance->AddFont(param->AsText(),1);
+		if (instance) instance->AddFont(param->Get<wxString>(),1);
 	}
 }
 

@@ -912,7 +912,7 @@ void AudioDisplay::SetFile(wxString file) {
 
 			// Add to recent
 			if (!is_dummy) {
-				AegisubApp::Get()->mru->Add("Audio", STD_STR(file));
+				config::mru->Add("Audio", STD_STR(file));
 				wxFileName fn(file);
 				StandardPaths::SetPathValue(_T("?audio"),fn.GetPath());
 			}
@@ -1199,7 +1199,6 @@ void AudioDisplay::CommitChanges (bool nextLine) {
 				// so only update from editbox when not in kara mode
 				curDiag->Text = grid->editBox->TextEdit->GetText();
 			}
-			curDiag->UpdateData();
 			if (!grid->IsInSelection(line_n)) break;
 		}
 

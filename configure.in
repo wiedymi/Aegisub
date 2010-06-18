@@ -345,6 +345,8 @@ AX_OPENMP([], [with_openmp="no"])
 AM_CONDITIONAL([HAVE_OPENMP], [test "$with_openmp" != "no"])
 AC_SUBST(OPENMP_CXXFLAGS)
 
+AC_CHECK_HEADERS([sys/time.h])
+
 
 ##############################
 # Program Support and Features
@@ -679,6 +681,7 @@ fi
 
 if test "$with_ffmpeg" != "no" && test "$enable_old_ffmpeg" != "yes"; then
   AC_AGI_COMPILE([FFMPEG], [ffmpeg], [$LIBSWSCALE_CFLAGS $LIBAVCODEC_CFLAGS $LIBAVFORMAT_CFLAGS $LIBAVUTIL_CFLAGS], [$LIBSWSCALE_LIBS $LIBAVCODEC_LIBS $LIBAVFORMAT_LIBS $LIBAVUTIL_LIBS],[
+#define __STDC_CONSTANT_MACROS
 extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
@@ -691,7 +694,7 @@ int main (void) {
   SwsContext *swsc = NULL;
 
   av_register_all();
-  fc = av_alloc_format_context();
+  fc = avformat_alloc_context();
   if (fc == NULL) {
     printf("avformat failure\n");
     return 1;

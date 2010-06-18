@@ -77,6 +77,13 @@
 #include <libaegisub/access.h>
 #include <libaegisub/log.h>
 
+namespace config {
+	agi::Options *opt;
+	agi::MRUManager *mru;
+	agi::Path *path;
+}
+
+
 ///////////////////
 // wxWidgets macro
 IMPLEMENT_APP(AegisubApp)
@@ -137,8 +144,44 @@ void SetThreadName(DWORD dwThreadID, LPCSTR szThreadName) {
 /// @return 
 ///
 bool AegisubApp::OnInit() {
-agi::log::EmitSTDOUT *emit_stdout = new agi::log::EmitSTDOUT();
-emit_stdout->Enable();
+#ifdef _DEBUG
+	agi::log::EmitSTDOUT *emit_stdout = new agi::log::EmitSTDOUT();
+	emit_stdout->Enable();
+#endif
+
+	config::path = new agi::Path("/usr/home/verm/.aegisub-2.2/path.json", GET_DEFAULT_CONFIG(default_path));
+
+	const std::string conf_mru(StandardPaths::DecodePath(_T("?user/mru.json")));
+	config::mru = new agi::MRUManager(conf_mru, GET_DEFAULT_CONFIG(default_mru));
+
+	// Set config file
+	StartupLog(_T("Load configuration"));
+	try {
+		const std::string conf_user(StandardPaths::DecodePath(_T("?user/config.json")));
+		config::opt = new agi::Options(conf_user, GET_DEFAULT_CONFIG(default_config));
+	} catch (agi::Exception& e) {
+		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
+	}
+
+#ifdef __WXMSW__
+	// Try loading configuration from the install dir if one exists there
+	try {
+		const std::string conf_local(StandardPaths::DecodePath(_T("?data/config.json")));
+		std::ifstream* localConfig = agi::io::Open(conf_local);
+		opt->ConfigNext(*localConfig);
+		delete localConfig;
+
+		if (OPT_GET("App/Local Config")->GetBool()) {
+			// Local config, make ?user mean ?data so all user settings are placed in install dir
+			StandardPaths::SetPathValue(_T("?user"), StandardPaths::DecodePath(_T("?data")));
+		}
+	} catch (agi::acs::AcsError const&) {
+		// File doesn't exist or we can't read it
+		// Might be worth displaying an error in the second case
+	}
+#endif
+	config::opt->ConfigUser();
+
 
 #ifdef __VISUALC__
 	SetThreadName((DWORD) -1,"AegiMain");
@@ -153,52 +196,6 @@ emit_stdout->Enable();
 #else
 		SetAppName(_T("aegisub"));
 #endif
-
-		path = new agi::Path("/usr/home/verm/.aegisub-2.2/path.json", GET_DEFAULT_CONFIG(default_path));
-
-		const std::string conf_mru(StandardPaths::DecodePath(_T("?user/mru.json")));
-		mru = new agi::MRUManager(conf_mru, GET_DEFAULT_CONFIG(default_mru));
-
-		// Set config file
-		StartupLog(_T("Load configuration"));
-		try {
-			const std::string conf_user(StandardPaths::DecodePath(_T("?user/config.json")));
-			opt = new agi::Options(conf_user, GET_DEFAULT_CONFIG(default_config));
-
-#ifdef __WXMSW__
-			// Try loading configuration from the install dir if one exists there
-			try {
-				const std::string conf_local(StandardPaths::DecodePath(_T("?data/config.json")));
-				std::ifstream* localConfig = agi::io::Open(conf_local);
-				opt->ConfigNext(*localConfig);
-				delete localConfig;
-
-				if (OPT_GET("App/Local Config")->GetBool()) {
-					// Local config, make ?user mean ?data so all user settings are placed in install dir
-					StandardPaths::SetPathValue(_T("?user"), StandardPaths::DecodePath(_T("?data")));
-				}
-			}
-			catch (agi::acs::AcsError const&) {
-				// File doesn't exist or we can't read it
-				// Might be worth displaying an error in the second case
-			}
-#endif
-			opt->ConfigUser();
-/*
-#ifdef _DEBUG
-			const std::string conf_default("default_config.json");
-			std::istream *stream = agi::io::Open(conf_default);
-			opt->ConfigDefault(*stream);
-			delete stream;
-#else
-			opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
-#endif
-*/
-//			opt->ConfigDefault(GET_DEFAULT_CONFIG(default_config));
-
-		} catch (agi::Exception& e) {
-			wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
-		}
 
 		// Initialize randomizer
 		StartupLog(_T("Initialize random generator"));
@@ -288,9 +285,9 @@ int AegisubApp::OnExit() {
 	SubtitleFormat::DestroyFormats();
 	VideoContext::Clear();
 	delete plugins;
-	delete opt;
-	delete mru;
-	delete path;
+	delete config::opt;
+	delete config::mru;
+	delete config::path;
 #ifdef WITH_AUTOMATION
 	delete global_scripts;
 #endif
@@ -509,7 +506,7 @@ END_EVENT_TABLE()
 void AegisubApp::OnMouseWheel(wxMouseEvent &event) {
 	wxPoint pt;
 	wxWindow *target = wxFindWindowAtPointer(pt);
-	if (frame && (target == frame->audioBox->audioDisplay || target == frame->SubsBox)) {
+	if (frame && (target == frame->audioBox->audioDisplay || target == frame->SubsGrid)) {
 		if (target->IsShownOnScreen()) target->GetEventHandler()->ProcessEvent(event);
 		else event.Skip();
 	}
