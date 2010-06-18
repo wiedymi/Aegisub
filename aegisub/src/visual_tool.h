@@ -79,7 +79,7 @@ public:
 /// @brief DOCME
 /// DOCME
 template<class FeatureType>
-class VisualTool : public IVisualTool, public SelectionChangeSubscriber {
+class VisualTool : public IVisualTool, protected SubtitleSelectionListener {
 private:
 	agi::OptionValue* realtime; /// Realtime updating option
 	int dragStartX; /// Starting x coordinate of the current drag, if any
@@ -104,6 +104,12 @@ private:
 	void SetEditbox(int lineN = -1);
 
 	bool selChanged; /// Has the selection already been changed in the current click?
+
+protected:
+	// SubtitleSelectionListener implementation
+	virtual void OnActiveLineChanged(AssDialogue *new_line) { };
+	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection) { };
+
 protected:
 	VideoDisplay *parent; /// VideoDisplay which this belongs to, used to frame conversion
 	bool holding; /// Is a hold currently in progress?
@@ -201,9 +207,6 @@ public:
 	virtual void Draw()=0;
 	/// @brief Called by stuff when there's stuff
 	void Refresh();
-
-	/// Called by the grid when the selection changes
-	virtual void OnSelectionChange(bool, int, bool) { }
 
 	/// @brief Constructor
 	/// @param parent The VideoDisplay to use for coordinate conversion

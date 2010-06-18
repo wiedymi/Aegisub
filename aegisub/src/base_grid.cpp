@@ -81,7 +81,6 @@ BaseGrid::BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 	holding = false;
 	byFrame = false;
 	lineHeight = 1; // non-zero to avoid div by 0
-	selChangeSub = NULL;
 
 	// Set scrollbar
 	scrollBar = new wxScrollBar(this,GRID_SCROLLBAR,wxDefaultPosition,wxDefaultSize,wxSB_VERTICAL);
@@ -226,7 +225,7 @@ void BaseGrid::SelectRow(int row, bool addToSelected, bool select) {
 			RefreshRect(wxRect(0,(row+1-yPos)*lineHeight,w,lineHeight),false);
 		}
 
-		if (selChangeSub) selChangeSub->OnSelectionChange(!addToSelected, row, select);
+		AnnounceSelectedSetChanged();
 	}
 }
 

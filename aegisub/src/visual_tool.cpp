@@ -93,7 +93,7 @@ VisualTool<FeatureType>::VisualTool(VideoDisplay *parent, VideoState const& vide
 {
 	if (VideoContext::Get()->IsLoaded()) {
 		frame_n = VideoContext::Get()->GetFrameN();
-		VideoContext::Get()->grid->RegisterSelectionChange(this);
+		VideoContext::Get()->grid->AddSelectionListener(this);
 	}
 
 	PopulateFeatureList();
@@ -101,7 +101,7 @@ VisualTool<FeatureType>::VisualTool(VideoDisplay *parent, VideoState const& vide
 
 template<class FeatureType>
 VisualTool<FeatureType>::~VisualTool() {
-	VideoContext::Get()->grid->RegisterSelectionChange(NULL);
+	VideoContext::Get()->grid->RemoveSelectionListener(this);
 }
 
 template<class FeatureType>

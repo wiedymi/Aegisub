@@ -82,10 +82,12 @@ private:
 	void UpdateToggleButtons();
 	void DoRefresh();
 
+protected:
+	// From SubtitleSelectionListener inherited protected by VisualTool<>
+	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection);
+
 public:
 	VisualToolDrag(VideoDisplay *parent, VideoState const& video, wxToolBar *toolbar);
-
-	void OnSelectionChange(bool clear, int row, bool selected);
 
 	void Draw();
 	bool Update();

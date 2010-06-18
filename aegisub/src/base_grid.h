@@ -48,9 +48,6 @@
 #endif
 
 
-//#include "selection_controller.h"
-
-
 //////////////
 // Prototypes
 class AssEntry;
@@ -60,12 +57,6 @@ class FrameMain;
 
 /// DOCME
 typedef std::list<AssEntry*>::iterator entryIter;
-
-class SelectionChangeSubscriber {
-public:
-	virtual void OnSelectionChange(bool clear, int row, bool selected) = 0;
-};
-
 
 
 /// DOCME
@@ -99,8 +90,6 @@ private:
 
 	/// DOCME
 	wxBitmap *bmp;
-
-	SelectionChangeSubscriber* selChangeSub;
 
 	void OnPaint(wxPaintEvent &event);
 	void OnSize(wxSizeEvent &event);
@@ -187,10 +176,6 @@ public:
 	void MakeCellVisible(int row, int col,bool center=true);
 
 	AssDialogue *GetDialogue(int n) const;
-
-	void RegisterSelectionChange(SelectionChangeSubscriber* sel) {
-		selChangeSub = sel;
-	}
 
 	BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxWANTS_CHARS, const wxString& name = wxPanelNameStr);
 	~BaseGrid();
