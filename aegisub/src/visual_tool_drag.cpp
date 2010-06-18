@@ -125,25 +125,21 @@ void VisualToolDrag::DoRefresh() {
 //void VisualToolDrag::OnSelectionChange(bool clear, int row, bool selected) {
 void VisualToolDrag::OnSelectedSetChanged(const SubtitleSelection &new_selection) {
 	if (!externalChange) return;
-	externalChange = false;
-	if (new_selection.size() == 0) {
+	
+	if (new_selection.empty()) {
 		ClearSelection(false);
+		return;
 	}
+
+	externalChange = false;
 	for (size_t fti = 0; fti < features.size(); ++fti) {
-		bool found = false;
-		size_t found_fti = 0;
-		for (size_t seli = 0; seli < new_selection.size(); ++seli) {
-			if (features[fti].line == new_selection[seli] && features[fti].type == DRAG_START) {
-				found = true;
-				found_fti = fti;
-				break;
+		if (std::find(new_selection.begin(), new_selection.end(), features[fti].line) != new_selection.end()) {
+			if (features[fti].type == DRAG_START) {
+				AddSelection(fti);
 			}
 		}
-		if (found) {
-			AddSelection(found_fti);
-		}
 		else {
-			RemoveSelection(found_fti);
+			RemoveSelection(fti);
 		}
 	}
 	externalChange = true;
