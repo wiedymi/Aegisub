@@ -47,8 +47,8 @@
 
 #include "browse_button.h"
 #include "standard_paths.h"
+#include "main.h"
 #include "utils.h"
-
 
 /// @brief Constructor 
 /// @param parent   
@@ -86,7 +86,7 @@ void BrowseButton::OnPressed(wxCommandEvent &event) {
 	// Folder
 	if (type == BROWSE_FOLDER) {
 		// For some reason I can't make this work on Mac... -jfs
-		wxString def = StandardPaths::DecodePathMaybeRelative(ctrl[0]->GetValue(), _T("?user/"));
+		wxString def = config::path->Get("User");
 		wxDirDialog dlg(0, _("Please choose the folder:"), def);
 		if (dlg.ShowModal() == wxID_OK) {
 			wxString dir = StandardPaths::EncodePath(dlg.GetPath());

@@ -47,6 +47,7 @@
 #include "ass_style.h"
 #include "ass_style_storage.h"
 #include "standard_paths.h"
+#include "main.h"
 #include "text_file_reader.h"
 #include "text_file_writer.h"
 
@@ -57,8 +58,8 @@
 ///
 void AssStyleStorage::Save(wxString name) {
 	if (name.IsEmpty()) return;
-
-	TextFileWriter file(StandardPaths::DecodePath(_T("?user/catalog/")+name+_T(".sty")), _T("UTF-8"));
+	wxString file_name(wxString::Format("%s%s.sty", config::path->Get("Catalog"), name));
+	TextFileWriter file(file_name, _T("UTF-8"));
 
 	for (std::list<AssStyle*>::iterator cur=style.begin();cur!=style.end();cur++) {
 		file.WriteLineToFile((*cur)->GetEntryData());
@@ -75,7 +76,8 @@ void AssStyleStorage::Load(wxString name) {
 	if (name.IsEmpty()) return;
 	Clear();
 
-	TextFileReader file(StandardPaths::DecodePath(_T("?user/catalog/")+name+_T(".sty")), _T("UTF-8"));
+	wxString file_name(wxString::Format("%s%s.sty", config::path->Get("Catalog"), name));
+	TextFileReader file(file_name, _T("UTF-8"));
 
 	AssStyle *curStyle;
 	while (file.HasMoreLines()) {

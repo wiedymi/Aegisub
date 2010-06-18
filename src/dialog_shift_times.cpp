@@ -179,7 +179,7 @@ DialogShiftTimes::DialogShiftTimes (wxWindow *parent,SubtitlesGrid *_grid)
 	}
 
 	// Load history
-	LoadHistory(StandardPaths::DecodePath(_T("?user/shift_history.txt")));
+	LoadHistory(config::path->Get("Shift History"));
 }
 
 
@@ -199,7 +199,7 @@ END_EVENT_TABLE()
 /// @param event 
 ///
 void DialogShiftTimes::OnClear(wxCommandEvent &event) {
-	wxRemoveFile(StandardPaths::DecodePath(_T("?user/shift_history.txt")));
+	wxRemoveFile(config::path->Get("Shift History"));
 	History->Clear();
 }
 

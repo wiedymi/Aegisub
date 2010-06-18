@@ -82,7 +82,7 @@ void AegisubLocale::Init(int language) {
 	locale = new wxLocale(language);
 
 #ifdef __WINDOWS__
-	locale->AddCatalogLookupPathPrefix(StandardPaths::DecodePath(_T("?data/locale/")));
+	locale->AddCatalogLookupPathPrefix(config::path->Locale());
 	locale->AddCatalog(_T("aegisub"));
 #else
 	locale->AddCatalog(_T(GETTEXT_PACKAGE));
@@ -140,7 +140,7 @@ wxArrayInt AegisubLocale::GetAvailableLanguages() {
 	wxString temp1;
 
 	// Open directory
-	wxString folder = StandardPaths::DecodePath(_T("?data/locale/"));
+	wxString folder = config::path->Locale();
 	wxDir dir;
 	if (!dir.Exists(folder)) return final;
 	if (!dir.Open(folder)) return final;

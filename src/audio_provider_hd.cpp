@@ -161,7 +161,7 @@ void HDAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) {
 wxString HDAudioProvider::DiskCachePath() {
 	// Default
 	wxString path = lagi_wxString(OPT_GET("Audio/Cache/HD/Location")->GetString());
-	if (path == _T("default")) return StandardPaths::DecodePath(_T("?temp/"));
+	if (path == _T("default")) return config::path->Get("Temp");
 
 	// Specified
 	return DecodeRelativePath(path,StandardPaths::DecodePath(_T("?user/")));

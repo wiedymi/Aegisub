@@ -240,7 +240,7 @@ void DialogStyleManager::LoadCatalog () {
 	CatalogList->Clear();
 
 	// Create catalog if it doesn't exist
-	wxString dirname = StandardPaths::DecodePath(_T("?user/catalog/"));
+	wxString dirname = config::path->Get("Catalog");
 	if (!wxDirExists(dirname)) {
 		if (!wxMkdir(dirname)) {
 			throw _T("Failed creating directory for style catalogues");
@@ -255,7 +255,7 @@ void DialogStyleManager::LoadCatalog () {
 	}
 
 	// Get dir
-	dirname = StandardPaths::DecodePath(_T("?user/catalog/*.sty"));
+	dirname = config::path->Get("Catalog").append("*.sty");
 
 	// Populate
 	wxString curfile = wxFindFirstFile(dirname,wxFILE);
@@ -427,7 +427,7 @@ void DialogStyleManager::OnCatalogNew (wxCommandEvent &) {
 		StorageActions(true);
 
 		// Save
-		wxString dirname = StandardPaths::DecodePath(_T("?user/catalog/"));
+		wxString dirname = config::path->Get("Catalog");
 		if (!wxDirExists(dirname)) {
 			if (!wxMkdir(dirname)) {
 				throw _T("Failed creating directory for style catalogues");
@@ -446,7 +446,7 @@ void DialogStyleManager::OnCatalogDelete (wxCommandEvent &) {
 		wxString message = wxString::Format(_("Are you sure you want to delete the storage \"%s\" from the catalog?"), name.c_str());
 		int option = wxMessageBox(message, _("Confirm delete"), wxYES_NO | wxICON_EXCLAMATION , this);
 		if (option == wxYES) {
-			wxRemoveFile(StandardPaths::DecodePath(_T("?user/catalog/") + name + _T(".sty")));
+			wxRemoveFile(wxString::Format("%s%s.sty)", config::path->Get("Catalog"), name));
 			CatalogList->Delete(sel);
 			StorageList->Clear();
 			StorageActions(false);
