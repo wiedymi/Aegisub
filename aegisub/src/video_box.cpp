@@ -53,6 +53,7 @@
 #include "frame_main.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "selection_controller.h"
 #include "subs_edit_box.h"
@@ -63,9 +64,7 @@
 #include "video_box.h"
 #include "video_context.h"
 #include "video_display.h"
-#include "video_provider_manager.h"
 #include "video_slider.h"
-#include "visual_tool.h"
 
 
 /// @brief Constructor 
@@ -90,7 +89,7 @@ VideoBox::VideoBox(wxWindow *parent, bool isDetached)
 	VideoStopButton->SetToolTip(_("Stop video playback"));
 	AutoScroll = new ToggleBitmap(videoPage,Video_Auto_Scroll,GETIMAGE(toggle_video_autoscroll_24),wxSize(30,-1));
 	AutoScroll->SetToolTip(_("Toggle autoscroll of video"));
-	AutoScroll->SetValue(Options.AsBool(_T("Sync video with subs")));
+	AutoScroll->SetValue(OPT_GET("Video/Subtitle Sync")->GetBool());
 
 	// Seek
 	videoSlider = new VideoSlider(videoPage,-1);
@@ -115,7 +114,7 @@ VideoBox::VideoBox(wxWindow *parent, bool isDetached)
 	visualToolBar->AddTool(Video_Mode_Vector_Clip,_("Vector Clip"),GETIMAGE(visual_vector_clip_24),_("Clip subtitles to a vectorial area."),wxITEM_RADIO);
 	visualToolBar->AddSeparator();
 	visualToolBar->AddTool(Video_Mode_Realtime,_("Realtime"),GETIMAGE(visual_realtime_24),_("Toggle realtime display of changes."),wxITEM_CHECK);
-	visualToolBar->ToggleTool(Video_Mode_Realtime,Options.AsBool(_T("Video Visual Realtime")));
+	visualToolBar->ToggleTool(Video_Mode_Realtime,OPT_GET("Video/Visual Realtime")->GetBool());
 	visualToolBar->AddTool(Video_Mode_Help,_("Help"),GETIMAGE(visual_help_24),_("Open the manual page for Visual Typesetting."));
 	visualToolBar->Realize();
 	// Avoid ugly themed background on Vista and possibly also Win7
@@ -173,8 +172,6 @@ BEGIN_EVENT_TABLE(VideoBox, wxPanel)
 	EVT_BUTTON(Video_Stop, VideoBox::OnVideoStop)
 	EVT_TOGGLEBUTTON(Video_Auto_Scroll, VideoBox::OnVideoToggleScroll)
 
-	EVT_TOOL_RANGE(Video_Mode_Standard, Video_Mode_Vector_Clip, VideoBox::OnModeChange)
-	EVT_TOOL_RANGE(VISUAL_SUB_TOOL_START,VISUAL_SUB_TOOL_END, VideoBox::OnSubTool)
 	EVT_TOOL(Video_Mode_Realtime, VideoBox::OnToggleRealtime)
 	EVT_TOOL(Video_Mode_Help, VideoBox::OnHelp)
 END_EVENT_TABLE()
@@ -224,36 +221,14 @@ void VideoBox::OnVideoStop(wxCommandEvent &event) {
 /// @param event 
 ///
 void VideoBox::OnVideoToggleScroll(wxCommandEvent &event) {
-	Options.SetBool(_T("Sync video with subs"),AutoScroll->GetValue());
-	Options.Save();
+	OPT_SET("Video/Subtitle Sync")->SetBool(AutoScroll->GetValue());
 }
-
-
-
-/// @brief Mode changed 
-/// @param event 
-///
-void VideoBox::OnModeChange(wxCommandEvent &event) {
-	videoDisplay->SetVisualMode(event.GetId() - Video_Mode_Standard);
-}
-
-
-
-/// @brief Sub-tool button pressed 
-/// @param event 
-///
-void VideoBox::OnSubTool(wxCommandEvent &event) {
-	videoDisplay->OnSubTool(event);
-}
-
-
 
 /// @brief Realtime toggle 
 /// @param event 
 ///
 void VideoBox::OnToggleRealtime(wxCommandEvent &event) {
-	Options.SetBool(_T("Video Visual Realtime"),event.IsChecked());
-	Options.Save();
+	OPT_SET("Video/Visual Realtime")->SetBool(event.IsChecked());
 }
 
 

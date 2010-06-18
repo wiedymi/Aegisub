@@ -50,6 +50,7 @@
 #include "audio_player_manager.h"
 #include "audio_provider_dummy.h"
 #include "audio_timing.h"
+#include "compat.h"
 #include "video_context.h"
 #include "selection_controller.h"
 #include "vfr.h"
@@ -232,7 +233,7 @@ void AudioController::OpenAudio(const wxString &url)
 	CloseAudio();
 
 	if (!url)
-		throw Aegisub::InternalError(_T("AudioController::OpenAudio() was passed an empty string. This must not happen."), 0);
+		throw agi::InternalError("AudioController::OpenAudio() was passed an empty string. This must not happen.", 0);
 
 	wxString path_part;
 
@@ -296,9 +297,9 @@ void AudioController::OpenAudio(const wxString &url)
 		wxFileName fn(url);
 		if (!fn.FileExists())
 		{
-			Aegisub::FileNotFoundError fnf(url);
-			throw Aegisub::AudioOpenError(
-				_T("Failed opening audio file (parsing as plain filename)"),
+			agi::FileNotFoundError fnf(STD_STR(url));
+			throw agi::AudioOpenError(
+				"Failed opening audio file (parsing as plain filename)",
 				&fnf);
 		}
 		provider = AudioProviderFactoryManager::GetAudioProvider(url);

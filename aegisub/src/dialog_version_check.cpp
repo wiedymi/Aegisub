@@ -61,15 +61,18 @@
 #include <wx/statline.h>
 #include <wx/textctrl.h>
 #include <memory>
+#include <set>
 #include <vector>
 #endif
 
+#include "compat.h"
 #include "dialog_version_check.h"
+#include "main.h"
 #include "options.h"
-#include "include/aegisub/exception.h"
 #include "string_codec.h"
 #include "version.h"
 
+#include <libaegisub/exception.h>
 
 /* *** Public API is implemented here *** */
 
@@ -138,7 +141,7 @@ public:
 
 };
 
-DEFINE_SIMPLE_EXCEPTION_NOINNER(VersionCheckError, Aegisub::Exception, "versioncheck")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(VersionCheckError, agi::Exception, "versioncheck")
 
 
 class AegisubVersionCheckEventHandler : public wxEvtHandler {
@@ -169,11 +172,11 @@ wxThread::ExitCode AegisubVersionCheckerThread::Entry()
 	if (!interactive)
 	{
 		// Automatic checking enabled?
-		if (!Options.AsBool(_T("auto check for updates")))
+		if (!OPT_GET("App/Auto/Check For Updates")->GetInt())
 			return 0;
 
 		// Is it actually time for a check?
-		time_t next_check = Options.AsInt(_T("Updates Next Check Time"));
+		time_t next_check = OPT_GET("Version/Next Check")->GetInt();
 		if ((time_t)next_check > wxDateTime::GetTimeNow())
 			return 0;
 	}
@@ -183,10 +186,10 @@ wxThread::ExitCode AegisubVersionCheckerThread::Entry()
 	try {
 		DoCheck();
 	}
-	catch (const Aegisub::Exception &e) {
+	catch (const agi::Exception &e) {
 		PostErrorEvent(wxString::Format(
 			_("There was an error checking for updates to Aegisub:\n%s\n\nIf other applications can access the Internet fine, this is probably a temporary server problem on our end."),
-			e.GetMessage().c_str()));
+			e.GetMessage()));
 	}
 	catch (...) {
 		PostErrorEvent(_("An unknown error occurred while checking for updates to Aegisub."));
@@ -201,7 +204,7 @@ wxThread::ExitCode AegisubVersionCheckerThread::Entry()
 	// because the tree only depends on the keys.
 	// Lastly, writing options to disk only happens when Options.Save() is called.
 	time_t new_next_check_time = wxDateTime::GetTimeNow() + 60*60; // in one hour
-	Options.SetInt(_T("Updates Next Check Time"), (int)new_next_check_time);
+	OPT_SET("Version/Next Check")->SetInt((int)new_next_check_time);
 
 	return 0;
 }
@@ -321,6 +324,17 @@ static wxString GetSystemLanguage()
 
 void AegisubVersionCheckerThread::DoCheck()
 {
+	std::set<wxString> accept_tags;
+#ifdef UPDATE_CHECKER_ACCEPT_TAGS
+	{
+		wxStringTokenizer tk(wxString(UPDATE_CHECKER_ACCEPT_TAGS, wxConvUTF8), _T(" "));
+		while (tk.HasMoreTokens())
+		{
+			accept_tags.insert(tk.GetNextToken());
+		}
+	}
+#endif
+
 	const wxString servername = _T("updates.aegisub.org");
 	const wxString base_updates_path = _T("/trunk");
 
@@ -338,12 +352,16 @@ void AegisubVersionCheckerThread::DoCheck()
 	http.SetFlags(wxSOCKET_WAITALL|wxSOCKET_BLOCK);
 
 	if (!http.Connect(servername))
-		throw VersionCheckError(_("Could not connect to updates server."));
+		throw VersionCheckError(STD_STR(_("Could not connect to updates server.")));
 
 	std::auto_ptr<wxInputStream> stream(http.GetInputStream(path));
+	if (stream.get() == 0) // check for null-pointer
+		throw VersionCheckError(STD_STR(_("Could not download from updates server.")));
 
-	if (http.GetResponse() < 200 || http.GetResponse() >= 300)
-		throw VersionCheckError(wxString::Format(_("HTTP request failed, got HTTP response %d."), http.GetResponse()));
+	if (http.GetResponse() < 200 || http.GetResponse() >= 300) {
+		const std::string str_err = STD_STR(wxString::Format(_("HTTP request failed, got HTTP response %d."), http.GetResponse()));
+		throw VersionCheckError(str_err);
+	}
 
 	wxTextInputStream text(*stream);
 
@@ -361,7 +379,7 @@ void AegisubVersionCheckerThread::DoCheck()
 
 		wxString line_type = parsed[0];
 		wxString line_revision = parsed[1];
-		wxString line_platform = parsed[2];
+		wxString line_tags_str = parsed[2];
 		wxString line_url = inline_string_decode(parsed[3]);
 		wxString line_friendlyname = inline_string_decode(parsed[4]);
 		wxString line_description = inline_string_decode(parsed[5]);
@@ -372,24 +390,25 @@ void AegisubVersionCheckerThread::DoCheck()
 			continue;
 		}
 
-		// check if the OS is right
-		wxOperatingSystemId osid = wxGetOsVersion();
-		if (line_platform == _T("windows") && !(osid & wxOS_WINDOWS_NT))
+		// check if the tags match
+		if (line_tags_str.IsEmpty() || line_tags_str == _T("all"))
 		{
-			continue;
+			// looking good
 		}
-		if (line_platform == _T("mac") && !(osid & wxOS_MAC_OSX_DARWIN))
+		else
 		{
-			continue;
-		}
-		if (line_platform == _T("source") && (osid & wxOS_WINDOWS_NT || osid & wxOS_MAC_OSX_DARWIN))
-		{
-			// TODO: support interested-in-source-releases flag
-			continue;
-		}
-		if (!(line_platform  == _T("windows") || line_platform == _T("mac") || line_platform == _T("source") || line_platform == _T("all")))
-		{
-			continue;
+			bool accepts_all_tags = true;
+			wxStringTokenizer tk(line_tags_str, _T(" "));
+			while (tk.HasMoreTokens())
+			{
+				if (accept_tags.find(tk.GetNextToken()) == accept_tags.end())
+				{
+					accepts_all_tags = false;
+					break;
+				}
+			}
+			if (!accepts_all_tags)
+				continue;
 		}
 
 		if (line_type == _T("upgrade") || line_type == _T("bugfix"))
@@ -485,7 +504,7 @@ VersionCheckerResultDialog::VersionCheckerResultDialog(const wxString &main_text
 	}
 
 	automatic_check_checkbox = new wxCheckBox(this, -1, _("Auto Check for Updates"));
-	automatic_check_checkbox->SetValue(Options.AsBool(_T("Auto check for updates")));
+	automatic_check_checkbox->SetValue(!!OPT_GET("App/Auto/Check For Updates")->GetInt());
 
 	wxButton *remind_later_button = 0;
 	if (updates.size() > 0)
@@ -523,7 +542,7 @@ void VersionCheckerResultDialog::OnRemindMeLater(wxCommandEvent &evt)
 {
 	// In one week
 	time_t new_next_check_time = wxDateTime::Today().GetTicks() + 7*24*60*60;
-	Options.SetInt(_T("Updates Next Check Time"), (int)new_next_check_time);
+	OPT_SET("Version/Next Check")->SetInt((int)new_next_check_time);
 
 	Close();
 }
@@ -531,7 +550,7 @@ void VersionCheckerResultDialog::OnRemindMeLater(wxCommandEvent &evt)
 
 void VersionCheckerResultDialog::OnClose(wxCloseEvent &evt)
 {
-	Options.SetBool(_T("Auto check for updates"), automatic_check_checkbox->GetValue());
+	OPT_SET("App/Auto/Check For Updates")->SetBool(automatic_check_checkbox->GetValue());
 	Destroy();
 }
 

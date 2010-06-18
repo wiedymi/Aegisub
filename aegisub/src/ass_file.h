@@ -37,9 +37,6 @@
 
 #pragma once
 
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <fstream>
 #include <list>
@@ -48,9 +45,6 @@
 #include <wx/arrstr.h>
 #endif
 
-
-//////////////
-// Prototypes
 class FrameRate;
 class AssDialogue;
 class AssStyle;
@@ -60,7 +54,7 @@ class AssDialogueBlockOverride;
 class AssDialogueBlockPlain;
 class AssEntry;
 
-
+typedef std::list<AssEntry*>::iterator entryIter;
 
 /// DOCME
 /// @class AssFile
@@ -84,93 +78,132 @@ private:
 	static bool StackModified;
 	static void StackClear();
 
-public:
-
-	/// DOCME
-	std::list<AssEntry*> Line;
-
-
-	/// DOCME
-	wxString filename;
-
-	/// DOCME
 	wxString undodescription;
 
-	/// DOCME
+public:
+
+	/// The lines in the file
+	std::list<AssEntry*> Line;
+	/// The filename of this file, if any
+	wxString filename;
+	/// Is the file loaded?
 	bool loaded;
 
 	AssFile();
 	AssFile(AssFile &from);
 	~AssFile();
 
-	bool IsModified();									// Returns if file has unmodified changes
-	void FlagAsModified(wxString desc);					// Flag file as being modified, will automatically put a copy on stack
-	void Clear();										// Wipes file
-	void CompressForStack(bool compress);				// Compress/decompress for storage on stack
-	void LoadDefault(bool defline=true);				// Loads default file. Pass false to prevent it from adding a default line too
-	void InsertStyle(AssStyle *style);					// Inserts a style to file
-	void InsertAttachment(AssAttachment *attach);		// Inserts an attachment
-	void InsertAttachment(wxString filename);			// Inserts a file as an attachment
-	wxArrayString GetStyles();							// Gets a list of all styles available
-	AssStyle *GetStyle(wxString name);					// Gets style by its name
+	/// Does the file have unsaved changes?
+	bool IsModified();
+	/// @brief Flag the file as modified and push a copy onto the undo stack
+	/// @param desc Undo description
+	void FlagAsModified(wxString desc);
+	/// Clear the file
+	void Clear();
+	/// Discard some parsed data to reduce the size of the undo stack
+	void CompressForStack();
+	/// @brief Load default file
+	/// @param defline Add a blank line to the file
+	void LoadDefault(bool defline=true);
+	/// Add a style to the file
+	void InsertStyle(AssStyle *style);
+	/// Add an attachment to the file
+	void InsertAttachment(AssAttachment *attach);
+	/// Attach a file to the ass file
+	void InsertAttachment(wxString filename);
+	/// Get the names of all of the styles available
+	wxArrayString GetStyles();
+	/// @brief Get a style by name
+	/// @param name Style name
+	/// @return Pointer to style or NULL
+	AssStyle *GetStyle(wxString name);
 
-	//wxString GetString();								// Returns the whole file as a single string
-	void Load(wxString file,wxString charset=_T(""),bool addToRecent=true);	// Load from a file
-	void Save(wxString file,bool setfilename=false,bool addToRecent=true,const wxString encoding=_T(""));	// Save to a file. Pass true to second argument if this isn't a copy
-	void SaveMemory(std::vector<char> &dst,const wxString encoding=_T(""));	// Save to a memory string
-	void Export(wxString file);							// Saves exported copy, with effects applied
-	void AddToRecent(wxString file);					// Adds file name to list of recently opened files
-	bool CanSave();										// Returns true if the file can be saved in its current format
-	static wxString GetWildcardList(int mode);			// Returns the list of wildcards supported (0 = open, 1 = save, 2 = export)
 
-	void GetResolution(int &w,int &h);								// Get resolution
-	int GetScriptInfoAsInt(const wxString key);						// Returns the value in a [Script Info] key as int.
-	wxString GetScriptInfo(const wxString key);						// Returns the value in a [Script Info] key as string.
-	void SetScriptInfo(const wxString key,const wxString value);	// Sets the value of a [Script Info] key. Adds it if it doesn't exist.
-	void AddComment(const wxString comment);						// Adds a ";" comment under [Script Info].
-	int AddLine(wxString data,wxString group,int lasttime,int &version,wxString *outGroup=NULL);
+	/// @brief Load from a file
+	/// @param file File name
+	/// @param charset Character set of file or empty to autodetect
+	/// @param addToRecent Should the file be added to the MRU list?
+	void Load(const wxString &file,wxString charset="",bool addToRecent=true);
+	/// @brief Save to a file
+	/// @param file Path to save to
+	/// @param setfilename Should the filename be changed to the passed path?
+	/// @param addToRecent Should the file be added to the MRU list?
+	/// @param encoding Encoding to use, or empty to let the writer decide (which usually means "App/Save Charset")
+	void Save(wxString file,bool setfilename=false,bool addToRecent=true,const wxString encoding=_T(""));
+	/// @brief Save to a memory buffer. Used for subtitle providers which support it
+	/// @param[out] dst Destination vector
+	void SaveMemory(std::vector<char> &dst,const wxString encoding=_T(""));
+	/// @brief Saves exported copy, with effects applied
+	/// @param file Path to save to; file name is never set to this
+	void Export(wxString file);
+	/// Add file name to the MRU list
+	void AddToRecent(wxString file);
+	/// Can the file be saved in its current format?
+	bool CanSave();
+	/// @brief Get the list of wildcards supported
+	/// @param mode 0 = open, 1 = save, 2 = export
+	static wxString GetWildcardList(int mode);
 
-	static void StackPop();					// Pop subs from stack and sets 'top' to it
-	static void StackRedo();				// Redoes action on stack
-	static void StackPush(wxString desc);	// Puts a copy of 'top' on the stack
-	static void StackReset();				// Resets stack. Do this before loading new subtitles.
-	static bool IsUndoStackEmpty();			// Checks if undo stack is empty
-	static bool IsRedoStackEmpty();			// Checks if undo stack is empty
-	static wxString GetUndoDescription();	// Gets field undodescription from back of UndoStack
-	static wxString GetRedoDescription();	// Gets field undodescription from back of RedoStack
+	/// @brief Get the script resolution
+	/// @param[out] w Width
+	/// @param[in] h Height
+	void GetResolution(int &w,int &h);
+	/// Get the value in a [Script Info] key as int.
+	int GetScriptInfoAsInt(const wxString key);
+	/// Get the value in a [Script Info] key as string.
+	wxString GetScriptInfo(const wxString key);
+	/// Set the value of a [Script Info] key. Adds it if it doesn't exist.
+	void SetScriptInfo(const wxString key,const wxString value);
+	// Add a ";" comment in the [Script Info] section
+	void AddComment(const wxString comment);
+	/// @brief Add a line to the file
+	/// @param data Full text of ASS line
+	/// @param group Section of the file to add the line to
+	/// @param[out] version ASS version the line was parsed as
+	/// @param[out] outGroup Group it was actually added to; attachments do something strange here
+	void AddLine(wxString data,wxString group,int &version,wxString *outGroup=NULL);
 
-	/// DOCME
-	static bool Popping;					// Flags the stack as popping. You must unset this after popping
+	/// Pop subs from stack and set 'top' to it
+	static void StackPop();
+	/// Redo action on stack
+	static void StackRedo();
+	/// @brief Put a copy of 'top' on the stack
+	/// @param desc Undo message
+	static void StackPush(wxString desc);
+	/// Clear the stack. Do before loading new subtitles.
+	static void StackReset();
+	/// Check if undo stack is empty
+	static bool IsUndoStackEmpty();
+	/// Check if redo stack is empty
+	static bool IsRedoStackEmpty();
+	/// Get the description of the first undoable change
+	static wxString GetUndoDescription();
+	/// Get the description of the first redoable change
+	static wxString GetRedoDescription();
 
-	/// DOCME
-	static AssFile *top;					// Current script file. It is "above" the stack.
+	/// Flags the stack as popping. You must unset this after popping
+	static bool Popping;
+
+	/// Current script file. It is "above" the stack.
+	static AssFile *top;
+
+	/// Comparison function for use when sorting
+	typedef bool (*CompFunc)(const AssDialogue* lft, const AssDialogue* rgt);
+
+	/// @brief Compare based on start time
+	static bool CompStart(const AssDialogue* lft, const AssDialogue* rgt);
+	/// @brief Compare based on end time
+	static bool CompEnd(const AssDialogue* lft, const AssDialogue* rgt);
+	/// @brief Compare based on end time
+	static bool CompStyle(const AssDialogue* lft, const AssDialogue* rgt);
+
+	/// @brief Sort the dialogue lines in this file
+	/// @param comp Comparison function to use. Defaults to sorting by start time.
+	void Sort(CompFunc comp = CompStart);
+	/// @brief Sort the dialogue lines in the given list
+	/// @param comp Comparison function to use. Defaults to sorting by start time.
+	static void Sort(std::list<AssEntry*>& lst, CompFunc comp = CompStart);
+	/// @brief Sort the dialogue lines in the given list
+	/// @param comp Comparison function to use. Defaults to sorting by start time.
+	static void Sort(std::list<AssDialogue*>& lst, CompFunc comp = CompStart);
 };
-
-
-
-/// DOCME
-typedef std::list<AssEntry*>::iterator entryIter;
-
-
-//////////////////////////////////////////////////////
-// Hack to get STL sort to work on a list of pointers
-template <typename T>
-
-/// DOCME
-/// @class LessByPointedToValue
-/// @brief DOCME
-///
-/// DOCME
-class LessByPointedToValue : std::binary_function<T const *, T const *, bool> {
-public:
-
-	/// @brief DOCME
-	/// @param x 
-	/// @param y 
-	///
-	bool operator()(T const * x, T const * y) const {
-		return std::less<T>()(*x, *y);
-	}
-};
-
-

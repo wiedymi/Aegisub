@@ -32,11 +32,7 @@
 /// @file ass_file.cpp
 /// @brief Overall storage of subtitle files, undo management and more
 /// @ingroup subs_storage
-///
 
-
-////////////
-// Includes
 #include "config.h"
 
 #ifndef AGI_PRE
@@ -54,6 +50,9 @@
 #include "ass_file.h"
 #include "ass_override.h"
 #include "ass_style.h"
+#include "charset_detect.h"
+#include "compat.h"
+#include "main.h"
 #include "options.h"
 #include "subtitle_format.h"
 #include "text_file_reader.h"
@@ -61,29 +60,18 @@
 #include "version.h"
 #include "vfr.h"
 
-/// @brief AssFile constructor  AssFile //////////////////////
-///
+/// @brief AssFile constructor
 AssFile::AssFile () {
 	AssOverrideTagProto::LoadProtos();
 	Clear();
 }
 
-
-
 /// @brief AssFile destructor 
-///
 AssFile::~AssFile() {
 	Clear();
 }
 
-
-
-/// @brief Load generic subs 
-/// @param file
-/// @param charset     
-/// @param addToRecent 
-///
-void AssFile::Load (const wxString _filename,const wxString charset,bool addToRecent) {
+void AssFile::Load (const wxString &_filename,wxString charset,bool addToRecent) {
 	bool ok = true;
 
 	try {
@@ -100,9 +88,9 @@ void AssFile::Load (const wxString _filename,const wxString charset,bool addToRe
 		fclose(file);
 
 		// Find file encoding
-		wxString enc;
-		if (charset.IsEmpty()) enc = TextFileReader::GetEncoding(_filename);
-		else enc = charset;
+		if (charset.empty()) {
+			charset = CharSetDetect::GetEncoding(_filename);
+		}
 
 		// Generic preparation
 		Clear();
@@ -113,7 +101,7 @@ void AssFile::Load (const wxString _filename,const wxString charset,bool addToRe
 		// Read file
 		if (reader) {
 			reader->SetTarget(this);
-			reader->ReadFile(_filename,enc);
+			reader->ReadFile(_filename,charset);
 		}
 
 		// Couldn't find a type
@@ -153,14 +141,6 @@ void AssFile::Load (const wxString _filename,const wxString charset,bool addToRe
 	if (addToRecent) AddToRecent(_filename);
 }
 
-
-
-/// @brief Save a file to Hard Disk 
-/// @param _filename   
-/// @param setfilename 
-/// @param addToRecent 
-/// @param encoding    
-///
 void AssFile::Save(wxString _filename,bool setfilename,bool addToRecent,const wxString encoding) {
 	// Finds last dot
 	int i = 0;
@@ -192,12 +172,6 @@ void AssFile::Save(wxString _filename,bool setfilename,bool addToRecent,const wx
 	}
 }
 
-
-
-/// @brief Saves a file to a ram vector 
-/// @param dst      
-/// @param encoding 
-///
 void AssFile::SaveMemory(std::vector<char> &dst,const wxString encoding) {
 	// Set encoding
 	wxString enc = encoding;
@@ -240,22 +214,12 @@ void AssFile::SaveMemory(std::vector<char> &dst,const wxString encoding) {
 	}
 }
 
-
-
-/// @brief Exports file with proper transformations 
-/// @param _filename 
-///
 void AssFile::Export(wxString _filename) {
 	AssExporter exporter(this);
 	exporter.AddAutoFilters();
 	exporter.Export(_filename,_T("UTF-8"));
 }
 
-
-
-/// @brief Can save file? 
-/// @return 
-///
 bool AssFile::CanSave() {
 	// ASS format?
 	wxString ext = filename.Lower().Right(4);
@@ -279,17 +243,17 @@ bool AssFile::CanSave() {
 	AssAttachment *attach;
 	for (entryIter cur=Line.begin();cur!=Line.end();cur++) {
 		// Check style, if anything non-default is found, return false
-		curstyle = AssEntry::GetAsStyle(*cur);
+		curstyle = dynamic_cast<AssStyle*>(*cur);
 		if (curstyle) {
 			if (curstyle->GetEntryData() != defstyle.GetEntryData()) return false;
 		}
 
 		// Check for attachments, if any is found, return false
-		attach = AssEntry::GetAsAttachment(*cur);
+		attach = dynamic_cast<AssAttachment*>(*cur);
 		if (attach) return false;
 
 		// Check dialog
-		curdiag = AssEntry::GetAsDialogue(*cur);
+		curdiag = dynamic_cast<AssDialogue*>(*cur);
 		if (curdiag) {
 			// Timed?
 			if (!canTime && (curdiag->Start.GetMS() != 0 || curdiag->End.GetMS() != 0)) return false;
@@ -307,34 +271,9 @@ bool AssFile::CanSave() {
 	return true;
 }
 
-
-////////////////////////////////////
-// Returns script as a single string
-//wxString AssFile::GetString() {
-//	using std::list;
-//	wxString ret;
-//	AssEntry *entry;
-//	ret += 0xfeff;
-//	for (list<AssEntry*>::iterator cur=Line.begin();cur!=Line.end();) {
-//		entry = *cur;
-//		ret += entry->GetEntryData();
-//		ret += L"\n";
-//		cur++;
-//	}
-//	return ret;
-//}
-
-
-
-/// @brief  even moving things out of order might break ASS parsing - AMZ. I strongly advice you against touching this function unless you know what you're doing; ------------------- Appends line to Ass 
-/// @param data     
-/// @param group    
-/// @param lasttime 
-/// @param version  
-/// @param outGroup 
-/// @return 
-///
-int AssFile::AddLine (wxString data,wxString group,int lasttime,int &version,wxString *outGroup) {
+// I strongly advice you against touching this function unless you know what you're doing;
+// even moving things out of order might break ASS parsing - AMZ.
+void AssFile::AddLine (wxString data,wxString group,int &version,wxString *outGroup) {
 	// Group
 	AssEntry *entry = NULL;
 	wxString origGroup = group;
@@ -353,7 +292,7 @@ int AssFile::AddLine (wxString data,wxString group,int lasttime,int &version,wxS
 		}
 
 		// Is the filename line?
-		bool isFilename = (data.Left(10) == _T("fontname: ") || data.Left(10) == _T("filename: "));
+		bool isFilename = (data.StartsWith(_T("fontname: ")) || data.StartsWith(_T("filename: ")));
 
 		// The attachment file is static, since it is built through several calls to this
 		// After it's done building, it's reset to NULL
@@ -372,10 +311,9 @@ int AssFile::AddLine (wxString data,wxString group,int lasttime,int &version,wxS
 		// Create attachment if needed
 		if (isFilename) {
 			attach = new AssAttachment(data.Mid(10));
-			attach->SetStartMS(lasttime);
 			attach->group = group;
 			keepGroup = group;
-			return lasttime;
+			return;
 		}
 
 		// Valid data?
@@ -395,39 +333,34 @@ int AssFile::AddLine (wxString data,wxString group,int lasttime,int &version,wxS
 
 			// Not done
 			else {
-				return lasttime;
+				return;
 			}
 		}
 	}
 
 	// Dialogue
 	if (lowGroup == _T("[events]")) {
-		if ((data.Left(9) == _T("Dialogue:") || data.Left(8) == _T("Comment:"))) {
+		if (data.StartsWith(_T("Dialogue:")) || data.StartsWith(_T("Comment:"))) {
 			AssDialogue *diag = new AssDialogue(data,version);
-			lasttime = diag->GetStartMS();
 			//diag->ParseASSTags();
 			entry = diag;
-			entry->SetStartMS(lasttime);
 			entry->group = group;
 		}
-		if (data.Left(7) == _T("Format:")) {
+		else if (data.StartsWith(_T("Format:"))) {
 			entry = new AssEntry(_T("Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"));
-			entry->SetStartMS(lasttime);
 			entry->group = group;
 		}
 	}
 
 	// Style
 	else if (lowGroup == _T("[v4+ styles]")) {
-		if (data.Left(6) == _T("Style:")) {
+		if (data.StartsWith(_T("Style:"))) {
 			AssStyle *style = new AssStyle(data,version);
 			entry = style;
-			entry->SetStartMS(lasttime);
 			entry->group = group;
 		}
-		if (data.Left(7) == _T("Format:")) {
+		if (data.StartsWith(_T("Format:"))) {
 			entry = new AssEntry(_T("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"));
-			entry->SetStartMS(lasttime);
 			entry->group = group;
 		}
 	}
@@ -435,14 +368,14 @@ int AssFile::AddLine (wxString data,wxString group,int lasttime,int &version,wxS
 	// Script info
 	else if (lowGroup == _T("[script info]")) {
 		// Comment
-		if (data.Left(1) == _T(";")) {
+		if (data.StartsWith(_T(";"))) {
 			// Skip stupid comments added by other programs
 			// Of course, we'll add our own in place later... ;)
-			return lasttime;
+			return;
 		}
 
 		// Version
-		if (data.Left(11) == _T("ScriptType:")) {
+		if (data.StartsWith(_T("ScriptType:"))) {
 			wxString versionString = data.Mid(11);
 			versionString.Trim(true);
 			versionString.Trim(false);
@@ -460,29 +393,23 @@ int AssFile::AddLine (wxString data,wxString group,int lasttime,int &version,wxS
 
 		// Everything
 		entry = new AssEntry(data);
-		entry->SetStartMS(lasttime);
 		entry->group = group;
 	}
 
 	// Common entry
 	if (entry == NULL) {
 		entry = new AssEntry(data);
-		entry->SetStartMS(lasttime);
 		entry->group = group;
 	}
 
 	// Insert the line
 	Line.push_back(entry);
-	return lasttime;
+	return;
 }
 
-
-
-/// @brief Clears contents of assfile 
-///
 void AssFile::Clear () {
-	for (std::list<AssEntry*>::iterator cur=Line.begin();cur != Line.end();cur++) {
-		if (*cur) delete *cur;
+	for (entryIter cur=Line.begin();cur != Line.end();cur++) {
+		delete *cur;
 	}
 	Line.clear();
 
@@ -491,46 +418,35 @@ void AssFile::Clear () {
 	Modified = false;
 }
 
-
-
-/// @brief Loads default subs 
-/// @param defline 
-///
 void AssFile::LoadDefault (bool defline) {
-	// Clear first
 	Clear();
 
 	// Write headers
 	AssStyle defstyle;
 	int version = 1;
-	AddLine(_T("[Script Info]"),_T("[Script Info]"),-1,version);
-	AddLine(_T("Title: Default Aegisub file"),_T("[Script Info]"),-1,version);
-	AddLine(_T("ScriptType: v4.00+"),_T("[Script Info]"),-1,version);
-	AddLine(_T("WrapStyle: 0"), _T("[Script Info]"),-1,version);
-	AddLine(_T("PlayResX: 640"),_T("[Script Info]"),-1,version);
-	AddLine(_T("PlayResY: 480"),_T("[Script Info]"),-1,version);
-	AddLine(_T("ScaledBorderAndShadow: yes"),_T("[Script Info]"),-1,version);
-	AddLine(_T(""),_T("[Script Info]"),-1,version);
-	AddLine(_T("[V4+ Styles]"),_T("[V4+ Styles]"),-1,version);
-	AddLine(_T("Format:  Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"),_T("[V4+ Styles]"),-1,version);
-	AddLine(defstyle.GetEntryData(),_T("[V4+ Styles]"),-1,version);
-	AddLine(_T(""),_T("[V4+ Styles]"),-1,version);
-	AddLine(_T("[Events]"),_T("[Events]"),-1,version);
-	AddLine(_T("Format:  Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"),_T("[Events]"),-1,version);
+	AddLine(_T("[Script Info]"),_T("[Script Info]"),version);
+	AddLine(_T("Title: Default Aegisub file"),_T("[Script Info]"),version);
+	AddLine(_T("ScriptType: v4.00+"),_T("[Script Info]"),version);
+	AddLine(_T("WrapStyle: 0"), _T("[Script Info]"),version);
+	AddLine(_T("PlayResX: 640"),_T("[Script Info]"),version);
+	AddLine(_T("PlayResY: 480"),_T("[Script Info]"),version);
+	AddLine(_T("ScaledBorderAndShadow: yes"),_T("[Script Info]"),version);
+	AddLine(_T(""),_T("[Script Info]"),version);
+	AddLine(_T("[V4+ Styles]"),_T("[V4+ Styles]"),version);
+	AddLine(_T("Format:  Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"),_T("[V4+ Styles]"),version);
+	AddLine(defstyle.GetEntryData(),_T("[V4+ Styles]"),version);
+	AddLine(_T(""),_T("[V4+ Styles]"),version);
+	AddLine(_T("[Events]"),_T("[Events]"),version);
+	AddLine(_T("Format:  Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"),_T("[Events]"),version);
 
 	if (defline) {
 		AssDialogue def;
-		AddLine(def.GetEntryData(),_T("[Events]"),0,version);
+		AddLine(def.GetEntryData(),_T("[Events]"),version);
 	}
 
 	loaded = true;
 }
 
-
-
-/// @brief Copy constructor 
-/// @param from 
-///
 AssFile::AssFile (AssFile &from) {
 	using std::list;
 
@@ -545,18 +461,11 @@ AssFile::AssFile (AssFile &from) {
 	}
 }
 
-
-
-/// @brief Insert a new style 
-/// @param style 
-///
 void AssFile::InsertStyle (AssStyle *style) {
-	// Variables
 	using std::list;
 	AssEntry *curEntry;
 	list<AssEntry*>::iterator lastStyle = Line.end();
 	list<AssEntry*>::iterator cur;
-	int lasttime = -1;
 	wxString lastGroup;
 
 	// Look for insert position
@@ -565,7 +474,6 @@ void AssFile::InsertStyle (AssStyle *style) {
 		if (curEntry->GetType() == ENTRY_STYLE || (lastGroup == _T("[V4+ Styles]") && curEntry->GetEntryData().substr(0,7) == _T("Format:"))) {
 			lastStyle = cur;
 		}
-		lasttime = curEntry->GetStartMS();
 		lastGroup = curEntry->group;
 	}
 
@@ -574,24 +482,20 @@ void AssFile::InsertStyle (AssStyle *style) {
 		// Add space
 		curEntry = new AssEntry(_T(""));
 		curEntry->group = lastGroup;
-		curEntry->SetStartMS(lasttime);
 		Line.push_back(curEntry);
 
 		// Add header
 		curEntry = new AssEntry(_T("[V4+ Styles]"));
 		curEntry->group = _T("[V4+ Styles]");
-		curEntry->SetStartMS(lasttime);
 		Line.push_back(curEntry);
 
 		// Add format line
 		curEntry = new AssEntry(_T("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"));
 		curEntry->group = _T("[V4+ Styles]");
-		curEntry->SetStartMS(lasttime);
 		Line.push_back(curEntry);
 
 		// Add style
 		style->group = _T("[V4+ Styles]");
-		style->SetStartMS(lasttime);
 		Line.push_back(style);
 	}
 
@@ -599,22 +503,16 @@ void AssFile::InsertStyle (AssStyle *style) {
 	else {
 		lastStyle++;
 		style->group = (*lastStyle)->group;
-		style->SetStartMS(lasttime);
 		Line.insert(lastStyle,style);
 	}
 }
 
-
-
-/// @brief Insert attachment 
-/// @param attach 
-///
 void AssFile::InsertAttachment (AssAttachment *attach) {
 	// Search for insertion point
 	std::list<AssEntry*>::iterator insPoint=Line.end(),cur;
 	for (cur=Line.begin();cur!=Line.end();cur++) {
 		// Check if it's another attachment
-		AssAttachment *att = AssEntry::GetAsAttachment(*cur);
+		AssAttachment *att = dynamic_cast<AssAttachment*>(*cur);
 		if (att) {
 			if (attach->group == att->group) insPoint = cur;
 		}
@@ -629,35 +527,23 @@ void AssFile::InsertAttachment (AssAttachment *attach) {
 	// Found point, insert there
 	if (insPoint != Line.end()) {
 		insPoint++;
-		attach->SetStartMS((*insPoint)->GetStartMS());
 		Line.insert(insPoint,attach);
 	}
 
 	// Otherwise, create the [Fonts] group and insert
 	else {
 		int version=1;
-		int StartMS = Line.back()->GetStartMS();
-		AddLine(_T(""),Line.back()->group,StartMS,version);
-		AddLine(attach->group,attach->group,StartMS,version);
-		attach->SetStartMS(StartMS);
+		AddLine(_T(""),Line.back()->group,version);
+		AddLine(attach->group,attach->group,version);
 		Line.push_back(attach);
-		AddLine(_T(""),attach->group,StartMS,version);
+		AddLine(_T(""),attach->group,version);
 	}
 }
 
-
-
-/// @brief Insert attachment from file 
-/// @param filename 
-///
 void AssFile::InsertAttachment (wxString filename) {
-	// Get name
 	wxFileName fname(filename);
-
-	// Create
 	AssAttachment *newAttach = new AssAttachment(fname.GetFullName());
 
-	// Load
 	try {
 		newAttach->Import(filename);
 	}
@@ -673,29 +559,20 @@ void AssFile::InsertAttachment (wxString filename) {
 	InsertAttachment(newAttach);
 }
 
-
-
-/// @brief Gets script info 
-/// @param _key 
-/// @return 
-///
 wxString AssFile::GetScriptInfo(const wxString _key) {
-	// Prepare
 	wxString key = _key;;
 	key.Lower();
 	key += _T(":");
 	std::list<AssEntry*>::iterator cur;
 	bool GotIn = false;
 
-	// Look for it
 	for (cur=Line.begin();cur!=Line.end();cur++) {
 		if ((*cur)->group == _T("[Script Info]")) {
 			GotIn = true;
 			wxString curText = (*cur)->GetEntryData();
 			curText.Lower();
 
-			// Found
-			if (curText.Left(key.length()) == key) {
+			if (curText.StartsWith(key)) {
 				wxString result = curText.Mid(key.length());
 				result.Trim(false);
 				result.Trim(true);
@@ -705,16 +582,9 @@ wxString AssFile::GetScriptInfo(const wxString _key) {
 		else if (GotIn) break;
 	}
 
-	// Couldn't find
-	return _T("");
+	return "";
 }
 
-
-
-/// @brief Get script info as int 
-/// @param key 
-/// @return 
-///
 int AssFile::GetScriptInfoAsInt(const wxString key) {
 	long temp = 0;
 	try {
@@ -726,15 +596,7 @@ int AssFile::GetScriptInfoAsInt(const wxString key) {
 	return temp;
 }
 
-
-
-/// @brief Set a script info line 
-/// @param _key  
-/// @param value 
-/// @return 
-///
 void AssFile::SetScriptInfo(const wxString _key,const wxString value) {
-	// Prepare
 	wxString key = _key;;
 	key.Lower();
 	key += _T(":");
@@ -750,7 +612,7 @@ void AssFile::SetScriptInfo(const wxString _key,const wxString value) {
 			curText.Lower();
 
 			// Found
-			if (curText.Left(key.length()) == key) {
+			if (curText.StartsWith(key)) {
 				// Set value
 				if (value != _T("")) {
 					wxString result = _key;
@@ -778,7 +640,6 @@ void AssFile::SetScriptInfo(const wxString _key,const wxString value) {
 				result += value;
 				AssEntry *entry = new AssEntry(result);
 				entry->group = (*prev)->group;
-				entry->SetStartMS((*prev)->GetStartMS());
 				Line.insert(++prev,entry);
 			}
 			return;
@@ -786,14 +647,7 @@ void AssFile::SetScriptInfo(const wxString _key,const wxString value) {
 	}
 }
 
-
-
-/// @brief Get resolution 
-/// @param sw 
-/// @param sh 
-///
 void AssFile::GetResolution(int &sw,int &sh) {
-	// Height
 	wxString temp = GetScriptInfo(_T("PlayResY"));
 	if (temp.IsEmpty() || !temp.IsNumber()) {
 		sh = 0;
@@ -804,7 +658,6 @@ void AssFile::GetResolution(int &sw,int &sh) {
 		sh = templ;
 	}
 
-	// Width
 	temp = GetScriptInfo(_T("PlayResX"));
 	if (temp.IsEmpty() || !temp.IsNumber()) {
 		sw = 0;
@@ -825,6 +678,7 @@ void AssFile::GetResolution(int &sw,int &sh) {
 		else
 			sw = sh * 4 / 3;
 	} else if (sh == 0) {
+		// you are not crazy; this doesn't make any sense
 		if (sw == 1280)
 			sh = 1024;
 		else
@@ -832,44 +686,32 @@ void AssFile::GetResolution(int &sw,int &sh) {
 	}
 }
 
-
-
-/// @brief Adds a comment to [Script Info] 
-/// @param _comment 
-///
 void AssFile::AddComment(const wxString _comment) {
 	wxString comment = _T("; ");
 	comment += _comment;
 	std::list<AssEntry*>::iterator cur;
 	int step = 0;
 
-	// Find insert position
 	for (cur=Line.begin();cur!=Line.end();cur++) {
 		// Start of group
 		if (step == 0 && (*cur)->group == _T("[Script Info]")) step = 1;
 
 		// First line after a ;
-		else if (step == 1 && (*cur)->GetEntryData().Left(1) != _T(";")) {
+		else if (step == 1 && !(*cur)->GetEntryData().StartsWith(_T(";"))) {
 			AssEntry *prev = *cur;
 			AssEntry *comm = new AssEntry(comment);
 			comm->group = prev->group;
-			comm->SetStartMS(prev->GetStartMS());
 			Line.insert(cur,comm);
 			break;
 		}
 	}
 }
 
-
-
-/// @brief Get list of styles 
-/// @return 
-///
 wxArrayString AssFile::GetStyles() {
 	wxArrayString styles;
 	AssStyle *curstyle;
 	for (entryIter cur=Line.begin();cur!=Line.end();cur++) {
-		curstyle = AssEntry::GetAsStyle(*cur);
+		curstyle = dynamic_cast<AssStyle*>(*cur);
 		if (curstyle) {
 			styles.Add(curstyle->name);
 		}
@@ -877,85 +719,42 @@ wxArrayString AssFile::GetStyles() {
 	return styles;
 }
 
-
-
-/// @brief Gets style of specific name 
-/// @param name 
-/// @return 
-///
 AssStyle *AssFile::GetStyle(wxString name) {
-	AssStyle *curstyle;
 	for (entryIter cur=Line.begin();cur!=Line.end();cur++) {
-		curstyle = AssEntry::GetAsStyle(*cur);
-		if (curstyle) {
-			if (curstyle->name == name) return curstyle;
-		}
+		AssStyle *curstyle = dynamic_cast<AssStyle*>(*cur);
+		if (curstyle && curstyle->name == name)
+			return curstyle;
 	}
 	return NULL;
 }
 
-
-
-/// @brief Adds file name to list of recent 
-/// @param file 
-///
 void AssFile::AddToRecent(wxString file) {
-	Options.AddToRecentList(file,_T("Recent sub"));
+	AegisubApp::Get()->mru->Add("Subtitle", STD_STR(file));
 }
 
-
-
-/// @brief List of supported wildcards 
-/// @param mode 
-/// @return 
-///
 wxString AssFile::GetWildcardList(int mode) {
-	//if (mode == 0) return _T("All Supported Types (*.ass,*.ssa,*.srt,*.txt,*.mkv,*.mks,*.mka)|*.ass;*.ssa;*.srt;*.txt;*.mkv;*.mks;*.mka|Advanced Substation Alpha (*.ass)|*.ass|Substation Alpha (*.ssa)|*.ssa|SubRip (*.srt)|*.srt|Plain-text (*.txt)|*.txt|Matroska (*.mkv,*.mks,*.mka)|*.mkv;*.mks;*.mka");
-	//else if (mode == 1) return _T("Advanced Substation Alpha (*.ass)|*.ass");
-	//else if (mode == 2) return _T("All Supported Types (*.ass,*.ssa,*.srt,*.txt,*.mkv,*.mks,*.mka)|*.ass;*.ssa;*.srt;*.txt|Advanced Substation Alpha (*.ass)|*.ass|Substation Alpha (*.ssa)|*.ssa|SubRip (*.srt)|*.srt|Plain-text (*.txt)|*.txt");
-	//else return _T("");
-
 	if (mode == 0) return SubtitleFormat::GetWildcards(0);
 	else if (mode == 1) return _T("Advanced Substation Alpha (*.ass)|*.ass");
 	else if (mode == 2) return SubtitleFormat::GetWildcards(1);
 	else return _T("");
 }
 
-
-
-/// @brief Compress/decompress for storage on stack 
-/// @param compress 
-///
-void AssFile::CompressForStack(bool compress) {
+void AssFile::CompressForStack() {
 	AssDialogue *diag;
 	for (entryIter cur=Line.begin();cur!=Line.end();cur++) {
-		diag = AssEntry::GetAsDialogue(*cur);
+		diag = dynamic_cast<AssDialogue*>(*cur);
 		if (diag) {
-			if (compress) {
-				diag->SetEntryData(_T(""));
-				diag->ClearBlocks();
-			}
-			else diag->UpdateData();
+			diag->SetEntryData("");
+			diag->ClearBlocks();
 		}
 	}
 }
 
-
-
-/// @brief Checks if file is modified 
-/// @return 
-///
 bool AssFile::IsModified() {
 	return Modified;
 }
 
-
-
-/// @brief Flag file as modified 
-/// @param desc 
-///
 void AssFile::FlagAsModified(wxString desc) {
-	// Clear redo
 	if (!RedoStack.empty()) {
 		//StackPush();
 		//UndoStack.push_back(new AssFile(*UndoStack.back()));
@@ -969,15 +768,10 @@ void AssFile::FlagAsModified(wxString desc) {
 	StackPush(desc);
 }
 
-
-
-/// @brief Stack push 
-/// @param desc 
-///
 void AssFile::StackPush(wxString desc) {
 	// Places copy on stack
 	AssFile *curcopy = new AssFile(*top);
-	curcopy->CompressForStack(true);
+	curcopy->CompressForStack();
 	curcopy->undodescription = desc;
 	UndoStack.push_back(curcopy);
 	StackModified = true;
@@ -987,7 +781,7 @@ void AssFile::StackPush(wxString desc) {
 	for (std::list<AssFile*>::iterator cur=UndoStack.begin();cur!=UndoStack.end();cur++) {
 		n++;
 	}
-	int depth = Options.AsInt(_T("Undo levels"));
+	int depth = OPT_GET("Limits/Undo Levels")->GetInt();
 	while (n > depth) {
 		delete UndoStack.front();
 		UndoStack.pop_front();
@@ -995,13 +789,9 @@ void AssFile::StackPush(wxString desc) {
 	}
 }
 
-
-
-/// @brief Stack pop 
-///
 void AssFile::StackPop() {
 	bool addcopy = false;
-	wxString undodesc=_T("");
+	wxString undodesc="";
 	
 
 	if (StackModified) {
@@ -1015,11 +805,10 @@ void AssFile::StackPop() {
 	if (!UndoStack.empty()) {
 		//delete top;
 		AssFile *undo = UndoStack.back();
-		top->CompressForStack(true);
+		top->CompressForStack();
 		top->undodescription = undodesc;
 		RedoStack.push_back(top);
 		top = undo;
-		top->CompressForStack(false);
 		UndoStack.pop_back();
 		Popping = true;
 	}
@@ -1029,12 +818,7 @@ void AssFile::StackPop() {
 	}
 }
 
-
-
-/// @brief Stack redo 
-///
 void AssFile::StackRedo() {
-
 	bool addcopy = false;
 	if (StackModified) {
 		delete UndoStack.back();
@@ -1044,13 +828,11 @@ void AssFile::StackRedo() {
 	}
 
 	if (!RedoStack.empty()) {
-		top->CompressForStack(true);
+		top->CompressForStack();
 		UndoStack.push_back(top);
 		top = RedoStack.back();
-		top->CompressForStack(false);
 		RedoStack.pop_back();
 		Popping = true;
-		//StackModified = false;
 	}
 
 	if (addcopy) {
@@ -1058,18 +840,12 @@ void AssFile::StackRedo() {
 	}
 }
 
-
-
-/// @brief Stack clear 
-///
 void AssFile::StackClear() {
-	// Clear undo
 	for (std::list<AssFile*>::iterator cur=UndoStack.begin();cur!=UndoStack.end();cur++) {
 		delete *cur;
 	}
 	UndoStack.clear();
 
-	// Clear redo
 	for (std::list<AssFile*>::iterator cur=RedoStack.begin();cur!=RedoStack.end();cur++) {
 		delete *cur;
 	}
@@ -1078,11 +854,6 @@ void AssFile::StackClear() {
 	Popping = false;
 }
 
-
-
-/// @brief Stack reset 
-/// @return 
-///
 void AssFile::StackReset() {
 	StackClear();
 	delete top;
@@ -1090,60 +861,70 @@ void AssFile::StackReset() {
 	StackModified = false;
 }
 
-
-
-/// @brief Returns if undo stack is empty 
-/// @return 
-///
 bool AssFile::IsUndoStackEmpty() {
 	if (StackModified) return (UndoStack.size() <= 1);
 	else return UndoStack.empty();
 }
 
-
-
-/// @brief Returns if redo stack is empty 
-/// @return 
-///
 bool AssFile::IsRedoStackEmpty() {
 	return RedoStack.empty();
 }
 
-
-/// @brief DOCME
-/// @return 
-///
 wxString AssFile::GetUndoDescription() {
 	return (IsUndoStackEmpty())?_T(""):(UndoStack.back())->undodescription;
 }
 
-
-/// @brief DOCME
-/// @return 
-///
 wxString AssFile::GetRedoDescription() {
 	return (IsRedoStackEmpty())?_T(""):(RedoStack.back())->undodescription;
-
 }
 
+bool AssFile::CompStart(const AssDialogue* lft, const AssDialogue* rgt) {
+	return lft->Start < rgt->Start;
+}
+bool AssFile::CompEnd(const AssDialogue* lft, const AssDialogue* rgt) {
+	return lft->End < rgt->End;
+}
+bool AssFile::CompStyle(const AssDialogue* lft, const AssDialogue* rgt) {
+	return lft->Style < rgt->Style;
+}
 
-/// DOCME
+void AssFile::Sort(CompFunc comp) {
+	Sort(Line, comp);
+}
+namespace {
+	struct AssEntryComp : public std::binary_function<const AssEntry*, const AssEntry*, bool> {
+		AssFile::CompFunc comp;
+		bool operator()(const AssEntry* a, const AssEntry* b) const {
+			return comp(static_cast<const AssDialogue*>(a), static_cast<const AssDialogue*>(b));
+		}
+	};
+}
+void AssFile::Sort(std::list<AssEntry*> &lst, CompFunc comp) {
+	AssEntryComp compE;
+	compE.comp = comp;
+	// Sort each block of AssDialogues separately, leaving everything else untouched
+	for (entryIter begin = lst.begin(); begin != lst.end(); ++begin) {
+		if (!dynamic_cast<AssDialogue*>(*begin)) continue;
+		entryIter end = begin;
+		while (end != lst.end() && dynamic_cast<AssDialogue*>(*end)) ++end;
+
+		// std::list::sort doesn't support sorting only part of the list, but
+		// splice is constant-time, so just sort a temp list with only the part we
+		// want sorted
+		std::list<AssEntry*> tmp;
+		tmp.splice(tmp.begin(), lst, begin, end);
+		tmp.sort(compE);
+		lst.splice(end, tmp);
+
+		begin = --end;
+	}
+}
+void AssFile::Sort(std::list<AssDialogue*> &lst, CompFunc comp) {
+	lst.sort(comp);
+}
+
 AssFile *AssFile::top;
-
-/// DOCME
 std::list<AssFile*> AssFile::UndoStack;
-
-/// DOCME
 std::list<AssFile*> AssFile::RedoStack;
-
-/// DOCME
 bool AssFile::Popping;
-
-/// DOCME
 bool AssFile::StackModified;
-
-
-
-
-
-

@@ -32,12 +32,12 @@
 /// @file visual_tool_rotatez.cpp
 /// @brief 2D rotation in Z axis visual typesetting tool
 /// @ingroup visual_ts
-///
 
-
-///////////
-// Headers
 #include "config.h"
+
+#ifndef AGI_PRE
+#include <math.h>
+#endif
 
 #include "ass_dialogue.h"
 #include "ass_file.h"
@@ -48,31 +48,15 @@
 #include "video_display.h"
 #include "visual_tool_rotatez.h"
 
-
 /// @brief Constructor 
 /// @param _parent 
-///
-VisualToolRotateZ::VisualToolRotateZ(VideoDisplay *_parent)
-: VisualTool(_parent)
+VisualToolRotateZ::VisualToolRotateZ(VideoDisplay *parent, VideoState const& video, wxToolBar *)
+: VisualTool<VisualDraggableFeature>(parent, video)
 {
-	_parent->ShowCursor(false);
 	DoRefresh();
 }
 
-
-
-/// @brief Update 
-///
-void VisualToolRotateZ::Update() {
-	// Render parent
-	GetParent()->Render();
-}
-
-
-
 /// @brief Draw 
-/// @return 
-///
 void VisualToolRotateZ::Draw() {
 	// Get line to draw
 	AssDialogue *line = GetActiveDialogueLine();
@@ -161,55 +145,43 @@ void VisualToolRotateZ::Draw() {
 	glPopMatrix();
 
 	// Draw line to mouse
-	if (mouseX != -1 && !dragging && GetHighlightedFeature() == -1) {
+	if (!dragging && !curFeature && video.x > INT_MIN && video.y > INT_MIN) {
 		SetLineColour(colour[0]);
-		DrawLine(dx,dy,mx,my);
+		DrawLine(dx,dy,video.x,video.y);
 	}
 }
-
-
 
 /// @brief Start holding 
-///
-void VisualToolRotateZ::InitializeHold() {
+bool VisualToolRotateZ::InitializeHold() {
 	GetLinePosition(curDiag,odx,ody,orgx,orgy);
-	startAngle = atan2(double(orgy-mouseY*sh/h),double(mouseX*sw/w-orgx)) * 180.0 / 3.1415926535897932;
+	startAngle = atan2(double(orgy-video.y),double(video.x-orgx)) * 180.0 / 3.1415926535897932;
 	GetLineRotation(curDiag,rx,ry,origAngle);
 	curAngle = origAngle;
-	curDiag->StripTag(_T("\\frz"));
-	curDiag->StripTag(_T("\\fr"));
+	curDiag->StripTag(L"\\frz");
+	curDiag->StripTag(L"\\fr");
+
+	return true;
 }
 
-
-
 /// @brief Update hold 
-///
 void VisualToolRotateZ::UpdateHold() {
 	// Find angle
-	float screenAngle = atan2(double(orgy-mouseY*sh/h),double(mouseX*sw/w-orgx)) * 180.0 / 3.1415926535897932;
-	curAngle = screenAngle - startAngle + origAngle;
-	while (curAngle < 0.0f) curAngle += 360.0f;
-	while (curAngle >= 360.0f) curAngle -= 360.0f;
+	float screenAngle = atan2(double(orgy-video.y),double(video.x-orgx)) * 180.0 / 3.1415926535897932;
+	curAngle = fmodf(screenAngle - startAngle + origAngle + 360.f, 360.f);
 
-	// Snap
-	if (shiftDown) {
-		curAngle = (float)((int)((curAngle+15.0f)/30.0f))*30.0f;
-		if (curAngle == 360.0f) curAngle = 0.0f;
+	// Oh Snap
+	if (ctrlDown) {
+		curAngle = floorf(curAngle/30.f+.5f)*30.0f;
+		if (curAngle > 359.0f) curAngle = 0.0f;
 	}
 }
 
-
-
 /// @brief Commit hold 
-///
 void VisualToolRotateZ::CommitHold() {
-	SetOverride(_T("\\frz"),PrettyFloat(wxString::Format(_T("(%0.3f)"),curAngle)));
+	SetOverride(GetActiveDialogueLine(), L"\\frz",wxString::Format(L"(%0.3g)",curAngle));
 }
 
-
-
 /// @brief Get \\org pivot 
-///
 void VisualToolRotateZ::PopulateFeatureList() {
 	// Get line
 	curDiag = GetActiveDialogueLine();
@@ -224,33 +196,26 @@ void VisualToolRotateZ::PopulateFeatureList() {
 	feat.type = DRAG_BIG_TRIANGLE;
 }
 
-
-
 /// @brief Update dragging of \\org 
 /// @param feature 
-///
-void VisualToolRotateZ::UpdateDrag(VisualDraggableFeature &feature) {
-	orgx = feature.x;
-	orgy = feature.y;
+void VisualToolRotateZ::UpdateDrag(VisualDraggableFeature* feature) {
+	orgx = feature->x;
+	orgy = feature->y;
 }
-
-
 
 /// @brief Commit dragging of \\org 
 /// @param feature 
-///
-void VisualToolRotateZ::CommitDrag(VisualDraggableFeature &feature) {
-	SetOverride(_T("\\org"),wxString::Format(_T("(%i,%i)"),feature.x,feature.y));
+void VisualToolRotateZ::CommitDrag(VisualDraggableFeature* feature) {
+	int x = feature->x;
+	int y = feature->y;
+	parent->ToScriptCoords(&x, &y);
+	SetOverride(feature->line, L"\\org",wxString::Format(L"(%i,%i)",x,y));
 }
 
-
-
 /// @brief Refresh 
-///
 void VisualToolRotateZ::DoRefresh() {
 	AssDialogue *line = GetActiveDialogueLine();
 	GetLinePosition(line,odx,ody,orgx,orgy);
 	GetLineRotation(line,rx,ry,curAngle);
 }
-
 

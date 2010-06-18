@@ -45,10 +45,12 @@
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "audio_controller.h"
+#include "compat.h"
 #include "dialog_spellchecker.h"
 #include "frame_main.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "spellchecker_manager.h"
 #include "selection_controller.h"
@@ -116,7 +118,7 @@ DialogSpellChecker::DialogSpellChecker(wxFrame *parent)
 	}
 
 	// Get current language
-	wxString curLang = Options.AsText(_T("Spell checker language"));
+	wxString curLang = lagi_wxString(OPT_GET("Tool/Spell Checker/Language")->GetString());
 	int curLangPos = langCodes.Index(curLang);
 	if (curLangPos == wxNOT_FOUND) {
 		curLangPos = langCodes.Index(_T("en"));
@@ -196,7 +198,7 @@ bool DialogSpellChecker::FindNext(int startLine,int startPos) {
 	if (startPos != -1) lastPos = 0;
 
 	// Get grid
-	SubtitlesGrid *grid = ((FrameMain*)GetParent())->SubsBox;
+	SubtitlesGrid *grid = ((FrameMain*)GetParent())->SubsGrid;
 	int rows = grid->GetRows();
 
 	// Loop through lines
@@ -269,7 +271,7 @@ void DialogSpellChecker::SetWord(wxString word) {
 	for (size_t i=0;i<sugs.Count();i++) suggestList->Append(sugs[i]);
 
 	// Show word on the main program interface
-	SubtitlesGrid *grid = ((FrameMain*)GetParent())->SubsBox;
+	SubtitlesGrid *grid = ((FrameMain*)GetParent())->SubsGrid;
 	int line = lastLine % grid->GetRows();
 	grid->SelectRow(line,false);
 	grid->MakeCellVisible(line,0);
@@ -382,7 +384,7 @@ bool DialogSpellChecker::FindOrDie() {
 ///
 void DialogSpellChecker::Replace() {
 	// Get dialog
-	SubtitlesGrid *grid = ((FrameMain*)GetParent())->SubsBox;
+	SubtitlesGrid *grid = ((FrameMain*)GetParent())->SubsGrid;
 	AssDialogue *diag = grid->GetDialogue(lastLine % grid->GetRows());
 
 	// Replace
@@ -403,8 +405,7 @@ void DialogSpellChecker::OnChangeLanguage(wxCommandEvent &event) {
 	// Change language code
 	wxString code = langCodes[language->GetSelection()];
 	spellchecker->SetLanguage(code);
-	Options.SetText(_T("Spell checker language"),code);
-	Options.Save();
+	OPT_SET("Tool/Spell Checker/Language")->SetString(STD_STR(code));
 
 	// Go back to first match
 	GetFirstMatch();
@@ -437,7 +438,7 @@ void DialogSpellChecker::OnTakeSuggestion(wxCommandEvent &event) {
 ///
 bool DialogSpellChecker::GetFirstMatch() {
 	// Get selection
-	SubtitlesGrid *grid = ((FrameMain*)GetParent())->SubsBox;
+	SubtitlesGrid *grid = ((FrameMain*)GetParent())->SubsGrid;
 	wxArrayInt sel = grid->GetSelection();
 	firstLine = (sel.Count()>0) ? sel[0] : 0;
 	bool hasTypos = FindNext(firstLine,0);

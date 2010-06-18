@@ -1,11 +1,7 @@
 AUTOMAKE_OPTIONS = foreign
 
 
-if HAVE_UNIVCHARDET
-univchardet = universalchardet
-endif
-
-if WITH_LIBASS
+if WITH_INTERNAL_LIBASS
 libass = libass
 endif
 
@@ -14,9 +10,10 @@ ffmpegsource = libffms
 endif
 
 SUBDIRS = \
+	universalchardet \
+	libaegisub \
 	$(ffmpegsource) \
     $(libass) \
-	$(univchardet) \
 	tools \
 	src \
 	automation \
@@ -44,6 +41,7 @@ EXTRA_DIST = \
 	config.sub \
 	depcomp \
 	install-sh \
+	LICENCE \
 	missing \
 	INSTALL \
 	README \

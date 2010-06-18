@@ -29,19 +29,15 @@
 //
 // $Id$
 
-/// @file visual_feature.h
-/// @see visual_feature.cpp
+/// @file visual_feature->h
+/// @see visual_feature->cpp
 /// @ingroup visual_ts
 ///
 
-
 #pragma once
 
-//////////////
-// Prototypes
 class OpenGLWrapper;
 class AssDialogue;
-
 
 /// DOCME
 enum DraggableFeatureType {
@@ -65,47 +61,33 @@ enum DraggableFeatureType {
 	DRAG_SMALL_CIRCLE
 };
 
-
-
 /// DOCME
 /// @class VisualDraggableFeature
-/// @brief DOCME
-///
-/// DOCME
+/// @brief Onscreen control used by many visual tools which doesn't do much
 class VisualDraggableFeature {
 public:
+	/// @brief Constructor
+	VisualDraggableFeature();
 
-	/// DOCME
+	/// Shape of feature
 	DraggableFeatureType type;
 
-	/// DOCME
+	int x; /// x coordinate
+	int y; /// y coordinate
 
-	/// DOCME
-	int x,y;
+	int origX; /// x coordindate before the last operation began
+	int origY; /// y coordindate before the last operation began
 
-	/// DOCME
-	int layer;	// Higher = above
+	int layer; /// Layer; Higher = above
 
-	/// DOCME
+	AssDialogue* line; /// The dialogue line this feature is for
+	int lineN; /// The line's index in the file
 
-	/// DOCME
-	int value,value2;
-
-
-	/// DOCME
-	AssDialogue *line;
-
-	/// DOCME
-	int lineN;
-
-
-	/// DOCME
-	int brother[4];
-
-	bool IsMouseOver(int x,int y);
-	void Draw(OpenGLWrapper *gl);
-
-	VisualDraggableFeature();
+	/// @brief Is the given point over this feature?
+	/// @param mx x coordinate to test
+	/// @param my y coordinate to test
+	bool IsMouseOver(int x,int y) const;
+	/// @brief Draw this feature
+	/// @param gl OpenGLWrapper to use
+	void Draw(OpenGLWrapper const& gl) const;
 };
-
-

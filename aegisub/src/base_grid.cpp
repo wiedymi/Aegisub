@@ -40,6 +40,7 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <algorithm>
 #include <wx/sizer.h>
 #endif
 
@@ -49,7 +50,9 @@
 #include "audio_controller.h"
 #include "selection_controller.h"
 #include "base_grid.h"
+#include "compat.h"
 #include "frame_main.h"
+#include "main.h"
 #include "options.h"
 #include "subs_edit_box.h"
 #include "utils.h"
@@ -78,6 +81,7 @@ BaseGrid::BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 	holding = false;
 	byFrame = false;
 	lineHeight = 1; // non-zero to avoid div by 0
+	selChangeSub = NULL;
 
 	// Set scrollbar
 	scrollBar = new wxScrollBar(this,GRID_SCROLLBAR,wxDefaultPosition,wxDefaultSize,wxSB_VERTICAL);
@@ -107,10 +111,10 @@ BaseGrid::~BaseGrid() {
 ///
 void BaseGrid::UpdateStyle() {
 	// Set font
-	wxString fontname = Options.AsText(_T("Grid Font Face"));
+	wxString fontname = lagi_wxString(OPT_GET("Subtitle/Grid/Font Face")->GetString());
 	if (fontname.IsEmpty()) fontname = _T("Tahoma");
 	font.SetFaceName(fontname);
-	font.SetPointSize(Options.AsInt(_T("Grid font size")));
+	font.SetPointSize(OPT_GET("Subtitle/Grid/Font Size")->GetInt());
 	font.SetWeight(wxFONTWEIGHT_NORMAL);
 
 	// Set line height
@@ -123,7 +127,9 @@ void BaseGrid::UpdateStyle() {
 	}
 
 	// Set column widths
-	for (int i=0;i<10;i++) showCol[i] = Options.AsBool(_T("Grid show column ") + AegiIntegerToString(i));
+	std::vector<bool> column_array;
+	OPT_GET("Subtitle/Grid/Column")->GetListBool(column_array);
+	for (int i=0;i<10;i++) showCol[i] = column_array.at(i);
 	SetColumnWidths();
 
 	// Update
@@ -204,27 +210,24 @@ void BaseGrid::MakeCellVisible(int row, int col,bool center) {
 /// @param select        
 ///
 void BaseGrid::SelectRow(int row, bool addToSelected, bool select) {
-	// Sanity checking
-	if (row >= GetRows()) row = GetRows()-1;
-	else if (row < 0) row = 0;
-
+	if (row < 0 || (size_t)row >= selMap.size()) return;
 	if (!addToSelected) ClearSelection();
-	try {
-		bool cur = selMap.at(row);
-		if (select != cur) {
-			selMap.at(row) = select;
-			
-			if (!addToSelected) Refresh(false);
 
-			else {
-				int w = 0;
-				int h = 0;
-				GetClientSize(&w,&h);
-				RefreshRect(wxRect(0,(row+1-yPos)*lineHeight,w,lineHeight),false);
-			}
+	if (select != selMap[row]) {
+		selMap[row] = select;
+		
+		if (!addToSelected) {
+			Refresh(false);
 		}
+		else {
+			int w = 0;
+			int h = 0;
+			GetClientSize(&w,&h);
+			RefreshRect(wxRect(0,(row+1-yPos)*lineHeight,w,lineHeight),false);
+		}
+
+		if (selChangeSub) selChangeSub->OnSelectionChange(!addToSelected, row, select);
 	}
-	catch (...) {}
 }
 
 
@@ -267,15 +270,9 @@ void BaseGrid::ClearSelection() {
 /// @param col 
 /// @return 
 ///
-bool BaseGrid::IsInSelection(int row, int col) const {
-	if (row >= GetRows() || row < 0) return false;
-	(void) col;
-	try {
-		return selMap.at(row);
-	}
-	catch (...) {
-		return false;
-	}
+bool BaseGrid::IsInSelection(int row, int) const {
+	if ((size_t)row >= selMap.size() || row < 0) return false;
+	return selMap[row];
 }
 
 
@@ -283,13 +280,8 @@ bool BaseGrid::IsInSelection(int row, int col) const {
 /// @brief Number of selected rows 
 /// @return 
 ///
-int BaseGrid::GetNumberSelection() {
-	int count = 0;
-	int rows = selMap.size();
-	for (int i=0;i<rows;i++) {
-		if (selMap[i]) count++;
-	}
-	return count;
+int BaseGrid::GetNumberSelection() const {
+	return std::count(selMap.begin(), selMap.end(), true);
 }
 
 
@@ -297,14 +289,10 @@ int BaseGrid::GetNumberSelection() {
 /// @brief Gets first selected row 
 /// @return 
 ///
-int BaseGrid::GetFirstSelRow() {
-	int nrows = GetRows();
-	for (int i=0;i<nrows;i++) {
-		if (IsInSelection(i,0)) {
-			return i;
-		}
-	}
-	return -1;
+int BaseGrid::GetFirstSelRow() const {
+	std::vector<bool>::const_iterator first = std::find(selMap.begin(), selMap.end(), true);
+	if (first == selMap.end()) return -1;
+	return std::distance(selMap.begin(), first);
 }
 
 
@@ -312,7 +300,7 @@ int BaseGrid::GetFirstSelRow() {
 /// @brief Gets last selected row from first block selection 
 /// @return 
 ///
-int BaseGrid::GetLastSelRow() {
+int BaseGrid::GetLastSelRow() const {
 	int frow = GetFirstSelRow();
 	while (IsInSelection(frow)) {
 		frow++;
@@ -323,10 +311,10 @@ int BaseGrid::GetLastSelRow() {
 
 
 /// @brief Gets all selected rows 
-/// @param cont 
+/// @param[out] cont 
 /// @return 
 ///
-wxArrayInt BaseGrid::GetSelection(bool *cont) {
+wxArrayInt BaseGrid::GetSelection(bool *cont) const {
 	// Prepare
 	int nrows = GetRows();
 	int last = -1;
@@ -421,12 +409,12 @@ void BaseGrid::DrawImage(wxDC &dc) {
 	dc.SetFont(font);
 
 	// Clear background
-	dc.SetBackground(wxBrush(Options.AsColour(_T("Grid Background"))));
+	dc.SetBackground(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Background")->GetColour())));
 	dc.Clear();
 
 	// Draw labels
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.SetBrush(wxBrush(Options.AsColour(_T("Grid left column"))));
+	dc.SetBrush(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Left Column")->GetColour())));
 	dc.DrawRectangle(0,lineHeight,colWidth[0],h-lineHeight);
 
 	// Visible lines
@@ -437,23 +425,23 @@ void BaseGrid::DrawImage(wxDC &dc) {
 	// Row colors
 	std::vector<wxBrush> rowColors;
 	std::vector<wxColor> foreColors;
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid Background"))));					// 0 = Standard
-	foreColors.push_back(Options.AsColour(_T("Grid standard foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid Header"))));						// 1 = Header
-	foreColors.push_back(Options.AsColour(_T("Grid standard foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid selection background"))));		// 2 = Selected
-	foreColors.push_back(Options.AsColour(_T("Grid selection foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid comment background"))));			// 3 = Commented
-	foreColors.push_back(Options.AsColour(_T("Grid selection foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid inframe background"))));			// 4 = Video Highlighted
-	foreColors.push_back(Options.AsColour(_T("Grid selection foreground")));
-	rowColors.push_back(wxBrush(Options.AsColour(_T("Grid selected comment background"))));	// 5 = Commented & selected
-	foreColors.push_back(Options.AsColour(_T("Grid selection foreground")));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Background")->GetColour())));					// 0 = Standard
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Standard")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Header")->GetColour())));						// 1 = Header
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Standard")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Selection")->GetColour())));		// 2 = Selected
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Comment")->GetColour())));			// 3 = Commented
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Inframe")->GetColour())));			// 4 = Video Highlighted
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
+	rowColors.push_back(wxBrush(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Selected Comment")->GetColour())));	// 5 = Commented & selected
+	foreColors.push_back(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
 
 	// First grid row
 	bool drawGrid = true;
 	if (drawGrid) {
-		dc.SetPen(wxPen(Options.AsColour(_T("Grid lines"))));
+		dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Lines")->GetColour())));
 		dc.DrawLine(0,0,w,0);
 		dc.SetPen(*wxTRANSPARENT_PEN);
 	}
@@ -519,22 +507,22 @@ void BaseGrid::DrawImage(wxDC &dc) {
 			strings.Add(curDiag->GetMarginString(2));
 
 			// Set text
-			int mode = Options.AsInt(_T("Grid Hide Overrides"));
+			int mode = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
 			wxString value = _T("");
 
 			// Hidden overrides
 			if (mode == 1 || mode == 2) {
-				wxString replaceWith = Options.AsText(_T("Grid hide overrides char"));
+				wxString replaceWith = lagi_wxString(OPT_GET("Subtitle/Grid/Hide Overrides Char")->GetString());
 				int textlen = curDiag->Text.Length();
 				int depth = 0;
 				wxChar curChar;
-				for (int i=0;i<textlen;i++) {
-					curChar = curDiag->Text[i];
+				for (int j=0;j<textlen;j++) {
+					curChar = curDiag->Text[j];
 					if (curChar == _T('{')) depth = 1;
 					else if (curChar == _T('}')) {
 						depth--;
 						if (depth == 0 && mode == 1) value += replaceWith;
-						if (depth < 0) depth = 0;
+						else if (depth < 0) depth = 0;
 					}
 					else if (depth != 1) value += curChar;
 				}
@@ -553,7 +541,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 			if (inSel && curDiag->Comment) curColor = 5;
 			else if (inSel) curColor = 2;
 			else if (curDiag->Comment) curColor = 3;
-			else if (Options.AsBool(_T("Highlight subs in frame")) && IsDisplayed(curDiag)) curColor = 4;
+			else if (OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame")->GetBool() && IsDisplayed(curDiag)) curColor = 4;
 		}
 
 		else {
@@ -567,7 +555,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 		}
 
 		// Set text color
-		if (collides) dc.SetTextForeground(Options.AsColour(_T("Grid collision foreground")));
+		if (collides) dc.SetTextForeground(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Collision")->GetColour()));
 		else {
 			dc.SetTextForeground(foreColors[curColor]);
 		}
@@ -598,7 +586,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 		// Draw grid
 		dc.DestroyClippingRegion();
 		if (drawGrid) {
-			dc.SetPen(wxPen(Options.AsColour(_T("Grid lines"))));
+			dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Lines")->GetColour())));
 			dc.DrawLine(0,dy+lineHeight,w,dy+lineHeight);
 			dc.SetPen(*wxTRANSPARENT_PEN);
 		}
@@ -607,7 +595,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 	// Draw grid columns
 	dx = 0;
 	if (drawGrid) {
-		dc.SetPen(wxPen(Options.AsColour(_T("Grid lines"))));
+		dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Lines")->GetColour())));
 		for (int i=0;i<10;i++) {
 			dx += colWidth[i];
 			dc.DrawLine(dx,0,dx,maxH);
@@ -617,7 +605,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 	}
 
 	// Draw currently active line border
-	dc.SetPen(wxPen(Options.AsColour(_T("Grid Active border"))));
+	dc.SetPen(wxPen(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Active Border")->GetColour())));
 	dc.SetBrush(*wxTRANSPARENT_BRUSH);
 	dy = (editBox->linen+1-yPos) * lineHeight;
 	dc.DrawRectangle(0,dy,w,lineHeight+1);
@@ -680,7 +668,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 
 	// Get focus
 	if (event.ButtonDown()) {
-		if (Options.AsBool(_T("Grid Allow Focus"))) {
+		if (OPT_GET("Subtitle/Grid/Focus Allow")->GetBool()) {
 			SetFocus();
 		}
 	}
@@ -732,7 +720,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 		// Normal click
 		if ((click || dclick) && !shift && !ctrl && !alt) {
 			editBox->SetToLine(row);
-			if (dclick) VideoContext::Get()->JumpToFrame(VFR_Output.GetFrameAtTime(GetDialogue(row)->Start.GetMS(),true));
+			if (dclick) VideoContext::Get()->JumpToTime(GetDialogue(row)->Start.GetMS());
 			SelectRow(row,false);
 			AnnounceSelectedSetChanged();
 			parentFrame->UpdateToolbar();
@@ -935,7 +923,7 @@ void BaseGrid::SetColumnWidths() {
 	if (false && AssFile::top) {
 		AssStyle *curStyle;
 		for (entryIter curIter=AssFile::top->Line.begin();curIter!=AssFile::top->Line.end();curIter++) {
-			curStyle = AssEntry::GetAsStyle(*curIter);
+			curStyle = dynamic_cast<AssStyle*>(*curIter);
 			if (curStyle) {
 				dc.GetTextExtent(curStyle->name, &fw, &fh, NULL, NULL, &font);
 				if (fw > styleLen) styleLen = fw;
@@ -977,11 +965,8 @@ void BaseGrid::SetColumnWidths() {
 ///
 AssDialogue *BaseGrid::GetDialogue(int n) const {
 	try {
-		if (n < 0) return NULL;
-		if ((size_t)n >= diagMap.size()) return NULL;
-		AssEntry *e = *diagMap.at(n);
-		if (e->GetType() != ENTRY_DIALOGUE) return NULL;
-		return AssEntry::GetAsDialogue(e);
+		if (n < 0 || (size_t)n >= diagMap.size()) return NULL;
+		return dynamic_cast<AssDialogue*>(*diagMap.at(n));
 	}
 	catch (...) {
 		return NULL;
@@ -995,10 +980,11 @@ AssDialogue *BaseGrid::GetDialogue(int n) const {
 /// @return 
 ///
 bool BaseGrid::IsDisplayed(AssDialogue *line) {
-	if (!VideoContext::Get()->IsLoaded()) return false;
+	VideoContext* con = VideoContext::Get();
+	if (!con->IsLoaded()) return false;
 	int f1 = VFR_Output.GetFrameAtTime(line->Start.GetMS(),true);
 	int f2 = VFR_Output.GetFrameAtTime(line->End.GetMS(),false);
-	if (f1 <= VideoContext::Get()->GetFrameN() && f2 >= VideoContext::Get()->GetFrameN()) return true;
+	if (f1 <= con->GetFrameN() && f2 >= con->GetFrameN()) return true;
 	return false;
 }
 
@@ -1025,7 +1011,7 @@ void BaseGrid::UpdateMaps() {
 	int n = 0;
 	AssDialogue *curdiag;
 	for (entryIter cur=AssFile::top->Line.begin();cur != AssFile::top->Line.end();cur++) {
-		curdiag = AssEntry::GetAsDialogue(*cur);
+		curdiag = dynamic_cast<AssDialogue*>(*cur);
 		if (curdiag) {
 			// Find old pos
 			bool sel = false;
@@ -1195,7 +1181,7 @@ void BaseGrid::SetByFrame (bool state) {
 /// @param n1 
 /// @param n2 
 ///
-wxArrayInt BaseGrid::GetRangeArray(int n1,int n2) {
+wxArrayInt BaseGrid::GetRangeArray(int n1,int n2) const {
 	// Swap if in wrong order
 	if (n2 < n1) {
 		int aux = n1;

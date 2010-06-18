@@ -52,11 +52,27 @@ extern "C" {
 }
 #endif
 
+#include <libaegisub/log.h>
+
 #include "ass_file.h"
 #include "standard_paths.h"
 #include "subtitles_provider_libass.h"
 #include "utils.h"
 #include "video_context.h"
+
+
+
+/// @brief Handle libass messages
+///
+static void msg_callback(int level, const char *fmt, va_list args, void *data) {
+	char buf[256];
+	snprintf(buf, sizeof(buf), fmt, args);
+
+	if (level < 2) // warning/error
+		LOG_I("subtitle/provider/libass") << buf;
+	else if (level < 7) // verbose
+		LOG_D("subtitle/provider/libass") << buf;
+}
 
 
 
@@ -77,6 +93,7 @@ LibassSubtitlesProvider::LibassSubtitlesProvider() {
 		ass_set_fonts_dir(ass_library, fonts_dir.mb_str(wxConvFile));
 		ass_set_extract_fonts(ass_library, 0);
 		ass_set_style_overrides(ass_library, NULL);
+		ass_set_message_cb(ass_library, msg_callback, this);
 		first = false;
 	}
 
@@ -116,7 +133,6 @@ void LibassSubtitlesProvider::LoadSubtitles(AssFile *subs) {
 	// Prepare subtitles
 	std::vector<char> data;
 	subs->SaveMemory(data,_T("UTF-8"));
-	delete subs;
 
 	// Load file
 	if (ass_track) ass_free_track(ass_track);

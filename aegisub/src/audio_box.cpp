@@ -48,6 +48,8 @@
 #include <wx/laywin.h> // Keep this last so wxSW_3D is set.
 #endif
 
+#include <libaegisub/log.h>
+
 #include "include/aegisub/audio_player.h"
 #include "audio_controller.h"
 #include "audio_box.h"
@@ -57,6 +59,7 @@
 #include "frame_main.h"
 #include "hotkeys.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "toggle_bitmap.h"
 #include "tooltip_manager.h"
@@ -125,7 +128,7 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller, SubtitleSelec
 	VerticalZoom->SetToolTip(_("Vertical zoom"));
 	VolumeBar = new wxSlider(this,Audio_Volume,50,0,100,wxDefaultPosition,wxSize(-1,20),wxSL_VERTICAL|wxSL_BOTH|wxSL_INVERSE);
 	VolumeBar->SetToolTip(_("Audio Volume"));
-	bool link = Options.AsBool(_T("Audio Link"));
+	bool link = OPT_GET("Audio/Link")->GetBool();
 	if (link) {
 		VolumeBar->SetValue(VerticalZoom->GetValue());
 		VolumeBar->Enable(false);
@@ -199,15 +202,15 @@ AudioBox::AudioBox(wxWindow *parent, AudioController *_controller, SubtitleSelec
 
 	AutoCommit = new ToggleBitmap(this,Audio_Check_AutoCommit,GETIMAGE(toggle_audio_autocommit_16), wxSize(20, -1));
 	AutoCommit->SetToolTip(_("Automatically commit all changes"));
-	AutoCommit->SetValue(Options.AsBool(_T("Audio Autocommit")));
+	AutoCommit->SetValue(OPT_GET("Audio/Auto/Commit")->GetBool());
 	ButtonSizer->Add(AutoCommit,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
 	NextCommit = new ToggleBitmap(this,Audio_Check_NextCommit,GETIMAGE(toggle_audio_nextcommit_16), wxSize(20, -1));
 	NextCommit->SetToolTip(_("Auto goes to next line on commit"));
-	NextCommit->SetValue(Options.AsBool(_T("Audio Next Line on Commit")));
+	NextCommit->SetValue(OPT_GET("Audio/Next Line on Commit")->GetBool());
 	ButtonSizer->Add(NextCommit,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,0);
 	AutoScroll = new ToggleBitmap(this,Audio_Check_AutoGoto,GETIMAGE(toggle_audio_autoscroll_16), wxSize(20, -1));
 	AutoScroll->SetToolTip(_("Auto scrolls audio display to selected line"));
-	AutoScroll->SetValue(Options.AsBool(_T("Audio Autoscroll")));
+	AutoScroll->SetValue(OPT_GET("Audio/Auto/Scroll")->GetBool());
 	ButtonSizer->Add(AutoScroll,0,wxRIGHT | wxALIGN_CENTER | wxEXPAND,10);
 
 	ButtonSizer->AddStretchSpacer(1);
@@ -360,8 +363,7 @@ void AudioBox::OnVerticalLink(wxCommandEvent &event) {
 	}
 	VolumeBar->Enable(!VerticalLink->GetValue());
 
-	Options.SetBool(_T("Audio Link"),VerticalLink->GetValue());
-	Options.Save();
+	OPT_SET("Audio/Link")->SetBool(VerticalLink->GetValue());
 }
 
 
@@ -487,12 +489,12 @@ void AudioBox::OnPlayToEnd(wxCommandEvent &event) {
 /// @return 
 ///
 void AudioBox::OnCommit(wxCommandEvent &event) {
-	wxLogDebug(_T("AudioBox::OnCommit"));
+	LOG_D("audio/box") << "OnCommit";
 	audioDisplay->SetFocus();
-	wxLogDebug(_T("AudioBox::OnCommit: has set focus, now committing changes"));
+	LOG_D("audio/box") << "has set focus, now committing changes";
 	/// @todo Commit changes and go to next line if appropriate
 	//audioDisplay->CommitChanges(true);
-	wxLogDebug(_T("AudioBox::OnCommit: returning"));
+	LOG_D("audio/box") << "returning";
 }
 
 
@@ -502,10 +504,10 @@ void AudioBox::OnCommit(wxCommandEvent &event) {
 /// @return 
 ///
 void AudioBox::OnKaraoke(wxCommandEvent &event) {
-	wxLogDebug(_T("AudioBox::OnKaraoke"));
+	LOG_D("audio/box") << "OnKaraoke";
 	audioDisplay->SetFocus();
 	if (karaokeMode) {
-		wxLogDebug(_T("AudioBox::OnKaraoke: karaoke enabled, disabling"));
+		LOG_D("audio/box") << "karaoke enabled, disabling";
 		if (audioKaraoke->splitting) {
 			audioKaraoke->EndSplit(false);
 		}
@@ -517,7 +519,7 @@ void AudioBox::OnKaraoke(wxCommandEvent &event) {
 	}
 
 	else {
-		wxLogDebug(_T("AudioBox::OnKaraoke: karaoke disabled, enabling"));
+		LOG_D("audio/box") << "karaoke disabled, enabling";
 		karaokeMode = true;
 		audioKaraoke->enabled = true;
 		/// @todo Replace this with changing timing controller
@@ -526,7 +528,7 @@ void AudioBox::OnKaraoke(wxCommandEvent &event) {
 
 	SetKaraokeButtons();
 
-	wxLogDebug(_T("AudioBox::OnKaraoke: returning"));
+	LOG_D("audio/box") << "returning";
 }
 
 
@@ -554,7 +556,7 @@ void AudioBox::SetKaraokeButtons() {
 /// @param event wxEvent
 ///
 void AudioBox::OnJoin(wxCommandEvent &event) {
-	wxLogDebug(_T("AudioBox::OnJoin"));
+	LOG_D("audio/box") << "join";
 	audioDisplay->SetFocus();
 	audioKaraoke->Join();
 }
@@ -563,7 +565,7 @@ void AudioBox::OnJoin(wxCommandEvent &event) {
 /// @param event wxEvent
 ///
 void AudioBox::OnSplit(wxCommandEvent &event) {
-	wxLogDebug(_T("AudioBox::OnSplit"));
+	LOG_D("audio/box") << "split";
 	audioDisplay->SetFocus();
 		audioKaraoke->BeginSplit();
 }
@@ -572,7 +574,7 @@ void AudioBox::OnSplit(wxCommandEvent &event) {
 /// @param event wxEvent
 ///
 void AudioBox::OnCancel(wxCommandEvent &event) {
-	wxLogDebug(_T("AudioBox::OnCancel"));
+	LOG_D("audio/box") << "cancel";
 	audioDisplay->SetFocus();
 	audioKaraoke->EndSplit(true);
 }
@@ -581,7 +583,7 @@ void AudioBox::OnCancel(wxCommandEvent &event) {
 /// @param event wxEvent
 ///
 void AudioBox::OnAccept(wxCommandEvent &event) {
-	wxLogDebug(_T("AudioBox::OnAccept"));
+	LOG_D("audio/box") << "accept";
 	audioDisplay->SetFocus();
 	audioKaraoke->EndSplit(false);
 }
@@ -603,8 +605,7 @@ void AudioBox::OnGoto(wxCommandEvent &event) {
 ///
 void AudioBox::OnAutoGoto(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
-	Options.SetBool(_T("Audio Autoscroll"),AutoScroll->GetValue());
-	Options.Save();
+	OPT_SET("Audio/Auto/Scroll")->SetBool(AutoScroll->GetValue());
 }
 
 
@@ -614,8 +615,7 @@ void AudioBox::OnAutoGoto(wxCommandEvent &event) {
 ///
 void AudioBox::OnAutoCommit(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
-	Options.SetBool(_T("Audio Autocommit"),AutoCommit->GetValue());
-	Options.Save();
+	OPT_SET("Audio/Auto/Commit")->SetBool(AutoCommit->GetValue());
 }
 
 
@@ -625,8 +625,7 @@ void AudioBox::OnAutoCommit(wxCommandEvent &event) {
 ///
 void AudioBox::OnNextLineCommit(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
-	Options.SetBool(_T("Audio Next Line on Commit"),NextCommit->GetValue());
-	Options.Save();
+	OPT_SET("Audio/Next Line on Commit")->SetBool(NextCommit->GetValue());
 }
 
 
@@ -635,8 +634,7 @@ void AudioBox::OnNextLineCommit(wxCommandEvent &event) {
 /*
 void AudioBox::OnMedusaMode(wxCommandEvent &event) {
 	audioDisplay->SetFocus();
-	Options.SetBool(_T("Audio Medusa Timing Hotkeys"),MedusaMode->GetValue());
-	Options.Save();
+	OPT_SET("Audio/Medusa Timing Hotkeys")->SetBool(MedusaMode->GetValue());
 	frameMain->SetAccelerators();
 }
 */

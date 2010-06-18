@@ -68,13 +68,17 @@
 #include <algorithm>
 #include <deque>
 #include <fstream>
+#include <iterator>
 #include <iostream>
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "boost/shared_ptr.hpp"
 
 // General headers
 #include <assert.h>
@@ -234,18 +238,16 @@
 #ifdef HAVE_APPLE_OPENGL_FRAMEWORK
 #include <OpenGL/GL.h>
 #include <OpenGL/glu.h>
+#include <OpenGL/glext.h>
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include "gl/glext.h"
 #endif
 
-#ifndef _CRT_SECURE_NO_WARNINGS_DEFINED
+#ifdef _CRT_SECURE_NO_WARNINGS_DEFINED
 #undef _CRT_SECURE_NO_WARNINGS
 #endif
-
-///////////////////
-// Aegisub headers
-#include "include/aegisub/exception.h"
 
 #endif // C++
 

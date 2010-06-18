@@ -34,74 +34,67 @@
 /// @ingroup visual_ts
 ///
 
-
-
-
-///////////
-// Headers
-#ifndef AGI_PRE
-#include <wx/toolbar.h>
-#endif
-
+#include "visual_feature.h"
 #include "visual_tool.h"
 #include "spline.h"
 
+class wxToolBar;
+
+/// @class VisualToolVectorClipDraggableFeature
+/// @brief VisualDraggableFeature with information about a feature's location
+///        in the spline
+class VisualToolVectorClipDraggableFeature : public VisualDraggableFeature {
+public:
+	/// Which curve in the spline this feature is a point on
+	Spline::iterator curve;
+	/// 0-3; indicates which part of the curve this point is
+	int point;
+	/// @brief Constructor
+	VisualToolVectorClipDraggableFeature()
+		: VisualDraggableFeature()
+		, point(0)
+	{ }
+};
 
 /// DOCME
 /// @class VisualToolVectorClip
 /// @brief DOCME
-///
-/// DOCME
-class VisualToolVectorClip : public VisualTool {
+class VisualToolVectorClip : public VisualTool<VisualToolVectorClipDraggableFeature> {
 private:
+	Spline spline; /// The current spline
 
-	/// DOCME
-	Spline spline;
-
-	/// DOCME
-	wxToolBar *toolBar;
+	wxToolBar *toolBar; /// The subtoolbar
 
 	/// DOCME
 	int mode;
 
 	/// DOCME
-
-	/// DOCME
-	int lastX,lastY;
-
-	/// DOCME
 	bool inverse;
 
+	/// @brief Set the mode
+	/// @param mode 0-7
 	void SetMode(int mode);
 	
 
 	/// @brief DOCME
 	/// @return 
 	///
-	bool CanHold() { return true; }
-	bool HoldEnabled();
-	void InitializeHold();
+	bool InitializeHold();
 	void UpdateHold();
 	void CommitHold();
 
-
-	/// @brief DOCME
-	///
-	bool CanDrag() { return true; }
-	bool DragEnabled();
 	void PopulateFeatureList();
-	void UpdateDrag(VisualDraggableFeature &feature);
-	void CommitDrag(VisualDraggableFeature &feature);
-	void ClickedFeature(VisualDraggableFeature &feature);
+	void UpdateDrag(VisualToolVectorClipDraggableFeature* feature);
+	void CommitDrag(VisualToolVectorClipDraggableFeature* feature);
+	bool InitializeDrag(VisualToolVectorClipDraggableFeature* feature);
 
 	void DoRefresh();
-	void OnSubTool(wxCommandEvent &event);
 
 public:
-	VisualToolVectorClip(VideoDisplay *parent,wxToolBar *toolbar);
+	VisualToolVectorClip(VideoDisplay *parent, VideoState const& video, wxToolBar *toolbar);
 
-	void Update();
 	void Draw();
+	bool Update() { return mode >= 1 && mode <= 4; }
+	/// Subtoolbar button click handler
+	void OnSubTool(wxCommandEvent &event);
 };
-
-

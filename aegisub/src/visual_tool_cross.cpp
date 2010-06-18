@@ -32,11 +32,7 @@
 /// @file visual_tool_cross.cpp
 /// @brief Crosshair double-click-to-position visual typesetting tool
 /// @ingroup visual_ts
-///
 
-
-///////////
-// Headers
 #include "config.h"
 
 #include "ass_file.h"
@@ -48,52 +44,48 @@
 #include "video_display.h"
 #include "visual_tool_cross.h"
 
-
 /// @brief Constructor 
 /// @param _parent 
-///
-VisualToolCross::VisualToolCross(VideoDisplay *_parent)
-: VisualTool(_parent)
+VisualToolCross::VisualToolCross(VideoDisplay *parent, VideoState const& video, wxToolBar *)
+: VisualTool<VisualDraggableFeature>(parent, video)
 {
-	_parent->ShowCursor(false);
 }
-
-
-
-/// @brief Destructor 
-///
-VisualToolCross::~VisualToolCross() {
-	GetParent()->ShowCursor(true);
-}
-
-
+VisualToolCross::~VisualToolCross() { }
 
 /// @brief Update 
-///
-void VisualToolCross::Update() {
-	// Position
-	if (leftDClick) {
-		int vx = (sw * mouseX + w/2) / w;
-		int vy = (sh * mouseY + h/2) / h;
-		SubtitlesGrid *grid = VideoContext::Get()->grid;
-		SetOverride(_T("\\pos"),wxString::Format(_T("(%i,%i)"),vx,vy));
-		grid->editBox->CommitText();
-		grid->ass->FlagAsModified(_("positioning"));
-		grid->CommitChanges(false,true);
+bool VisualToolCross::Update() {
+	if (!leftDClick) return true;
+
+	AssDialogue* line = GetActiveDialogueLine();
+	if (!line) return true;
+
+
+	int dx, dy;
+	int vx = video.x;
+	int vy = video.y;
+	GetLinePosition(line, dx, dy);
+	parent->ToScriptCoords(&vx, &vy);
+	parent->ToScriptCoords(&dx, &dy);
+	dx -= vx;
+	dy -= vy;
+
+	SubtitlesGrid *grid = VideoContext::Get()->grid;
+	wxArrayInt sel = grid->GetSelection();
+	for (wxArrayInt::const_iterator cur = sel.begin(); cur != sel.end(); ++cur) {
+		line = grid->GetDialogue(*cur);
+		if (!line) continue;
+		int x1, y1;
+		GetLinePosition(line, x1, y1);
+		parent->ToScriptCoords(&x1, &y1);
+		SetOverride(line, L"\\pos", wxString::Format(L"(%i,%i)", x1 - dx, y1 - dy));
 	}
 
-	// Render parent
-	GetParent()->Render();
+	Commit(true, _("positioning"));
+	return false;
 }
 
-
-
 /// @brief Draw 
-///
 void VisualToolCross::Draw() {
-	// Is it outside?
-	if (mouseX == -1 || mouseY == -1) return;
-
 	// Draw cross
 	glDisable(GL_LINE_SMOOTH);
 	glEnable(GL_COLOR_LOGIC_OP);
@@ -101,38 +93,35 @@ void VisualToolCross::Draw() {
 	glLineWidth(1);
 	glBegin(GL_LINES);
 		glColor3f(1.0f,1.0f,1.0f);
-		glVertex2f(0,my);
-		glVertex2f(sw,my);
-		glVertex2f(mx,0);
-		glVertex2f(mx,sh);
+		glVertex2f(0, video.y);
+		glVertex2f(video.w, video.y);
+		glVertex2f(video.x, 0);
+		glVertex2f(video.x, video.h);
 	glEnd();
 	glDisable(GL_COLOR_LOGIC_OP);
 
-	// Switch display
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0.0f,w,h,0.0f,-1000.0f,1000.0f);
-	glMatrixMode(GL_MODELVIEW);
+	int tx,ty;
+	if (!wxGetMouseState().ShiftDown()) {
+		tx = video.x;
+		ty = video.y;
+	}
+	else {
+		tx = video.w - video.x;
+		ty = video.h - video.y;
+	}
+	parent->ToScriptCoords(&tx, &ty);
+	wxString mouseText = wxString::Format(L"%i,%i", tx, ty);
 
-	// Text of current coords
-	int dx = mouseX;
-	int dy = mouseY;
-	int vx = (sw * dx + w/2) / w;
-	int vy = (sh * dy + h/2) / h;
-	wxString mouseText;
-	if (!wxGetMouseState().ShiftDown()) mouseText = wxString::Format(_T("%i,%i"),vx,vy);
-	else mouseText = wxString::Format(_T("%i,%i"),vx - sw,vy - sh);
-
-	// Setup gl text
 	int tw,th;
-	OpenGLText::SetFont(_T("Verdana"),12,true);
-	OpenGLText::SetColour(wxColour(255,255,255));
-	OpenGLText::GetExtent(mouseText,tw,th);
+	OpenGLText::SetFont(L"Verdana", 12, true);
+	OpenGLText::SetColour(wxColour(255, 255, 255));
+	OpenGLText::GetExtent(mouseText, tw, th);
 
 	// Calculate draw position
-	bool left = dx > w/2;
-	bool bottom = dy < h/2;
+	int dx = video.x;
+	int dy = video.y;
+	bool left = dx > video.w / 2;
+	bool bottom = dy < video.h / 2;
 
 	// Text draw coords
 	if (left) dx -= tw + 4;
@@ -141,12 +130,5 @@ void VisualToolCross::Draw() {
 	else dy -= th + 3;
 
 	// Draw text
-	OpenGLText::Print(mouseText,dx,dy);
-
-	// Restore matrix
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	OpenGLText::Print(mouseText, dx, dy);
 }
-
-

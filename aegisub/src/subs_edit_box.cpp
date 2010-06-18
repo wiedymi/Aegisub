@@ -64,7 +64,6 @@
 #include "tooltip_manager.h"
 #include "utils.h"
 #include "validators.h"
-#include "vfr.h"
 #include "video_context.h"
 #include "video_display.h"
 
@@ -262,9 +261,8 @@ void SubsEditBox::SetSplitLineMode(wxSize newSize) {
 
 
 /// @brief Update function 
-/// @param timeOnly If true, only update the time fields
-/// @param weak     ?
-/// @param video    If true, update the video display
+/// @param timeOnly 
+/// @param weak     
 ///
 void SubsEditBox::Update (bool timeOnly,bool weak,bool video) {
 	if (enabled) {
@@ -355,12 +353,10 @@ void SubsEditBox::SetToLine(int n,bool weak) {
 	// Set to nothing
 	if (n == -1) {
 		enabled = false;
-		SetControlsState(false);
-		return;
 	}
 
 	// Set line
-	if (grid->GetDialogue(n)) {
+	else if (grid->GetDialogue(n)) {
 		enabled = true;
 		if (n != linen) {
 			linen = n;
@@ -372,18 +368,18 @@ void SubsEditBox::SetToLine(int n,bool weak) {
 	}
 
 	// Update controls
-	Update(false, false, false);
+	Update();
 
 	// Set video
 	if (VideoContext::Get()->IsLoaded() && !weak) {
-		wxString sync;
-		if (Search.hasFocus) sync = _T("Find update video");
-		else sync = _T("Sync video with subs");
-		
-		if (Options.AsBool(sync)) {
+		bool sync;
+		if (Search.hasFocus) sync = OPT_GET("Tool/Search Replace/Video Update")->GetBool();
+		else sync = OPT_GET("Video/Subtitle Sync")->GetBool();
+
+		if (sync) {
 			VideoContext::Get()->Stop();
 			AssDialogue *cur = grid->GetDialogue(n);
-			if (cur) VideoContext::Get()->JumpToFrame(VFR_Output.GetFrameAtTime(cur->Start.GetMS(),true));
+			if (cur) VideoContext::Get()->JumpToTime(cur->Start.GetMS());
 		}
 	}
 
@@ -502,8 +498,7 @@ void SubsEditBox::OnKeyDown(wxStyledTextEvent &event) {
 ///
 void SubsEditBox::OnSyntaxBox(wxCommandEvent &event) {
 	TextEdit->UpdateStyle();
-	Options.SetBool(_T("Syntax Highlight Enabled"),SyntaxHighlight->GetValue());
-	Options.Save();
+	OPT_SET("Subtitle/Highlight/Syntax")->SetBool(SyntaxHighlight->GetValue());
 	event.Skip();
 }
 
@@ -599,7 +594,7 @@ void SubsEditBox::SetControlsState (bool state) {
 /// @brief Disables or enables frame timing 
 ///
 void SubsEditBox::UpdateFrameTiming () {
-	if (VFR_Output.IsLoaded()) ByFrame->Enable(enabled);
+	if (VideoContext::Get()->IsLoaded()) ByFrame->Enable(enabled);
 	else {
 		ByFrame->Enable(false);
 		ByTime->SetValue(true);
@@ -623,7 +618,6 @@ void SubsEditBox::OnStyleChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Style = StyleBox->GetValue();
-			cur->UpdateData();
 		}
 	}
 	grid->ass->FlagAsModified(_("style change"));
@@ -648,7 +642,6 @@ void SubsEditBox::OnActorChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Actor = actor;
-			cur->UpdateData();
 		}
 	}
 
@@ -683,7 +676,6 @@ void SubsEditBox::OnLayerChange(wxSpinEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Layer = temp;
-			cur->UpdateData();
 		}
 	}
 
@@ -711,7 +703,6 @@ void SubsEditBox::OnLayerEnter(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Layer = temp;
-			cur->UpdateData();
 		}
 	}
 
@@ -727,7 +718,7 @@ void SubsEditBox::OnLayerEnter(wxCommandEvent &event) {
 ///
 void SubsEditBox::OnStartTimeChange(wxCommandEvent &event) {
 	if (StartTime->time > EndTime->time) StartTime->SetTime(EndTime->time.GetMS());
-	bool join = Options.AsBool(_T("Link Time Boxes Commit")) && EndTime->HasBeenModified();
+	bool join = OPT_GET("Subtitle/Edit Box/Link Time Boxes Commit")->GetBool() && EndTime->HasBeenModified();
 	StartTime->Update();
 	Duration->Update();
 	if (join) EndTime->Update();
@@ -741,7 +732,7 @@ void SubsEditBox::OnStartTimeChange(wxCommandEvent &event) {
 ///
 void SubsEditBox::OnEndTimeChange(wxCommandEvent &event) {
 	if (StartTime->time > EndTime->time) EndTime->SetTime(StartTime->time.GetMS());
-	bool join = Options.AsBool(_T("Link Time Boxes Commit")) && StartTime->HasBeenModified();
+	bool join = OPT_GET("Subtitle/Edit Box/Link Time Boxes Commit")->GetBool() && StartTime->HasBeenModified();
 	EndTime->Update();
 	Duration->Update();
 	if (join) StartTime->Update();
@@ -825,7 +816,6 @@ void SubsEditBox::OnMarginLChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->SetMarginString(MarginL->GetValue(),0);
-			cur->UpdateData();
 		}
 	}
 	MarginL->SetValue(cur->GetMarginString(0,false));
@@ -849,7 +839,6 @@ void SubsEditBox::OnMarginRChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->SetMarginString(MarginR->GetValue(),1);
-			cur->UpdateData();
 		}
 	}
 	MarginR->SetValue(cur->GetMarginString(1,false));
@@ -874,7 +863,6 @@ void SubsEditBox::OnMarginVChange(wxCommandEvent &event) {
 		if (cur) {
 			cur->SetMarginString(MarginV->GetValue(),2);
 			cur->SetMarginString(MarginV->GetValue(),3); // also bottom margin for now
-			cur->UpdateData();
 		}
 	}
 	MarginV->SetValue(cur->GetMarginString(2,false));
@@ -898,7 +886,6 @@ void SubsEditBox::OnEffectChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Effect = Effect->GetValue();
-			cur->UpdateData();
 		}
 	}
 	grid->ass->FlagAsModified(_("effect change"));
@@ -920,7 +907,6 @@ void SubsEditBox::OnCommentChange(wxCommandEvent &event) {
 		cur = grid->GetDialogue(sel[i]);
 		if (cur) {
 			cur->Comment = CommentBox->GetValue();
-			cur->UpdateData();
 		}
 	}
 	grid->ass->FlagAsModified(_("comment change"));
@@ -1019,9 +1005,8 @@ void SubsEditBox::Commit(bool stay) {
 		if (next >= nrows) {
 			AssDialogue *newline = new AssDialogue;
 			newline->Start = cur->End;
-			newline->End.SetMS(cur->End.GetMS()+Options.AsInt(_T("Timing Default Duration")));
+			newline->End.SetMS(cur->End.GetMS()+OPT_GET("Timing/Default Duration")->GetInt());
 			newline->Style = cur->Style;
-			newline->UpdateData();
 			grid->InsertLine(newline,next-1,true,true);
 			updated = true;
 		}
@@ -1187,19 +1172,19 @@ void SubsEditBox::SetOverride (wxString tagname,wxString preValue,int forcePos,b
 	AssOverrideTag *tag;
 	if (isFont || isColor || isFlag) {
 		for (size_t i=0;i<=blockn;i++) {
-			override = AssDialogueBlock::GetAsOverride(line->Blocks.at(i));
+			override = dynamic_cast<AssDialogueBlockOverride*>(line->Blocks.at(i));
 			if (override) {
 				for (size_t j=0;j<override->Tags.size();j++) {
 					tag = override->Tags.at(j);
 					if (tag->Name == tagname || tag->Name == alttagname || tagname == _T("\\fn")) {
-						if (isColor) startcolor = tag->Params.at(0)->AsColour();
-						if (isFlag) state = tag->Params.at(0)->AsBool();
+						if (isColor) startcolor = tag->Params.at(0)->Get<wxColour>();
+						if (isFlag) state = tag->Params.at(0)->Get<bool>();
 						if (isFont) {
-							if (tag->Name == _T("\\fn")) startfont.SetFaceName(tag->Params.at(0)->AsText());
-							if (tag->Name == _T("\\fs")) startfont.SetPointSize(tag->Params.at(0)->AsInt());
-							if (tag->Name == _T("\\b")) startfont.SetWeight((tag->Params.at(0)->AsInt() > 0) ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
-							if (tag->Name == _T("\\i")) startfont.SetStyle(tag->Params.at(0)->AsBool() ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
-							if (tag->Name == _T("\\u")) startfont.SetUnderlined(tag->Params.at(0)->AsBool());
+							if (tag->Name == _T("\\fn")) startfont.SetFaceName(tag->Params.at(0)->Get<wxString>());
+							if (tag->Name == _T("\\fs")) startfont.SetPointSize(tag->Params.at(0)->Get<int>());
+							if (tag->Name == _T("\\b")) startfont.SetWeight((tag->Params.at(0)->Get<int>() > 0) ? wxFONTWEIGHT_BOLD : wxFONTWEIGHT_NORMAL);
+							if (tag->Name == _T("\\i")) startfont.SetStyle(tag->Params.at(0)->Get<bool>() ? wxFONTSTYLE_ITALIC : wxFONTSTYLE_NORMAL);
+							if (tag->Name == _T("\\u")) startfont.SetUnderlined(tag->Params.at(0)->Get<bool>());
 						}
 					}
 				}
@@ -1287,8 +1272,8 @@ void SubsEditBox::SetOverride (wxString tagname,wxString preValue,int forcePos,b
 	}
 
 	// Get current block as plain or override
-	AssDialogueBlockPlain *plain = AssDialogueBlock::GetAsPlain(block);
-	override = AssDialogueBlock::GetAsOverride(block);
+	AssDialogueBlockPlain *plain = dynamic_cast<AssDialogueBlockPlain*>(block);
+	override = dynamic_cast<AssDialogueBlockOverride*>(block);
 
 	// Plain
 	if (plain) {
@@ -1330,8 +1315,8 @@ void SubsEditBox::SetOverride (wxString tagname,wxString preValue,int forcePos,b
 		TextEdit->SetTextTo(line->Text);
 		blockn = BlockAtPos(selstart);
 		block = line->Blocks.at(blockn);
-		plain = AssDialogueBlock::GetAsPlain(block);
-		override = AssDialogueBlock::GetAsOverride(block);
+		plain = dynamic_cast<AssDialogueBlockPlain*>(block);
+		override = dynamic_cast<AssDialogueBlockOverride*>(block);
 
 		// Plain
 		if (plain) {

@@ -37,6 +37,7 @@
 #ifndef AGI_PRE
 #include <memory>
 #include <vector>
+#include <set>
 #include <stdint.h>
 #include <assert.h>
 #include <wx/event.h>
@@ -44,11 +45,9 @@
 #include <wx/timer.h>
 #include <wx/pen.h>
 #include <wx/power.h>
-
-#include "include/aegisub/exception.h"
 #endif
 
-#include <set>
+#include <libaegisub/exception.h>
 
 #define AGI_AUDIO_CONTROLLER_INCLUDED 1
 
@@ -434,7 +433,7 @@ public:
 
 
 
-namespace Aegisub {
+namespace agi {
 	DEFINE_BASE_EXCEPTION(AudioControllerError, Exception);
 	DEFINE_SIMPLE_EXCEPTION(AudioOpenError, AudioControllerError, "audio_controller/open_failed");
 };

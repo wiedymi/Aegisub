@@ -34,20 +34,13 @@
 /// @ingroup visual_ts
 ///
 
-
-
-
-///////////
-// Headers
+#include "visual_feature.h"
 #include "visual_tool.h"
-
 
 /// DOCME
 /// @class VisualToolScale
 /// @brief DOCME
-///
-/// DOCME
-class VisualToolScale : public VisualTool {
+class VisualToolScale : public VisualTool<VisualDraggableFeature> {
 private:
 
 	/// DOCME
@@ -72,16 +65,12 @@ private:
 
 	/// @brief DOCME
 	///
-	bool CanHold() { return true; }
-	void InitializeHold();
+	bool InitializeHold();
 	void UpdateHold();
 	void CommitHold();
 
 public:
-	VisualToolScale(VideoDisplay *parent);
+	VisualToolScale(VideoDisplay *parent, VideoState const& video, wxToolBar *);
 
-	void Update();
 	void Draw();
 };
-
-

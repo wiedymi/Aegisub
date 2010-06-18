@@ -44,6 +44,8 @@
 #include <wx/dcmemory.h>
 #endif
 
+#include <libaegisub/log.h>
+
 #include "block_cache.h"
 #include "include/aegisub/audio_provider.h"
 #include "audio_colorscheme.h"
@@ -55,6 +57,9 @@
 #else
 #include "fft.h"
 #endif
+#include "main.h"
+#include "options.h"
+#include "utils.h"
 
 
 // Something is defining "min" and "max" macros, and they interfere with using std::min and std::max

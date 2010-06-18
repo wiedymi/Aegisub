@@ -44,6 +44,8 @@
 #include <unistd.h>
 #endif
 
+#include <libaegisub/log.h>
+
 #include <wx/dcmemory.h>
 #include <wx/filename.h>
 #include <wx/log.h>
@@ -123,51 +125,13 @@ wxString DecodeRelativePath(wxString _path,wxString reference) {
 #endif
 }
 
-
-
-/// @brief Pretty float 
-/// @param src 
-/// @return 
-///
-wxString PrettyFloat(wxString src) {
-	if (src.Contains(_T("."))) {
-		size_t len = src.Length();
-		while (src.Right(1) == _T("0")) {
-			len--;
-			src.Truncate(len);
-		}
-		if (src.Right(1) == _T(".")) {
-			len--;
-			src.Truncate(len);
-		}
-	}
-	return src;
-}
-
-
-/// @brief DOCME
-/// @param src 
-/// @return 
-///
-wxString PrettyFloatF(float src) { return PrettyFloat(wxString::Format(_T("%f"),src)); }
-
-/// @brief DOCME
-/// @param src 
-/// @return 
-///
-wxString PrettyFloatD(double src) { return PrettyFloat(wxString::Format(_T("%f"),src)); }
-
-
-
 /// @brief Float to string 
 /// @param value 
 /// @return 
 ///
 wxString AegiFloatToString(double value) {
-	return PrettyFloat(wxString::Format(_T("%f"),value));
+	return wxString::Format(_T("%g"),value);
 }
-
-
 
 /// @brief Int to string 
 /// @param value 
@@ -176,8 +140,6 @@ wxString AegiFloatToString(double value) {
 wxString AegiIntegerToString(int value) {
 	return wxString::Format(_T("%i"),value);
 }
-
-
 
 /// @brief There shall be no kiB, MiB stuff here Pretty reading of size 
 /// @param bytes 
@@ -499,7 +461,7 @@ void RestartAegisub() {
 	char *support_path = OSX_GetBundleSupportFilesDirectory();
 	if (!bundle_path || !support_path) return; // oops
 	wxString exec = wxString::Format(_T("\"%s/MacOS/restart-helper\" /usr/bin/open -n \"%s\"'"), wxString(support_path, wxConvUTF8).c_str(), wxString(bundle_path, wxConvUTF8).c_str());
-	wxLogDebug("RestartAegisub: (%s)", exec);
+	LOG_I("util/restart/exec") << exec;
 	wxExecute(exec);
 	free(bundle_path);
 	free(support_path);

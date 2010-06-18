@@ -51,6 +51,8 @@
 #include <wx/window.h>
 #endif
 
+#include <libaegisub/log.h>
+
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "ass_override.h"
@@ -58,6 +60,7 @@
 #include "auto4_lua.h"
 #include "auto4_lua_factory.h"
 #include "auto4_lua_scriptreader.h"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "text_file_reader.h"
@@ -88,7 +91,7 @@ namespace Automation4 {
 		{
 			int top = lua_gettop(L);
 			if (top - additional != startstack) {
-				wxLogDebug(_T("Lua stack size mismatch."));
+				LOG_D("automation/lua") << "lua stack size mismatch.";
 				dump();
 				assert(top - additional == startstack);
 			}
@@ -96,18 +99,18 @@ namespace Automation4 {
 		void dump()
 		{
 			int top = lua_gettop(L);
-			wxLogDebug(_T("Dumping Lua stack..."));
+			LOG_D("automation/lua/stackdump") << "--- dumping lua stack...";
 			for (int i = top; i > 0; i--) {
 				lua_pushvalue(L, i);
 				wxString type(lua_typename(L, lua_type(L, -1)), wxConvUTF8);
 				if (lua_isstring(L, i)) {
-					wxLogDebug(type + _T(": ") + wxString(lua_tostring(L, -1), wxConvUTF8));
+					LOG_D("automation/lua/stackdump") << type << ": " << luatostring(L, -1);
 				} else {
-					wxLogDebug(type);
+					LOG_D("automation/lua/stackdump") << type;
 				}
 				lua_pop(L, 1);
 			}
-			wxLogDebug(_T("--- end dump"));
+			LOG_D("automation/lua") << "--- end dump";
 		}
 		LuaStackcheck(lua_State *_L) : L(_L) { startstack = lua_gettop(L); }
 		~LuaStackcheck() { check_stack(0); }
@@ -196,7 +199,7 @@ namespace Automation4 {
 			lua_pushstring(L, "path");
 			lua_gettable(L, -3);
 
-			wxStringTokenizer toker(Options.AsText(_T("Automation Include Path")), _T("|"), wxTOKEN_STRTOK);
+			wxStringTokenizer toker(lagi_wxString(OPT_GET("Path/Automation/Include")->GetString()), _T("|"), wxTOKEN_STRTOK);
 			while (toker.HasMoreTokens()) {
 				wxFileName path(StandardPaths::DecodePath(toker.GetNextToken()));
 				if (path.IsOk() && !path.IsRelative() && path.DirExists()) {
@@ -254,9 +257,9 @@ namespace Automation4 {
 			// load user script
 			LuaScriptReader script_reader(GetFilename());
 			if (lua_load(L, script_reader.reader_func, &script_reader, GetPrettyFilename().mb_str(wxConvUTF8))) {
-				wxString *err = new wxString(lua_tostring(L, -1), wxConvUTF8);
-				err->Prepend(_T("Error loading Lua script \"") + GetPrettyFilename() + _T("\":\n\n"));
-				throw err->wx_str();
+				wxString err(lua_tostring(L, -1), wxConvUTF8);
+				err.Prepend(_T("Error loading Lua script \"") + GetPrettyFilename() + _T("\":\n\n"));
+				throw err;
 			}
 			_stackcheck.check_stack(1);
 			// and execute it
@@ -264,9 +267,9 @@ namespace Automation4 {
 			// don't thread this, as there's no point in it and it seems to break on wx 2.8.3, for some reason
 			if (lua_pcall(L, 0, 0, 0)) {
 				// error occurred, assumed to be on top of Lua stack
-				wxString *err = new wxString(lua_tostring(L, -1), wxConvUTF8);
-				err->Prepend(_T("Error initialising Lua script \"") + GetPrettyFilename() + _T("\":\n\n"));
-				throw err->wx_str();
+				wxString err(lua_tostring(L, -1), wxConvUTF8);
+				err.Prepend(_T("Error initialising Lua script \"") + GetPrettyFilename() + _T("\":\n\n"));
+				throw err;
 			}
 			_stackcheck.check_stack(0);
 			lua_getglobal(L, "version");
@@ -308,6 +311,12 @@ namespace Automation4 {
 			description = wxString(e, wxConvUTF8);
 		}
 		catch (const wchar_t *e) {
+			Destroy();
+			loaded = false;
+			name = GetPrettyFilename();
+			description = e;
+		}
+		catch (const wxString& e) {
 			Destroy();
 			loaded = false;
 			name = GetPrettyFilename();
@@ -557,7 +566,7 @@ namespace Automation4 {
 		, nargs(_nargs)
 		, nresults(_nresults)
 	{
-		int prio = Options.AsInt(_T("Automation Thread Priority"));
+		int prio = OPT_GET("Automation/Lua/Thread Priority")->GetInt();
 		if (prio == 0) prio = 50; // normal
 		else if (prio == 1) prio = 30; // below normal
 		else if (prio == 2) prio = 10; // lowest

@@ -54,6 +54,7 @@
 
 #include "aegisub_endian.h"
 #include "include/aegisub/aegisub.h"
+#include "main.h"
 #include "options.h"
 #include "video_context.h"
 #include "video_provider_ffmpegsource.h"
@@ -168,7 +169,7 @@ void FFmpegSourceVideoProvider::LoadVideo(wxString filename) {
 	
 	// moment of truth
 	if (!IndexIsValid) {
-		int TrackMask = Options.AsBool(_T("FFmpegSource always index all tracks")) ? FFMS_TRACKMASK_ALL : FFMS_TRACKMASK_NONE;
+		int TrackMask = OPT_GET("Provider/FFmpegSource/Index All Tracks")->GetBool() ? FFMS_TRACKMASK_ALL : FFMS_TRACKMASK_NONE;
 		try {
 			// ignore audio decoding errors here, we don't care right now
 			Index = DoIndexing(Indexer, CacheName, TrackMask, FFMS_IEH_IGNORE);
@@ -201,14 +202,14 @@ void FFmpegSourceVideoProvider::LoadVideo(wxString filename) {
 	}
 
 	// set thread count
-	int Threads = Options.AsInt(_T("FFmpegSource decoding threads"));
+	int Threads = OPT_GET("Provider/Video/FFmpegSource/Decoding Threads")->GetInt();
 	if (Threads < 1)
 		throw _T("FFmpegSource video provider: invalid decoding thread count");
 
 	// set seekmode
 	// TODO: give this its own option?
 	int SeekMode;
-	if (Options.AsBool(_T("FFmpeg allow unsafe seeking")))
+	if (OPT_GET("Provider/Video/FFmpegSource/Unsafe Seeking")->GetBool())
 		SeekMode = FFMS_SEEK_UNSAFE;
 	else 
 		SeekMode = FFMS_SEEK_NORMAL;
@@ -232,7 +233,7 @@ void FFmpegSourceVideoProvider::LoadVideo(wxString filename) {
 	Width	= TempFrame->EncodedWidth;
 	Height	= TempFrame->EncodedHeight;
 
-	if (FFMS_SetOutputFormatV(VideoSource, 1 << FFMS_GetPixFmt("bgra"), Width, Height, FFMS_RESIZER_BICUBIC, &ErrInfo)) {
+	if (FFMS_SetOutputFormatV(VideoSource, 1LL << FFMS_GetPixFmt("bgra"), Width, Height, FFMS_RESIZER_BICUBIC, &ErrInfo)) {
 		ErrorMsg.Append(wxString::Format(_T("Failed to set output format: %s"), ErrInfo.Buffer));
 		throw ErrorMsg;
 	}

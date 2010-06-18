@@ -50,12 +50,17 @@
 #include <wx/wfstream.h>
 #endif
 
+#include <libaegisub/log.h>
 #include <hunspell/hunspell.hxx>
 
 #include "charset_conv.h"
+#include "compat.h"
+#include "main.h"
 #include "options.h"
 #include "spellchecker_hunspell.h"
 #include "standard_paths.h"
+#include "text_file_reader.h"
+#include "text_file_writer.h"
 #include "utils.h"
 
 
@@ -63,7 +68,8 @@
 HunspellSpellChecker::HunspellSpellChecker() {
 	hunspell = NULL;
 	conv = NULL;
-	SetLanguage(Options.AsText(_T("Spell checker Language")));
+	rconv = NULL;
+	SetLanguage(lagi_wxString(OPT_GET("Tool/Spell Checker/Language")->GetString()));
 }
 
 
@@ -81,6 +87,8 @@ void HunspellSpellChecker::Reset() {
 	hunspell = NULL;
 	delete conv;
 	conv = NULL;
+	delete rconv;
+	rconv = NULL;
 	affpath.Clear();
 	dicpath.Clear();
 }
@@ -93,8 +101,13 @@ void HunspellSpellChecker::Reset() {
 ///
 bool HunspellSpellChecker::CanAddWord(wxString word) {
 	if (!hunspell) return false;
-	wxCharBuffer buffer = word.mb_str(*conv);
-	return (buffer.data() != NULL);
+	try {
+		conv->Convert(STD_STR(word));
+		return true;
+	}
+	catch (agi::charset::ConvError const&) {
+		return false;
+	}
 }
 
 
@@ -108,9 +121,9 @@ void HunspellSpellChecker::AddWord(wxString word) {
 
 	// Add to currently loaded file
 #ifdef WITH_OLD_HUNSPELL
-	hunspell->put_word(word.mb_str(*conv));
+	hunspell->put_word(conv->Convert(STD_STR(word)).c_str());
 #else
-	hunspell->add(word.mb_str(*conv));
+	hunspell->add(conv->Convert(STD_STR(word)).c_str());
 #endif
 
 	// Ensure that the path exists
@@ -121,22 +134,14 @@ void HunspellSpellChecker::AddWord(wxString word) {
 
 	// Load dictionary
 	wxArrayString dic;
-	wxString curLine;
 	bool added = false;
 	if (fn.FileExists()) {	// Even if you ever want to remove this "if", keep the braces, so the stream closes at the end
 		bool first = true;
-		wxFileInputStream in(usrdicpath);
-		if (!in.IsOk()) return;
-		wxTextInputStream textIn(in,_T(" \t"),*conv);
-
-		// Read it
-		while (in.CanRead() && !in.Eof()) {
-			// Read line
-			curLine = textIn.ReadLine();
-			curLine.Trim();
+		TextFileReader reader(usrdicpath, L"UTF-8");
+		while (reader.HasMoreLines()) {
+			wxString curLine = reader.ReadLineFromFile();
 			if (curLine.IsEmpty()) continue;
 
-			// First
 			if (first) {
 				first = false;
 				if (curLine.IsNumber()) continue;
@@ -157,11 +162,14 @@ void HunspellSpellChecker::AddWord(wxString word) {
 	if (!added) dic.Add(word);
 
 	// Write back to disk
-	wxFileOutputStream out(usrdicpath);
-	if (!out.IsOk()) return;
-	wxTextOutputStream textOut(out,wxEOL_UNIX,*conv);
-	textOut.WriteString(wxString::Format(_T("%i"),dic.Count())+_T("\n"));
-	for (unsigned int i=0;i<dic.Count();i++) textOut.WriteString(dic[i]+_T("\n"));
+	try {
+		TextFileWriter writer(usrdicpath, L"UTF-8");
+		writer.WriteLineToFile(wxString::Format(L"%i", dic.Count()));
+		for (unsigned int i=0;i<dic.Count();i++) writer.WriteLineToFile(dic[i]);
+	}
+	catch (const wchar_t*) {
+		// Failed to open file
+	}
 }
 
 
@@ -172,9 +180,12 @@ void HunspellSpellChecker::AddWord(wxString word) {
 ///
 bool HunspellSpellChecker::CheckWord(wxString word) {
 	if (!hunspell) return true;
-	wxCharBuffer buf = word.mb_str(*conv);
-	if (buf) return (hunspell->spell(buf) == 1);
-	return false;
+	try {
+		return hunspell->spell(conv->Convert(STD_STR(word)).c_str()) == 1;
+	}
+	catch (agi::charset::ConvError const&) {
+		return false;
+	}
 }
 
 
@@ -184,31 +195,26 @@ bool HunspellSpellChecker::CheckWord(wxString word) {
 /// @return List of suggestions
 ///
 wxArrayString HunspellSpellChecker::GetSuggestions(wxString word) {
-	// Array
 	wxArrayString suggestions;
+	if (!hunspell) return suggestions;
 
-	// Get suggestions
-	if (hunspell) {
-		// Word
-		wxCharBuffer buf = word.mb_str(*conv);
-		if (!buf) return suggestions;
-
+	try {
 		// Grab raw from Hunspell
 		char **results;
-		int n = hunspell->suggest(&results,buf);
+		int n = hunspell->suggest(&results,conv->Convert(STD_STR(word)).c_str());
 
 		// Convert each
 		for (int i=0;i<n;i++) {
-			wxString current(results[i],*conv);
-			suggestions.Add(current);
+			suggestions.Add(rconv->Convert(results[i]));
 			delete results[i];
 		}
 
-		// Delete
 		delete results;
 	}
+	catch (agi::charset::ConvError const&) {
+		return suggestions;
+	}
 
-	// Return them
 	return suggestions;
 }
 
@@ -219,7 +225,7 @@ wxArrayString HunspellSpellChecker::GetSuggestions(wxString word) {
 ///
 wxArrayString HunspellSpellChecker::GetLanguageList() {
 	// Get dir name
-	wxString path = StandardPaths::DecodePathMaybeRelative(Options.AsText(_T("Dictionaries path")), _T("?data")) + _T("/");
+	wxString path = StandardPaths::DecodePathMaybeRelative(lagi_wxString(OPT_GET("Path/Dictionary")->GetString()), _T("?data")) + _T("/");
 	wxArrayString list;
 	wxFileName folder(path);
 	if (!folder.DirExists()) return list;
@@ -259,7 +265,7 @@ void HunspellSpellChecker::SetLanguage(wxString language) {
 
 	// Get dir name
 	//FIXME: this should use ?user instead of ?data; however, since it apparently works already on win32, I'm not gonna mess with it right now :p
-	wxString path = StandardPaths::DecodePathMaybeRelative(Options.AsText(_T("Dictionaries path")), _T("?data")) + _T("/");
+	wxString path = StandardPaths::DecodePathMaybeRelative(lagi_wxString(OPT_GET("Path/Dictionary")->GetString()), _T("?data")) + _T("/");
 	wxString userPath = StandardPaths::DecodePath(_T("?user/dictionaries/user_"));
 
 	// Get affix and dictionary paths
@@ -267,7 +273,7 @@ void HunspellSpellChecker::SetLanguage(wxString language) {
 	dicpath = wxString::Format("%s%s.dic", path, language);
 	usrdicpath = wxString::Format("%s%s.dic", userPath, language);
 
-	wxLogDebug("Using dictionary: %ls", dicpath);
+	LOG_I("dictionary/file") << dicpath;
 
 	// Check if language is available
 	if (!wxFileExists(affpath) || !wxFileExists(dicpath)) return;
@@ -276,24 +282,22 @@ void HunspellSpellChecker::SetLanguage(wxString language) {
 	hunspell = new Hunspell(affpath.mb_str(csConvLocal),dicpath.mb_str(csConvLocal));
 	conv = NULL;
 	if (hunspell) {
-		conv = new AegisubCSConv(wxString(hunspell->get_dic_encoding(),wxConvUTF8));
-
-		// Load user dictionary
-		if (wxFileExists(usrdicpath)) {
-			wxFileInputStream in(usrdicpath);
-			if (!in.IsOk()) return;
-			wxTextInputStream textIn(in,_T(" \t"),*conv);
-			while (in.CanRead() && !in.Eof()) {
-				// Read line
-				wxString curLine = textIn.ReadLine();
-				curLine.Trim();
+		conv  = new agi::charset::IconvWrapper("wchar_t", hunspell->get_dic_encoding());
+		rconv = new agi::charset::IconvWrapper(hunspell->get_dic_encoding(), "wchar_t");
+		try {
+			TextFileReader reader(usrdicpath, L"UTF-8");
+			while (reader.HasMoreLines()) {
+				wxString curLine = reader.ReadLineFromFile();
 				if (curLine.IsEmpty() || curLine.IsNumber()) continue;
 #ifdef WITH_OLD_HUNSPELL
-				hunspell->put_word(curLine.mb_str(*conv));
+				hunspell->put_word(conv->Convert(STD_STR(curLine)).c_str());
 #else
-				hunspell->add(curLine.mb_str(*conv));
+				hunspell->add(conv->Convert(STD_STR(curLine)).c_str());
 #endif
 			}
+		}
+		catch (const wchar_t *) {
+			// file not found
 		}
 	}
 }

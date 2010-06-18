@@ -34,17 +34,26 @@
 /// @ingroup visual_ts
 ///
 
-
-
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <wx/bmpbuttn.h>
 #include <wx/toolbar.h>
 #endif
 
+#include "visual_feature.h"
 #include "visual_tool.h"
+
+/// @class VisualToolDragDraggableFeature
+/// @brief VisualDraggableFeature with a time value
+class VisualToolDragDraggableFeature : public VisualDraggableFeature {
+public:
+	int time;
+	int parent;
+	VisualToolDragDraggableFeature()
+		: VisualDraggableFeature()
+		, time(0)
+		, parent(-1)
+	{ }
+};
 
 
 /// DOCME
@@ -52,33 +61,33 @@
 /// @brief DOCME
 ///
 /// DOCME
-class VisualToolDrag : public VisualTool {
+class VisualToolDrag : public VisualTool<VisualToolDragDraggableFeature> {
 private:
+	wxToolBar *toolBar; /// The subtoolbar
+	int primary; /// The feature last clicked on
 
-	/// DOCME
-	wxBitmapButton *toggleMove;
-
-	/// DOCME
+	/// When the button is pressed, will it convert the line to a move (vs. from
+	/// move to pos)? Used to avoid changing the button's icon unnecessarily
 	bool toggleMoveOnMove;
 
+	/// Regenerage features without touching the selection
+	void GenerateFeatures();
 
-	/// @brief DOCME
-	///
-	bool CanDrag() { return true; }
 	void PopulateFeatureList();
-	void InitializeDrag(VisualDraggableFeature &feature);
-	void UpdateDrag(VisualDraggableFeature &feature);
-	void CommitDrag(VisualDraggableFeature &feature);
+	bool InitializeDrag(VisualToolDragDraggableFeature* feature);
+	void UpdateDrag(VisualToolDragDraggableFeature* feature);
+	void CommitDrag(VisualToolDragDraggableFeature* feature);
 
-	void OnButton(wxCommandEvent &event);
+	/// Set the pos/move button to the correct icon based on the active line
 	void UpdateToggleButtons();
 	void DoRefresh();
 
 public:
-	VisualToolDrag(VideoDisplay *parent,wxToolBar *toolbar);
+	VisualToolDrag(VideoDisplay *parent, VideoState const& video, wxToolBar *toolbar);
 
-	void Update();
+	void OnSelectionChange(bool clear, int row, bool selected);
+
 	void Draw();
+	bool Update();
+	void OnSubTool(wxCommandEvent &event);
 };
-
-

@@ -32,15 +32,12 @@
 /// @file visual_tool.h
 /// @see visual_tool.cpp
 /// @ingroup visual_ts
-///
-
 
 #pragma once
 
-
-///////////
-// Headers
 #ifndef AGI_PRE
+#include <map>
+#include <set>
 #include <vector>
 
 #include <wx/log.h>
@@ -48,127 +45,85 @@
 #include <wx/button.h>
 #endif
 
+#include "base_grid.h"
 #include "gl_wrap.h"
-#include "visual_feature.h"
 
-
-//////////////
-// Prototypes
 class VideoDisplay;
 class AssDialogue;
-class VisualTool;
+struct VideoState;
+namespace agi {
+	class OptionValue;
+}
 
-
-
-/// DOCME
+/// First window id for visualsubtoolbar items
 #define VISUAL_SUB_TOOL_START 1300
 
-/// DOCME
+/// Last window id for visualsubtoolbar items
 #define VISUAL_SUB_TOOL_END (VISUAL_SUB_TOOL_START+100)
 
-
-
-/// DOCME
-/// @class VisualToolEvent
-/// @brief DOCME
-///
-/// DOCME
-class VisualToolEvent : public wxEvtHandler {
-private:
-
+class IVisualTool : public OpenGLWrapper {
+protected:
 	/// DOCME
-	VisualTool *tool;
-
+	static const wxColour colour[4];
 public:
-	void OnButton(wxCommandEvent &event);
-
-	VisualToolEvent(VisualTool *tool);
+	virtual void OnMouseEvent(wxMouseEvent &event)=0;
+	virtual void OnSubTool(wxCommandEvent &)=0;
+	virtual bool Update()=0;
+	virtual void Draw()=0;
+	virtual void Refresh()=0;
+	virtual ~IVisualTool() { };
 };
-
-
 
 /// DOCME
 /// @class VisualTool
 /// @brief DOCME
-///
 /// DOCME
-class VisualTool : public OpenGLWrapper {
-	friend class VisualToolEvent;
-
+template<class FeatureType>
+class VisualTool : public IVisualTool, public SelectionChangeSubscriber {
 private:
+	agi::OptionValue* realtime; /// Realtime updating option
+	int dragStartX; /// Starting x coordinate of the current drag, if any
+	int dragStartY; /// Starting y coordinate of the current drag, if any
 
-	/// DOCME
-	VideoDisplay *parent;
+	/// Set curFeature and curFeatureI to the topmost feature under the mouse,
+	/// or NULL and -1 if there are none
+	void GetHighlightedFeature();
 
-	/// DOCME
-	VisualToolEvent eventSink;
+	typedef typename std::set<int>::iterator selection_iterator;
 
+	std::set<int> selFeatures; /// Currently selected visual features
+	std::map<int, int> lineSelCount; /// Number of selected features for each line
+
+	/// @brief Set the edit box's active line, ensuring proper sync with grid
+	/// @param lineN Line number or -1 for automatic selection
+	///
+	/// This function ensures that the selection is not empty and that the line
+	/// displayed in the edit box is part of the selection, by either setting
+	/// the edit box to the selection or setting the selection to the edit
+	/// box's line, as is appropriate.
+	void SetEditbox(int lineN = -1);
+
+	bool selChanged; /// Has the selection already been changed in the current click?
 protected:
+	VideoDisplay *parent; /// VideoDisplay which this belongs to, used to frame conversion
+	bool holding; /// Is a hold currently in progress?
+	AssDialogue *curDiag; /// Active dialogue line for a hold; only valid when holding = true
+	bool dragging; /// Is a drag currently in progress?
+	bool externalChange; /// Only invalid drag lists when refreshing due to external changes
 
-	/// DOCME
-	wxColour colour[4];
+	FeatureType* curFeature; /// Topmost feature under the mouse; generally only valid during a drag
+	unsigned curFeatureI; /// Index of the current feature in the list
+	std::vector<FeatureType> features; /// List of features which are drawn and can be clicked on
+	bool dragListOK; /// Do the features not need to be regenerated?
 
+	int frame_n; /// Current frame number
+	VideoState const& video; /// Mouse and video information
 
-	/// DOCME
-	bool holding;
-
-	/// DOCME
-	AssDialogue *curDiag;
-
-
-	/// DOCME
-	bool dragging;
-
-	/// DOCME
-	int curFeature;
-
-	/// DOCME
-	std::vector<VisualDraggableFeature> features;
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-	int dragStartX,dragStartY,dragOrigX,dragOrigY;
-
-	/// DOCME
-	bool dragListOK;
-
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-	int w,h,sw,sh,mx,my;
-
-	/// DOCME
-	int frame_n;
-
-
-	/// DOCME
-	bool leftClick;
-
-	/// DOCME
-	bool leftDClick;
-
-	/// DOCME
-	bool shiftDown;
-
-	/// DOCME
-	bool ctrlDown;
-
-	/// DOCME
-	bool altDown;
+	bool leftClick; /// Is a left click event currently being processed?
+	bool leftDClick; /// Is a left double click event currently being processed?
+	bool shiftDown; /// Is shift down?
+	bool ctrlDown; /// Is ctrl down?
+	bool altDown; /// Is alt down?
 
 	void GetLinePosition(AssDialogue *diag,int &x,int &y);
 	void GetLinePosition(AssDialogue *diag,int &x,int &y,int &orgx,int &orgy);
@@ -177,112 +132,84 @@ protected:
 	void GetLineScale(AssDialogue *diag,float &scalX,float &scalY);
 	void GetLineClip(AssDialogue *diag,int &x1,int &y1,int &x2,int &y2,bool &inverse);
 	wxString GetLineVectorClip(AssDialogue *diag,int &scale,bool &inverse);
-	void FillPositionData();
-	void SetOverride(wxString tag,wxString value);
+	void SetOverride(AssDialogue* line, wxString tag, wxString value);
 
-
-	/// @brief DOCME
-	/// @return 
-	///
-	VideoDisplay *GetParent() { return parent; }
+	/// @brief Get the dialogue line currently in the edit box
+	/// @return NULL if the line is not active on the current frame
 	AssDialogue *GetActiveDialogueLine();
-	int GetHighlightedFeature();
+	/// Draw all of the features in the list
 	void DrawAllFeatures();
-	void Commit(bool full=false);
+	/// @brief Commit the current file state
+	/// @param message Description of changes for undo
+	void Commit(bool full=false, wxString message = L"");
 
-	void ConnectButton(wxButton *button);
+	/// @brief Called when a hold is begun
+	/// @return Should the hold actually happen?
+	virtual bool InitializeHold() { return false; }
 
-	/// @brief DOCME
-	/// @param event 
-	/// @return 
-	///
-	virtual void OnButton(wxCommandEvent &event) {}
+	/// @brief Called on every mouse event during a hold
+	virtual void UpdateHold() { }
 
+	/// @brief Called at the end of a hold
+	virtual void CommitHold() { }
 
-	/// @brief DOCME
-	/// @return 
-	///
-	virtual bool CanHold() { return false; }
+	/// @brief Called when the feature list needs to be (re)generated
+	virtual void PopulateFeatureList() { }
 
-	/// @brief DOCME
-	/// @return 
-	///
-	virtual bool HoldEnabled() { return true; }
+	/// @brief Called at the beginning of a drag
+	/// @param feature The visual feature clicked on
+	/// @return Should the drag happen?
+	virtual bool InitializeDrag(FeatureType* feature) { return true; }
 
-	/// @brief DOCME
-	///
-	virtual void InitializeHold() {}
+	/// @brief Called on every mouse event during a drag
+	/// @param feature The current feature to process; not necessarily the one clicked on
+	virtual void UpdateDrag(FeatureType* feature) { }
 
-	/// @brief DOCME
-	///
-	virtual void UpdateHold() {}
+	// @brief Called at the end of a drag
+	virtual void CommitDrag(FeatureType* feature) { }
 
-	/// @brief DOCME
-	/// @return 
-	///
-	virtual void CommitHold() {}
+	/// @brief Called when there's stuff
+	virtual void DoRefresh() { }
 
+	/// @brief Add a feature (and its line) to the selection
+	/// @param i Index in the feature list
+	void AddSelection(unsigned i);
+	/// @brief Remove a feature from the selection
+	/// @param i Index in the feature list
+	/// Also deselects lines if all features for that line have been deselected
+	void RemoveSelection(unsigned i);
+	/// @brief Clear the selection
+	/// @param hard Should the grid's selection be cleared as well?
+	void ClearSelection(bool hard=true);
+	/// @brief Get the currently selected lines
+	wxArrayInt GetSelection();
 
-	/// @brief DOCME
-	/// @return 
-	///
-	virtual bool CanDrag() { return false; }
-
-	/// @brief DOCME
-	/// @return 
-	///
-	virtual bool DragEnabled() { return true; }
-
-	/// @brief DOCME
-	///
-	virtual void PopulateFeatureList() { wxLogMessage(_T("wtf?")); }
-
-	/// @brief DOCME
-	/// @param feature 
-	///
-	virtual void InitializeDrag(VisualDraggableFeature &feature) {}
-
-	/// @brief DOCME
-	/// @param feature 
-	///
-	virtual void UpdateDrag(VisualDraggableFeature &feature) {}
-
-	/// @brief DOCME
-	/// @param feature 
-	///
-	virtual void CommitDrag(VisualDraggableFeature &feature) {}
-
-	/// @brief DOCME
-	/// @param feature 
-	///
-	virtual void ClickedFeature(VisualDraggableFeature &feature) {}
-
-
-	/// @brief DOCME
-	///
-	virtual void DoRefresh() {}
+	typedef typename std::vector<FeatureType>::iterator feature_iterator;
+	typedef typename std::vector<FeatureType>::const_iterator feature_const_iterator;
 
 public:
-
-	/// DOCME
-
-	/// DOCME
-	int mouseX,mouseY;
-
+	/// @brief Handler for all mouse events
+	/// @param event Shockingly enough, the mouse event
 	void OnMouseEvent(wxMouseEvent &event);
 
-	/// @brief DOCME
-	/// @param event 
-	///
-	virtual void OnSubTool(wxCommandEvent &event) {}
-	virtual void Update()=0;
+	/// @brief Event handler for the subtoolbar
+	virtual void OnSubTool(wxCommandEvent &) { }
+	/// @brief Called when there's stuff
+	/// @return Should the display rerender?
+	virtual bool Update() { return false; };
+	/// @brief Draw stuff
 	virtual void Draw()=0;
+	/// @brief Called by stuff when there's stuff
 	void Refresh();
 
-	VisualTool(VideoDisplay *parent);
+	/// Called by the grid when the selection changes
+	virtual void OnSelectionChange(bool, int, bool) { }
+
+	/// @brief Constructor
+	/// @param parent The VideoDisplay to use for coordinate conversion
+	/// @param video Video and mouse information passing blob
+	VisualTool(VideoDisplay *parent, VideoState const& video);
+
+	/// @brief Destructor
 	virtual ~VisualTool();
 };
-
-
-
-

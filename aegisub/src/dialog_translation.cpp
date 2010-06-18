@@ -358,7 +358,6 @@ void DialogTranslation::OnTransBoxKey(wxKeyEvent &event) {
 		
 		// Update line
 		cur->UpdateText();
-		cur->UpdateData();
 		cur->ClearBlocks();
 		subs->FlagAsModified(_("translation assistant"));
 		grid->CommitChanges();
@@ -448,8 +447,8 @@ void DialogTranslation::OnPlayVideoButton(wxCommandEvent &event) {
 ///
 void DialogTranslation::OnPlayAudioButton(wxCommandEvent &event) {
 	audio->PlayRange(AudioController::SampleRange(
-		audio->SamplesFromMilliseconds(current->GetStartMS()),
-		audio->SamplesFromMilliseconds(current->GetEndMS())));
+		audio->SamplesFromMilliseconds(current->Start.GetMS()),
+		audio->SamplesFromMilliseconds(current->End.GetMS())));
 	TransText->SetFocus();
 }
 

@@ -40,7 +40,9 @@
 #include "config.h"
 
 #include "ass_dialogue.h"
+#include "compat.h"
 #include "dialog_text_import.h"
+#include "main.h"
 #include "options.h"
 #include "subtitle_format_txt.h"
 #include "text_file_reader.h"
@@ -115,8 +117,8 @@ void TXTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {	using na
 
 	// Data
 	wxString actor;
-	wxString separator = Options.AsText(_T("Text actor separator"));
-	wxString comment = Options.AsText(_T("Text comment starter"));
+	wxString separator = lagi_wxString(OPT_GET("Tool/Import/Text/Actor Separator")->GetString());
+	wxString comment = lagi_wxString(OPT_GET("Tool/Import/Text/Comment Starter")->GetString());
 	bool isComment = false;
 	int lines = 0;
 
@@ -128,7 +130,7 @@ void TXTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {	using na
 		if(value.IsEmpty()) continue;
 
 		// Check if this isn't a timecodes file
-		if (value.Left(10) == _T("# timecode")) {
+		if (value.StartsWith(_T("# timecode"))) {
 			throw _T("File is a timecode file, cannot load as subtitles.");
 		}
 
@@ -157,7 +159,7 @@ void TXTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {	using na
 		value.Trim(false);
 
 		// Sets line up
-		line = new AssDialogue();
+		line = new AssDialogue;
 		line->group = _T("[Events]");
 		line->Style = _T("Default");
 		if (isComment) line->Actor = _T("");
@@ -168,10 +170,8 @@ void TXTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {	using na
 		}
 		line->Comment = isComment;
 		line->Text = value;
-		line->SetStartMS(0);
-		line->SetEndMS(0);
-		line->UpdateData();
-		//line->ParseASSTags();
+		line->Start.SetMS(0);
+		line->End.SetMS(0);
 
 		// Adds line
 		Line->push_back(line);
@@ -180,11 +180,11 @@ void TXTSubtitleFormat::ReadFile(wxString filename,wxString encoding) {	using na
 
 	// No lines?
 	if (lines == 0) {
-		AssDialogue *line = new AssDialogue();
+		line = new AssDialogue;
 		line->group = _T("[Events]");
 		line->Style = _T("Default");
-		line->SetStartMS(0);
-		line->SetEndMS(Options.AsInt(_T("Timing Default Duration")));
+		line->Start.SetMS(0);
+		line->End.SetMS(OPT_GET("Timing/Default Duration")->GetInt());
 		Line->push_back(line);
 	}
 }
@@ -200,7 +200,7 @@ void TXTSubtitleFormat::WriteFile(wxString filename,wxString encoding) {	using n
 
 	// Detect number of lines with Actor field filled out
 	for (list<AssEntry*>::iterator l = Line->begin(); l != Line->end(); ++l) {
-		AssDialogue *dia = AssEntry::GetAsDialogue(*l);
+		AssDialogue *dia = dynamic_cast<AssDialogue*>(*l);
 		if (dia && !dia->Comment) {
 			num_dialogue_lines++;
 			if (!dia->Actor.IsEmpty())
@@ -217,7 +217,7 @@ void TXTSubtitleFormat::WriteFile(wxString filename,wxString encoding) {	using n
 
 	// Write the file
 	for (list<AssEntry*>::iterator l = Line->begin(); l != Line->end(); ++l) {
-		AssDialogue *dia = AssEntry::GetAsDialogue(*l);
+		AssDialogue *dia = dynamic_cast<AssDialogue*>(*l);
 
 		if (dia) {
 			wxString out_line;

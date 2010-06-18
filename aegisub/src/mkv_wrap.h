@@ -65,6 +65,7 @@ class AssFile;
 class MkvStdIO : public InputStream {
 public:
 	MkvStdIO(wxString filename);
+	~MkvStdIO() { if (fp) fclose(fp); }
 
 	/// DOCME
 	FILE *fp;
@@ -173,6 +174,7 @@ public:
 	unsigned int GetFrameCount() { return timecodes.size(); }
 	wxArrayInt GetKeyFrames();
 	void GetSubtitles(AssFile *target);
+	static bool HasSubtitles(wxString const& filename);
 
 
 	/// DOCME

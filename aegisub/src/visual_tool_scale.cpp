@@ -32,12 +32,12 @@
 /// @file visual_tool_scale.cpp
 /// @brief X/Y scaling visual typesetting tool
 /// @ingroup visual_ts
-///
 
-
-///////////
-// Headers
 #include "config.h"
+
+#ifndef AGI_PRE
+#include <math.h>
+#endif
 
 #include "ass_dialogue.h"
 #include "ass_file.h"
@@ -48,30 +48,22 @@
 #include "video_display.h"
 #include "visual_tool_scale.h"
 
-
 /// @brief Constructor 
 /// @param _parent 
-///
-VisualToolScale::VisualToolScale(VideoDisplay *_parent)
-: VisualTool(_parent)
+VisualToolScale::VisualToolScale(VideoDisplay *parent, VideoState const& video, wxToolBar *)
+: VisualTool<VisualDraggableFeature>(parent, video)
+, curScaleX(0.f)
+, startScaleX(0.f)
+, origScaleX(0.f)
+, curScaleY(0.f)
+, startScaleY(0.f)
+, origScaleY(0.f)
+, startX(0)
+, startY(0)
 {
-	_parent->ShowCursor(false);
 }
-
-
-
-/// @brief Update 
-///
-void VisualToolScale::Update() {
-	// Render parent
-	GetParent()->Render();
-}
-
-
 
 /// @brief Draw 
-/// @return 
-///
 void VisualToolScale::Draw() {
 	// Get line to draw
 	AssDialogue *line = GetActiveDialogueLine();
@@ -88,8 +80,8 @@ void VisualToolScale::Draw() {
 
 	// Set dx/dy
 	int len = 160;
-	dx = MID(len/2+10,dx,sw-len/2-30);
-	dy = MID(len/2+10,dy,sh-len/2-30);
+	dx = MID(len/2+10,dx,video.w-len/2-30);
+	dy = MID(len/2+10,dy,video.h-len/2-30);
 
 	// Set colours
 	SetLineColour(colour[0]);
@@ -140,53 +132,44 @@ void VisualToolScale::Draw() {
 	glPopMatrix();
 }
 
-
-
 /// @brief Start holding 
-///
-void VisualToolScale::InitializeHold() {
-	startX = mouseX;
-	startY = mouseY;
+bool VisualToolScale::InitializeHold() {
+	startX = video.x;
+	startY = video.y;
 	GetLineScale(curDiag,origScaleX,origScaleY);
 	curScaleX = origScaleX;
 	curScaleY = origScaleY;
-	curDiag->StripTag(_T("\\fscx"));
-	curDiag->StripTag(_T("\\fscy"));
+	curDiag->StripTag(L"\\fscx");
+	curDiag->StripTag(L"\\fscy");
+
+	return true;
 }
 
-
-
 /// @brief Update hold 
-///
 void VisualToolScale::UpdateHold() {
+	using std::max;
 	// Deltas
-	int deltaX = mouseX - startX;
-	int deltaY = startY - mouseY;
-	if (ctrlDown) {
+	int deltaX = video.x - startX;
+	int deltaY = startY - video.y;
+	if (shiftDown) {
 		if (abs(deltaX) >= abs(deltaY)) deltaY = 0;
 		else deltaX = 0;
 	}
 
 	// Calculate
-	curScaleX = (float(deltaX)/0.8f) + origScaleX;
-	curScaleY = (float(deltaY)/0.8f) + origScaleY;
-	if (curScaleX < 0.0f) curScaleX = 0.0f;
-	if (curScaleY < 0.0f) curScaleY = 0.0f;
+	curScaleX = max(deltaX*1.25f + origScaleX, 0.f);
+	curScaleY = max(deltaY*1.25f + origScaleY, 0.f);
 
-	// Snap
-	if (shiftDown) {
-		curScaleX = (float)((int)((curScaleX+12.5f)/25.0f))*25.0f;
-		curScaleY = (float)((int)((curScaleY+12.5f)/25.0f))*25.0f;
+	// Oh Snap
+	if (ctrlDown) {
+		curScaleX = floorf(curScaleX/25.f+.5f)*25.0f;
+		curScaleY = floorf(curScaleY/25.f+.5f)*25.0f;
 	}
 }
 
-
-
 /// @brief Commit hold 
-///
 void VisualToolScale::CommitHold() {
-	SetOverride(_T("\\fscx"),PrettyFloat(wxString::Format(_T("(%0.3f)"),curScaleX)));
-	SetOverride(_T("\\fscy"),PrettyFloat(wxString::Format(_T("(%0.3f)"),curScaleY)));
+	SetOverride(GetActiveDialogueLine(), L"\\fscx",wxString::Format(L"(%0.3g)",curScaleX));
+	SetOverride(GetActiveDialogueLine(), L"\\fscy",wxString::Format(L"(%0.3g)",curScaleY));
 }
-
 

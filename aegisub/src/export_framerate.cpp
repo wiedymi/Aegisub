@@ -62,7 +62,7 @@ void AssTransformFramerateFilter::Init() {
 	initialized = true;
 	autoExporter = true;
 	Register(_("Transform Framerate"),1000);
-	description = _("Transform subtitles times, including those in override tags, from input to output. This is most useful to convert CFR to VFR for hardsubbing. You usually DO NOT want to check this filter for softsubbing.");
+	description = _("Transform subtitle times, including those in override tags, from an input framerate to an output framerate.\n\nThis is useful for converting regular time subtitles to VFRaC time subtitles for hardsubbing.\nIt can also be used to convert subtitles to a different speed video, such as NTSC to PAL speedup.");
 	Input = NULL;
 	Output = NULL;
 }
@@ -213,7 +213,7 @@ void AssTransformFramerateFilter::TransformTimeTags (wxString name,int n,AssOver
 	}
 
 	// Parameter value
-	int parVal = curParam->AsInt() * mult;
+	int parVal = curParam->Get<int>() * mult;
 
 	// Karaoke preprocess
 	int curKarPos = 0;
@@ -263,7 +263,7 @@ void AssTransformFramerateFilter::TransformTimeTags (wxString name,int n,AssOver
 		value -= curKarPos;
 	}
 
-	curParam->SetInt(value/mult);
+	curParam->Set<int>(value/mult);
 }
 
 
@@ -284,8 +284,8 @@ void AssTransformFramerateFilter::TransformFrameRate(AssFile *subs) {
 		// yes, let's framerate compensate the start timestamp and then use the changed value to
 		// compensate it AGAIN 20 lines down? I DO NOT GET IT
 		// -Fluff
-		//curEntry->SetStartMS(Input->GetTimeAtFrame(Output->GetFrameAtTime(curEntry->GetStartMS(),true),true));
-		curDialogue = AssEntry::GetAsDialogue(curEntry);
+		//curEntry->Start.SetMS(Input->GetTimeAtFrame(Output->GetFrameAtTime(curEntry->GetStartMS(),true),true));
+		curDialogue = dynamic_cast<AssDialogue*>(curEntry);
 
 		// Update dialogue entries
 		if (curDialogue) {
@@ -299,10 +299,9 @@ void AssTransformFramerateFilter::TransformFrameRate(AssFile *subs) {
 			// Process stuff
 			curDialogue->ParseASSTags();
 			curDialogue->ProcessParameters(TransformTimeTags,&data);
-			curDialogue->SetStartMS(Input->GetTimeAtFrame(Output->GetFrameAtTime(curDialogue->Start.GetMS(),true),true));
-			curDialogue->SetEndMS(Input->GetTimeAtFrame(Output->GetFrameAtTime(curDialogue->End.GetMS(),false),false));
+			curDialogue->Start.SetMS(Input->GetTimeAtFrame(Output->GetFrameAtTime(curDialogue->Start.GetMS(),true),true));
+			curDialogue->End.SetMS(Input->GetTimeAtFrame(Output->GetFrameAtTime(curDialogue->End.GetMS(),false),false));
 			curDialogue->UpdateText();
-			curDialogue->UpdateData();
 			curDialogue->ClearBlocks();
 			n++;
 		}

@@ -34,11 +34,13 @@
 /// @ingroup video
 ///
 
-#include "include/aegisub/exception.h"
+#include <libaegisub/exception.h>
 
 #ifndef AGI_PRE
 #include <vector>
 #endif
+
+#include "compat.h"
 
 class AegiVideoFrame;
 
@@ -52,8 +54,6 @@ private:
 	int maxTextureSize;
 	/// Whether rectangular textures are supported by the user's graphics card
 	bool supportsRectangularTextures;
-	/// Whether GL_CLAMP_TO_EDGE is supported by the user's drivers
-	bool supportsGlClampToEdge;
 	/// The internalformat to use
 	int internalFormat;
 
@@ -69,6 +69,8 @@ private:
 	std::vector<GLuint> textureIdList;
 	/// List of precalculated texture display information
 	std::vector<TextureInfo> textureList;
+	/// OpenGL display list which draws the frames
+	GLuint dl;
 	/// The total texture count
 	int textureCount;
 	/// The number of rows of textures
@@ -78,26 +80,20 @@ private:
 
 	void DetectOpenGLCapabilities();
 	void InitTextures(int width, int height, GLenum format, int bpp, bool flipped);
-	void CreateTexture(int w, int h, const TextureInfo& ti, GLenum format);
 
 	VideoOutGL(const VideoOutGL &);
 	VideoOutGL& operator=(const VideoOutGL&);
 public:
-	/// @brief Set the viewport
-	/// @param x Bottom left x coordinate
-	/// @param y Bottom left y coordinate
-	/// @param width Width in pixels of viewport
-	/// @param height Height in pixels of viewport
-	void SetViewport(int x, int y, int width, int height);
-
 	/// @brief Set the frame to be displayed when Render() is called
 	/// @param frame The frame to be displayed
 	void UploadFrameData(const AegiVideoFrame& frame);
 
 	/// @brief Render a frame
-	/// @param sw The current script width
-	/// @param sh The current script height
-	void Render(int sw, int sh);
+	/// @param x Bottom left x coordinate
+	/// @param y Bottom left y coordinate
+	/// @param width Width in pixels of viewport
+	/// @param height Height in pixels of viewport
+	void Render(int x, int y, int width, int height);
 
 	/// @brief Constructor
 	VideoOutGL();
@@ -108,17 +104,17 @@ public:
 /// @class VideoOutException
 /// @extends Aegisub::Exception
 /// @brief Base class for all exceptions thrown by VideoOutGL
-DEFINE_BASE_EXCEPTION_NOINNER(VideoOutException, Aegisub::Exception)
+DEFINE_BASE_EXCEPTION_NOINNER(VideoOutException, agi::Exception)
 
 /// @class VideoOutRenderException
 /// @extends VideoOutException
 /// @brief An OpenGL error occured while uploading or displaying a frame
 class VideoOutRenderException : public VideoOutException {
 public:
-	VideoOutRenderException(const wxChar *func, int err)
-		: VideoOutException(wxString::Format("%s failed with error code %d", func, err))
+	VideoOutRenderException(const char *func, int err)
+		: VideoOutException(STD_STR(wxString::Format("%s failed with error code %d", func, err)))
 	{ }
-	const wxChar * GetName() const { return L"videoout/opengl/render"; }
+	const char * GetName() const { return "videoout/opengl/render"; }
 	Exception * Copy() const { return new VideoOutRenderException(*this); }
 };
 /// @class VideoOutOpenGLException
@@ -126,10 +122,10 @@ public:
 /// @brief An OpenGL error occured while setting up the video display
 class VideoOutInitException : public VideoOutException {
 public:
-	VideoOutInitException(const wxChar *func, int err)
-		: VideoOutException(wxString::Format("%s failed with error code %d", func, err))
+	VideoOutInitException(const char *func, int err)
+		: VideoOutException(STD_STR(wxString::Format("%s failed with error code %d", func, err)))
 	{ }
-	VideoOutInitException(const wxChar *err) : VideoOutException(err) { }
-	const wxChar * GetName() const { return L"videoout/opengl/init"; }
+	VideoOutInitException(const char *err) : VideoOutException(err) { }
+	const char * GetName() const { return "videoout/opengl/init"; }
 	Exception * Copy() const { return new VideoOutInitException(*this); }
 };

@@ -356,8 +356,8 @@ void AudioTimingControllerDialogue::Commit()
 		selection_controller->GetSelectedSet(sel);
 		for (SubtitleSelection::iterator sub = sel.begin(); sub != sel.end(); ++sub)
 		{
-			(*sub)->SetStartMS(new_start_ms);
-			(*sub)->SetEndMS(new_end_ms);
+			(*sub)->Start.SetMS(new_start_ms);
+			(*sub)->End.SetMS(new_end_ms);
 		}
 		/// @todo Set an undo point
 		timing_modified = false;

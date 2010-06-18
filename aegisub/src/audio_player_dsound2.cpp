@@ -47,6 +47,8 @@
 #include <process.h>
 #include <dsound.h>
 
+#include <libaegisub/log.h>
+
 #include "audio_controller.h"
 #include "audio_player_dsound2.h"
 #include "include/aegisub/audio_provider.h"
@@ -312,7 +314,7 @@ void DirectSoundPlayer2Thread::Run()
 	bfr7->Release();
 	bfr7 = 0;
 
-	//wxLogDebug(_T("DirectSoundPlayer2: Created buffer of %d bytes, supposed to be %d milliseconds or %d frames"), bufSize, WANTED_LATENCY*BUFFER_LENGTH, bufSize/provider->GetBytesPerSample());
+	//wx Log Debug(_T("DirectSoundPlayer2: Created buffer of %d bytes, supposed to be %d milliseconds or %d frames"), bufSize, WANTED_LATENCY*BUFFER_LENGTH, bufSize/provider->GetBytesPerSample());
 
 
 	// Now we're ready to roll!
@@ -502,7 +504,7 @@ do_fill_buffer:
 					    SUCCEEDED(bfr->Lock(0, bufSize, &buf1, &buf1sz, &buf2, &buf2sz, 0)) &&
 					    SUCCEEDED(bfr->Play(0, 0, DSBPLAY_LOOPING)))
 					{
-						wxLogDebug(_T("DirectSoundPlayer2: Lost and restored buffer"));
+						LOG_D("audio/player/dsound") << "Lost and restored buffer";
 						break;
 					}
 					REPORT_ERROR("Lost buffer and could not restore it.")
@@ -864,8 +866,8 @@ DirectSoundPlayer2::DirectSoundPlayer2()
 	thread = 0;
 
 	// The buffer will hold BufferLength times WantedLatency milliseconds of audio
-	WantedLatency = Options.AsInt(_T("Audio dsound buffer latency"));
-	BufferLength = Options.AsInt(_T("Audio dsound buffer length"));
+	WantedLatency = OPT_GET("Player/Audio/DirectSound/Buffer Latency")->GetInt();
+	BufferLength = OPT_GET("Player/Audio/DirectSound/Buffer Length")->GetInt();
 
 	// sanity checking
 	if (WantedLatency <= 0)
@@ -915,6 +917,7 @@ void DirectSoundPlayer2::OpenStream()
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 		thread = 0;
 	}
@@ -933,6 +936,7 @@ void DirectSoundPlayer2::CloseStream()
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 	}
 	thread = 0;
@@ -958,6 +962,7 @@ void DirectSoundPlayer2::SetProvider(AudioProvider *provider)
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 	}
 }
@@ -978,6 +983,7 @@ void DirectSoundPlayer2::Play(int64_t start,int64_t count)
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 	}
 }
@@ -999,6 +1005,7 @@ void DirectSoundPlayer2::Stop(bool timerToo)
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 	}
 }
@@ -1016,6 +1023,7 @@ bool DirectSoundPlayer2::IsPlaying()
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 		return false;
 	}
@@ -1036,6 +1044,7 @@ int64_t DirectSoundPlayer2::GetStartPosition()
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 		return 0;
 	}
@@ -1056,6 +1065,7 @@ int64_t DirectSoundPlayer2::GetEndPosition()
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 		return 0;
 	}
@@ -1076,6 +1086,7 @@ int64_t DirectSoundPlayer2::GetCurrentPosition()
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 		return 0;
 	}
@@ -1093,6 +1104,7 @@ void DirectSoundPlayer2::SetEndPosition(int64_t pos)
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 	}
 }
@@ -1111,6 +1123,7 @@ void DirectSoundPlayer2::SetCurrentPosition(int64_t pos)
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 	}
 }
@@ -1127,6 +1140,7 @@ void DirectSoundPlayer2::SetVolume(double vol)
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 	}
 }
@@ -1144,6 +1158,7 @@ double DirectSoundPlayer2::GetVolume()
 	}
 	catch (const wxChar *msg)
 	{
+		LOG_E("audio/player/dsound") << msg;
 		wxLogError(msg);
 		return 0;
 	}

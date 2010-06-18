@@ -46,6 +46,8 @@
 #include <wx/log.h>
 #endif
 
+#include <libaegisub/log.h>
+
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "ass_override.h"
@@ -133,7 +135,7 @@ namespace Automation4 {
 			lua_pushstring(L, "format");
 
 		} else if (e->GetType() == ENTRY_DIALOGUE) {
-			AssDialogue *dia = e->GetAsDialogue(e);
+			AssDialogue *dia = static_cast<AssDialogue*>(e);
 
 			lua_pushboolean(L, (int)dia->Comment);
 			lua_setfield(L, -2, "comment");
@@ -172,7 +174,7 @@ namespace Automation4 {
 			lua_pushstring(L, "dialogue");
 
 		} else if (e->GetType() == ENTRY_STYLE) {
-			AssStyle *sty = e->GetAsStyle(e);
+			AssStyle *sty = static_cast<AssStyle*>(e);
 
 			lua_pushstring(L, sty->name.mb_str(wxConvUTF8));
 			lua_setfield(L, -2, "name");
@@ -438,7 +440,6 @@ namespace Automation4 {
 			dia->Margin[3] = margin_b;
 			dia->Effect = effect;
 			dia->Text = text;
-			dia->UpdateData();
 
 			result = dia;
 
@@ -822,7 +823,7 @@ namespace Automation4 {
 	{
 		LuaAssFile *laf = GetObjPointer(L, 1);
 		delete laf;
-		wxLogDebug(_T(">>gc<< Garbage collected LuaAssFile"));
+		LOG_D("automation/lua") << "Garbage collected LuaAssFile";
 		return 0;
 	}
 
@@ -858,14 +859,14 @@ namespace Automation4 {
 	int LuaAssFile::LuaParseKaraokeData(lua_State *L)
 	{
 		AssEntry *e = LuaToAssEntry(L);
-		if (e->GetType() != ENTRY_DIALOGUE) {
+		AssDialogue *dia = dynamic_cast<AssDialogue*>(e);
+		if (!dia) {
 			delete e;
 			lua_pushstring(L, "Attempt to create karaoke table from non-dialogue subtitle line");
 			lua_error(L);
 			return 0;
 		}
 
-		AssDialogue *dia = e->GetAsDialogue(e);
 		dia->ParseASSTags();
 
 		int kcount = 0;
@@ -897,7 +898,7 @@ namespace Automation4 {
 
 				case BLOCK_OVERRIDE: {
 					bool brackets_open = false;
-					AssDialogueBlockOverride *ovr = block->GetAsOverride(block);
+					AssDialogueBlockOverride *ovr = dynamic_cast<AssDialogueBlockOverride*>(block);
 
 					for (int j = 0; j < (int)ovr->Tags.size(); j++) {
 						AssOverrideTag *tag = ovr->Tags[j];
@@ -930,11 +931,11 @@ namespace Automation4 {
 							ktag = tag->Name.Mid(1);
 							// check if it's a "set time" tag, special handling for that (depends on previous syllable duration)
 							if (ktag == _T("kt")) {
-								ktime = tag->Params[0]->AsInt() * 10;
+								ktime = tag->Params[0]->Get<int>() * 10;
 								kdur = 0;
 							} else {
 								ktime += kdur; // duration of previous syllable
-								kdur = tag->Params[0]->AsInt() * 10;
+								kdur = tag->Params[0]->Get<int>() * 10;
 							}
 							ktext.clear();
 							ktext_stripped.clear();

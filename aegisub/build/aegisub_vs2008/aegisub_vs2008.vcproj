@@ -22,7 +22,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\suffix_debug32.vsprops;.\wxlib_include.vsprops;.\wxlib_lib32.vsprops;.\libraries_outdirs.vsprops;.\contrib_includedirs.vsprops;.\aegisub_exe_filename.vsprops;.\ffms2_lib_include_dir.vsprops;.\compiler_options.vsprops;.\compiler_options_debug.vsprops;.\svn_rev_header_update.vsprops;.\delayload_portaudio_32.vsprops;.\delayload_openal_32.vsprops"
+			InheritedPropertySheets=".\suffix_debug32.vsprops;.\wxlib_include.vsprops;.\wxlib_lib32.vsprops;.\libraries_outdirs.vsprops;.\contrib_includedirs.vsprops;.\aegisub_exe_filename.vsprops;.\ffms2_lib_include_dir.vsprops;.\compiler_options.vsprops;.\compiler_options_debug.vsprops;.\svn_rev_header_update.vsprops;.\delayload_portaudio_32.vsprops;.\delayload_openal_32.vsprops;.\libaegisub_include_dir.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -88,7 +88,7 @@
 		<Configuration
 			Name="Debug|x64"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\suffix_debug64.vsprops;.\wxlib_include.vsprops;.\wxlib_lib64.vsprops;.\libraries_outdirs.vsprops;.\contrib_includedirs.vsprops;.\aegisub_exe_filename.vsprops;.\ffms2_lib_include_dir.vsprops;.\compiler_options.vsprops;.\compiler_options_debug.vsprops;.\svn_rev_header_update.vsprops"
+			InheritedPropertySheets=".\suffix_debug64.vsprops;.\wxlib_include.vsprops;.\wxlib_lib64.vsprops;.\libraries_outdirs.vsprops;.\contrib_includedirs.vsprops;.\aegisub_exe_filename.vsprops;.\ffms2_lib_include_dir.vsprops;.\compiler_options.vsprops;.\compiler_options_debug.vsprops;.\svn_rev_header_update.vsprops;.\libaegisub_include_dir.vsprops"
 			CharacterSet="1"
 			>
 			<Tool
@@ -155,7 +155,7 @@
 		<Configuration
 			Name="Release|Win32"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\suffix_release32.vsprops;.\wxlib_include.vsprops;.\wxlib_lib32.vsprops;.\libraries_outdirs.vsprops;.\contrib_includedirs.vsprops;.\aegisub_exe_filename.vsprops;.\ffms2_lib_include_dir.vsprops;.\compiler_options.vsprops;.\svn_rev_header_update.vsprops;.\delayload_portaudio_32.vsprops;.\delayload_openal_32.vsprops"
+			InheritedPropertySheets=".\suffix_release32.vsprops;.\wxlib_include.vsprops;.\wxlib_lib32.vsprops;.\libraries_outdirs.vsprops;.\contrib_includedirs.vsprops;.\aegisub_exe_filename.vsprops;.\ffms2_lib_include_dir.vsprops;.\compiler_options.vsprops;.\svn_rev_header_update.vsprops;.\delayload_portaudio_32.vsprops;.\delayload_openal_32.vsprops;.\libaegisub_include_dir.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -224,7 +224,7 @@
 		<Configuration
 			Name="Release|x64"
 			ConfigurationType="1"
-			InheritedPropertySheets=".\suffix_release64.vsprops;.\wxlib_include.vsprops;.\wxlib_lib64.vsprops;.\libraries_outdirs.vsprops;.\contrib_includedirs.vsprops;.\aegisub_exe_filename.vsprops;.\ffms2_lib_include_dir.vsprops;.\compiler_options.vsprops;.\svn_rev_header_update.vsprops"
+			InheritedPropertySheets=".\suffix_release64.vsprops;.\wxlib_include.vsprops;.\wxlib_lib64.vsprops;.\libraries_outdirs.vsprops;.\contrib_includedirs.vsprops;.\aegisub_exe_filename.vsprops;.\ffms2_lib_include_dir.vsprops;.\compiler_options.vsprops;.\svn_rev_header_update.vsprops;.\libaegisub_include_dir.vsprops"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -1117,11 +1117,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\dialog_options.cpp"
+				RelativePath="..\..\src\dialog_log.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\dialog_options.h"
+				RelativePath="..\..\src\dialog_log.h"
 				>
 			</File>
 			<File
@@ -1268,6 +1268,10 @@
 				RelativePath="..\..\src\dialog_video_details.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\src\preferences.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Core"
@@ -1310,6 +1314,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\agi_pre.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\compat.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\compat.h"
 				>
 			</File>
 			<File
@@ -1873,11 +1885,15 @@
 			Name="Resources"
 			>
 			<File
-				RelativePath="..\..\src\libresrc\libresrc.cpp"
+				RelativePath="..\..\src\libresrc\bitmap.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\libresrc\libresrc.h"
+				RelativePath="..\..\src\libresrc\default_config.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\libresrc\libresrc.cpp"
 				>
 			</File>
 			<File

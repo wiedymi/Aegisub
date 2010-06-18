@@ -54,6 +54,7 @@
 #include "dialog_kara_timing_copy.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "selection_controller.h"
 #include "subs_grid.h"
 #include "utils.h"
@@ -80,7 +81,7 @@ class KaraokeLineMatchDisplay : public wxControl {
 	struct MatchSyllable {
 
 		/// DOCME
-		int dur;
+		size_t dur;
 
 		/// DOCME
 		wxString text;
@@ -105,7 +106,7 @@ class KaraokeLineMatchDisplay : public wxControl {
 		wxString dst;
 
 		/// DOCME
-		int duration;
+		size_t duration;
 
 		/// DOCME
 		int last_render_width;
@@ -137,10 +138,10 @@ class KaraokeLineMatchDisplay : public wxControl {
 
 
 	/// DOCME
-	int source_sel_length;
+	size_t source_sel_length;
 
 	/// DOCME
-	int destination_sel_length;
+	size_t destination_sel_length;
 
 
 	/// DOCME
@@ -163,9 +164,9 @@ public:
 	wxString GetOutputLine();
 
 	// Number of syllables not yet matched from source
-	int GetRemainingSource();
+	size_t GetRemainingSource();
 	// Number of characters not yet matched from destination
-	int GetRemainingDestination();
+	size_t GetRemainingDestination();
 
 	// Adjust source and destination match lengths
 	void IncreaseSourceMatch();
@@ -460,7 +461,7 @@ void KaraokeLineMatchDisplay::SetInputData(const AssDialogue *src, const AssDial
 	source_sel_length = 0;
 	if (src)
 	{
-		AssDialogue *varsrc = AssEntry::GetAsDialogue(src->Clone());
+		AssDialogue *varsrc = dynamic_cast<AssDialogue*>(src->Clone());
 		varsrc->ParseASSTags();
 		AssKaraokeVector kara;
 		ParseAssKaraokeTags(varsrc, kara);
@@ -507,7 +508,7 @@ wxString KaraokeLineMatchDisplay::GetOutputLine()
 /// @brief DOCME
 /// @return 
 ///
-int KaraokeLineMatchDisplay::GetRemainingSource()
+size_t KaraokeLineMatchDisplay::GetRemainingSource()
 {
 	return unmatched_source.size();
 }
@@ -516,7 +517,7 @@ int KaraokeLineMatchDisplay::GetRemainingSource()
 /// @brief DOCME
 /// @return 
 ///
-int KaraokeLineMatchDisplay::GetRemainingDestination()
+size_t KaraokeLineMatchDisplay::GetRemainingDestination()
 {
 	return unmatched_destination.size();
 }
@@ -538,9 +539,8 @@ void KaraokeLineMatchDisplay::IncreaseSourceMatch()
 ///
 void KaraokeLineMatchDisplay::DecreaseSourceMatch()
 {
-	source_sel_length -= 1;
-	if (source_sel_length < 0)
-		source_sel_length = 0;
+	if (source_sel_length > 0)
+		source_sel_length -= 1;
 	Refresh(true);
 }
 
@@ -560,9 +560,8 @@ void KaraokeLineMatchDisplay::IncreseDestinationMatch()
 ///
 void KaraokeLineMatchDisplay::DecreaseDestinationMatch()
 {
-	destination_sel_length -= 1;
-	if (destination_sel_length < 0)
-		destination_sel_length = 0;
+	if (destination_sel_length > 0)
+		destination_sel_length -= 1;
 	Refresh(true);
 }
 
@@ -763,20 +762,17 @@ bool KaraokeLineMatchDisplay::AcceptMatch()
 		// Completely empty match
 		return false;
 	}
-	
-	assert(source_sel_length >= 0);
-	assert(source_sel_length <= (int)unmatched_source.size());
-	while (source_sel_length > 0)
+
+	assert(source_sel_length <= unmatched_source.size());
+	for (; source_sel_length > 0; source_sel_length--)
 	{
 		match.src.push_back(unmatched_source.front());
 		match.duration += unmatched_source.front().dur;
 		unmatched_source.pop_front();
-		source_sel_length--;
 	}
 	assert(source_sel_length == 0);
 
-	assert(destination_sel_length >= 0);
-	assert(destination_sel_length <= (int)unmatched_destination.size());
+	assert(destination_sel_length <= unmatched_destination.size());
 	match.dst = unmatched_destination.Left(destination_sel_length);
 	unmatched_destination = unmatched_destination.Mid(destination_sel_length);
 	destination_sel_length = 0;
@@ -853,7 +849,7 @@ DialogKanjiTimer::DialogKanjiTimer(wxWindow *parent, SubtitlesGrid *_grid)
 
 	//Checkbox
 	Interpolate = new wxCheckBox(this,-1,_("Attempt to interpolate kanji."),wxDefaultPosition,wxDefaultSize,wxALIGN_LEFT);
-	Interpolate->SetValue(Options.AsBool(_T("kanji timer interpolation")));
+	Interpolate->SetValue(OPT_GET("Tool/Kanji Timer/Interpolation")->GetBool());
 
 	SourceStyle=new wxComboBox(this,-1,_T(""),wxDefaultPosition,wxSize(160,-1),
 								 subs->GetStyles(),wxCB_READONLY,wxDefaultValidator,_("Source Style"));
@@ -935,14 +931,13 @@ END_EVENT_TABLE()
 /// @param event 
 ///
 void DialogKanjiTimer::OnClose(wxCommandEvent &event) {
-	Options.SetBool(_T("kanji timer interpolation"),Interpolate->IsChecked());
-	Options.Save();
+	OPT_SET("Tool/Kanji Timer/Interpolation")->SetBool(Interpolate->IsChecked());
 	bool modified = !LinesToChange.empty();
 	
 	while(LinesToChange.empty()==false) {
 		std::pair<entryIter,wxString> p = LinesToChange.back();
 		LinesToChange.pop_back();
-		AssDialogue *line = AssEntry::GetAsDialogue(*p.first);
+		AssDialogue *line = dynamic_cast<AssDialogue*>(*p.first);
 		line->Text = p.second;
 	}
 	if (modified) {
@@ -1102,9 +1097,9 @@ void DialogKanjiTimer::ResetForNewLine()
 	AssDialogue *dst = 0;
 
 	if (currentSourceLine != subs->Line.end())
-		src = AssEntry::GetAsDialogue(*currentSourceLine);
+		src = dynamic_cast<AssDialogue*>(*currentSourceLine);
 	if (currentDestinationLine != subs->Line.end())
-		dst = AssEntry::GetAsDialogue(*currentDestinationLine);
+		dst = dynamic_cast<AssDialogue*>(*currentDestinationLine);
 
 	if (src == 0 || dst == 0)
 	{
@@ -1140,7 +1135,7 @@ entryIter DialogKanjiTimer::FindNextStyleMatch(entryIter search_from, const wxSt
 
 	while (++search_from != subs->Line.end())
 	{
-		AssDialogue *dlg = AssEntry::GetAsDialogue(*search_from);
+		AssDialogue *dlg = dynamic_cast<AssDialogue*>(*search_from);
 		if (dlg && dlg->Style == search_style)
 			break;
 	}
@@ -1159,7 +1154,7 @@ entryIter DialogKanjiTimer::FindPrevStyleMatch(entryIter search_from, const wxSt
 
 	while (--search_from != subs->Line.begin())
 	{
-		AssDialogue *dlg = AssEntry::GetAsDialogue(*search_from);
+		AssDialogue *dlg = dynamic_cast<AssDialogue*>(*search_from);
 		if (dlg && dlg->Style == search_style)
 			break;
 	}

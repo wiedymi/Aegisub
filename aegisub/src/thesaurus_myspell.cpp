@@ -45,7 +45,11 @@
 #include <wx/log.h>
 #endif
 
+#include <libaegisub/log.h>
+
+#include "compat.h"
 #include "mythes.hxx"
+#include "main.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "thesaurus_myspell.h"
@@ -57,7 +61,7 @@
 MySpellThesaurus::MySpellThesaurus() {
 	conv = NULL;
 	mythes = NULL;
-	SetLanguage(Options.AsText(_T("Thesaurus Language")));
+	SetLanguage(lagi_wxString(OPT_GET("Tool/Thesaurus/Language")->GetString()));
 }
 
 
@@ -107,7 +111,7 @@ void MySpellThesaurus::Lookup(wxString word,ThesaurusEntryArray &result) {
 ///
 wxArrayString MySpellThesaurus::GetLanguageList() {
 	// Get dir name
-	wxString path = StandardPaths::DecodePathMaybeRelative(Options.AsText(_T("Dictionaries path")), _T("?data")) + _T("/");
+	wxString path = StandardPaths::DecodePathMaybeRelative(lagi_wxString(OPT_GET("Path/Dictionary")->GetString()), _T("?data")) + _T("/");
 	wxArrayString list;
 	wxFileName folder(path);
 	if (!folder.DirExists()) return list;
@@ -153,7 +157,7 @@ void MySpellThesaurus::SetLanguage(wxString language) {
 	if (language.IsEmpty()) return;
 
 	// Get dir name
-	wxString path = StandardPaths::DecodePathMaybeRelative(Options.AsText(_T("Dictionaries path")), _T("?data")) + _T("/");
+	wxString path = StandardPaths::DecodePathMaybeRelative(lagi_wxString(OPT_GET("Path/Dictionary")->GetString()), _T("?data")) + _T("/");
 
 	// Get affix and dictionary paths
 	wxString idxpath = path + _T("th_") + language + _T(".idx");
@@ -162,7 +166,7 @@ void MySpellThesaurus::SetLanguage(wxString language) {
 	// Check if language is available
 	if (!wxFileExists(idxpath) || !wxFileExists(datpath)) return;
 
-	wxLogDebug(_("Using thesarus: %ls"), datpath.c_str());
+	LOG_I("thesaurus/file") << "Using thesaurus: " << datpath.c_str();
 
 	// Load
 	mythes = new MyThes(idxpath.mb_str(wxConvLocal),datpath.mb_str(wxConvLocal));

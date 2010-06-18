@@ -192,9 +192,9 @@ void DialogResample::DoResampleTags (wxString name,int n,AssOverrideParameter *c
 		case PARCLASS_DRAWING:
 			{
 				AssDialogueBlockDrawing block;
-				block.text = curParam->AsText();
+				block.text = curParam->Get<wxString>();
 				block.TransformCoords(m[0],m[2],rx,ry);
-				curParam->SetText(block.GetText());
+				curParam->Set(block.GetText());
 			}
 			return;
 
@@ -204,16 +204,16 @@ void DialogResample::DoResampleTags (wxString name,int n,AssOverrideParameter *c
 
 	VariableDataType curType = curParam->GetType();
 	if (curType == VARDATA_FLOAT) {
-		float par = curParam->AsFloat();
+		float par = curParam->Get<double>();
 		if (isX) par += m[0];
 		if (isY) par += m[2];
-		curParam->SetFloat(par * resizer);
+		curParam->Set<double>(par * resizer);
 	}
 	if (curType == VARDATA_INT) {
-		int par = curParam->AsInt();
+		int par = curParam->Get<int>();
 		if (isX) par += m[0];
 		if (isY) par += m[2];
-		curParam->SetInt(int(double(par) * resizer + 0.5));
+		curParam->Set<int>(int(double(par) * resizer + 0.5));
 	}
 }
 
@@ -265,7 +265,7 @@ void DialogResample::OnResample (wxCommandEvent &event) {
 	AssDialogue *curDiag;
 	for (entryIter cur=subs->Line.begin();cur!=subs->Line.end();cur++) {
 		// Apply to dialogues
-		curDiag = AssEntry::GetAsDialogue(*cur);
+		curDiag = dynamic_cast<AssDialogue*>(*cur);
 		if (curDiag && !(curDiag->Comment && (curDiag->Effect.StartsWith(_T("template")) || curDiag->Effect.StartsWith(_T("code"))))) {
 			try {
 				// Override tags
@@ -276,7 +276,7 @@ void DialogResample::OnResample (wxCommandEvent &event) {
 				size_t nblocks = curDiag->Blocks.size();
 				AssDialogueBlockDrawing *curBlock;
 				for (size_t i=0;i<nblocks;i++) {
-					curBlock = AssDialogueBlock::GetAsDrawing(curDiag->Blocks.at(i));
+					curBlock = dynamic_cast<AssDialogueBlockDrawing*>(curDiag->Blocks.at(i));
 					if (curBlock) {
 						curBlock->TransformCoords(m[0],m[2],rx,ry);
 					}
@@ -290,7 +290,6 @@ void DialogResample::OnResample (wxCommandEvent &event) {
 
 				// Update
 				curDiag->UpdateText();
-				curDiag->UpdateData();
 				curDiag->ClearBlocks();
 				continue;
 			}
@@ -303,7 +302,7 @@ void DialogResample::OnResample (wxCommandEvent &event) {
 		}
 
 		// Apply to styles
-		curStyle = AssEntry::GetAsStyle(*cur);
+		curStyle = dynamic_cast<AssStyle*>(*cur);
 		if (curStyle) {
 			curStyle->fontsize = int(curStyle->fontsize * r + 0.5);
 			curStyle->outline_w *= r;

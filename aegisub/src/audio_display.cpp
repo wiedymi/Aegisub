@@ -58,7 +58,7 @@
 #include "audio_renderer_waveform.h"
 #include "audio_timing.h"
 #include "include/aegisub/audio_provider.h"
-#include "options.h"
+#include "main.h"
 #include "utils.h"
 
 
@@ -760,7 +760,7 @@ float AudioDisplay::GetAmplitudeScale() const
 
 void AudioDisplay::ReloadRenderingSettings()
 {
-	int spectrum_quality = Options.AsInt(_T("Audio Spectrum Quality"));
+	int64_t spectrum_quality = OPT_GET("Audio/Renderer/Spectrum/Quality")->GetInt();
 #ifdef WITH_FFTW
 	// FFTW is so fast we can afford to upgrade quality by two levels
 	spectrum_quality += 2;
@@ -776,7 +776,7 @@ void AudioDisplay::ReloadRenderingSettings()
 		spectrum_width[spectrum_quality],
 		spectrum_distance[spectrum_quality]);
 
-	if (Options.AsBool(_T("Audio Spectrum")))
+	if (OPT_GET("Audio/Spectrum")->GetBool())
 		audio_renderer->SetRenderer(audio_spectrum_renderer);
 	else
 		audio_renderer->SetRenderer(audio_waveform_renderer);
@@ -1024,7 +1024,7 @@ void AudioDisplay::OnMouseEvent(wxMouseEvent& event)
 		}
 
 		bool zoom = event.CmdDown();
-		if (Options.AsBool(_T("Audio Wheel Default To Zoom"))) zoom = !zoom;
+		if (OPT_GET("Audio/Wheel Default to Zoom")->GetBool()) zoom = !zoom;
 
 		if (!zoom)
 		{
@@ -1190,7 +1190,7 @@ void AudioDisplay::OnAudioOpen(AudioProvider *_provider)
 	provider = _provider;
 
 	audio_renderer->SetAudioProvider(provider);
-	audio_renderer->SetCacheMaxSize(Options.AsInt(_T("Audio Spectrum Memory Max")) * 1024 * 1024);
+	audio_renderer->SetCacheMaxSize(OPT_GET("Audio/Renderer/Spectrum/Memory Max")->GetInt() * 1024 * 1024);
 
 	if (provider)
 		timeline->ChangeAudio(provider->GetNumSamples(), provider->GetSampleRate());

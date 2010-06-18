@@ -64,6 +64,9 @@
 #include "ass_style.h"
 #include "ass_time.h"
 #include "audio_controller.h"
+#include "compat.h"
+#include "main.h"
+#include "mkv_wrap.h"
 #include "options.h"
 #include "standard_paths.h"
 #include "selection_controller.h"
@@ -76,7 +79,6 @@
 #include "video_context.h"
 #include "video_display.h"
 #include "video_provider_manager.h"
-#include "visual_tool.h"
 
 
 ///////
@@ -99,28 +101,33 @@ VideoContext *VideoContext::instance = NULL;
 
 /// @brief Constructor 
 ///
-VideoContext::VideoContext() {
-	// Set GL context
-	glContext = NULL;
-	ownGlContext = false;
-
-	// Set options
-	audio = NULL;
-	provider = NULL;
-	subsProvider = NULL;
-	curLine = NULL;
-	loaded = false;
-	keyFramesLoaded = false;
-	overKeyFramesLoaded = false;
-	keyframesRevision = 0;
-	frame_n = 0;
-	length = 0;
-	fps = 0;
-	arType = 0;
-	arValue = 1.0;
-	isPlaying = false;
-	nextFrame = -1;
-	keepAudioSync = true;
+VideoContext::VideoContext()
+: ownGlContext(false)
+, glContext(NULL)
+, provider(NULL)
+, subsProvider(NULL)
+, keyFramesLoaded(false)
+, overKeyFramesLoaded(false)
+, startFrame(-1)
+, endFrame(-1)
+, playNextFrame(-1)
+, nextFrame(-1)
+, loaded(false)
+, isPlaying(false)
+, keepAudioSync(true)
+, w(-1)
+, h(-1)
+, frame_n(0)
+, length(0)
+, fps(0)
+, arValue(1.)
+, arType(0)
+, hasSubtitles(false)
+, playAudioOnStep(OPT_GET("Audio/Plays When Stepping Video"))
+, grid(NULL)
+, curLine(NULL)
+, audio(NULL)
+{
 }
 
 /// @brief Destructor 
@@ -261,7 +268,7 @@ void VideoContext::SetVideo(const wxString &filename) {
 
 			// Set filename
 			videoName = filename;
-			Options.AddToRecentList(filename,_T("Recent vid"));
+			AegisubApp::Get()->mru->Add("Video", STD_STR(filename));
 			wxFileName fn(filename);
 			StandardPaths::SetPathValue(_T("?video"),fn.GetPath());
 
@@ -271,6 +278,11 @@ void VideoContext::SetVideo(const wxString &filename) {
 			// Show warning
 			wxString warning = provider->GetWarning().c_str();
 			if (!warning.IsEmpty()) wxMessageBox(warning,_T("Warning"),wxICON_WARNING | wxOK);
+
+			hasSubtitles = false;
+			if (filename.Right(4).Lower() == L".mkv") {
+				hasSubtitles = MatroskaWrapper::HasSubtitles(filename);
+			}
 
 			UpdateDisplays(true);
 		}
@@ -318,7 +330,8 @@ void VideoContext::UpdateDisplays(bool full) {
 	/// @todo Reinstate this when the audio controller is accessible to the video context
 	/*
 	if (audio && audio->loaded && audio->IsShownOnScreen()) {
-		if (Options.AsBool(_T("Audio Draw Video Position"))) {
+		static agi::OptionValue* opt = OPT_GET("Audio/Display/Draw/Video Position");
+		if (opt->GetBool()) {
 			audio->UpdateImage(false);
 		}
 	}
@@ -326,24 +339,18 @@ void VideoContext::UpdateDisplays(bool full) {
 }
 
 /// @brief Refresh subtitles 
-/// @param video     
-/// @param subtitles 
-///
-void VideoContext::Refresh (bool video, bool subtitles) {
-	// Update subtitles
-	if (subtitles && subsProvider) {
-		// Re-export
+void VideoContext::Refresh () {
+	if (subsProvider) {
 		AssExporter exporter(grid->ass);
 		exporter.AddAutoFilters();
 		try {
-			subsProvider->LoadSubtitles(exporter.ExportTransform());
+			std::auto_ptr<AssFile> exported(exporter.ExportTransform());
+			subsProvider->LoadSubtitles(exported.get());
 		}
 		catch (wxString err) { wxMessageBox(_T("Error while invoking subtitles provider: ") + err,_T("Subtitles provider")); }
 		catch (const wchar_t *err) { wxMessageBox(_T("Error while invoking subtitles provider: ") + wxString(err),_T("Subtitles provider")); }
 	}
-
-	// Jump to frame
-	JumpToFrame(frame_n);
+	UpdateDisplays(false);
 }
 
 /// @brief Jumps to a frame and update display 
@@ -364,7 +371,8 @@ void VideoContext::JumpToFrame(int n) {
 	UpdateDisplays(false);
 
 	// Update grid
-	if (!isPlaying && Options.AsBool(_T("Highlight subs in frame"))) grid->Refresh(false);
+	static agi::OptionValue* highlight = OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame");
+	if (!isPlaying && highlight->GetBool()) grid->Refresh(false);
 }
 
 
@@ -411,7 +419,12 @@ AegiVideoFrame VideoContext::GetFrame(int n,bool raw) {
 	// Raster subtitles if available/necessary
 	if (!raw && subsProvider) {
 		tempFrame.CopyFrom(frame);
-		subsProvider->DrawSubtitles(tempFrame,VFR_Input.GetTimeAtFrame(n,true,true)/1000.0);
+		try {
+			subsProvider->DrawSubtitles(tempFrame,VFR_Input.GetTimeAtFrame(n,true,true)/1000.0);
+		}
+		catch (...) {
+			wxLogError(L"Subtitle rendering for the current frame failed.\n");
+		}
 		return tempFrame;
 	}
 
@@ -424,7 +437,8 @@ AegiVideoFrame VideoContext::GetFrame(int n,bool raw) {
 ///
 void VideoContext::SaveSnapshot(bool raw) {
 	// Get folder
-	wxString option = Options.AsText(_T("Video Screenshot Path"));
+	static agi::OptionValue* ssPath = OPT_GET("Path/Screenshot");
+	wxString option = lagi_wxString(ssPath->GetString());
 	wxFileName videoFile(videoName);
 	wxString basepath;
 	// Is it a path specifier and not an actual fixed path?
@@ -478,7 +492,7 @@ void VideoContext::PlayNextFrame() {
 	int thisFrame = frame_n;
 	JumpToFrame(frame_n + 1);
 	// Start playing audio
-	if (Options.AsBool(_T("Audio Plays When Stepping Video"))) {
+	if (playAudioOnStep->GetBool()) {
 		audio->PlayRange(AudioController::SampleRange(
 			audio->SamplesFromMilliseconds(VFR_Output.GetTimeAtFrame(thisFrame)),
 			audio->SamplesFromMilliseconds(VFR_Output.GetTimeAtFrame(thisFrame + 1))));
@@ -495,7 +509,7 @@ void VideoContext::PlayPrevFrame() {
 	int thisFrame = frame_n;
 	JumpToFrame(frame_n -1);
 	// Start playing audio
-	if (Options.AsBool(_T("Audio Plays When Stepping Video"))) {
+	if (playAudioOnStep->GetBool()) {
 		audio->PlayRange(AudioController::SampleRange(
 			audio->SamplesFromMilliseconds(VFR_Output.GetTimeAtFrame(thisFrame - 1)),
 			audio->SamplesFromMilliseconds(VFR_Output.GetTimeAtFrame(thisFrame))));
@@ -541,13 +555,13 @@ void VideoContext::PlayLine() {
 
 	// Start playing audio
 	audio->PlayRange(AudioController::SampleRange(
-		audio->SamplesFromMilliseconds(curline->GetStartMS()),
-		audio->SamplesFromMilliseconds(curline->GetEndMS())));
+		audio->SamplesFromMilliseconds(curline->Start.GetMS()),
+		audio->SamplesFromMilliseconds(curline->End.GetMS())));
 
 	// Set variables
 	isPlaying = true;
-	startFrame = VFR_Output.GetFrameAtTime(curline->GetStartMS(),true);
-	endFrame = VFR_Output.GetFrameAtTime(curline->GetEndMS(),false);
+	startFrame = VFR_Output.GetFrameAtTime(curline->Start.GetMS(),true);
+	endFrame = VFR_Output.GetFrameAtTime(curline->End.GetMS(),false);
 
 	// Jump to start
 	playNextFrame = startFrame;

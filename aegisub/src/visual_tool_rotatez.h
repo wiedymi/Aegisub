@@ -34,11 +34,7 @@
 /// @ingroup visual_ts
 ///
 
-
-
-
-///////////
-// Headers
+#include "visual_feature.h"
 #include "visual_tool.h"
 
 
@@ -47,7 +43,7 @@
 /// @brief DOCME
 ///
 /// DOCME
-class VisualToolRotateZ : public VisualTool {
+class VisualToolRotateZ : public VisualTool<VisualDraggableFeature> {
 private:
 
 	/// DOCME
@@ -75,26 +71,22 @@ private:
 	/// @brief DOCME
 	/// @return 
 	///
-	bool CanHold() { return true; }
-	void InitializeHold();
+	bool InitializeHold();
 	void UpdateHold();
 	void CommitHold();
 
 
 	/// @brief DOCME
 	///
-	bool CanDrag() { return true; }
 	void PopulateFeatureList();
-	void UpdateDrag(VisualDraggableFeature &feature);
-	void CommitDrag(VisualDraggableFeature &feature);
+	void UpdateDrag(VisualDraggableFeature* feature);
+	void CommitDrag(VisualDraggableFeature* feature);
 
 	void DoRefresh();
 
 public:
-	VisualToolRotateZ(VideoDisplay *parent);
+	VisualToolRotateZ(VideoDisplay *parent, VideoState const& video, wxToolBar *);
 
-	void Update();
 	void Draw();
+	bool Update() { return true; }
 };
-
-

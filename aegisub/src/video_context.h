@@ -34,8 +34,6 @@
 /// @ingroup video
 ///
 
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <time.h>
 
@@ -56,24 +54,22 @@
 #else
 #include <GL/gl.h>
 #include <GL/glu.h>
-
-/// DOCME
-typedef GLuint GLhandleARB;
 #endif
 
 #include "video_frame.h"
 
-
-//////////////
-// Prototypes
 class SubtitlesGrid;
 class AudioProvider;
 class AudioDisplay;
 class AssDialogue;
+class SubtitlesProvider;
 class VideoProvider;
 class VideoDisplay;
-class SubtitlesProvider;
 class AudioController;
+
+namespace agi {
+	class OptionValue;
+}
 
 /// DOCME
 /// @class VideoContext
@@ -82,7 +78,6 @@ class AudioController;
 /// DOCME
 class VideoContext : public wxEvtHandler {
 	friend class AudioProvider;
-	friend class VisualTool;
 
 private:
 	/// DOCME
@@ -179,6 +174,10 @@ private:
 	/// DOCME
 	int arType;
 
+	bool hasSubtitles;
+
+	agi::OptionValue* playAudioOnStep;
+
 	void OnPlayTimer(wxTimerEvent &event);
 
 public:
@@ -219,6 +218,9 @@ public:
 	/// @brief DOCME
 	/// @return 
 	bool IsPlaying() { return isPlaying; }
+
+	/// @brief Does the video file loaded have muxed subtitles that we can load?
+	bool HasSubtitles() {return hasSubtitles; }
 
 	/// @brief DOCME
 	/// @param sync 
@@ -269,7 +271,7 @@ public:
 	void JumpToFrame(int n);
 	void JumpToTime(int ms,bool exact=false);
 
-	void Refresh(bool video,bool subtitles);
+	void Refresh();
 	void UpdateDisplays(bool full);
 
 	void GetScriptSize(int &w,int &h);

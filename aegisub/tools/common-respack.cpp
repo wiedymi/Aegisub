@@ -4,14 +4,14 @@
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
 //
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Aegisub Group nor the names of its contributors
-//     may be used to endorse or promote products derived from this software
-//     without specific prior written permission.
+// * Redistributions of source code must retain the above copyright notice,
+//   this list of conditions and the following disclaimer.
+// * Redistributions in binary form must reproduce the above copyright notice,
+//   this list of conditions and the following disclaimer in the documentation
+//   and/or other materials provided with the distribution.
+// * Neither the name of the Aegisub Group nor the names of its contributors
+//   may be used to endorse or promote products derived from this software
+//   without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -40,7 +40,6 @@
 #include <wx/string.h>
 #include <wx/regex.h>
 #include <wx/arrstr.h>
-
 using namespace std;
 
 class FileIterator {
@@ -56,7 +55,7 @@ public:
 
 FileIterator::FileIterator(int argc, const char **argv)
  : currentItem(2), inDir(false), currentDir(), items(argc, argv) {
-	if (argc == 2) {
+	 if (argc == 2) {
 		// No names passed on the command line, so read them from stdin
 		char buffer[1024];
 		while (cin.getline(buffer, 1024), cin.good()) {
@@ -78,12 +77,14 @@ bool FileIterator::Next(wxString *filename) {
 
 	// No more items
 	if (currentItem >= items.GetCount()) return false;
-
+		
 	wxFileName next;
+	wxString current = items[currentItem];
+	currentItem++;
+	
 	// Test if it's a directory
-	if (wxFileName::DirExists(items[currentItem])) {
-		currentDir.Open(items[currentItem]);
-		currentItem++;
+	if (wxFileName::DirExists(current)) {
+		currentDir.Open(current);
 		if (currentDir.GetFirst(filename, "", wxDIR_FILES)) {
 			wxString path = currentDir.GetName();
 			*filename = wxFileName(path, *filename).GetFullPath();
@@ -94,12 +95,11 @@ bool FileIterator::Next(wxString *filename) {
 		return Next(filename);
 	}
 	// Test if it's a file
-	if (wxFileName::FileExists(items[currentItem])) {
-		*filename = items[currentItem];
-		currentItem++;
+	if (wxFileName::FileExists(current)) {
+		*filename = current;
 		return true;
 	}
-
+	
 	// Entry is neither a file nor a directory, just skip it
 	return Next(filename);
 }
@@ -113,25 +113,13 @@ int main(int argc, const char *argv[]) {
 	ofstream outH(headerFileName.GetFullPath().char_str());
 	ofstream outC(argv[1]);
 
-	outC << "/* This is an automatically generated file and should not be modified directly */" << endl
-	     << "#include \"" << headerFileName.GetFullName() << "\"" << endl
-	     << "wxBitmap " << headerFileName.GetName() << "_getimage(const unsigned char *buff, size_t size) {" << endl
-	     << "	wxMemoryInputStream mem(buff, size);" << endl
-	     << "	wxImage image(mem);" << endl
-	     << "	return wxBitmap(image);" << endl
-	     << "}" << endl;
-
-	outH << "/* This is an automatically generated file and should not be modified directly */" << endl
-	     << "#include <wx/mstream.h>" << endl
-	     << "#include <wx/bitmap.h>" << endl
-	     << "#include <wx/image.h>" << endl
-	     << "wxBitmap " << headerFileName.GetName() << "_getimage(const unsigned char *image, size_t size);" << endl
-	     << "#define GETIMAGE(a) " << headerFileName.GetName() << "_getimage(a, sizeof(a))" << endl;
+	outC << "#include \"libresrc.h\"" << endl;
 
 	wxRegEx nameCleaner("[^A-Za-z_0-9]");
 	wxString filename;
 	FileIterator iter(argc, argv);
 
+		outC << "#include \"libresrc.h\"" << endl;
 	while (iter.Next(&filename)) {
 		ifstream infile(filename.char_str(), ios::binary);
 		infile.seekg(0, ios::end);
@@ -139,10 +127,17 @@ int main(int argc, const char *argv[]) {
 		infile.seekg(0, ios::beg);
 
 		wxFileName file(filename);
-		wxString identifier = file.GetName() + "_" + file.GetDirs().Last();
+
+		wxString identifier = file.GetName();
+
+		// Hack to work around inserting files in the current directory
+		if (file.GetDirs().Last() != ".")
+			identifier.Append("_" + file.GetDirs().Last());
+
 		nameCleaner.ReplaceAll(&identifier, "_");
 
-		outC << "const unsigned char " << identifier << "[] = {";
+		std::string tmp(identifier.mb_str());
+		outC << "const unsigned char " << tmp << "[] = {";
 		bool first = true;
 		char c[1];
 		while (infile.read(c, 1).gcount() > 0) {
@@ -151,7 +146,7 @@ int main(int argc, const char *argv[]) {
 			first = false;
 		}
 		outC << "};" << endl;
-		outH << "extern const unsigned char " << identifier << "[" << infile_end << "];" << endl;
+		outH << "extern const unsigned char " << tmp << "[" << infile_end << "];" << endl;
 	}
 
 	return 0;

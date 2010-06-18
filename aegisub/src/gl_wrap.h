@@ -51,6 +51,19 @@ typedef GLuint GLhandleARB;
 #include <wx/colour.h>
 #endif
 
+#ifdef __WIN32__
+#define glGetProc(a) wglGetProcAddress(a)
+#else
+#define glGetProc(a) glXGetProcAddress((const GLubyte *)(a))
+#endif
+
+#define GL_EXT(type, name) \
+	static type name = reinterpret_cast<type>(glGetProc(#name)); \
+	if (!name) { \
+		name = & name ## Fallback; \
+	}
+
+
 
 /// DOCME
 /// @class OpenGLWrapper
@@ -90,21 +103,21 @@ public:
 
 	void SetLineColour(wxColour col,float alpha=1.0f,int width=1);
 	void SetFillColour(wxColour col,float alpha=1.0f);
-	void SetModeLine();
-	void SetModeFill();
-	void DrawLine(float x1,float y1,float x2,float y2);
-	void DrawDashedLine(float x1,float y1,float x2,float y2,float dashLen);
-	void DrawEllipse(float x,float y,float radiusX,float radiusY);
+	void SetModeLine() const;
+	void SetModeFill() const;
+	void DrawLine(float x1,float y1,float x2,float y2) const;
+	void DrawDashedLine(float x1,float y1,float x2,float y2,float dashLen) const;
+	void DrawEllipse(float x,float y,float radiusX,float radiusY) const;
 
 	/// @brief DOCME
 	/// @param x      
 	/// @param y      
 	/// @param radius 
 	///
-	void DrawCircle(float x,float y,float radius) { DrawEllipse(x,y,radius,radius); }
-	void DrawRectangle(float x1,float y1,float x2,float y2);
-	void DrawRing(float x,float y,float r1,float r2,float ar=1.0f,float arcStart=0.0f,float arcEnd=0.0f);
-	void DrawTriangle(float x1,float y1,float x2,float y2,float x3,float y3);
+	void DrawCircle(float x,float y,float radius) const { DrawEllipse(x,y,radius,radius); }
+	void DrawRectangle(float x1,float y1,float x2,float y2) const;
+	void DrawRing(float x,float y,float r1,float r2,float ar=1.0f,float arcStart=0.0f,float arcEnd=0.0f) const;
+	void DrawTriangle(float x1,float y1,float x2,float y2,float x3,float y3) const;
 
 	static bool IsExtensionSupported(const char *ext);
 };

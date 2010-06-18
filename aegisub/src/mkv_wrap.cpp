@@ -122,7 +122,6 @@ void MatroskaWrapper::Close() {
 	if (file) {
 		mkv_Close(file);
 		file = NULL;
-		fclose(input->fp);
 		delete input;
 	}
 	keyFrames.Clear();
@@ -388,14 +387,13 @@ void MatroskaWrapper::GetSubtitles(AssFile *target) {
 
 			// Load into file
 			wxString group = _T("[Script Info]");
-			int lasttime = 0;
 			int version = 1;
 			if (CodecID == _T("S_TEXT/SSA")) version = 0;
 			wxStringTokenizer token(privString,_T("\r\n"),wxTOKEN_STRTOK);
 			while (token.HasMoreTokens()) {
 				wxString next = token.GetNextToken();
 				if (next[0] == _T('[')) group = next;
-				lasttime = target->AddLine(next,group,lasttime,version,&group);
+				target->AddLine(next,group,version,&group);
 			}
 
 			// Insert "[Events]"
@@ -493,10 +491,9 @@ void MatroskaWrapper::GetSubtitles(AssFile *target) {
 
 		// Insert into file
 		wxString group = _T("[Events]");
-		int lasttime = 0;
 		int version = (CodecID == _T("S_TEXT/SSA"));
 		for (unsigned int i=0;i<subList.size();i++) {
-			lasttime = target->AddLine(subList[i],group,lasttime,version,&group);
+			target->AddLine(subList[i],group,version,&group);
 		}
 
 		// Close progress bar
@@ -509,9 +506,31 @@ void MatroskaWrapper::GetSubtitles(AssFile *target) {
 	}
 }
 
+bool MatroskaWrapper::HasSubtitles(wxString const& filename) {
+	char err[2048];
+	MkvStdIO input(filename);
+	if (!input.fp) return false;
 
+	MatroskaFile* file = mkv_Open(&input, err, sizeof(err));
+	if (!file) return false;
 
+	// Find tracks
+	int tracks = mkv_GetNumTracks(file);
+	for (int track = 0; track < tracks; track++) {
+		TrackInfo *trackInfo = mkv_GetTrackInfo(file, track);
 
+		if (trackInfo->Type == 0x11) {
+			wxString CodecID = wxString(trackInfo->CodecID, *wxConvCurrent);
+			if (CodecID == _T("S_TEXT/SSA") || CodecID == _T("S_TEXT/ASS") || CodecID == _T("S_TEXT/UTF8")) {
+				mkv_Close(file);
+				return true;
+			}
+		}
+	}
+
+	mkv_Close(file);
+	return false;
+}
 
 ////////////////////////////// LOTS OF HAALI C CODE DOWN HERE ///////////////////////////////////////
 

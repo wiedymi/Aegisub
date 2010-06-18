@@ -83,7 +83,7 @@ void ParseAssKaraokeTags(const AssDialogue *line, AssKaraokeVector &syls)
 				break; 
 
 			case BLOCK_OVERRIDE: {
-				AssDialogueBlockOverride *ovr = block->GetAsOverride(block);
+				AssDialogueBlockOverride *ovr = dynamic_cast<AssDialogueBlockOverride*>(block);
 
 				for (int j = 0; j < (int)ovr->Tags.size(); j++) {
 					AssOverrideTag *tag = ovr->Tags[j];
@@ -102,7 +102,7 @@ void ParseAssKaraokeTags(const AssDialogue *line, AssKaraokeVector &syls)
 						syl.unstripped_text = _T("");
 						syl.tag = tag;
 						syl.type = tag->Name;
-						syl.duration = tag->Params[0]->AsInt();
+						syl.duration = tag->Params[0]->Get<int>();
 
 					} else {
 						// not karaoke tag

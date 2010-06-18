@@ -48,6 +48,7 @@
 
 #include "audio_controller.h"
 #include "audio_provider_hd.h"
+#include "compat.h"
 #include "dialog_progress.h"
 #include "frame_main.h"
 #include "main.h"
@@ -99,10 +100,8 @@ HDAudioProvider::HDAudioProvider(AudioProvider *source) {
 	file_cache.Seek(0);
 
 	// Finish
-	if (!canceled) {
-		progress->Destroy();
-	}
-	else {
+	progress->Destroy();
+	if (canceled) {
 		file_cache.Close();
 		delete[] data;
 		throw wxString(_T("Audio loading cancelled by user"));
@@ -162,7 +161,7 @@ void HDAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) const {
 ///
 wxString HDAudioProvider::DiskCachePath() {
 	// Default
-	wxString path = Options.AsText(_T("Audio HD Cache Location"));
+	wxString path = lagi_wxString(OPT_GET("Audio/Cache/HD/Location")->GetString());
 	if (path == _T("default")) return StandardPaths::DecodePath(_T("?temp/"));
 
 	// Specified
@@ -175,7 +174,7 @@ wxString HDAudioProvider::DiskCachePath() {
 ///
 wxString HDAudioProvider::DiskCacheName() {
 	// Get pattern
-	wxString pattern = Options.AsText(_T("Audio HD Cache Name"));
+	wxString pattern = lagi_wxString(OPT_GET("Audio/Cache/HD/Name")->GetString());
 	if (pattern.Find(_T("%02i")) == wxNOT_FOUND) pattern = _T("audio%02i.tmp");
 	
 	// Try from 00 to 99

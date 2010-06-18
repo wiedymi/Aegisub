@@ -32,12 +32,12 @@
 /// @file visual_tool_rotatexy.cpp
 /// @brief 3D rotation in X/Y axes visual typesetting tool
 /// @ingroup visual_ts
-///
 
-
-///////////
-// Headers
 #include "config.h"
+
+#ifndef AGI_PRE
+#include <math.h>
+#endif
 
 #include "ass_dialogue.h"
 #include "ass_file.h"
@@ -48,31 +48,15 @@
 #include "video_display.h"
 #include "visual_tool_rotatexy.h"
 
-
 /// @brief Constructor 
 /// @param _parent 
-///
-VisualToolRotateXY::VisualToolRotateXY(VideoDisplay *_parent)
-: VisualTool(_parent)
+VisualToolRotateXY::VisualToolRotateXY(VideoDisplay *parent, VideoState const& video, wxToolBar *)
+: VisualTool<VisualDraggableFeature>(parent, video)
 {
-	_parent->ShowCursor(false);
 	DoRefresh();
 }
 
-
-
-/// @brief Update 
-///
-void VisualToolRotateXY::Update() {
-	// Render parent
-	GetParent()->Render();
-}
-
-
-
 /// @brief Draw 
-/// @return 
-///
 void VisualToolRotateXY::Draw() {
 	// Get line to draw
 	AssDialogue *line = GetActiveDialogueLine();
@@ -182,68 +166,54 @@ void VisualToolRotateXY::Draw() {
 	glShadeModel(GL_FLAT);
 }
 
-
-
 /// @brief Start holding 
-///
-void VisualToolRotateXY::InitializeHold() {
+bool VisualToolRotateXY::InitializeHold() {
 	GetLinePosition(curDiag,odx,ody,orgx,orgy);
 	GetLineRotation(curDiag,origAngleX,origAngleY,rz);
-	startAngleX = (orgy-mouseY*sh/h)*2.0;
-	startAngleY = (mouseX*sw/w-orgx)*2.0;
+	startAngleX = (orgy-video.y)*2.f;
+	startAngleY = (video.x-orgx)*2.f;
 	curAngleX = origAngleX;
 	curAngleY = origAngleY;
-	curDiag->StripTag(_T("\\frx"));
-	curDiag->StripTag(_T("\\fry"));
+	curDiag->StripTag(L"\\frx");
+	curDiag->StripTag(L"\\fry");
+
+	return true;
 }
 
-
-
 /// @brief Update hold 
-///
 void VisualToolRotateXY::UpdateHold() {
-	// Find screen angles
-	float screenAngleX = (orgy-mouseY*sh/h)*2.0;
-	float screenAngleY = (mouseX*sw/w-orgx)*2.0;
+	float screenAngleX = (orgy-video.y)*2.f;
+	float screenAngleY = (video.x-orgx)*2.f;
 
 	// Deltas
 	float deltaX = screenAngleX - startAngleX;
 	float deltaY = screenAngleY - startAngleY;
-	if (ctrlDown) {
-		if (fabs(deltaX) >= fabs(deltaY)) deltaY = 0;
-		else deltaX = 0;
+	if (shiftDown) {
+		if (fabs(deltaX) >= fabs(deltaY)) deltaY = 0.f;
+		else deltaX = 0.f;
 	}
 
 	// Calculate
-	curAngleX = deltaX + origAngleX;
-	curAngleY = deltaY + origAngleY;
-	while (curAngleX < 0.0) curAngleX += 360.0;
-	while (curAngleX >= 360.0) curAngleX -= 360.0;
-	while (curAngleY < 0.0) curAngleY += 360.0;
-	while (curAngleY >= 360.0) curAngleY -= 360.0;
+	curAngleX = fmodf(deltaX + origAngleX + 360.f, 360.f);
+	curAngleY = fmodf(deltaY + origAngleY + 360.f, 360.f);
 
 	// Oh Snap
-	if (shiftDown) {
-		curAngleX = (float)((int)((curAngleX+15.0f)/30.0f))*30.0f;
-		curAngleY = (float)((int)((curAngleY+15.0f)/30.0f))*30.0f;
-		if (curAngleX == 360.0f) curAngleX = 0.0f;
-		if (curAngleY == 360.0f) curAngleX = 0.0f;
+	if (ctrlDown) {
+		curAngleX = floorf(curAngleX/30.f+.5f)*30.f;
+		curAngleY = floorf(curAngleY/30.f+.5f)*30.f;
+		if (curAngleX > 359.f) curAngleX = 0.f;
+		if (curAngleY > 359.f) curAngleY = 0.f;
 	}
 }
 
-
-
 /// @brief Commit hold 
-///
 void VisualToolRotateXY::CommitHold() {
-	SetOverride(_T("\\frx"),PrettyFloat(wxString::Format(_T("(%0.3f)"),curAngleX)));
-	SetOverride(_T("\\fry"),PrettyFloat(wxString::Format(_T("(%0.3f)"),curAngleY)));
+	AssDialogue* line = GetActiveDialogueLine();
+	SetOverride(line, L"\\frx",wxString::Format(L"(%0.3g)",curAngleX));
+	SetOverride(line, L"\\fry",wxString::Format(L"(%0.3g)",curAngleY));
 }
 
-
-
 /// @brief Get \\org pivot 
-///
 void VisualToolRotateXY::PopulateFeatureList() {
 	// Get line
 	curDiag = GetActiveDialogueLine();
@@ -258,33 +228,26 @@ void VisualToolRotateXY::PopulateFeatureList() {
 	feat.type = DRAG_BIG_TRIANGLE;
 }
 
-
-
 /// @brief Update dragging of \\org 
 /// @param feature 
-///
-void VisualToolRotateXY::UpdateDrag(VisualDraggableFeature &feature) {
-	orgx = feature.x;
-	orgy = feature.y;
+void VisualToolRotateXY::UpdateDrag(VisualDraggableFeature* feature) {
+	orgx = feature->x;
+	orgy = feature->y;
 }
-
-
 
 /// @brief Commit dragging of \\org 
 /// @param feature 
-///
-void VisualToolRotateXY::CommitDrag(VisualDraggableFeature &feature) {
-	SetOverride(_T("\\org"),wxString::Format(_T("(%i,%i)"),feature.x,feature.y));
+void VisualToolRotateXY::CommitDrag(VisualDraggableFeature* feature) {
+	int x = feature->x;
+	int y = feature->y;
+	parent->ToScriptCoords(&x, &y);
+	SetOverride(feature->line, L"\\org",wxString::Format(L"(%i,%i)",x,y));
 }
 
-
-
 /// @brief Refresh 
-///
 void VisualToolRotateXY::DoRefresh() {
 	AssDialogue *line = GetActiveDialogueLine();
 	GetLinePosition(line,odx,ody,orgx,orgy);
 	GetLineRotation(line,curAngleX,curAngleY,rz);
 }
-
 

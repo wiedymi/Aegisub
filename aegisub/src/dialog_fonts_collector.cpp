@@ -52,11 +52,13 @@
 #include "ass_override.h"
 #include "ass_style.h"
 #include "audio_controller.h"
+#include "compat.h"
 #include "dialog_fonts_collector.h"
 #include "font_file_lister.h"
 #include "frame_main.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
+#include "main.h"
 #include "options.h"
 #include "scintilla_text_ctrl.h"
 #include "selection_controller.h"
@@ -98,7 +100,7 @@ DialogFontsCollector::DialogFontsCollector(wxWindow *parent)
 	main = (FrameMain*) parent;
 
 	// Destination box
-	wxString dest = Options.AsText(_T("Fonts Collector Destination"));
+	wxString dest = lagi_wxString(OPT_GET("Path/Fonts Collector Destination")->GetString());
 	if (dest == _T("?script")) {
 		wxFileName filename(AssFile::top->filename);
 		dest = filename.GetPath();
@@ -124,7 +126,7 @@ DialogFontsCollector::DialogFontsCollector(wxWindow *parent)
 	choices.Add(_("DEBUG: Verify all fonts in system"));
 #endif
 	CollectAction = new wxRadioBox(this,RADIO_BOX,_T("Action"),wxDefaultPosition,wxDefaultSize,choices,1);
-	size_t lastAction = Options.AsInt(_T("Fonts Collector Action"));
+	size_t lastAction = OPT_GET("Tool/Fonts Collector/Action")->GetInt();
 	if (lastAction >= choices.GetCount()) lastAction = 0;
 	CollectAction->SetSelection(lastAction);
 
@@ -243,10 +245,9 @@ void DialogFontsCollector::OnStart(wxCommandEvent &event) {
 		if (filename.GetPath() == dest) {
 			dest = _T("?script");
 		}
-		Options.SetText(_T("Fonts Collector Destination"),dest);
+		OPT_SET("Path/Fonts Collector Destination")->SetString(STD_STR(dest));
 	}
-	Options.SetInt(_T("Fonts Collector Action"),action);
-	Options.Save();
+	OPT_SET("Tool/Fonts Collector/Action")->SetInt(action);
 
 	// Set buttons
 	StartButton->Enable(false);
@@ -449,14 +450,14 @@ void FontsCollectorThread::Collect() {
 		curLine = 0;
 		for (std::list<AssEntry*>::iterator cur=subs->Line.begin();cur!=subs->Line.end();cur++) {
 			// Collect from style
-			curStyle = AssEntry::GetAsStyle(*cur);
+			curStyle = dynamic_cast<AssStyle*>(*cur);
 			if (curStyle) {
 				AddFont(curStyle->font,0);
 			}
 
 			// Collect from dialogue
 			else {
-				curDiag = AssEntry::GetAsDialogue(*cur);
+				curDiag = dynamic_cast<AssDialogue*>(*cur);
 				if (curDiag) {
 					curLine++;
 					curDiag->ParseASSTags();
@@ -510,7 +511,7 @@ void FontsCollectorThread::Collect() {
 			if (oper == 3 && someOk) {
 				wxMutexGuiEnter();
 				subs->FlagAsModified(_("font attachment"));
-				collector->main->SubsBox->CommitChanges();
+				collector->main->SubsGrid->CommitChanges();
 				wxMutexGuiLeave();
 			}
 		}
@@ -640,7 +641,7 @@ bool FontsCollectorThread::AttachFont(wxString filename) {
 ///
 void FontsCollectorThread::GetFonts (wxString tagName,int par_n,AssOverrideParameter *param,void *usr) {
 	if (tagName == _T("\\fn")) {
-		if (instance) instance->AddFont(param->AsText(),1);
+		if (instance) instance->AddFont(param->Get<wxString>(),1);
 	}
 }
 
