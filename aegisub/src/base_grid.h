@@ -105,7 +105,8 @@ protected:
 	FrameMain *parentFrame;
 
 	/// DOCME
-	bool showCol[16];
+	static const int columns = 10;
+	bool showCol[columns];
 
 
 	/// @brief DOCME
@@ -118,7 +119,7 @@ protected:
 	int yPos;
 
 	/// DOCME
-	std::vector<bool> selMap;
+	std::vector<int> selMap;
 
 public:
 	// SubtitleSelectionController interface

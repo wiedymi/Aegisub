@@ -36,6 +36,7 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <algorithm>
 #include <fstream>
 #include <list>
 
@@ -57,22 +58,23 @@
 #include "subtitle_format.h"
 #include "text_file_reader.h"
 #include "text_file_writer.h"
+#include "utils.h"
 #include "version.h"
 #include "vfr.h"
 
 /// @brief AssFile constructor
 AssFile::AssFile () {
-	AssOverrideTagProto::LoadProtos();
-	Clear();
+	loaded = false;
+	Modified = false;
 }
 
 /// @brief AssFile destructor 
 AssFile::~AssFile() {
-	Clear();
+	delete_clear(Line);
 }
 
 void AssFile::Load (const wxString &_filename,wxString charset,bool addToRecent) {
-	bool ok = true;
+	bool ok = false;
 
 	try {
 		// Try to open file
@@ -102,6 +104,7 @@ void AssFile::Load (const wxString &_filename,wxString charset,bool addToRecent)
 		if (reader) {
 			reader->SetTarget(this);
 			reader->ReadFile(_filename,charset);
+			ok = true;
 		}
 
 		// Couldn't find a type
@@ -111,18 +114,20 @@ void AssFile::Load (const wxString &_filename,wxString charset,bool addToRecent)
 	// String error
 	catch (const wchar_t *except) {
 		wxMessageBox(except,_T("Error loading file"),wxICON_ERROR | wxOK);
-		ok = false;
 	}
 
 	catch (wxString except) {
 		wxMessageBox(except,_T("Error loading file"),wxICON_ERROR | wxOK);
-		ok = false;
+	}
+
+	// Real exception
+	catch (agi::Exception &e) {
+		wxMessageBox(wxString(e.GetChainedMessage().c_str(), wxConvUTF8), L"Error loading file", wxICON_ERROR|wxOK);
 	}
 
 	// Other error
 	catch (...) {
 		wxMessageBox(_T("Unknown error"),_T("Error loading file"),wxICON_ERROR | wxOK);
-		ok = false;
 	}
 
 	// Verify loading
@@ -273,7 +278,7 @@ bool AssFile::CanSave() {
 
 // I strongly advice you against touching this function unless you know what you're doing;
 // even moving things out of order might break ASS parsing - AMZ.
-void AssFile::AddLine (wxString data,wxString group,int &version,wxString *outGroup) {
+void AssFile::AddLine(wxString data,wxString group,int &version,wxString *outGroup) {
 	// Group
 	AssEntry *entry = NULL;
 	wxString origGroup = group;
@@ -407,14 +412,11 @@ void AssFile::AddLine (wxString data,wxString group,int &version,wxString *outGr
 	return;
 }
 
-void AssFile::Clear () {
-	for (entryIter cur=Line.begin();cur != Line.end();cur++) {
-		delete *cur;
-	}
-	Line.clear();
+void AssFile::Clear() {
+	delete_clear(Line);
 
 	loaded = false;
-	filename = _T("");
+	filename.clear();
 	Modified = false;
 }
 
@@ -447,18 +449,18 @@ void AssFile::LoadDefault (bool defline) {
 	loaded = true;
 }
 
-AssFile::AssFile (AssFile &from) {
-	using std::list;
-
-	// Copy standard variables
+AssFile::AssFile (const AssFile &from) {
 	filename = from.filename;
 	loaded = from.loaded;
 	Modified = from.Modified;
-
-	// Copy lines
-	for (list<AssEntry*>::iterator cur=from.Line.begin();cur!=from.Line.end();cur++) {
-		Line.push_back((*cur)->Clone());
-	}
+	std::transform(from.Line.begin(), from.Line.end(), std::back_inserter(Line), std::mem_fun(&AssEntry::Clone));
+}
+AssFile& AssFile::operator=(AssFile from) {
+	filename = from.filename;
+	loaded = from.loaded;
+	Modified = from.Modified;
+	std::swap(Line, from.Line);
+	return *this;
 }
 
 void AssFile::InsertStyle (AssStyle *style) {
@@ -729,7 +731,7 @@ AssStyle *AssFile::GetStyle(wxString name) {
 }
 
 void AssFile::AddToRecent(wxString file) {
-	AegisubApp::Get()->mru->Add("Subtitle", STD_STR(file));
+	config::mru->Add("Subtitle", STD_STR(file));
 }
 
 wxString AssFile::GetWildcardList(int mode) {
@@ -740,13 +742,9 @@ wxString AssFile::GetWildcardList(int mode) {
 }
 
 void AssFile::CompressForStack() {
-	AssDialogue *diag;
 	for (entryIter cur=Line.begin();cur!=Line.end();cur++) {
-		diag = dynamic_cast<AssDialogue*>(*cur);
-		if (diag) {
-			diag->SetEntryData("");
-			diag->ClearBlocks();
-		}
+		AssDialogue *diag = dynamic_cast<AssDialogue*>(*cur);
+		if (diag) diag->ClearBlocks();
 	}
 }
 
@@ -756,12 +754,7 @@ bool AssFile::IsModified() {
 
 void AssFile::FlagAsModified(wxString desc) {
 	if (!RedoStack.empty()) {
-		//StackPush();
-		//UndoStack.push_back(new AssFile(*UndoStack.back()));
-		for (std::list<AssFile*>::iterator cur=RedoStack.begin();cur!=RedoStack.end();cur++) {
-			delete *cur;
-		}
-		RedoStack.clear();
+		delete_clear(RedoStack);
 	}
 
 	Modified = true;
@@ -841,15 +834,8 @@ void AssFile::StackRedo() {
 }
 
 void AssFile::StackClear() {
-	for (std::list<AssFile*>::iterator cur=UndoStack.begin();cur!=UndoStack.end();cur++) {
-		delete *cur;
-	}
-	UndoStack.clear();
-
-	for (std::list<AssFile*>::iterator cur=RedoStack.begin();cur!=RedoStack.end();cur++) {
-		delete *cur;
-	}
-	RedoStack.clear();
+	delete_clear(UndoStack);
+	delete_clear(RedoStack);
 
 	Popping = false;
 }

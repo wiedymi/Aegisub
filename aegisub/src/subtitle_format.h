@@ -47,6 +47,8 @@
 #include <wx/string.h>
 #endif
 
+#include <libaegisub/exception.h>
+
 
 //////////////
 // Prototypes
@@ -101,7 +103,7 @@ protected:
 	void CreateCopy();
 	void ClearCopy();
 	void SortLines();
-	void ConvertTags(int format,wxString lineEnd);
+	void ConvertTags(int format,const wxString &lineEnd,bool mergeLineBreaks=true);
 	//void Merge(bool identical,bool overlaps,bool stripComments,bool stripNonDialogue);
 	void StripComments();
 	void StripNonDialogue();
@@ -160,4 +162,6 @@ public:
 	static void DestroyFormats();
 };
 
+
+DEFINE_SIMPLE_EXCEPTION(SubtitleFormatParseError, agi::InvalidInputException, "subtitle_io/parse/generic")
 

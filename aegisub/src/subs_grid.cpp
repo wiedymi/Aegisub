@@ -136,22 +136,22 @@ SubtitlesGrid::~SubtitlesGrid() {
 void SubtitlesGrid::OnPopupMenu(bool alternate) {
 	// Alternate
 	if (alternate) {
-		// Prepare strings
-		wxArrayString strings;
-		strings.Add(_("Line Number"));
-		strings.Add(_("Layer"));
-		strings.Add(_("Start"));
-		strings.Add(_("End"));
-		strings.Add(_("Style"));
-		strings.Add(_("Actor"));
-		strings.Add(_("Effect"));
-		strings.Add(_("Left"));
-		strings.Add(_("Right"));
-		strings.Add(_("Vert"));
+		const wxString strings[] = {
+			_("Line Number"),
+			_("Layer"),
+			_("Start"),
+			_("End"),
+			_("Style"),
+			_("Actor"),
+			_("Effect"),
+			_("Left"),
+			_("Right"),
+			_("Vert"),
+		};
 
 		// Create Menu
 		wxMenu menu;
-		for (size_t i=0;i<strings.Count();i++) {
+		for (size_t i=0;i<columns;i++) {
 			menu.Append(MENU_SHOW_COL + i,strings[i],_T(""),wxITEM_CHECK)->Check(showCol[i]);
 		}
 		PopupMenu(&menu);
@@ -231,7 +231,7 @@ void SubtitlesGrid::OnShowColMenu(wxCommandEvent &event) {
 	int item = event.GetId()-MENU_SHOW_COL;
 	showCol[item] = !showCol[item];
 
-	std::vector<bool> map(showCol, showCol + sizeof(showCol) / sizeof(bool));
+	std::vector<bool> map(showCol, showCol + columns);
 	OPT_SET("Subtitle/Grid/Column")->SetListBool(map);
 
 	// Update
@@ -820,14 +820,9 @@ void SubtitlesGrid::LoadDefault (AssFile *_ass) {
 ///
 void SubtitlesGrid::LoadFromAss (AssFile *_ass,bool keepSelection,bool dontModify) {
 	// Store selected rows
-	std::vector<int> srows;
+	wxArrayInt srows;
 	if (keepSelection) {
-		int nrows = GetRows();
-		for (int i=0;i<nrows;i++) {
-			if (IsInSelection(i,0)) {
-				srows.push_back(i);
-			}
-		}
+		srows = GetSelection();
 	}
 
 	// Clear grid
@@ -863,7 +858,7 @@ void SubtitlesGrid::LoadFromAss (AssFile *_ass,bool keepSelection,bool dontModif
 	// Restore selection
 	if (keepSelection) {
 		for (size_t i=0;i<srows.size();i++) {
-			SelectRow(srows.at(i),true);
+			SelectRow(srows[i],true);
 		}
 	}
 
@@ -1021,8 +1016,7 @@ void SubtitlesGrid::PasteLines(int n,bool pasteOver) {
 	if (!data.empty()) {
 		// Insert data
 		int inserted = 0;
-		bool asked = false;
-		wxArrayInt pasteOverOptions;
+		std::vector<bool> pasteOverOptions;
 		wxStringTokenizer token (data,_T("\r\n"),wxTOKEN_STRTOK);
 		while (token.HasMoreTokens()) {
 			// Convert data into an AssDialogue
@@ -1048,14 +1042,12 @@ void SubtitlesGrid::PasteLines(int n,bool pasteOver) {
 			if (pasteOver) {
 				if (n+inserted < GetRows()) {
 					// Get list of options to paste over, if not asked yet
-					if (asked == false) {
-						asked = true;
-						DialogPasteOver diag(NULL);
+					if (pasteOverOptions.empty()) {
+						DialogPasteOver diag(NULL, pasteOverOptions);
 						if (!diag.ShowModal()) {
 							delete curdiag;
 							return;
 						}
-						pasteOverOptions = diag.GetOptions();
 					}
 
 					// Paste over

@@ -37,9 +37,6 @@
 
 #pragma once
 
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <stdint.h>
 
@@ -50,13 +47,9 @@
 #include <wx/menuitem.h>
 #endif
 
-
 /// DOCME
 typedef std::vector<std::pair<int,int> > IntPairVector;
 
-
-///////////////////////
-// Function prototypes
 #ifndef __LINUX__
 int64_t abs64(int64_t input);
 #endif
@@ -80,24 +73,15 @@ void RestartAegisub();
 /// @brief Templated abs() function
 template <typename T> T tabs(T x) { return x < 0 ? -x : x; }
 
-
-//////////
-// Macros
 #ifndef MIN
-
-/// DOCME
 #define MIN(a,b) ((a)<(b))?(a):(b)
 #endif
 
 #ifndef MAX
-
-/// DOCME
 #define MAX(a,b) ((a)>(b))?(a):(b)
 #endif
 
 #ifndef MID
-
-/// DOCME
 #define MID(a,b,c) MAX((a),MIN((b),(c)))
 #endif
 
@@ -114,20 +98,6 @@ template <typename T> T tabs(T x) { return x < 0 ? -x : x; }
 #endif
 #endif
 
-
-
-/// @brief Inlines 
-/// @param a 
-/// @param b 
-///
-static inline void IntSwap(int &a,int &b) {
-	int c = a;
-	a = b;
-	b = c;
-}
-
-
-
 /// @brief Code taken from http://bob.allegronetwork.com/prog/tricks.html#clamp Clamp integer to range 
 /// @param x   
 /// @param min 
@@ -143,4 +113,14 @@ static FORCEINLINE int ClampSignedInteger32(int x,int min,int max) {
 	return x;
 }
 
-
+struct delete_ptr {
+	template<class T>
+	void operator()(T* ptr) const {
+		delete ptr;
+	}
+};
+template<class T>
+void delete_clear(T& container) {
+	std::for_each(container.begin(), container.end(), delete_ptr());
+	container.clear();
+}
