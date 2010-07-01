@@ -56,6 +56,7 @@
 #include "audio_renderer.h"
 #include "audio_renderer_spectrum.h"
 #include "audio_renderer_waveform.h"
+#include "selection_controller.h"
 #include "audio_timing.h"
 #include "include/aegisub/audio_provider.h"
 #include "main.h"

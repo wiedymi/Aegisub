@@ -46,6 +46,7 @@
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "ass_style.h"
+#include "selection_controller.h"
 #include "audio_controller.h"
 #include "audio_box.h"
 #include "dialog_styling_assistant.h"
@@ -53,7 +54,6 @@
 #include "help_button.h"
 #include "hotkeys.h"
 #include "libresrc/libresrc.h"
-#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "utils.h"
@@ -211,7 +211,7 @@ void DialogStyling::JumpToLine(int n) {
 	// Update grid
 	grid->SelectRow(linen,false);
 	grid->MakeCellVisible(linen,0);
-	grid->editBox->SetToLine(linen);
+	grid->SetActiveLine(grid->GetDialogue(linen));
 
 	// Update display
 	if (PreviewCheck->IsChecked()) VideoContext::Get()->JumpToTime(line->Start.GetMS());
@@ -276,8 +276,7 @@ void DialogStyling::OnActivate(wxActivateEvent &event) {
 	/// @todo Reinstate this when the audio controller is made reachable from here
 	//PlayAudioButton->Enable(audio->loaded);
 	// Update grid
-	if (grid->ass != AssFile::top)
-		grid->LoadFromAss(AssFile::top,false,true);
+	grid->UpdateMaps();
 	// Fix style list
 	Styles->Set(grid->ass->GetStyles());
 	// Fix line selection

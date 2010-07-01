@@ -324,7 +324,7 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 			int cur;
 			if (sel.Count() > 0) cur = sel[0];
 			else {
-				grid->editBox->SetToLine(0);
+				grid->SetActiveLine(grid->GetDialogue(0));
 				grid->SelectRow(0);
 				cur = 0;
 			}
@@ -343,7 +343,7 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 					else if (VideoContext::Get()->GetFrameN() < target2) VideoContext::Get()->JumpToFrame(target2);
 					else {
 						if (cur+1 >= grid->GetRows()) return;
-						grid->editBox->SetToLine(cur+1);
+						grid->SetActiveLine(grid->GetDialogue(cur+1));
 						grid->SelectRow(cur+1);
 						grid->MakeCellVisible(cur+1,0);
 						grid->SetVideoToSubs(true);
@@ -359,7 +359,7 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 					else if (VideoContext::Get()->GetFrameN() > target1) VideoContext::Get()->JumpToFrame(target1);
 					else {
 						if (cur-1 < 0) return;
-						grid->editBox->SetToLine(cur-1);
+						grid->SetActiveLine(grid->GetDialogue(cur-1));
 						grid->SelectRow(cur-1);
 						grid->MakeCellVisible(cur-1,0);
 						grid->SetVideoToSubs(false);

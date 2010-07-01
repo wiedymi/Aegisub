@@ -35,8 +35,8 @@
 
 
 
+class AssDialogue;
 class AudioController;
-class SubtitleSelectionController;
 
 
 /// @class AudioTimingController
@@ -132,5 +132,5 @@ public:
 /// @brief Create a standard dialogue audio timing controller
 /// @param audio_controller     The audio controller to own the timing controller
 /// @param selection_controller The selection controller to manage the set of lines being timed
-AudioTimingController *CreateDialogueTimingController(AudioController *audio_controller, SubtitleSelectionController *selection_controller);
+AudioTimingController *CreateDialogueTimingController(AudioController *audio_controller, SelectionController<AssDialogue> *selection_controller);
 

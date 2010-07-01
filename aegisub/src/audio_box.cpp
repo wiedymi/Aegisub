@@ -51,6 +51,7 @@
 #include <libaegisub/log.h>
 
 #include "include/aegisub/audio_player.h"
+#include "selection_controller.h"
 #include "audio_controller.h"
 #include "audio_box.h"
 #include "audio_display.h"
@@ -110,7 +111,7 @@ enum AudioBoxControlIDs {
 /// @brief Constructor 
 /// @param parent 
 ///
-AudioBox::AudioBox(wxWindow *parent, AudioController *_controller, SubtitleSelectionController *selection_controller)
+AudioBox::AudioBox(wxWindow *parent, AudioController *_controller, SelectionController<AssDialogue> *selection_controller)
 : wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISED)
 , controller(_controller)
 , selection_controller(selection_controller)

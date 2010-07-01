@@ -220,7 +220,7 @@ bool DialogTranslation::JumpToLine(int n,int block) {
 	grid->BeginBatch();
 	grid->SelectRow(curline);
 	grid->MakeCellVisible(curline,0);
-	grid->editBox->SetToLine(curline);
+	grid->SetActiveLine(current);
 	grid->EndBatch();
 
 	// Adds blocks

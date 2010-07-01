@@ -43,6 +43,7 @@
 #include <wx/filename.h>
 #endif
 
+#include "selection_controller.h"
 #include "audio_controller.h"
 #include "include/aegisub/audio_provider.h"
 #include "include/aegisub/audio_player.h"
@@ -52,7 +53,6 @@
 #include "audio_timing.h"
 #include "compat.h"
 #include "video_context.h"
-#include "selection_controller.h"
 #include "vfr.h"
 
 

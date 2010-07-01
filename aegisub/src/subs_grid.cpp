@@ -41,6 +41,7 @@
 
 #ifndef AGI_PRE
 #include <algorithm>
+#include <utility>
 
 #include <wx/clipbrd.h>
 #include <wx/filename.h>
@@ -52,6 +53,7 @@
 #include "ass_override.h"
 #include "ass_style.h"
 #include "include/aegisub/audio_provider.h"
+#include "selection_controller.h"
 #include "audio_controller.h"
 #include "audio_box.h"
 #include "charset_conv.h"
@@ -60,7 +62,6 @@
 #include "hotkeys.h"
 #include "main.h"
 #include "options.h"
-#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "utils.h"
@@ -125,6 +126,7 @@ SubtitlesGrid::SubtitlesGrid(FrameMain* parentFr, wxWindow *parent, wxWindowID i
 /// @brief Destructor 
 ///
 SubtitlesGrid::~SubtitlesGrid() {
+	ClearMaps();
 }
 
 
@@ -271,8 +273,7 @@ void SubtitlesGrid::OnKeyDown(wxKeyEvent &event) {
 			if (n < nrows-1) {
 				SwapLines(n,n+1);
 				SelectRow(n+1);
-				editBox->SetToLine(n+1);
-				AnnounceSelectedSetChanged();
+				//editBox->SetToLine(n+1);
 			}
 			return;
 		}
@@ -282,8 +283,7 @@ void SubtitlesGrid::OnKeyDown(wxKeyEvent &event) {
 			if (n > 0) {
 				SwapLines(n-1,n);
 				SelectRow(n-1);
-				editBox->SetToLine(n-1);
-				AnnounceSelectedSetChanged();
+				//editBox->SetToLine(n-1);
 			}
 			return;
 		}
@@ -474,8 +474,7 @@ void SubtitlesGrid::OnInsertBefore (wxCommandEvent &event) {
 	// Insert it
 	InsertLine(def,n,false);
 	SelectRow(n);
-	editBox->SetToLine(n);
-	AnnounceSelectedSetChanged();
+	SetActiveLine(def);
 	EndBatch();
 }
 
@@ -507,8 +506,7 @@ void SubtitlesGrid::OnInsertAfter (wxCommandEvent &event) {
 	// Insert it
 	InsertLine(def,n,true);
 	SelectRow(n+1);
-	editBox->SetToLine(n+1);
-	AnnounceSelectedSetChanged();
+	SetActiveLine(def);
 	EndBatch();
 }
 
@@ -532,8 +530,7 @@ void SubtitlesGrid::OnInsertBeforeVideo (wxCommandEvent &event) {
 	// Insert it
 	InsertLine(def,n,false);
 	SelectRow(n);
-	editBox->SetToLine(n);
-	AnnounceSelectedSetChanged();
+	SetActiveLine(def);
 	EndBatch();
 }
 
@@ -557,8 +554,7 @@ void SubtitlesGrid::OnInsertAfterVideo (wxCommandEvent &event) {
 	// Insert it
 	InsertLine(def,n,true);
 	SelectRow(n+1);
-	editBox->SetToLine(n+1);
-	AnnounceSelectedSetChanged();
+	SetActiveLine(def);
 	EndBatch();
 }
 
@@ -803,90 +799,45 @@ void SubtitlesGrid::OnAudioClip(wxCommandEvent &event) {
 /// @brief Clears grid and sets it to default 
 /// @param _ass 
 ///
-void SubtitlesGrid::LoadDefault (AssFile *_ass) {
-	if (_ass) {
-		ass = _ass;
-	}
+void SubtitlesGrid::LoadDefault () {
+	ass = AssFile::top;
 	ass->LoadDefault();
-	LoadFromAss(NULL,false,true);
+	UpdateMaps();
+
+	assert(!line_iter_map.empty());
+	SetActiveLine(GetDialogue(0));
+	SelectRow(0);
 }
 
 
 
-/// @brief Read data from ASS file structure 
-/// @param _ass          
-/// @param keepSelection 
-/// @param dontModify    
-///
-void SubtitlesGrid::LoadFromAss (AssFile *_ass,bool keepSelection,bool dontModify) {
-	// Store selected rows
-	wxArrayInt srows;
-	if (keepSelection) {
-		srows = GetSelection();
-	}
+/// @brief Clear internal data structures
+void SubtitlesGrid::ClearMaps() {
+	line_iter_map.clear();
+	BaseGrid::ClearMaps();
+}
 
-	// Clear grid
+
+
+/// @brief Update internal data structures
+void SubtitlesGrid::UpdateMaps() {
 	BeginBatch();
-	int oldPos = yPos;
-	Clear();
-	if (keepSelection) yPos = oldPos;
 
-	// Clear from video
 	VideoContext::Get()->curLine = NULL;
+	line_iter_map.clear();
+	BaseGrid::ClearMaps();
 
-	// Get subtitles
-	if (_ass) ass = _ass;
-	else {
-		if (!ass) throw _T("Trying to set subs grid to current ass file, but there is none");
+	ass = AssFile::top;
+
+	BaseGrid::UpdateMaps();
+
+	for (entryIter it = ass->Line.begin(); it != ass->Line.end(); ++it) {
+		AssDialogue *dlg = dynamic_cast<AssDialogue*>(*it);
+		if (dlg) line_iter_map.insert(std::pair<AssDialogue*,entryIter>(dlg, it));
 	}
 
-	// Run through subs adding them
-	int n = 0;
-	AssDialogue *curdiag;
-	ready = false;
-	for (entryIter cur=ass->Line.begin();cur != ass->Line.end();cur++) {
-		curdiag = dynamic_cast<AssDialogue*>(*cur);
-		if (curdiag) {
-			diagMap.push_back(cur);
-			diagPtrMap.push_back(curdiag);
-			selMap.push_back(false);
-			n++;
-		}
-	}
-	ready = true;
-
-	// Restore selection
-	if (keepSelection) {
-		for (size_t i=0;i<srows.size();i++) {
-			SelectRow(srows[i],true);
-		}
-	}
-
-	// Select first
-	else {
-		SelectRow(0);
-		AnnounceSelectedSetChanged();
-	}
-
-	// Commit
-	if (!AssFile::Popping) {
-		if (dontModify) AssFile::StackPush(_("load"));
-		else ass->FlagAsModified(_("load"));
-	}
-	CommitChanges();
-
-	// Set edit box
 	if (editBox) {
-		int nrows = GetRows();
-		int firstsel = -1;
-		for (int i=0;i<nrows;i++) {
-			if (IsInSelection(i,0)) {
-				firstsel = i;
-				break;
-			}
-		}
 		editBox->UpdateGlobals();
-		if (_ass) editBox->SetToLine(firstsel);
 	}
 
 	// Finish setting layout
@@ -902,20 +853,13 @@ void SubtitlesGrid::LoadFromAss (AssFile *_ass,bool keepSelection,bool dontModif
 /// @return 
 ///
 void SubtitlesGrid::SwapLines(int n1,int n2) {
-	// Check bounds and get iterators
-	int rows = GetRows();
-	if (n1 < 0 || n2 < 0 || n1 >= rows || n2 >= rows) return;
-	entryIter src1 = diagMap.at(n1);
-	entryIter src2 = diagMap.at(n2);
+	AssDialogue *dlg1 = GetDialogue(n1);
+	AssDialogue *dlg2 = GetDialogue(n2);
+	if (n1 == 0 || n2 == 0) return;
 	
-	// Swaps
-	iter_swap(src1,src2);
+	std::swap(*dlg1, *dlg2);
+	UpdateMaps();
 
-	// Update mapping
-	diagMap[n1] = src1;
-	diagPtrMap[n1] = (AssDialogue*) *src1;
-	diagMap[n2] = src2;
-	diagPtrMap[n2] = (AssDialogue*) *src2;
 	ass->FlagAsModified(_("swap lines"));
 	CommitChanges();
 }
@@ -929,20 +873,13 @@ void SubtitlesGrid::SwapLines(int n1,int n2) {
 /// @param update 
 ///
 void SubtitlesGrid::InsertLine(AssDialogue *line,int n,bool after,bool update) {
-	// Check bounds and get iterators
-	entryIter pos = diagMap.at(n);
+	AssDialogue *rel_line = GetDialogue(n + (after?1:0));
+	entryIter pos;
+	if (rel_line) pos = line_iter_map[rel_line];
+	else pos = ass->Line.end();
 	
-	// Insert
-	if (after) {
-		n++;
-		pos++;
-	}
 	entryIter newIter = ass->Line.insert(pos,line);
-	//InsertRows(n);
-	//SetRowToLine(n,line);
-	diagMap.insert(diagMap.begin() + n,newIter);
-	diagPtrMap.insert(diagPtrMap.begin() + n,(AssDialogue*)(*newIter));
-	selMap.insert(selMap.begin() + n,false);
+	UpdateMaps();
 
 	// Update
 	if (update) {
@@ -1084,12 +1021,12 @@ void SubtitlesGrid::PasteLines(int n,bool pasteOver) {
 
 			// Set selection
 			if (!pasteOver) {
-				SelectRow(n);
-				for (int i=n+1;i<n+inserted;i++) {
-					SelectRow(i,true);
+				Selection newsel;
+				for (int i=n;i<n+inserted;i++) {
+					newsel.insert(GetDialogue(i));
 				}
-				editBox->SetToLine(n);
-				AnnounceSelectedSetChanged();
+				SetSelectedSet(newsel);
+				SetActiveLine(GetDialogue(GetFirstSelRow()));
 			}
 		}
 	}
@@ -1107,19 +1044,22 @@ void SubtitlesGrid::PasteLines(int n,bool pasteOver) {
 void SubtitlesGrid::DeleteLines(wxArrayInt target, bool flagModified) {
 	// Check if it's wiping file
 	int deleted = 0;
+	entryIter before_first = line_iter_map[GetDialogue(0)]; --before_first;
+	int old_active_line_index = GetDialogueIndex(GetActiveLine());
 
 	// Delete lines
 	int size = target.Count();
 	for (int i=0;i<size;i++) {
-		delete (*diagMap.at(target[i]));
-		ass->Line.erase(diagMap.at(target[i]));
+		ass->Line.erase(line_iter_map[GetDialogue(target[i])]);
 		deleted++;
 	}
 
 	// Add default line if file was wiped
 	if (GetRows() == deleted) {
 		AssDialogue *def = new AssDialogue;
-		ass->Line.push_back(def);
+		++before_first;
+		ass->Line.insert(before_first, def);
+		old_active_line_index = 0;
 	}
 
 	// Update
@@ -1131,10 +1071,8 @@ void SubtitlesGrid::DeleteLines(wxArrayInt target, bool flagModified) {
 	}
 
 	// Update selected line
-	int newSelected = MID(0, editBox->linen,GetRows() - 1);
-	editBox->SetToLine(newSelected);
-	SelectRow(newSelected);
-	AnnounceSelectedSetChanged();
+	SelectRow(old_active_line_index);
+	SetActiveLine(GetDialogue(old_active_line_index));
 }
 
 
@@ -1189,10 +1127,13 @@ void SubtitlesGrid::JoinLines(int n1,int n2,bool concat) {
 	cur->Text = finalText;
 
 	// Delete remaining lines (this will auto commit)
-	DeleteLines(GetRangeArray(n1+1,n2));
+	DeleteLines(GetRangeArray(n1+1,n2), false);
+
+	ass->FlagAsModified(_("join lines"));
+	CommitChanges();
 
 	// Select new line
-	editBox->SetToLine(n1);
+	SetActiveLine(cur);
 	SelectRow(n1);
 }
 
@@ -1278,12 +1219,14 @@ void SubtitlesGrid::JoinAsKaraoke(int n1,int n2) {
 	cur->Text = finalText;
 
 	// Delete remaining lines (this will auto commit)
-	DeleteLines(GetRangeArray(n1+1,n2));
+	DeleteLines(GetRangeArray(n1+1,n2), false);
+
+	ass->FlagAsModified(_("join as karaoke"));
+	CommitChanges();
 
 	// Select new line
-	editBox->SetToLine(n1);
+	SetActiveLine(cur);
 	SelectRow(n1);
-	AnnounceSelectedSetChanged();
 }
 
 
@@ -1315,12 +1258,12 @@ void SubtitlesGrid::DuplicateLines(int n1,int n2,bool nextFrame) {
 	}
 
 	// Select new lines
-	SelectRow(n1+step,false);
-	for (int i=n1+1;i<=n2;i++) {
-		SelectRow(i+step,true);
+	Selection newsel;
+	for (int i=n1;i<=n2;i++) {
+		newsel.insert(GetDialogue(i+step));
 	}
-	editBox->SetToLine(n1+step);
-	AnnounceSelectedSetChanged();
+	SetSelectedSet(newsel);
+	SetActiveLine(GetDialogue(n1+step));
 }
 
 
@@ -1395,7 +1338,7 @@ void SubtitlesGrid::SplitLine(int n,int pos,int mode,wxString textIn) {
 	}
 
 	// Update editbox and audio
-	editBox->SetToLine(n);
+	//editBox->SetToLine(n);
 
 	// Commit
 	ass->FlagAsModified(_("split"));
@@ -1536,25 +1479,20 @@ void SubtitlesGrid::SetVideoToSubs(bool start) {
 
 
 
-/// @brief (ie. not as displayed in the grid but as represented in the file) Retrieve a list of selected lines in the actual ASS file 
+/// @brief Retrieve a list of selected lines in the actual ASS file (ie. not as displayed in the grid but as represented in the file)
 /// @return 
 ///
 std::vector<int> SubtitlesGrid::GetAbsoluteSelection() {
 	std::vector<int> result;
 	result.reserve(GetNumberSelection());
 
-	int nrows = GetRows();
-	for (int i = 0; i != nrows; ++i) {
-		if (selMap.at(i)) {
-			entryIter l = diagMap.at(i);
-			int n = 0;
-			for (std::list<AssEntry*>::iterator j = ass->Line.begin(); j != ass->Line.end(); ++j, ++n) {
-				if (j == l) {
-					result.push_back(n);
-					break;
-				}
-			}
-		}
+	Selection sel;
+	GetSelectedSet(sel);
+
+	int line_index = 0;
+	for (entryIter it = ass->Line.begin(); it != ass->Line.end(); ++it, ++line_index) {
+		if (sel.find(dynamic_cast<AssDialogue*>(*it)) != sel.end())
+			result.push_back(line_index);
 	}
 
 	return result;
@@ -1562,20 +1500,24 @@ std::vector<int> SubtitlesGrid::GetAbsoluteSelection() {
 
 
 
-/// @brief selection vector must be sorted Update list of selected lines from absolute selection 
+/// @brief Update list of selected lines from absolute selection
 /// @param selection 
 ///
 void SubtitlesGrid::SetSelectionFromAbsolute(std::vector<int> &selection) {
+	Selection newsel;
 
-	int nrows = GetRows();
+	std::sort(selection.begin(), selection.end());
+
+	int i = 0;
 	std::list<AssEntry*>::iterator j = ass->Line.begin();
-	int index = 0;
-	for (int i = 0; i != nrows; ++i) {
-		entryIter l = diagMap.at(i);
-		while(j != l && j != ass->Line.end()) ++j, ++index;
-		if(j == l && binary_search(selection.begin(), selection.end(), index)) {
-			selMap[i] = true;
-		} else selMap[i] = false;
+	
+	for (size_t selveci = 0; selveci < selection.size(); ++selveci) {
+		while (i != selection[selveci] && j != ass->Line.end()) ++i, ++j;
+		if (j == ass->Line.end()) break; /// @todo Report error somehow
+		AssDialogue *dlg = dynamic_cast<AssDialogue*>(*j);
+		if (dlg) newsel.insert(dlg);
 	}
+
+	SetSelectedSet(newsel);
 }
 

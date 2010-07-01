@@ -83,8 +83,8 @@ private:
 	void DoRefresh();
 
 protected:
-	// From SubtitleSelectionListener inherited protected by VisualTool<>
-	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection);
+	// Overriding SubtitleSelectionListener inherited from base VisualTool<>
+	virtual void OnSelectedSetChanged(const Selection &lines_added, const Selection &lines_removed);
 
 public:
 	VisualToolDrag(VideoDisplay *parent, VideoState const& video, wxToolBar *toolbar);

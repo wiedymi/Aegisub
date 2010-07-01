@@ -49,6 +49,7 @@
 #endif
 
 #include "ass_file.h"
+#include "selection_controller.h"
 #include "audio_controller.h"
 #include "audio_box.h"
 #ifdef WITH_AUTOMATION
@@ -74,7 +75,6 @@
 #include "main.h"
 #include "options.h"
 #include "standard_paths.h"
-#include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "text_file_reader.h"
@@ -645,11 +645,11 @@ void FrameMain::InitContents() {
 void FrameMain::DeInitContents() {
 	if (detachedVideo) detachedVideo->Destroy();
 	if (stylingAssistant) stylingAssistant->Destroy();
+	SubsGrid->ClearMaps();
+	delete EditBox;
+	delete videoBox;
 	AssFile::StackReset();
 	delete AssFile::top;
-	delete EditBox;
-	delete audioBox;
-	delete videoBox;
 	HelpButton::ClearPages();
 }
 
@@ -716,17 +716,18 @@ void FrameMain::LoadSubtitles (wxString filename,wxString charset) {
 		}
 
 		// Proceed into loading
-		SubsGrid->Clear();
+		SubsGrid->ClearMaps();
 		AssFile::StackReset();
 		if (isFile) {
 			AssFile::top->Load(filename,charset);
-			SubsGrid->LoadFromAss(AssFile::top,false,true);
+			SubsGrid->SetSelectedSet(SubtitleSelectionController::Selection());
+			SubsGrid->UpdateMaps();
 			wxFileName fn(filename);
 			StandardPaths::SetPathValue(_T("?script"),fn.GetPath());
 			OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(fn.GetPath()));
 		}
 		else {
-			SubsGrid->LoadDefault(AssFile::top);
+			SubsGrid->LoadDefault();
 			StandardPaths::SetPathValue(_T("?script"),_T(""));
 		}
 	}

@@ -47,6 +47,8 @@
 #include <wx/scrolbar.h>
 #endif
 
+#include "selection_controller.h"
+
 
 //////////////
 // Prototypes
@@ -59,12 +61,16 @@ class FrameMain;
 typedef std::list<AssEntry*>::iterator entryIter;
 
 
+typedef SelectionController<AssDialogue> SubtitleSelectionController;
+typedef SelectionListener<AssDialogue> SubtitleSelectionListener;
+
+
 /// DOCME
 /// @class BaseGrid
 /// @brief DOCME
 ///
 /// DOCME
-class BaseGrid : public wxWindow, public BaseSubtitleSelectionController {
+class BaseGrid : public wxWindow, public BaseSelectionController<AssDialogue> {
 private:
 
 	/// DOCME
@@ -99,6 +105,11 @@ private:
 
 	void DrawImage(wxDC &dc);
 
+	Selection selection;
+	AssDialogue *active_line;
+	std::vector<AssDialogue*> index_line_map;
+	std::map<AssDialogue*,int> line_index_map;
+
 protected:
 
 	/// DOCME
@@ -118,39 +129,22 @@ protected:
 	/// DOCME
 	int yPos;
 
-	/// DOCME
-	std::vector<int> selMap;
-
 public:
-	// SubtitleSelectionController interface
+	// SelectionController implementation
 	virtual void SetActiveLine(AssDialogue *new_line);
-	virtual AssDialogue * GetActiveLine() const;
-	virtual void SetSelectedSet(const SubtitleSelection &new_selection);
-	virtual void GetSelectedSet(SubtitleSelection &selection) const;
+	virtual AssDialogue * GetActiveLine() const { return active_line; }
+	virtual void SetSelectedSet(const Selection &new_selection);
+	virtual void GetSelectedSet(Selection &res) const { res.insert(selection.begin(), selection.end()); }
 	virtual void NextLine();
 	virtual void PrevLine();
-	// AddSelectionListener implemented in BaseSubtitleSelectionController
-	// RemoveSelectionListener implemented in BaseSubtitleSelectionController
 
 public:
 
 	/// DOCME
 	SubsEditBox *editBox;
 
-	/// Called by SubsEditBox when the active line changes, to announce to selection listeners
-	void AnnounceActiveLineChanged();
-	/// Called from various places when the selection is updated
-	void AnnounceSelectedSetChanged();
-
-
 	/// DOCME
 	bool byFrame;
-
-	/// DOCME
-	std::vector<entryIter> diagMap;
-
-	/// DOCME
-	std::vector<AssDialogue *> diagPtrMap;
 
 	void AdjustScrollbar();
 	void SetColumnWidths();
@@ -168,7 +162,7 @@ public:
 	void SelectVisible();
 	wxArrayInt GetSelection(bool *continuous=NULL) const;
 
-	void Clear();
+	void ClearMaps();
 	void UpdateMaps();
 	void UpdateStyle();
 
@@ -177,6 +171,7 @@ public:
 	void MakeCellVisible(int row, int col,bool center=true);
 
 	AssDialogue *GetDialogue(int n) const;
+	int GetDialogueIndex(AssDialogue *diag) const;
 
 	BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = wxWANTS_CHARS, const wxString& name = wxPanelNameStr);
 	~BaseGrid();

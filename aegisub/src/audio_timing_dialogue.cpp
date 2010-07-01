@@ -41,9 +41,9 @@
 
 #include "ass_time.h"
 #include "ass_dialogue.h"
+#include "selection_controller.h"
 #include "audio_controller.h"
 #include "audio_timing.h"
-#include "selection_controller.h"
 #include "utils.h"
 
 
@@ -113,7 +113,7 @@ public:
 ///
 /// Another later expansion will be to affect the timing of multiple selected
 /// lines at the same time, if they e.g. have end1==start2.
-class AudioTimingControllerDialogue : public AudioTimingController, private SubtitleSelectionListener {
+class AudioTimingControllerDialogue : public AudioTimingController, private SelectionListener<AssDialogue> {
 	/// Start and end markers for the active line
 	AudioMarkerDialogueTiming markers[2];
 
@@ -134,12 +134,12 @@ class AudioTimingControllerDialogue : public AudioTimingController, private Subt
 	void UpdateSelection();
 
 	/// Selection controller managing the set of lines currently being timed
-	SubtitleSelectionController *selection_controller;
+	SelectionController<AssDialogue> *selection_controller;
 
 private:
 	// SubtitleSelectionListener interface
 	virtual void OnActiveLineChanged(AssDialogue *new_line);
-	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection);
+	virtual void OnSelectedSetChanged(const Selection &lines_added, const Selection &lines_removed);
 
 public:
 	// AudioMarkerProvider interface
@@ -163,13 +163,13 @@ public:
 	// Specific interface
 
 	/// @brief Constructor
-	AudioTimingControllerDialogue(AudioController *audio_controller, SubtitleSelectionController *selection_controller);
+	AudioTimingControllerDialogue(AudioController *audio_controller, SelectionController<AssDialogue> *selection_controller);
 	virtual ~AudioTimingControllerDialogue();
 };
 
 
 
-AudioTimingController *CreateDialogueTimingController(AudioController *audio_controller, SubtitleSelectionController *selection_controller)
+AudioTimingController *CreateDialogueTimingController(AudioController *audio_controller, SelectionController<AssDialogue> *selection_controller)
 {
 	return new AudioTimingControllerDialogue(audio_controller, selection_controller);
 }
@@ -228,7 +228,7 @@ void AudioMarkerDialogueTiming::InitPair(AudioMarkerDialogueTiming *marker1, Aud
 
 // AudioTimingControllerDialogue
 
-AudioTimingControllerDialogue::AudioTimingControllerDialogue(AudioController *audio_controller, SubtitleSelectionController *selection_controller)
+AudioTimingControllerDialogue::AudioTimingControllerDialogue(AudioController *audio_controller, SelectionController<AssDialogue> *selection_controller)
 : timing_modified(false)
 , audio_controller(audio_controller)
 , selection_controller(selection_controller)
@@ -288,7 +288,7 @@ void AudioTimingControllerDialogue::OnActiveLineChanged(AssDialogue *new_line)
 
 
 
-void AudioTimingControllerDialogue::OnSelectedSetChanged(const SubtitleSelection &new_selection)
+void AudioTimingControllerDialogue::OnSelectedSetChanged(const Selection &lines_added, const Selection &lines_removed)
 {
 	/// @todo Create new passive markers, perhaps
 }
@@ -352,9 +352,9 @@ void AudioTimingControllerDialogue::Commit()
 	// Store back new times
 	if (timing_modified)
 	{
-		SubtitleSelection sel;
+		Selection sel;
 		selection_controller->GetSelectedSet(sel);
-		for (SubtitleSelection::iterator sub = sel.begin(); sub != sel.end(); ++sub)
+		for (Selection::iterator sub = sel.begin(); sub != sel.end(); ++sub)
 		{
 			(*sub)->Start.SetMS(new_start_ms);
 			(*sub)->End.SetMS(new_end_ms);

@@ -106,11 +106,6 @@ private:
 	bool selChanged; /// Has the selection already been changed in the current click?
 
 protected:
-	// SubtitleSelectionListener implementation
-	virtual void OnActiveLineChanged(AssDialogue *new_line) { };
-	virtual void OnSelectedSetChanged(const SubtitleSelection &new_selection) { };
-
-protected:
 	VideoDisplay *parent; /// VideoDisplay which this belongs to, used to frame conversion
 	bool holding; /// Is a hold currently in progress?
 	AssDialogue *curDiag; /// Active dialogue line for a hold; only valid when holding = true
@@ -192,6 +187,12 @@ protected:
 
 	typedef typename std::vector<FeatureType>::iterator feature_iterator;
 	typedef typename std::vector<FeatureType>::const_iterator feature_const_iterator;
+
+protected:
+	// SubtitleSelectionListener implementation
+	// (overridden by deriving classes too)
+	virtual void OnActiveLineChanged(AssDialogue *new_line) { }
+	virtual void OnSelectedSetChanged(const Selection &lines_added, const Selection &lines_removed) { }
 
 public:
 	/// @brief Handler for all mouse events

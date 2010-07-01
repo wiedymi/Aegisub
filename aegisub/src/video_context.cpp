@@ -550,7 +550,7 @@ void VideoContext::Play() {
 ///
 void VideoContext::PlayLine() {
 	// Get line
-	AssDialogue *curline = grid->GetDialogue(grid->editBox->linen);
+	AssDialogue *curline = grid->GetActiveLine();
 	if (!curline) return;
 
 	// Start playing audio
