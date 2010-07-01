@@ -135,7 +135,6 @@ VideoDisplay::VideoDisplay(VideoBox *box, VideoSlider *ControlSlider, wxTextCtrl
 , SubsPosition(SubsPosition)
 , PositionDisplay(PositionDisplay)
 , videoOut(new VideoOutGL())
-, tool(new VisualToolCross(this, video, box->visualSubToolBar))
 , activeMode(Video_Mode_Standard)
 , toolBar(box->visualSubToolBar)
 , scriptW(INT_MIN)
@@ -163,6 +162,8 @@ void VideoDisplay::ShowCursor(bool show) {
 void VideoDisplay::SetFrame(int frameNumber) {
 	VideoContext *context = VideoContext::Get();
 	ControlSlider->SetValue(frameNumber);
+
+	currentFrame = frameNumber;
 
 	// Get time for frame
 	{
@@ -205,43 +206,53 @@ void VideoDisplay::SetFrame(int frameNumber) {
 	// Render the new frame
 	if (context->IsLoaded()) {
 		context->GetScriptSize(scriptW, scriptH);
-		tool->Refresh();
+		tool->SetFrame(frameNumber);
 
-		AegiVideoFrame frame;
-		try {
-			frame = context->GetFrame(frameNumber);
-		}
-		catch (const wxChar *err) {
-			wxLogError(
-				L"Failed seeking video. The video file may be corrupt or incomplete.\n"
-				L"Error message reported: %s",
-				err);
-		}
-		catch (...) {
-			wxLogError(
-				L"Failed seeking video. The video file may be corrupt or incomplete.\n"
-				L"No further error message given.");
-		}
-		try {
-			videoOut->UploadFrameData(frame);
-		}
-		catch (const VideoOutInitException& err) {
-			wxLogError(
-				L"Failed to initialize video display. Closing other running programs and updating your video card drivers may fix this.\n"
-				L"Error message reported: %s",
-				err.GetMessage().c_str());
-			context->Reset();
-		}
-		catch (const VideoOutRenderException& err) {
-			wxLogError(
-				L"Could not upload video frame to graphics card.\n"
-				L"Error message reported: %s",
-				err.GetMessage().c_str());
-		}
+		UploadFrameData();
 	}
 	Render();
+}
 
-	currentFrame = frameNumber;
+void VideoDisplay::UploadFrameData() {
+	VideoContext *context = VideoContext::Get();
+	AegiVideoFrame frame;
+	try {
+		frame = context->GetFrame(currentFrame);
+	}
+	catch (const wxChar *err) {
+		wxLogError(
+			L"Failed seeking video. The video file may be corrupt or incomplete.\n"
+			L"Error message reported: %s",
+			err);
+	}
+	catch (...) {
+		wxLogError(
+			L"Failed seeking video. The video file may be corrupt or incomplete.\n"
+			L"No further error message given.");
+	}
+	try {
+		videoOut->UploadFrameData(frame);
+	}
+	catch (const VideoOutInitException& err) {
+		wxLogError(
+			L"Failed to initialize video display. Closing other running programs and updating your video card drivers may fix this.\n"
+			L"Error message reported: %s",
+			err.GetMessage().c_str());
+		context->Reset();
+	}
+	catch (const VideoOutRenderException& err) {
+		wxLogError(
+			L"Could not upload video frame to graphics card.\n"
+			L"Error message reported: %s",
+			err.GetMessage().c_str());
+	}
+}
+
+void VideoDisplay::Refresh() {
+	UploadFrameData();
+	if (!tool.get()) tool.reset(new VisualToolCross(this, video, toolBar));
+	tool->Refresh();
+	Render();
 }
 
 void VideoDisplay::SetFrameRange(int from, int to) {
@@ -327,16 +338,16 @@ void VideoDisplay::DrawOverscanMask(int sizeH, int sizeV, wxColor color, double 
 	gl.SetLineColour(wxColor(0, 0, 0), 0.0, 1);
 
 	// Draw sides
-	E(gl.DrawRectangle(gapH, 0, w-gapH, sizeV));               // Top
+	E(gl.DrawRectangle(gapH, 0, w-gapH, sizeV));   // Top
 	E(gl.DrawRectangle(w-sizeH, gapV, w, h-gapV)); // Right
 	E(gl.DrawRectangle(gapH, h-sizeV, w-gapH, h)); // Bottom
-	E(gl.DrawRectangle(0, gapV, sizeH, h-gapV));               // Left
+	E(gl.DrawRectangle(0, gapV, sizeH, h-gapV));   // Left
 
 	// Draw rounded corners
-	E(gl.DrawRing(gapH, gapV, rad1, rad2, 1.0, 180.0, 270.0));              // Top-left
-	E(gl.DrawRing(w-gapH, gapV, rad1, rad2, 1.0, 90.0, 180.0));       // Top-right
+	E(gl.DrawRing(gapH, gapV, rad1, rad2, 1.0, 180.0, 270.0));  // Top-left
+	E(gl.DrawRing(w-gapH, gapV, rad1, rad2, 1.0, 90.0, 180.0)); // Top-right
 	E(gl.DrawRing(w-gapH, h-gapV, rad1, rad2, 1.0, 0.0, 90.0)); // Bottom-right
-	E(gl.DrawRing(gapH, h-gapV, rad1, rad2, 1.0,270.0,360.0));        // Bottom-left
+	E(gl.DrawRing(gapH, h-gapV, rad1, rad2, 1.0,270.0,360.0));  // Bottom-left
 
 	E(glDisable(GL_BLEND));
 }
@@ -421,7 +432,7 @@ void VideoDisplay::UpdateSize() {
 
 	tool->Refresh();
 
-	Refresh(false);
+	wxGLCanvas::Refresh(false);
 }
 
 void VideoDisplay::Reset() {

@@ -48,8 +48,6 @@
 #include "video_display.h"
 #include "visual_tool_clip.h"
 
-/// @brief Constructor 
-/// @param _parent 
 VisualToolClip::VisualToolClip(VideoDisplay *parent, VideoState const& video, wxToolBar *)
 : VisualTool<ClipCorner>(parent, video)
 , curX1(0)
@@ -58,18 +56,46 @@ VisualToolClip::VisualToolClip(VideoDisplay *parent, VideoState const& video, wx
 , curY2(video.h)
 , inverse(false)
 {
-	AssDialogue *line = GetActiveDialogueLine();
-	if (line) GetLineClip(line,curX1,curY1,curX2,curY2,inverse);
+	if (curDiag) {
+		GetLineClip(curDiag,curX1,curY1,curX2,curY2,inverse);
+	}
+
+	Feature feat;
+	feat.type = DRAG_SMALL_CIRCLE;
+	features.resize(4, feat);
+
+	feature_iterator cur = features.begin();
+	feats[0] = &*(cur++);
+	feats[1] = &*(cur++);
+	feats[2] = &*(cur++);
+	feats[3] = &*(cur++);
+
+
+	// Top-left
+	int i = 0;
+	feats[i]->horiz = feats[1];
+	feats[i]->vert = feats[2];
+	i++;
+
+	// Top-right
+	feats[i]->horiz = feats[0];
+	feats[i]->vert = feats[3];
+	i++;
+
+	// Bottom-left
+	feats[i]->horiz = feats[3];
+	feats[i]->vert = feats[0];
+	i++;
+
+	// Bottom-right
+	feats[i]->horiz = feats[2];
+	feats[i]->vert = feats[1];
+	i++;
 }
 
-/// @brief Draw 
 void VisualToolClip::Draw() {
-	// Get current line
-	AssDialogue *line = GetActiveDialogueLine();
-	if (!line) return;
+	if (!curDiag) return;
 
-	// Get position
-	if (!dragging && !holding) GetLineClip(line,curX1,curY1,curX2,curY2,inverse);
 	int dx1 = curX1;
 	int dy1 = curY1;
 	int dx2 = curX2;
@@ -99,7 +125,6 @@ void VisualToolClip::Draw() {
 	DrawAllFeatures();
 }
 
-/// @brief Start holding 
 bool VisualToolClip::InitializeHold() {
 	startX = video.x;
 	startY = video.y;
@@ -108,9 +133,7 @@ bool VisualToolClip::InitializeHold() {
 	return true;
 }
 
-/// @brief Update hold 
 void VisualToolClip::UpdateHold() {
-	// Coordinates
 	curX1 = startX;
 	curY1 = startY;
 	curX2 = video.x;
@@ -125,12 +148,10 @@ void VisualToolClip::UpdateHold() {
 	curX2 = MID(0,curX2,video.w);
 	curY1 = MID(0,curY1,video.h);
 	curY2 = MID(0,curY2,video.h);
-	
-	// Features
-	PopulateFeatureList();
+
+	SetFeaturePositions();
 }
 
-/// @brief Commit hold 
 void VisualToolClip::CommitHold() {
 	int x1 = curX1;
 	int x2 = curX2;
@@ -138,81 +159,60 @@ void VisualToolClip::CommitHold() {
 	int y2 = curY2;
 	parent->ToScriptCoords(&x1, &y1);
 	parent->ToScriptCoords(&x2, &y2);
-	SetOverride(GetActiveDialogueLine(), inverse ? L"\\iclip" : L"\\clip",wxString::Format(L"(%i,%i,%i,%i)",x1,y1,x2,y2));
+	SetOverride(curDiag, inverse ? L"\\iclip" : L"\\clip",wxString::Format(L"(%i,%i,%i,%i)",x1,y1,x2,y2));
 }
 
-/// @brief Populate feature list 
-void VisualToolClip::PopulateFeatureList() {
-	// Clear
-	if (features.size() != 4) {
-		ClearSelection(false);
-		features.clear();
-		features.resize(4);
-	}
-
-	// Top-left
-	int i = 0;
-	features[i].x = curX1;
-	features[i].y = curY1;
-	features[i].horiz = &features[1];
-	features[i].vert = &features[2];
-	features[i].type = DRAG_SMALL_CIRCLE;
-	i++;
-
-	// Top-right
-	features[i].x = curX2;
-	features[i].y = curY1;
-	features[i].horiz = &features[0];
-	features[i].vert = &features[3];
-	features[i].type = DRAG_SMALL_CIRCLE;
-	i++;
-
-	// Bottom-left
-	features[i].x = curX1;
-	features[i].y = curY2;
-	features[i].horiz = &features[3];
-	features[i].vert = &features[0];
-	features[i].type = DRAG_SMALL_CIRCLE;
-	i++;
-
-	// Bottom-right
-	features[i].x = curX2;
-	features[i].y = curY2;
-	features[i].horiz = &features[2];
-	features[i].vert = &features[1];
-	features[i].type = DRAG_SMALL_CIRCLE;
-	i++;
-}
-
-/// @brief Initialize 
-/// @param feature 
-bool VisualToolClip::InitializeDrag(ClipCorner*) {
-	curDiag = GetActiveDialogueLine();
+bool VisualToolClip::InitializeDrag(feature_iterator) {
 	curDiag->StripTag(L"\\clip");
 	curDiag->StripTag(L"\\iclip");
 	return true;
 }
 
-/// @brief Update drag 
-/// @param feature 
-void VisualToolClip::UpdateDrag(ClipCorner* feature) {
+void VisualToolClip::UpdateDrag(feature_iterator feature) {
 	// Update brothers
 	feature->horiz->y = feature->y;
 	feature->vert->x = feature->x;
 
 	// Get "cur" from features
-	curX1 = features[0].x;
-	curX2 = features[3].x;
-	curY1 = features[0].y;
-	curY2 = features[3].y;
+	curX1 = feats[0]->x;
+	curX2 = feats[3]->x;
+	curY1 = feats[0]->y;
+	curY2 = feats[3]->y;
 
 	// Make sure p1 < p2
 	if (curX1 > curX2) std::swap(curX1,curX2);
 	if (curY1 > curY2) std::swap(curY1,curY2);
 }
 
-/// @brief Done dragging 
-/// @param feature 
-void VisualToolClip::CommitDrag(ClipCorner*) {
+void VisualToolClip::CommitDrag(feature_iterator) {
 	CommitHold();
+}
+
+void VisualToolClip::SetFeaturePositions() {
+	// Top-left
+	int i = 0;
+	feats[i]->x = curX1;
+	feats[i]->y = curY1;
+	i++;
+
+	// Top-right
+	feats[i]->x = curX2;
+	feats[i]->y = curY1;
+	i++;
+
+	// Bottom-left
+	feats[i]->x = curX1;
+	feats[i]->y = curY2;
+	i++;
+
+	// Bottom-right
+	feats[i]->x = curX2;
+	feats[i]->y = curY2;
+}
+
+void VisualToolClip::DoRefresh() {
+	if (curDiag) {
+		GetLineClip(curDiag,curX1,curY1,curX2,curY2,inverse);
+		SetFeaturePositions();
+	}
 }

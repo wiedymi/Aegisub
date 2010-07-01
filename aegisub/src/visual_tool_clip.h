@@ -57,41 +57,24 @@ public:
 ///
 /// DOCME
 class VisualToolClip : public VisualTool<ClipCorner> {
-private:
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
-
-	/// DOCME
 	int startX,startY,curX1,curY1,curX2,curY2;
 
-	/// DOCME
+	ClipCorner *feats[4];
+
 	bool inverse;
 
-	/// @brief DOCME
-	/// @return 
-	///
 	bool InitializeHold();
 	void UpdateHold();
 	void CommitHold();
 
+	void DoRefresh();
+	void SetFeaturePositions();
 
-	/// @brief DOCME
-	///
-	void PopulateFeatureList();
-	bool InitializeDrag(ClipCorner* feature);
-	void UpdateDrag(ClipCorner* feature);
-	void CommitDrag(ClipCorner* feature);
-
-public:
-	VisualToolClip(VideoDisplay *parent, VideoState const& video, wxToolBar *);
+	bool InitializeDrag(feature_iterator feature);
+	void UpdateDrag(feature_iterator feature);
+	void CommitDrag(feature_iterator feature);
 
 	void Draw();
+public:
+	VisualToolClip(VideoDisplay *parent, VideoState const& video, wxToolBar *);
 };

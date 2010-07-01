@@ -41,6 +41,7 @@
 
 #ifndef AGI_PRE
 #include <algorithm>
+#include <iterator>
 #include <wx/sizer.h>
 #endif
 
@@ -60,6 +61,13 @@
 #include "video_box.h"
 #include "video_context.h"
 #include "video_slider.h"
+
+template<class S1, class S2, class D>
+static inline void set_difference(const S1 &src1, const S2 &src2, D &dst) {
+	std::set_difference(
+		src1.begin(), src1.end(), src2.begin(), src2.end(),
+		std::inserter(dst, dst.begin()));
+}
 
 
 /// @brief Constructor 
@@ -82,6 +90,9 @@ BaseGrid::BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 	byFrame = false;
 	lineHeight = 1; // non-zero to avoid div by 0
 	active_line = 0;
+
+	batch_level = 0;
+	batch_active_line_changed = false;
 
 	// Set scrollbar
 	scrollBar = new wxScrollBar(this,GRID_SCROLLBAR,wxDefaultPosition,wxDefaultSize,wxSB_VERTICAL);
@@ -161,6 +172,8 @@ void BaseGrid::ClearMaps() {
 ///
 void BaseGrid::BeginBatch() {
 	//Freeze();
+
+	++batch_level;
 }
 
 
@@ -168,6 +181,18 @@ void BaseGrid::BeginBatch() {
 /// @brief End batch 
 ///
 void BaseGrid::EndBatch() {
+	--batch_level;
+	assert(batch_level >= 0);
+	if (batch_level == 0) {
+		if (batch_active_line_changed)
+			AnnounceActiveLineChanged(active_line);
+		batch_active_line_changed = false;
+		if (!batch_selection_added.empty() || !batch_selection_removed.empty())
+			AnnounceSelectedSetChanged(batch_selection_added, batch_selection_removed);
+		batch_selection_added.clear();
+		batch_selection_removed.clear();
+	}
+
 	//Thaw();
 	AdjustScrollbar();
 }
@@ -219,10 +244,9 @@ void BaseGrid::SelectRow(int row, bool addToSelected, bool select) {
 	AssDialogue *line = index_line_map[row];
 
 	if (!addToSelected) {
-		Selection old_selection(selection);
-		selection.clear();
-		selection.insert(line);
-		AnnounceSelectedSetChanged(selection, old_selection);
+		Selection sel;
+		if (select) sel.insert(line);
+		SetSelectedSet(sel);
 	}
 
 	else if (select && selection.find(line) == selection.end()) {
@@ -232,6 +256,11 @@ void BaseGrid::SelectRow(int row, bool addToSelected, bool select) {
 		added.insert(line);
 
 		AnnounceSelectedSetChanged(added, Selection());
+
+		int w = 0;
+		int h = 0;
+		GetClientSize(&w,&h);
+		RefreshRect(wxRect(0,(row+1-yPos)*lineHeight,w,lineHeight),false);
 	}
 
 	else if (!select && selection.find(line) != selection.end()) {
@@ -241,6 +270,11 @@ void BaseGrid::SelectRow(int row, bool addToSelected, bool select) {
 		removed.insert(line);
 
 		AnnounceSelectedSetChanged(Selection(), removed);
+
+		int w = 0;
+		int h = 0;
+		GetClientSize(&w,&h);
+		RefreshRect(wxRect(0,(row+1-yPos)*lineHeight,w,lineHeight),false);
 	}
 }
 
@@ -249,28 +283,22 @@ void BaseGrid::SelectRow(int row, bool addToSelected, bool select) {
 /// @brief Selects visible lines 
 ///
 void BaseGrid::SelectVisible() {
-	Selection lines_removed;
-	GetSelectedSet(lines_removed);
+	Selection new_selection;
 
 	int rows = GetRows();
 	bool selectedOne = false;
 	for (int i=0;i<rows;i++) {
-		if (IsDisplayed(GetDialogue(i))) {
+		AssDialogue *diag = GetDialogue(i);
+		if (IsDisplayed(diag)) {
 			if (!selectedOne) {
-				SelectRow(i,false);
 				MakeCellVisible(i,0);
 				selectedOne = true;
 			}
-			else {
-				SelectRow(i,true);
-			}
+			new_selection.insert(diag);
 		}
 	}
 
-	Selection lines_added;
-	GetSelectedSet(lines_added);
-
-	AnnounceSelectedSetChanged(lines_added, lines_removed);
+	SetSelectedSet(new_selection);
 }
 
 
@@ -746,8 +774,14 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 
 		// Toggle selected
 		if (click && ctrl && !shift && !alt) {
-			SelectRow(row,true,!IsInSelection(row,0));
+			bool isSel = IsInSelection(row,0);
+			if (isSel && selection.size() == 1) return;
+			SelectRow(row,true,!isSel);
+			if (dlg == GetActiveLine()) {
+				SetActiveLine(GetDialogue(GetFirstSelRow()));
+			}
 			parentFrame->UpdateToolbar();
+			lastRow = row;
 			return;
 		}
 
@@ -768,7 +802,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 		}
 
 		// Block select
-		if ((click && shift && !ctrl && !alt) || (holding && !ctrl && !alt && !shift)) {
+		if ((click && shift && !alt) || (holding && !ctrl && !alt && !shift)) {
 			if (lastRow != -1) {
 				// Set boundaries
 				int i1 = row;
@@ -779,6 +813,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 
 				// Toggle each
 				Selection newsel;
+				if (ctrl) newsel = selection;
 				for (int i=i1;i<=i2;i++) {
 					newsel.insert(GetDialogue(i));
 				}
@@ -1214,9 +1249,12 @@ wxArrayInt BaseGrid::GetRangeArray(int n1,int n2) const {
 
 
 void BaseGrid::SetSelectedSet(const Selection &new_selection) {
-	Selection old_selection(selection);
+	Selection inserted;
+	Selection removed;
+	set_difference(new_selection, selection, inserted);
+	set_difference(selection, new_selection, removed);
 	selection = new_selection;
-	AnnounceSelectedSetChanged(new_selection, old_selection);
+	AnnounceSelectedSetChanged(inserted, removed);
 	Refresh(false);
 }
 
@@ -1254,4 +1292,34 @@ void BaseGrid::NextLine() {
 		MakeCellVisible(cur_line_i+1, 0, false);
 	}
 }
+
+
+void BaseGrid::AnnounceActiveLineChanged(AssDialogue *new_line) {
+	if (batch_level > 0)
+		batch_active_line_changed = true;
+	else
+		BaseSelectionController<AssDialogue>::AnnounceActiveLineChanged(new_line);
+}
+
+void BaseGrid::AnnounceSelectedSetChanged(const Selection &lines_added, const Selection &lines_removed) {
+	if (batch_level > 0) {
+		// Remove all previously added lines that are now removed
+		Selection temp;
+		set_difference(batch_selection_added, lines_removed, temp);
+		std::swap(temp, batch_selection_added);
+		temp.clear();
+
+		// Remove all previously removed lines that are now added
+		set_difference(batch_selection_removed, lines_added, temp);
+		std::swap(temp, batch_selection_removed);
+
+		// Add new stuff to batch sets
+		batch_selection_added.insert(lines_added.begin(), lines_added.end());
+		batch_selection_removed.insert(lines_removed.begin(), lines_removed.end());
+	}
+	else {
+		BaseSelectionController<AssDialogue>::AnnounceSelectedSetChanged(lines_added, lines_removed);
+	}
+}
+
 

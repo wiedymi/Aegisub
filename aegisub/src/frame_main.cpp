@@ -127,6 +127,21 @@ FrameMain::FrameMain (wxArrayString args)
 	wxPNGHandler *png = new wxPNGHandler;
 	wxImage::AddHandler(png);
 
+	// Splash screen
+	// It doesn't work properly on wxMac, and the jumping dock icon
+	// signals the same as the splash screen either way.
+	SplashScreen *splash = 0;
+#if !_DEBUG && !__WXMAC__
+	if (OPT_GET("App/Splash")->GetBool()) {
+		splash = new SplashScreen(this);
+		splash->Show(true);
+		splash->Update();
+	}
+	else
+#endif
+
+	wxSafeYield();
+
 	// Storage for subs-file-local scripts
 #ifdef WITH_AUTOMATION
 	StartupLog(_T("Create local Automation script manager"));
@@ -166,22 +181,6 @@ FrameMain::FrameMain (wxArrayString args)
 	stylingAssistant = NULL;
 	StartupLog(_T("Initialize inner main window controls"));
 	InitContents();
-	StartupLog(_T("Display main window"));
-	Show();
-
-	// Splash screen
-	// It doesn't work properly on wxMac, and the jumping dock icon
-	// signals the same as the splash screen either way.
-#if !_DEBUG && !__WXMAC__
-	if (OPT_GET("App/Splash")->GetBool()) {
-		SplashScreen *splash = new SplashScreen(this);
-		splash->Show(true);
-		splash->Update();
-	}
-	else
-#endif
-
-	wxSafeYield();
 
 	// Set autosave timer
 	StartupLog(_T("Set up Auto Save"));
@@ -216,6 +215,16 @@ FrameMain::FrameMain (wxArrayString args)
 	}
 
 	PerformVersionCheck(false);
+
+	StartupLog(_T("Display main window"));
+	Show();
+	Freeze();
+	SetDisplayMode(1, 1);
+	Thaw();
+
+	if (splash) {
+		delete splash;
+	}
 
 	//ShowFullScreen(true,wxFULLSCREEN_NOBORDER | wxFULLSCREEN_NOCAPTION);
 	StartupLog(_T("Leaving FrameMain constructor"));
@@ -720,8 +729,11 @@ void FrameMain::LoadSubtitles (wxString filename,wxString charset) {
 		AssFile::StackReset();
 		if (isFile) {
 			AssFile::top->Load(filename,charset);
-			SubsGrid->SetSelectedSet(SubtitleSelectionController::Selection());
 			SubsGrid->UpdateMaps();
+			if (SubsGrid->GetRows()) {
+				SubsGrid->SetActiveLine(SubsGrid->GetDialogue(0));
+				SubsGrid->SelectRow(0);
+			}
 			wxFileName fn(filename);
 			StandardPaths::SetPathValue(_T("?script"),fn.GetPath());
 			OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(fn.GetPath()));
@@ -861,8 +873,9 @@ void FrameMain::SetDisplayMode(int video, int audio) {
 	showVideo = sv;
 	showAudio = sa;
 
-	// Stop
-	Freeze();
+	bool didFreeze = !IsFrozen();
+	if (didFreeze) Freeze();
+
 	VideoContext::Get()->Stop();
 
 	// Set display
@@ -876,9 +889,9 @@ void FrameMain::SetDisplayMode(int video, int audio) {
 	MainSizer->RecalcSizes();
 	MainSizer->Layout();
 	Layout();
-	Show(true);
 	if (showVideo) VideoContext::Get()->UpdateDisplays(true);
-	Thaw();
+
+	if (didFreeze) Thaw();
 }
 
 /// @brief Update title bar 
