@@ -834,11 +834,6 @@ void SubtitlesGrid::UpdateMaps() {
 	for (entryIter it = ass->Line.begin(); it != ass->Line.end(); ++it) {
 		AssDialogue *dlg = dynamic_cast<AssDialogue*>(*it);
 		if (dlg) line_iter_map.insert(std::pair<AssDialogue*,entryIter>(dlg, it));
-		else {
-			for (size_t i=0;i<srows.size();i++) {
-				SelectRow(srows[i],true);
-			}
-		}
 	}
 
 	if (editBox) {
