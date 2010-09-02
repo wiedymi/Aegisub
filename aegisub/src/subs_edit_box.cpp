@@ -517,7 +517,7 @@ void SubsEditBox::CommitTimes(TimeField field) {
 
 	timeCommitId[field] = grid->ass->Commit(_("modify times"), timeCommitId[field]);
 	grid->CommitChanges();
-	int sel0 = grid->GetFirstSelRow();
+	//int sel0 = grid->GetFirstSelRow();
 	//audio->SetDialogue(grid,grid->GetDialogue(sel0),sel0);
 }
 

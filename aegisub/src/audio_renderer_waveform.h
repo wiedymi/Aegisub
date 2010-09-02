@@ -47,7 +47,7 @@ class AudioWaveformRenderer : public AudioRendererBitmapProvider {
 	AudioColorScheme colors_selected;
 
 	/// Pre-allocated buffer for audio fetched from provider
-	void *audio_buffer;
+	char *audio_buffer;
 
 protected:
 	virtual void OnSetProvider();

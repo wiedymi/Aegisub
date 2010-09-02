@@ -110,8 +110,8 @@ enum AudioBoxControlIDs {
 ///
 AudioBox::AudioBox(wxWindow *parent, AudioController *_controller, SelectionController<AssDialogue> *selection_controller)
 : wxPanel(parent,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL|wxBORDER_RAISED)
-, controller(_controller)
 , selection_controller(selection_controller)
+, controller(_controller)
 {
 	// Setup
 	karaokeMode = false;

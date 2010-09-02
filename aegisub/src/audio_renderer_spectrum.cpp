@@ -60,13 +60,6 @@
 #include "main.h"
 #include "utils.h"
 
-
-// Something is defining "min" and "max" macros, and they interfere with using std::min and std::max
-#undef min
-#undef max
-
-
-
 /// Allocates blocks of derived data for the audio spectrum
 struct AudioSpectrumCacheBlockFactory {
 	/// Pointer back to the owning spectrum renderer
