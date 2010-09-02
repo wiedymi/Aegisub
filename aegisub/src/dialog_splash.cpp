@@ -46,9 +46,7 @@
 #endif
 
 #include "dialog_splash.h"
-#include "dialog_tip.h"
 #include "libresrc/libresrc.h"
-#include "options.h"
 
 
 /// @brief Constructor 

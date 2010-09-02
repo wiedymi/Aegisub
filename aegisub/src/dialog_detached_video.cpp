@@ -46,15 +46,10 @@
 #include "dialog_detached_video.h"
 #include "frame_main.h"
 #include "main.h"
-#include "options.h"
 #include "video_box.h"
 #include "video_context.h"
 #include "video_display.h"
 #include "video_slider.h"
-
-#undef min
-#undef max
-
 
 /// @brief Constructor
 /// @param par FrameMain this was spawned from
@@ -81,7 +76,7 @@ DialogDetachedVideo::DialogDetachedVideo(FrameMain *par, const wxSize &initialDi
 	wxPanel *panel = new wxPanel(this,-1,wxDefaultPosition,wxDefaultSize,wxTAB_TRAVERSAL | wxCLIP_CHILDREN);
 	
 	// Video area;
-	videoBox = new VideoBox(panel, true);
+	videoBox = new VideoBox(panel, true, NULL);
 	videoBox->videoDisplay->freeSize = true;
 	videoBox->videoDisplay->SetClientSize(initialDisplaySize);
 	videoBox->videoSlider->grid = par->SubsGrid;

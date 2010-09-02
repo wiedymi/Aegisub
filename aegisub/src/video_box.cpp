@@ -34,9 +34,6 @@
 /// @ingroup main_ui video
 ///
 
-
-////////////
-// Includes
 #include "config.h"
 
 #ifndef AGI_PRE
@@ -44,7 +41,6 @@
 #include <wx/mimetype.h>
 #include <wx/rawbmp.h>
 #include <wx/statline.h>
-#include <wx/tglbtn.h>
 #endif
 
 #include "ass_dialogue.h"
@@ -54,13 +50,11 @@
 #include "help_button.h"
 #include "libresrc/libresrc.h"
 #include "main.h"
-#include "options.h"
 #include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "toggle_bitmap.h"
 #include "utils.h"
-#include "vfr.h"
 #include "video_box.h"
 #include "video_context.h"
 #include "video_display.h"
@@ -71,7 +65,7 @@
 /// @param parent     
 /// @param isDetached 
 ///
-VideoBox::VideoBox(wxWindow *parent, bool isDetached) 
+VideoBox::VideoBox(wxWindow *parent, bool isDetached, wxComboBox *zoomBox)
 : wxPanel (parent,-1)
 {
 	// Parent
@@ -122,9 +116,8 @@ VideoBox::VideoBox(wxWindow *parent, bool isDetached)
 	visualToolBar->SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_BTNFACE));
 
 	// Display
-	videoDisplay = new VideoDisplay(this,videoSlider,VideoPosition,VideoSubsPos,videoPage,-1,wxDefaultPosition,wxDefaultSize,wxSUNKEN_BORDER);
+	videoDisplay = new VideoDisplay(this,videoSlider,VideoPosition,VideoSubsPos,zoomBox,videoPage,-1,wxDefaultPosition,wxDefaultSize,wxSUNKEN_BORDER);
 	VideoContext::Get()->AddDisplay(videoDisplay);
-	videoDisplay->Reset();
 
 	// Set display
 	videoSlider->Display = videoDisplay;

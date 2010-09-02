@@ -46,8 +46,6 @@
 #include "dialog_resample.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
-#include "selection_controller.h"
-#include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "utils.h"
 #include "validators.h"
@@ -65,7 +63,7 @@ DialogResample::DialogResample(wxWindow *parent, SubtitlesGrid *_grid)
 	SetIcon(BitmapToIcon(GETIMAGE(resample_toolbutton_24)));
 
 	// Variables
-	AssFile *subs = AssFile::top;
+	AssFile *subs = _grid->ass;
 	grid = _grid;
 
 	// Margins
@@ -225,7 +223,7 @@ void DialogResample::DoResampleTags (wxString name,int n,AssOverrideParameter *c
 ///
 void DialogResample::OnResample (wxCommandEvent &event) {
 	// Resolutions
-	AssFile *subs = AssFile::top;
+	AssFile *subs = grid->ass;
 	int x1,y1;
 	subs->GetResolution(x1,y1);
 	long x2 = 0;
@@ -322,9 +320,8 @@ void DialogResample::OnResample (wxCommandEvent &event) {
 	subs->SetScriptInfo(_T("PlayResY"),wxString::Format(_T("%i"),y2));
 
 	// Flag as modified
-	subs->FlagAsModified(_("resolution resampling"));
+	subs->Commit(_("resolution resampling"));
 	grid->CommitChanges();
-	grid->editBox->Update();
 	EndModal(0);
 }
 

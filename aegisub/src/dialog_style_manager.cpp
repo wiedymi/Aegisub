@@ -48,12 +48,12 @@
 #include "ass_file.h"
 #include "ass_style.h"
 #include "compat.h"
+#include "dialog_selected_choices.h"
 #include "dialog_style_editor.h"
 #include "dialog_style_manager.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
 #include "main.h"
-#include "options.h"
 #include "selection_controller.h"
 #include "standard_paths.h"
 #include "subs_grid.h"
@@ -195,7 +195,7 @@ DialogStyleManager::DialogStyleManager (wxWindow *parent,SubtitlesGrid *_grid)
 
 	// Populate lists
 	LoadCatalog();
-	LoadCurrentStyles(AssFile::top);
+	LoadCurrentStyles(grid->ass);
 
 	//Set key handlers for lists
 	CatalogList->PushEventHandler(new DialogStyleManagerEvent(this));
@@ -228,7 +228,7 @@ DialogStyleManager::DialogStyleManager (wxWindow *parent,SubtitlesGrid *_grid)
 DialogStyleManager::~DialogStyleManager() {
 	int sel = CatalogList->GetSelection();
 	if (sel != wxNOT_FOUND) {
-		AssFile::top->SetScriptInfo(_T("Last Style Storage"),CatalogList->GetString(sel));
+		grid->ass->SetScriptInfo(_T("Last Style Storage"),CatalogList->GetString(sel));
 	}
 	CatalogList->PopEventHandler(true);
 	StorageList->PopEventHandler(true);
@@ -269,7 +269,7 @@ void DialogStyleManager::LoadCatalog () {
 
 	// Set to default if available
 	StorageActions(false);
-	wxString pickStyle = AssFile::top->GetScriptInfo(_T("Last Style Storage"));
+	wxString pickStyle = grid->ass->GetScriptInfo(_T("Last Style Storage"));
 	if (pickStyle.IsEmpty()) pickStyle = _T("Default");
 	int opt = CatalogList->FindString(pickStyle, false);
 	if (opt != wxNOT_FOUND) {
@@ -569,15 +569,15 @@ void DialogStyleManager::OnCopyToCurrent (wxCommandEvent &) {
 		}
 		if (addStyle) {
 			AssStyle *temp = new AssStyle(*styleStorageMap.at(selections[i]));
-			AssFile::top->InsertStyle(temp);
+			grid->ass->InsertStyle(temp);
 			copied.push_back(styleName);
 		}
 	}
-	LoadCurrentStyles(AssFile::top);
+	LoadCurrentStyles(grid->ass);
 	for (list<wxString>::iterator name = copied.begin(); name != copied.end(); ++name) {
 		CurrentList->SetStringSelection(*name, true);
 	}
-	grid->ass->FlagAsModified(_("style copy"));
+	grid->ass->Commit(_("style copy"));
 	grid->CommitChanges();
 	wxCommandEvent dummy;
 	OnCurrentChange(dummy);
@@ -620,13 +620,13 @@ void DialogStyleManager::OnCurrentCopy (wxCommandEvent &) {
 	DialogStyleEditor editor(this,temp,grid,true,&Store,true);
 	int modified = editor.ShowModal();
 	if (modified) {
-		AssFile::top->InsertStyle(temp);
-		LoadCurrentStyles(AssFile::top);
+		grid->ass->InsertStyle(temp);
+		LoadCurrentStyles(grid->ass);
 		CurrentList->SetStringSelection(temp->name); // but even without this, the copy/delete/copy-to-storage buttons stay enabled?
 	}
 	else delete temp;
 
-	grid->ass->FlagAsModified(_("style copy"));
+	grid->ass->Commit(_("style copy"));
 	grid->CommitChanges();
 	UpdateMoveButtons();
 }
@@ -672,14 +672,14 @@ void DialogStyleManager::PasteToCurrent() {
 		try {
 			s = new AssStyle(st.GetNextToken().Trim(true));
 			if (s->Valid) {
-				while (AssFile::top->GetStyle(s->name) != NULL)
+				while (grid->ass->GetStyle(s->name) != NULL)
 					s->name = _T("Copy of ") + s->name;
 
 				s->UpdateData();
-				AssFile::top->InsertStyle(s);
-				LoadCurrentStyles(AssFile::top);
+				grid->ass->InsertStyle(s);
+				LoadCurrentStyles(grid->ass);
 
-				grid->ass->FlagAsModified(_("style paste"));
+				grid->ass->Commit(_("style paste"));
 				grid->CommitChanges();
 			}
 			else
@@ -754,8 +754,8 @@ void DialogStyleManager::OnCurrentNew (wxCommandEvent &) {
 	DialogStyleEditor editor(this,temp,grid,true,&Store,true);
 	int modified = editor.ShowModal();
 	if (modified) {
-		AssFile::top->InsertStyle(temp);
-		LoadCurrentStyles(AssFile::top);
+		grid->ass->InsertStyle(temp);
+		LoadCurrentStyles(grid->ass);
 	}
 	else delete temp;
 	UpdateMoveButtons();
@@ -823,7 +823,7 @@ void DialogStyleManager::OnCurrentDelete (wxCommandEvent &) {
 		CurrentCopy->Enable(false);
 		CurrentDelete->Enable(false);
 
-		grid->ass->FlagAsModified(_("style delete"));
+		grid->ass->Commit(_("style delete"));
 		grid->CommitChanges();
 	}
 	UpdateMoveButtons();
@@ -854,7 +854,7 @@ void DialogStyleManager::OnCurrentImport(wxCommandEvent &) {
 
 			// Get selection
 			wxArrayInt selections;
-			int res = wxGetSelectedChoices(selections,_("Choose styles to import:"),_("Import Styles"),styles);
+			int res = GetSelectedChoices(this,selections,_("Choose styles to import:"),_("Import Styles"),styles);
 			if (res == -1 || selections.Count() == 0) return;
 			bool modified = false;
 
@@ -870,7 +870,7 @@ void DialogStyleManager::OnCurrentImport(wxCommandEvent &) {
 						// The GetString->FindString mess is a silly workaround for the fact that to vsfilter
 						// (and the duplicate check a few lines above), style names aren't case sensitive, but to the
 						// rest of Aegisub they are.
-						*(AssFile::top->GetStyle(CurrentList->GetString(CurrentList->FindString(styles[selections[i]], false)))) = *temp.GetStyle(styles[selections[i]]);
+						*(grid->ass->GetStyle(CurrentList->GetString(CurrentList->FindString(styles[selections[i]], false)))) = *temp.GetStyle(styles[selections[i]]);
 					}
 					continue;
 				}
@@ -879,13 +879,13 @@ void DialogStyleManager::OnCurrentImport(wxCommandEvent &) {
 				modified = true;
 				AssStyle *tempStyle = new AssStyle;
 				*tempStyle = *temp.GetStyle(styles[selections[i]]);
-				AssFile::top->InsertStyle(tempStyle);
+				grid->ass->InsertStyle(tempStyle);
 			}
 
 			// Update
 			if (modified) {
 				LoadCurrentStyles(grid->ass);
-				grid->ass->FlagAsModified(_("style import"));
+				grid->ass->Commit(_("style import"));
 				grid->CommitChanges();
 			}
 		}
@@ -964,7 +964,7 @@ void DialogStyleManager::OnCurrentSort (wxCommandEvent &) { MoveStyles(false,4);
 /// @param type    
 void DialogStyleManager::MoveStyles(bool storage, int type) {
 	// Variables
-	AssFile *subs = AssFile::top;
+	AssFile *subs = grid->ass;
 	wxListBox *list;
 	if (storage) list = StorageList;
 	else list = CurrentList;
@@ -1082,7 +1082,7 @@ void DialogStyleManager::MoveStyles(bool storage, int type) {
 		}
 
 		// Flag as modified
-		grid->ass->FlagAsModified(_("style move"));
+		grid->ass->Commit(_("style move"));
 		grid->CommitChanges();
 	}
 

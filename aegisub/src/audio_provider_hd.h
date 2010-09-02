@@ -34,9 +34,6 @@
 /// @ingroup audio_input
 ///
 
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <wx/file.h>
 #include <wx/thread.h>
@@ -44,16 +41,12 @@
 
 #include "include/aegisub/audio_provider.h"
 
-
-
 /// DOCME
 /// @class HDAudioProvider
 /// @brief DOCME
 ///
 /// DOCME
 class HDAudioProvider : public AudioProvider {
-private:
-
 	/// DOCME
 	mutable wxMutex diskmutex;
 
@@ -76,12 +69,7 @@ public:
 	HDAudioProvider(AudioProvider *source);
 	~HDAudioProvider();
 
-
-	/// @brief DOCME
-	///
 	bool AreSamplesNativeEndian() const { return samples_native_endian; }
 
 	void GetAudio(void *buf, int64_t start, int64_t count) const;
 };
-
-

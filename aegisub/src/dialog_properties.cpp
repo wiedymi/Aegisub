@@ -34,9 +34,6 @@
 /// @ingroup secondary_ui
 ///
 
-
-///////////
-// Headers
 #include "config.h"
 
 #ifndef AGI_PRE
@@ -50,7 +47,6 @@
 #include "dialog_properties.h"
 #include "help_button.h"
 #include "libresrc/libresrc.h"
-#include "options.h"
 #include "utils.h"
 #include "validators.h"
 #include "video_context.h"
@@ -61,14 +57,12 @@
 /// @brief Constructor 
 /// @param parent 
 ///
-DialogProperties::DialogProperties (wxWindow *parent)
+DialogProperties::DialogProperties (wxWindow *parent, AssFile *subs)
 : wxDialog(parent, -1, _("Script Properties"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
+, subs(subs)
 {
 	// Set icon
 	SetIcon(BitmapToIcon(GETIMAGE(properties_toolbutton_24)));
-
-	// Setup
-	AssFile *subs = AssFile::top;
 
 	// Script details crap
 	wxSizer *TopSizer = new wxStaticBoxSizer(wxHORIZONTAL,this,_("Script"));
@@ -173,22 +167,15 @@ DialogProperties::DialogProperties (wxWindow *parent)
 	CenterOnParent();
 }
 
-
-
 /// @brief Destructor 
 ///
 DialogProperties::~DialogProperties () {
 }
 
-
-///////////////
-// Event table
 BEGIN_EVENT_TABLE(DialogProperties,wxDialog)
 	EVT_BUTTON(wxID_OK,DialogProperties::OnOK)
 	EVT_BUTTON(BUTTON_FROM_VIDEO,DialogProperties::OnSetFromVideo)
 END_EVENT_TABLE()
-
-
 
 /// @brief Apply changes 
 /// @param event 
@@ -211,12 +198,10 @@ void DialogProperties::OnOK(wxCommandEvent &event) {
 	count += SetInfoIfDifferent(_T("Collisions"),col[collision->GetSelection()]);
 	count += SetInfoIfDifferent(_T("ScaledBorderAndShadow"),ScaleBorder->GetValue()? _T("yes") : _T("no"));
 
-	if (count) AssFile::top->FlagAsModified(_("property changes"));
+	if (count) subs->Commit(_("property changes"));
 
 	EndModal(count?1:0);
 }
-
-
 
 /// @brief Only set script info if it changed 
 /// @param key   
@@ -224,18 +209,12 @@ void DialogProperties::OnOK(wxCommandEvent &event) {
 /// @return 
 ///
 int DialogProperties::SetInfoIfDifferent(wxString key,wxString value) {
-	// Get script
-	AssFile *subs = AssFile::top;
-
-	// Compare
 	if (subs->GetScriptInfo(key) != value) {
 		subs->SetScriptInfo(key,value);
 		return 1;
 	}
 	else return 0;
 }
-
-
 
 /// @brief Set res to match video 
 /// @param event 
@@ -245,5 +224,3 @@ void DialogProperties::OnSetFromVideo(wxCommandEvent &event) {
 	ResY->SetValue(wxString::Format(_T("%i"),VideoContext::Get()->GetHeight()));
 	event.Skip();
 }
-
-

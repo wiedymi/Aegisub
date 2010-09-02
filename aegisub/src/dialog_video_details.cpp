@@ -34,19 +34,14 @@
 /// @ingroup secondary_ui
 ///
 
-
-///////////
-// Headers
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <wx/sizer.h>
 #include <wx/stattext.h>
+#include <wx/textctrl.h>
 #endif
 
-#include "selection_controller.h"
-#include "audio_controller.h"
-#include "audio_box.h"
-#include "audio_provider_manager.h"
 #include "dialog_video_details.h"
 #include "utils.h"
 #include "video_context.h"
@@ -68,7 +63,7 @@ DialogVideoDetails::DialogVideoDetails(wxWindow *parent)
 	int width = vprovider->GetWidth();
 	int height = vprovider->GetHeight();
 	int framecount = vprovider->GetFrameCount();
-	double fps = vprovider->GetFPS();
+	double fps = vprovider->GetFPS().FPS();
 
 	wxTextCtrl *fname_text = new wxTextCtrl(this, -1, VideoContext::Get()->videoName, wxDefaultPosition, wxSize(300,-1), wxTE_READONLY);
 	wxTextCtrl *fps_text = new wxTextCtrl(this, -1, wxString::Format(_T("%.3f"), fps), wxDefaultPosition, wxDefaultSize, wxTE_READONLY);

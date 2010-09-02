@@ -47,6 +47,7 @@
 
 #include "base_grid.h"
 #include "gl_wrap.h"
+#include "selection_controller.h"
 
 class VideoDisplay;
 class AssDialogue;
@@ -90,7 +91,7 @@ struct ltaddr {
 template<class FeatureType>
 class VisualTool : public IVisualTool, protected SubtitleSelectionListener {
 protected:
-	typedef typename FeatureType Feature;
+	typedef FeatureType Feature;
 	typedef typename std::list<FeatureType>::iterator feature_iterator;
 	typedef typename std::list<FeatureType>::const_iterator feature_const_iterator;
 private:

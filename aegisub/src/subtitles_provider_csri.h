@@ -34,25 +34,20 @@
 /// @ingroup subtitle_rendering
 ///
 
-
-///////////
-// Headers
-
 #ifdef WITH_CSRI
+
+#ifndef AGI_PRE
+#include <tr1/memory>
+#include <vector>
+#endif
 
 #include "include/aegisub/subtitles_provider.h"
 #ifdef WIN32
-
-/// DOCME
 #define CSRIAPI
-#endif
-
-#ifdef __WINDOWS__
 #include "../../contrib/csri/include/csri/csri.h"
 #else
 #include <csri/csri.h>
 #endif
-
 
 /// DOCME
 /// @class CSRISubtitlesProvider
@@ -60,39 +55,20 @@
 ///
 /// DOCME
 class CSRISubtitlesProvider : public SubtitlesProvider {
-private:
+	/// DOCME
+	std::string subType;
 
 	/// DOCME
-	wxString subType;
+	std::tr1::shared_ptr<csri_inst> instance;
 
-	/// DOCME
-	csri_inst *instance;
-
+	wxString tempfile;
 public:
-	CSRISubtitlesProvider(wxString subType);
+	CSRISubtitlesProvider(std::string subType);
 	~CSRISubtitlesProvider();
 
 	void LoadSubtitles(AssFile *subs);
 	void DrawSubtitles(AegiVideoFrame &dst,double time);
+
+	static std::vector<std::string> GetSubTypes();
 };
-
-
-
-/// DOCME
-/// @class CSRISubtitlesProviderFactory
-/// @brief DOCME
-///
-/// DOCME
-class CSRISubtitlesProviderFactory : public SubtitlesProviderFactory {
-public:
-
-	/// @brief DOCME
-	/// @param subType
-	///
-	SubtitlesProvider *CreateProvider(wxString subType=_T("")) { return new CSRISubtitlesProvider(subType); }
-	wxArrayString GetSubTypes();
-};
-
 #endif
-
-

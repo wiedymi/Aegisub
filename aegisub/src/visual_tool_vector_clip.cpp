@@ -33,20 +33,23 @@
 /// @brief Vector clipping visual typesetting tool
 /// @ingroup visual_ts
 
+#include "visual_tool_vector_clip.h"
+
 #ifndef AGI_PRE
 #include <wx/toolbar.h>
 
 #ifdef HAVE_APPLE_OPENGL_FRAMEWORK
-#include <OpenGL/GL.h>
-#include <OpenGL/glu.h>
 #include <OpenGL/glext.h>
 #else
-#include <GL/gl.h>
-#include <GL/glu.h>
 #include "gl/glext.h"
 #endif
 
 #include <algorithm>
+#endif
+
+#ifdef __APPLE__
+/// Noop macro, this should never be defined in a header.
+#define APIENTRY
 #endif
 
 #include "config.h"
@@ -56,7 +59,6 @@
 #include "libresrc/libresrc.h"
 #include "utils.h"
 #include "video_display.h"
-#include "visual_tool_vector_clip.h"
 
 /// Button IDs
 enum {
@@ -73,8 +75,8 @@ enum {
 
 template<class C, class O, class M>
 static void for_each_iter(C &container, O obj, M method) {
-	C::iterator end = container.end();
-	for (C::iterator cur = container.begin(); cur != end; ++cur) {
+	typename C::iterator end = container.end();
+	for (typename C::iterator cur = container.begin(); cur != end; ++cur) {
 		(obj ->* method)(cur);
 	}
 }
@@ -116,11 +118,14 @@ void VisualToolVectorClip::SetMode(int newMode) {
 }
 
 // Substitute for glMultiDrawArrays for sub-1.4 OpenGL
+// Not required on OS X.
+#ifndef __APPLE__
 static void APIENTRY glMultiDrawArraysFallback(GLenum mode, GLint *first, GLsizei *count, GLsizei primcount) {
 	for (int i = 0; i < primcount; ++i) {
 		glDrawArrays(mode, *first++, *count++);
 	}
 }
+#endif
 
 static bool is_move(SplineCurve const& c) {
 	return c.type == CURVE_POINT;

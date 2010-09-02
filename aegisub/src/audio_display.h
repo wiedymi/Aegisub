@@ -35,14 +35,14 @@
 /// @ingroup audio_ui
 ///
 
+#pragma once
 
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <stdint.h>
 
 #include <wx/bitmap.h>
 #include <wx/scrolbar.h>
+#include <wx/timer.h>
 #include <wx/window.h>
 #endif
 
@@ -52,14 +52,14 @@
 #endif
 
 
-//////////////
-// Prototypes
 class AudioRenderer;
 class AudioSpectrumRenderer;
 class AudioWaveformRenderer;
 class AudioKaraoke;
 class AudioProvider;
 class AudioPlayer;
+class SubtitlesGrid;
+class VideoProvider;
 
 class AudioBox;
 class SubtitlesGrid;
@@ -103,7 +103,6 @@ public:
 	/// Empty virtual destructor for the cases that need it.
 	virtual ~AudioDisplayInteractionObject() { }
 };
-
 
 
 /// @class AudioDisplay
@@ -327,5 +326,4 @@ public:
 
 	DECLARE_EVENT_TABLE()
 };
-
 

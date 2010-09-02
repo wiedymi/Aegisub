@@ -34,28 +34,20 @@
 /// @ingroup video_input
 ///
 
-
-
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <stdint.h>
 #include <stdio.h>
 
 #include <list>
 #include <vector>
+
+#include <wx/dynarray.h>
 #endif
 
 #include "MatroskaParser.h"
-#include "vfr.h"
 
-
-//////////////
-// Prototypes
 class AssFile;
-
-
+namespace agi { namespace vfr { class Framerate; } }
 
 /// DOCME
 /// @class MkvStdIO
@@ -74,8 +66,6 @@ public:
 	int error;
 };
 
-
-
 /// DOCME
 /// @class MkvFrame
 /// @brief DOCME
@@ -92,7 +82,6 @@ public:
 
 	/// DOCME
 	int64_t filePos;
-
 
 	/// @brief DOCME
 	///
@@ -117,7 +106,6 @@ public:
 bool operator < (MkvFrame &t1, MkvFrame &t2);
 
 
-
 /// DOCME
 /// @class MatroskaWrapper
 /// @brief DOCME
@@ -127,7 +115,7 @@ class MatroskaWrapper {
 private:
 
 	/// DOCME
-	wxArrayInt keyFrames;
+	std::vector<int> keyFrames;
 
 	/// DOCME
 	std::vector<double> timecodes;
@@ -152,7 +140,6 @@ public:
 	MatroskaWrapper();
 	~MatroskaWrapper();
 
-
 	/// @brief DOCME
 	/// @return 
 	///
@@ -161,7 +148,7 @@ public:
 	void Close();
 	void Parse();
 
-	void SetToTimecodes(FrameRate &target);
+	void SetToTimecodes(agi::vfr::Framerate &target);
 
 	/// @brief DOCME
 	/// @return 
@@ -172,13 +159,10 @@ public:
 	/// @return 
 	///
 	unsigned int GetFrameCount() { return timecodes.size(); }
-	wxArrayInt GetKeyFrames();
+	std::vector<int> GetKeyFrames();
 	void GetSubtitles(AssFile *target);
 	static bool HasSubtitles(wxString const& filename);
-
 
 	/// DOCME
 	static MatroskaWrapper wrapper;
 };
-
-

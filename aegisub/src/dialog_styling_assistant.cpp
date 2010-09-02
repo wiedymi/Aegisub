@@ -170,7 +170,7 @@ wxDialog (parent, -1, _("Styling assistant"), wxDefaultPosition, wxDefaultSize, 
 DialogStyling::~DialogStyling () {
 	GetPosition(&lastx, &lasty);
 	if (needCommit) {
-		grid->ass->FlagAsModified(_("style changes"));
+		grid->ass->Commit(_("style changes"));
 		grid->CommitChanges();
 	}
 }
@@ -233,7 +233,7 @@ void DialogStyling::SetStyle (wxString curName, bool jump) {
 	// Update grid/subs
 	grid->Refresh(false);
 	if (PreviewCheck->IsChecked()) {
-		grid->ass->FlagAsModified(_("styling assistant"));
+		grid->ass->Commit(_("styling assistant"));
 		grid->CommitChanges();
 	}
 	else needCommit = true;
@@ -265,7 +265,7 @@ void DialogStyling::OnActivate(wxActivateEvent &event) {
 	// Dialog lost focus
 	if (!event.GetActive()) {
 		if (needCommit) {
-			grid->ass->FlagAsModified(_("styling assistant"));
+			grid->ass->Commit(_("styling assistant"));
 			grid->CommitChanges();
 			needCommit = false;
 		}
@@ -275,8 +275,6 @@ void DialogStyling::OnActivate(wxActivateEvent &event) {
 	PlayVideoButton->Enable(video->IsLoaded());
 	/// @todo Reinstate this when the audio controller is made reachable from here
 	//PlayAudioButton->Enable(audio->loaded);
-	// Update grid
-	grid->UpdateMaps();
 	// Fix style list
 	Styles->Set(grid->ass->GetStyles());
 	// Fix line selection

@@ -2,12 +2,13 @@
 	"App" : {
 		"Auto" : {
 			"Backup" : true,
-			"Check For Updates" : -1,
+			"Check For Updates" : true,
 			"Load Linked Files" : 2,
 			"Save Every Seconds" : 60,
 			"Save on Every Change" : false
 		},
 		"Call Tips" : false,
+		"First Start" : true,
 		"Local Config" : false,
 		"Locale" : -1,
 		"Maximized" : false,
@@ -103,9 +104,6 @@
 			"Waveform Inactive" : "rgb(0, 80, 0)",
 			"Waveform Modified" : "rgb(255, 230, 230)",
 			"Waveform Selected" : "rgb(255,255,255)"
-		},
-		"Background" : {
-			"Modified" : "rgb(192, 192, 255)"
 		},
 		"Style Editor" : {
 			"Background" : {
@@ -365,9 +363,6 @@
 				"Key Start After" : 4,
 				"Key Start Before" : 5
 			}
-		},
-		"Tip of the Day" : {
-			"Current" : 0
 		},
 		"Visual" : {
 			"Always Show": true

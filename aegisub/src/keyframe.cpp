@@ -34,8 +34,6 @@
 /// @ingroup video_input
 ///
 
-///////////
-// Headers
 #include "config.h"
 
 #ifndef AGI_PRE
@@ -45,79 +43,43 @@
 #include "compat.h"
 #include "keyframe.h"
 #include "main.h"
-#include "options.h"
 #include "text_file_reader.h"
 #include "text_file_writer.h"
-#include "vfr.h"
 #include "video_context.h"
 
+std::vector<int> KeyFrameFile::Load(wxString filename) {
+	std::vector<int> keyFrames;
+	TextFileReader file(filename,_T("ASCII"));
 
-/// @brief Load Keyframes 
-/// @param filename 
-///
-void KeyFrameFile::Load(wxString filename) {
-	// Load
-	try {
-		// Open file
-		wxArrayInt keyFrames;
-		keyFrames.Empty();
-		TextFileReader file(filename,_T("ASCII"));
+	wxString cur = file.ReadLineFromFile();
+	// Detect type (Only Xvid, DivX, x264 and Aegisub's keyframe files are currently supported)
+	if (cur == _T("# keyframe format v1")) { OpenAegiKeyFrames(file, keyFrames); }
+	else if (cur.StartsWith(_T("# XviD 2pass stat file"))) { OpenXviDKeyFrames(file, keyFrames); }
+	else if (cur.StartsWith(_T("##map version"))) { OpenDivXKeyFrames(file, keyFrames); }
+	else if (cur.StartsWith(_T("#options:"))) { Openx264KeyFrames(file, keyFrames); }
+	else { throw(_T("Invalid or unsupported keyframes file.")); }
 
-		wxString cur = file.ReadLineFromFile();
-		// Detect type (Only Xvid, DivX, x264 and Aegisub's keyframe files are currently supported)
-		if (cur == _T("# keyframe format v1")) { OpenAegiKeyFrames(file, keyFrames); }
-		else if (cur.StartsWith(_T("# XviD 2pass stat file"))) { OpenXviDKeyFrames(file, keyFrames); }
-		else if (cur.StartsWith(_T("##map version"))) { OpenDivXKeyFrames(file, keyFrames); }
-		else if (cur.StartsWith(_T("#options:"))) { Openx264KeyFrames(file, keyFrames); }
-		else { throw(_T("Invalid or unsupported keyframes file.")); }
-
-		// Set keyframes
-		VideoContext::Get()->SetOverKeyFrames(keyFrames);
-		VideoContext::Get()->SetKeyFramesName(filename);
-
-		// Add to recent
-		config::mru->Add("Keyframes", STD_STR(filename));
-	}
-	// Fail
-	catch (const wchar_t *error) {
-		wxString err(error);
-		wxMessageBox(err, _T("Error opening keyframes file"), wxOK | wxICON_ERROR, NULL);
-	}
-	catch (...) {
-		wxMessageBox(_T("Unknown error"), _T("Error opening keyframes file"), wxOK | wxICON_ERROR, NULL);
-	}
+	config::mru->Add("Keyframes", STD_STR(filename));
+	return keyFrames;
 }
 
-
-
-/// @brief Save Keyframes 
-/// @param filename 
-///
-void KeyFrameFile::Save(wxString filename) {
-	// Get keyframes
-	wxArrayInt keyFrames = VideoContext::Get()->GetKeyFrames();
-
-	// Write header
+void KeyFrameFile::Save(wxString filename, std::vector<int> const& keyFrames) {
 	TextFileWriter file(filename,_T("ASCII"));
 	file.WriteLineToFile(_T("# keyframe format v1"));
-	file.WriteLineToFile(wxString::Format(_T("fps %f"),VideoContext::Get()->GetFPS()));
+	file.WriteLineToFile(wxString::Format(_T("fps %f"),VideoContext::Get()->VFR_Input.FPS()));
 
-	// Write keyframes
-	for (unsigned int i=0;i<keyFrames.Count();i++) {
+	for (unsigned int i=0;i<keyFrames.size();i++) {
 		file.WriteLineToFile(wxString::Format(_T("%i"),keyFrames[i]));
 	}
 
-	// Add to recent
 	config::mru->Add("Keyframes", STD_STR(filename));
 }
-
-
 
 /// @brief Aegisub keyframes file 
 /// @param file      
 /// @param keyFrames 
 ///
-void KeyFrameFile::OpenAegiKeyFrames(TextFileReader& file, wxArrayInt& keyFrames)
+void KeyFrameFile::OpenAegiKeyFrames(TextFileReader& file, std::vector<int>& keyFrames)
 {
 	double fps;
 	wxString cur = file.ReadLineFromFile();
@@ -129,10 +91,8 @@ void KeyFrameFile::OpenAegiKeyFrames(TextFileReader& file, wxArrayInt& keyFrames
 	if (fps == 0.0) throw _T("Invalid FPS.");
 
 	// Set FPS
-	if (!VideoContext::Get()->IsLoaded()) {
-		VideoContext::Get()->SetFPS(fps);
-		VFR_Input.SetCFR(fps);
-		if (!VFR_Output.IsLoaded()) VFR_Output.SetCFR(fps);
+	if (!VideoContext::Get()->TimecodesLoaded()) {
+		VideoContext::Get()->ovrFPS = fps;
 	}
 
 	// Read lines
@@ -141,26 +101,24 @@ void KeyFrameFile::OpenAegiKeyFrames(TextFileReader& file, wxArrayInt& keyFrames
 		if (!cur.IsEmpty() && !cur.StartsWith(_T("#")) && cur.IsNumber()) {
 			long temp;
 			cur.ToLong(&temp);
-			keyFrames.Add(temp);
+			keyFrames.push_back(temp);
 		}
-	}	
+	}
 }
-
-
 
 /// @brief XviD stats file 
 /// @param file      
 /// @param keyFrames 
 ///
-void KeyFrameFile::OpenXviDKeyFrames(TextFileReader& file, wxArrayInt& keyFrames)
+void KeyFrameFile::OpenXviDKeyFrames(TextFileReader& file, std::vector<int>& keyFrames)
 {
 	wxString cur = file.ReadLineFromFile();
 	unsigned int count = 0;
 
 	// Read lines
 	while (file.HasMoreLines()) {
-		if (cur.StartsWith(_T("i"))) {			
-			keyFrames.Add(count);
+		if (cur.StartsWith(_T("i"))) {
+			keyFrames.push_back(count);
 			count++;
 		}
 		else if (cur.StartsWith(_T("p")) || cur.StartsWith(_T("b"))) {
@@ -170,12 +128,11 @@ void KeyFrameFile::OpenXviDKeyFrames(TextFileReader& file, wxArrayInt& keyFrames
 	}
 }
 
-
 /// @brief DivX stats file 
 /// @param file      
 /// @param keyFrames 
 ///
-void KeyFrameFile::OpenDivXKeyFrames(TextFileReader& file, wxArrayInt& keyFrames)
+void KeyFrameFile::OpenDivXKeyFrames(TextFileReader& file, std::vector<int>& keyFrames)
 {
 	wxString cur = file.ReadLineFromFile();
 	unsigned int count = 0;
@@ -184,7 +141,7 @@ void KeyFrameFile::OpenDivXKeyFrames(TextFileReader& file, wxArrayInt& keyFrames
 	while (file.HasMoreLines())
 	{
 		if (cur.Contains(_T("I"))) {
-			keyFrames.Add(count);
+			keyFrames.push_back(count);
 			count++;
 		}
 		else if (cur.Contains(_T("P")) || cur.Contains(_T("B"))) {
@@ -194,12 +151,11 @@ void KeyFrameFile::OpenDivXKeyFrames(TextFileReader& file, wxArrayInt& keyFrames
 	}
 }
 
-
 /// @brief x264 stats file 
 /// @param file      
 /// @param keyFrames 
 ///
-void KeyFrameFile::Openx264KeyFrames(TextFileReader& file, wxArrayInt& keyFrames)
+void KeyFrameFile::Openx264KeyFrames(TextFileReader& file, std::vector<int>& keyFrames)
 {
 	wxString cur = file.ReadLineFromFile();
 	unsigned int count = 0;
@@ -210,7 +166,7 @@ void KeyFrameFile::Openx264KeyFrames(TextFileReader& file, wxArrayInt& keyFrames
 	{
 		pos = cur.Find(_T("type:"));
 		if (cur.Mid(pos,6).Right(1).Lower() == (_T("i"))) {
-			keyFrames.Add(count);
+			keyFrames.push_back(count);
 			count++;
 		}
 		else if (cur.Mid(pos,6).Right(1).Lower() == (_T("p")) || cur.Mid(pos,6).Right(1).Lower() == (_T("b"))) {
@@ -219,5 +175,3 @@ void KeyFrameFile::Openx264KeyFrames(TextFileReader& file, wxArrayInt& keyFrames
 		cur = file.ReadLineFromFile();
 	}
 }
-
-

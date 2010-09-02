@@ -34,15 +34,13 @@
 /// @ingroup audio_input ffms
 ///
 
-///////////
-// Headers
 #ifdef WITH_FFMPEGSOURCE
 #include "include/aegisub/audio_provider.h"
 #include "ffmpegsource_common.h"
 
 
 /// @class FFmpegSourceAudioProvider
-/// @brief Implents audio loading with the FFMS library.
+/// @brief Implements audio loading with the FFMS library.
 class FFmpegSourceAudioProvider : public AudioProvider, FFmpegSourceProvider {
 private:
 	FFMS_AudioSource *AudioSource;	/// audio source object
@@ -50,7 +48,6 @@ private:
 
 	mutable char FFMSErrMsg[1024];			/// FFMS error message
 	mutable FFMS_ErrorInfo ErrInfo;			/// FFMS error codes/messages
-	mutable wxString ErrorMsg;				/// wx-ified error message
 
 	void Close();
 	void LoadAudio(wxString filename);
@@ -63,23 +60,8 @@ public:
 	/// @return Returns true.
 	/// FFMS always delivers native endian samples.
 	bool AreSamplesNativeEndian() const { return true; }
+	bool NeedsCache() const { return true; }
 
 	virtual void GetAudio(void *buf, int64_t start, int64_t count) const;
 };
-
-
-
-/// @class FFmpegSourceAudioProviderFactory
-/// @brief Creates a FFmpegSource audio provider.
-class FFmpegSourceAudioProviderFactory : public AudioProviderFactory {
-public:
-	/// @brief Creates a FFmpegSource audio provider.
-	/// @param video The audio filename to open.
-	/// @return Returns the audio provider.
-	AudioProvider *CreateProvider(wxString file) { return new FFmpegSourceAudioProvider(file); }
-};
-
-#endif /* WITH_FFMPEGSOURCE */
-
-
-
+#endif

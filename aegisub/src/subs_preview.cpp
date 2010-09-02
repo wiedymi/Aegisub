@@ -47,7 +47,7 @@
 #include "ass_file.h"
 #include "ass_style.h"
 #include "subs_preview.h"
-#include "subtitles_provider_manager.h"
+#include "include/aegisub/subtitles_provider.h"
 #include "video_provider_dummy.h"
 
 
@@ -61,10 +61,10 @@
 ///
 SubtitlesPreview::SubtitlesPreview(wxWindow *parent,int id,wxPoint pos,wxSize size,int winStyle,wxColour col)
 : wxWindow(parent,id,pos,size,winStyle)
+, style(new AssStyle)
 , backColour(col)
 , subFile(new AssFile)
 , line(new AssDialogue)
-, style(new AssStyle)
 {
 	line->Text = "{\\q2}preview";
 
@@ -139,7 +139,7 @@ void SubtitlesPreview::OnSize(wxSizeEvent &evt) {
 	bmp.reset(new wxBitmap(w, h, -1));
 	vid.reset(new DummyVideoProvider(0.0, 10, w, h, backColour, true));
 	try {
-		provider.reset(SubtitlesProviderFactoryManager::GetProvider());
+		provider.reset(SubtitlesProviderFactory::GetProvider());
 	}
 	catch (...) {
 		wxMessageBox(

@@ -43,7 +43,7 @@
 #ifndef AGI_PRE_H
 
 /// @brief Inclusion guard.
-/// @todo Why is this even nessicary? GCC seems to include agi_pre.h twice for no reason.
+/// @todo Why is this even necessary? GCC seems to include agi_pre.h twice for no reason.
 #define AGI_PRE_H
 
 // C++ only
@@ -72,13 +72,19 @@
 #include <iostream>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "boost/shared_ptr.hpp"
+#ifdef _WIN32
+#include <functional>
+#include <memory>
+#else
+#include <tr1/functional>
+#include <tr1/memory>
+#endif
 
 // General headers
 #include <assert.h>
@@ -86,6 +92,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <iconv.h>
+#include <inttypes.h>
 #include <locale.h>
 #include <math.h>
 #ifdef _OPENMP

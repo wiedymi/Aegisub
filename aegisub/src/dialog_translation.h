@@ -33,26 +33,17 @@
 /// @see dialog_translation.cpp
 /// @ingroup tools_ui///
 
-
-
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <wx/checkbox.h>
 #include <wx/dialog.h>
 #include <wx/stattext.h>
 #endif
 
-#include "scintilla_text_ctrl.h"
-
-
-//////////////
-// Prototypes
 class AssFile;
 class AssDialogue;
-class SubtitlesGrid;
 class AudioDisplay;
+class ScintillaTextCtrl;
+class SubtitlesGrid;
 class VideoContext;
 class AudioController;
 
@@ -127,8 +118,6 @@ public:
 	DECLARE_EVENT_TABLE()
 };
 
-
-
 /// DOCME
 /// @class DialogTranslationEvent
 /// @brief DOCME
@@ -148,23 +137,11 @@ public:
 	DECLARE_EVENT_TABLE()
 };
 
-
-///////
-// IDs
+/// Event IDs
 enum {
-
-	/// DOCME
 	TEXT_ORIGINAL = 1100,
-
-	/// DOCME
 	TEXT_TRANS,
-
-	/// DOCME
 	PREVIEW_CHECK,
-
-	/// DOCME
 	BUTTON_TRANS_PLAY_AUDIO,
-
-	/// DOCME
 	BUTTON_TRANS_PLAY_VIDEO
 };

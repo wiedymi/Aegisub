@@ -56,15 +56,11 @@
 #include "help_button.h"
 #include "libresrc/libresrc.h"
 #include "main.h"
-#include "options.h"
 #include "standard_paths.h"
-#include "selection_controller.h"
-#include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "utils.h"
-#include "vfr.h"
+#include "video_context.h"
 #include "video_display.h"
-
 
 /// @brief Constructor 
 /// @param parent 
@@ -93,7 +89,7 @@ DialogShiftTimes::DialogShiftTimes (wxWindow *parent,SubtitlesGrid *_grid)
 	ShiftTime->SetToolTip(_("Enter time in h:mm:ss.cs notation"));
 	RadioTime->SetToolTip(_("Shift by time"));
 	ShiftFrame->Disable();
-	if (!VFR_Output.IsLoaded()) RadioFrames->Disable();
+	if (!VideoContext::Get()->TimecodesLoaded()) RadioFrames->Disable();
 	else {
 		ShiftFrame->SetToolTip(_("Enter number of frames to shift by"));
 		RadioFrames->SetToolTip(_("Shift by frames"));
@@ -262,7 +258,7 @@ void DialogShiftTimes::OnOK(wxCommandEvent &event) {
 	if (didSomething) {
 		if (backward) len = -len;
 		wxString message = _T("");
-		wxFileName assfile(AssFile::top->filename);
+		wxFileName assfile(grid->ass->filename);
 		wxString filename = assfile.GetFullName();
 
 		// File
@@ -313,10 +309,8 @@ void DialogShiftTimes::OnOK(wxCommandEvent &event) {
 	OPT_SET("Tool/Shift Times/Direction")->SetBool(backward);
 
 	// End dialog
-	grid->ass->FlagAsModified(_("shifting"));
+	grid->ass->Commit(_("shifting"));
 	grid->CommitChanges();
-	grid->UpdateMaps();
-	grid->editBox->Update();
 	EndModal(0);
 }
 

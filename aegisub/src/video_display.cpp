@@ -38,6 +38,8 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <algorithm>
+
 #include <wx/clipbrd.h>
 #include <wx/dataobj.h>
 #include <wx/dcclient.h>
@@ -59,10 +61,10 @@
 
 #include "ass_dialogue.h"
 #include "hotkeys.h"
-#include "options.h"
 #include "main.h"
+#include "subs_grid.h"
+#include "threaded_frame_source.h"
 #include "video_out_gl.h"
-#include "vfr.h"
 #include "video_box.h"
 #include "video_context.h"
 #include "video_slider.h"
@@ -121,16 +123,25 @@ public:
 
 #define E(cmd) cmd; if (GLenum err = glGetError()) throw OpenGlException(L###cmd, err)
 
-using std::min;
-
-VideoDisplay::VideoDisplay(VideoBox *box, VideoSlider *ControlSlider, wxTextCtrl *PositionDisplay, wxTextCtrl *SubsPosition, wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
+VideoDisplay::VideoDisplay(
+	VideoBox *box,
+	VideoSlider *ControlSlider,
+	wxTextCtrl *PositionDisplay,
+	wxTextCtrl *SubsPosition,
+	wxComboBox *zoomBox,
+	wxWindow* parent,
+	wxWindowID id,
+	const wxPoint& pos,
+	const wxSize& size,
+	long style,
+	const wxString& name)
 : wxGLCanvas (parent, id, attribList, pos, size, style, name)
 , alwaysShowTools(OPT_GET("Tool/Visual/Always Show"))
 , origSize(size)
 , currentFrame(-1)
 , w(8), h(8), viewport_x(0), viewport_width(0), viewport_bottom(0), viewport_top(0), viewport_height(0)
 , locked(false)
-, zoomValue(1.0)
+, zoomValue(OPT_GET("Video/Default Zoom")->GetInt() * .125 + .125)
 , ControlSlider(ControlSlider)
 , SubsPosition(SubsPosition)
 , PositionDisplay(PositionDisplay)
@@ -139,15 +150,28 @@ VideoDisplay::VideoDisplay(VideoBox *box, VideoSlider *ControlSlider, wxTextCtrl
 , toolBar(box->visualSubToolBar)
 , scriptW(INT_MIN)
 , scriptH(INT_MIN)
+, zoomBox(zoomBox)
 , box(box)
 , freeSize(false)
 {
+	if (zoomBox) zoomBox->SetValue(wxString::Format("%g%%", zoomValue * 100.));
 	box->Bind(wxEVT_COMMAND_TOOL_CLICKED, &VideoDisplay::OnMode, this, Video_Mode_Standard, Video_Mode_Vector_Clip);
+	VideoContext::Get()->Bind(EVT_FRAME_READY, &VideoDisplay::UploadFrameData, this);
 	SetCursor(wxNullCursor);
 }
 
 VideoDisplay::~VideoDisplay () {
+	VideoContext::Get()->Unbind(EVT_FRAME_READY, &VideoDisplay::UploadFrameData, this);
 	VideoContext::Get()->RemoveDisplay(this);
+}
+
+bool VideoDisplay::InitContext() {
+	if (!IsShownOnScreen()) return false;
+	if (!glContext.get()) {
+		glContext.reset(new wxGLContext(this));
+	}
+	SetCurrent(*glContext.get());
+	return true;
 }
 
 void VideoDisplay::ShowCursor(bool show) {
@@ -167,7 +191,7 @@ void VideoDisplay::SetFrame(int frameNumber) {
 
 	// Get time for frame
 	{
-		int time = VFR_Output.GetTimeAtFrame(frameNumber, true, true);
+		int time = context->TimeAtFrame(frameNumber, agi::vfr::EXACT);
 		int h = time / 3600000;
 		int m = time % 3600000 / 60000;
 		int s = time % 60000 / 1000;
@@ -175,7 +199,7 @@ void VideoDisplay::SetFrame(int frameNumber) {
 
 		// Set the text box for frame number and time
 		PositionDisplay->SetValue(wxString::Format(L"%01i:%02i:%02i.%03i - %i", h, m, s, ms, frameNumber));
-		if (context->GetKeyFrames().Index(frameNumber) != wxNOT_FOUND) {
+		if (std::binary_search(context->GetKeyFrames().begin(), context->GetKeyFrames().end(), frameNumber)) {
 			// Set the background color to indicate this is a keyframe
 			PositionDisplay->SetBackgroundColour(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Background/Selection")->GetColour()));
 			PositionDisplay->SetForegroundColour(lagi_wxColour(OPT_GET("Colour/Subtitle Grid/Selection")->GetColour()));
@@ -190,7 +214,7 @@ void VideoDisplay::SetFrame(int frameNumber) {
 		int startOff = 0;
 		int endOff = 0;
 
-		if (AssDialogue *curLine = context->curLine) {
+		if (AssDialogue *curLine = context->grid->GetActiveLine()) {
 			startOff = time - curLine->Start.GetMS();
 			endOff = time - curLine->End.GetMS();
 		}
@@ -207,38 +231,23 @@ void VideoDisplay::SetFrame(int frameNumber) {
 	if (context->IsLoaded()) {
 		context->GetScriptSize(scriptW, scriptH);
 		tool->SetFrame(frameNumber);
-
-		UploadFrameData();
+		context->GetFrameAsync(currentFrame);
 	}
-	Render();
 }
 
-void VideoDisplay::UploadFrameData() {
-	VideoContext *context = VideoContext::Get();
-	AegiVideoFrame frame;
+void VideoDisplay::UploadFrameData(FrameReadyEvent &evt) {
+	if (!InitContext()) return;
+
 	try {
-		frame = context->GetFrame(currentFrame);
-	}
-	catch (const wxChar *err) {
-		wxLogError(
-			L"Failed seeking video. The video file may be corrupt or incomplete.\n"
-			L"Error message reported: %s",
-			err);
-	}
-	catch (...) {
-		wxLogError(
-			L"Failed seeking video. The video file may be corrupt or incomplete.\n"
-			L"No further error message given.");
-	}
-	try {
-		videoOut->UploadFrameData(frame);
+		videoOut->UploadFrameData(*evt.frame);
 	}
 	catch (const VideoOutInitException& err) {
 		wxLogError(
-			L"Failed to initialize video display. Closing other running programs and updating your video card drivers may fix this.\n"
+			L"Failed to initialize video display. Closing other running "
+			L"programs and updating your video card drivers may fix this.\n"
 			L"Error message reported: %s",
 			err.GetMessage().c_str());
-		context->Reset();
+		VideoContext::Get()->Reset();
 	}
 	catch (const VideoOutRenderException& err) {
 		wxLogError(
@@ -246,13 +255,14 @@ void VideoDisplay::UploadFrameData() {
 			L"Error message reported: %s",
 			err.GetMessage().c_str());
 	}
+	Render();
 }
 
 void VideoDisplay::Refresh() {
-	UploadFrameData();
 	if (!tool.get()) tool.reset(new VisualToolCross(this, video, toolBar));
+	if (!InitContext()) return;
+	VideoContext::Get()->GetFrameAsync(currentFrame);
 	tool->Refresh();
-	Render();
 }
 
 void VideoDisplay::SetFrameRange(int from, int to) {
@@ -260,16 +270,14 @@ void VideoDisplay::SetFrameRange(int from, int to) {
 }
 
 void VideoDisplay::Render() try {
-	if (!IsShownOnScreen()) return;
+	if (!InitContext()) return;
 	VideoContext *context = VideoContext::Get();
 	if (!context->IsLoaded()) return;
 	assert(wxIsMainThread());
-	assert(w > 0);
-
-	SetCurrent(*context->GetGLContext(this));
+	if (!viewport_height || !viewport_width) UpdateSize();
 
 	videoOut->Render(viewport_x, viewport_bottom, viewport_width, viewport_height);
-	E(glViewport(0, min(viewport_bottom, 0), w, h));
+	E(glViewport(0, std::min(viewport_bottom, 0), w, h));
 
 	E(glMatrixMode(GL_PROJECTION));
 	E(glLoadIdentity());
@@ -398,7 +406,7 @@ void VideoDisplay::UpdateSize() {
 		w = con->GetAspectRatioType() == 0 ? vidW * zoomValue : vidH * zoomValue * con->GetAspectRatioValue();
 
 		// Cap the canvas size to the window size
-		int cw = min(w, maxW), ch = min(h, maxH);
+		int cw = std::min(w, maxW), ch = std::min(h, maxH);
 
 		viewport_x = 0;
 		viewport_bottom = ch - h;
@@ -406,16 +414,11 @@ void VideoDisplay::UpdateSize() {
 		viewport_width = w;
 		viewport_height = h;
 
-		// Sizers ignore SetClientSize/SetSize, so only use them to calculate
-		// what size is required after including the borders
-		SetClientSize(cw, ch);
-		GetSize(&cw, &ch);
 		wxSize size(cw, ch);
-		SetMinSize(size);
-		SetMaxSize(size);
+		SetMinClientSize(size);
+		SetMaxClientSize(size);
 
 		locked = true;
-		box->VideoSizer->Fit(box);
 		box->GetParent()->Layout();
 
 		// The sizer makes us use the full width, which at very low zoom levels
@@ -430,7 +433,7 @@ void VideoDisplay::UpdateSize() {
 	video.w = w;
 	video.h = h;
 
-	tool->Refresh();
+	if (tool.get()) tool->Refresh();
 
 	wxGLCanvas::Refresh(false);
 }
@@ -521,12 +524,12 @@ void VideoDisplay::OnKey(wxKeyEvent &event) {
 }
 
 void VideoDisplay::SetZoom(double value) {
-	using std::max;
-	zoomValue = max(value, .125);
-	zoomBox->SetValue(wxString::Format("%g%%", zoomValue * 100.));
+	zoomValue = std::max(value, .125);
+	if (zoomBox) zoomBox->SetValue(wxString::Format("%g%%", zoomValue * 100.));
 	UpdateSize();
 }
 void VideoDisplay::SetZoomFromBox() {
+	if (!zoomBox) return;
 	wxString strValue = zoomBox->GetValue();
 	strValue.EndsWith(L"%", &strValue);
 	double value;
@@ -590,14 +593,14 @@ void VideoDisplay::FromScriptCoords(int *x, int *y) const {
 
 void VideoDisplay::OnCopyToClipboard(wxCommandEvent &) {
 	if (wxTheClipboard->Open()) {
-		wxTheClipboard->SetData(new wxBitmapDataObject(wxBitmap(VideoContext::Get()->GetFrame(-1).GetImage(),24)));
+		wxTheClipboard->SetData(new wxBitmapDataObject(wxBitmap(VideoContext::Get()->GetFrame(currentFrame).GetImage(),24)));
 		wxTheClipboard->Close();
 	}
 }
 
 void VideoDisplay::OnCopyToClipboardRaw(wxCommandEvent &) {
 	if (wxTheClipboard->Open()) {
-		wxTheClipboard->SetData(new wxBitmapDataObject(wxBitmap(VideoContext::Get()->GetFrame(-1,true).GetImage(),24)));
+		wxTheClipboard->SetData(new wxBitmapDataObject(wxBitmap(VideoContext::Get()->GetFrame(currentFrame,true).GetImage(),24)));
 		wxTheClipboard->Close();
 	}
 }

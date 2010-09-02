@@ -51,6 +51,7 @@
 #error You must include "audio_controller.h" before "frame_main.h"
 #endif
 
+class AssFile;
 class VideoDisplay;
 class VideoSlider;
 class VideoZoomSlider;
@@ -78,6 +79,7 @@ class FrameMain: public wxFrame, private AudioControllerAudioEventListener {
 	friend class SubtitlesGrid;
 
 private:
+	AssFile *ass;
 
 	/// DOCME
 
@@ -270,7 +272,6 @@ private:
 	void OnSortStart (wxCommandEvent &event);
 	void OnSortEnd (wxCommandEvent &event);
 	void OnSortStyle (wxCommandEvent &event);
-	void OnEditBoxCommit (wxCommandEvent &event);
 	void OnOpenProperties (wxCommandEvent &event);
 	void OnOpenStylesManager (wxCommandEvent &event);
 	void OnOpenAttachments (wxCommandEvent &event);
@@ -319,7 +320,6 @@ private:
 
 	void LoadVideo(wxString filename,bool autoload=false);
 	void LoadVFR(wxString filename);
-	void SaveVFR(wxString filename);
 	void LoadSubtitles(wxString filename,wxString charset=_T(""));
 	bool SaveSubtitles(bool saveas=false,bool withCharset=false);
 	int TryToCloseSubs(bool enableCancel=true);
@@ -534,7 +534,6 @@ enum {
 	Grid_Prev_Line,
 	Grid_Toggle_Tags,
 
-	Edit_Box_Commit,
 
 	Video_Frame_Play,
 

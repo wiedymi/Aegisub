@@ -40,6 +40,7 @@
 #ifndef AGI_PRE
 #include <stdint.h>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -124,3 +125,11 @@ void delete_clear(T& container) {
 	std::for_each(container.begin(), container.end(), delete_ptr());
 	container.clear();
 }
+
+template<class Out>
+struct cast {
+	template<class In>
+	Out operator()(In in) const {
+		return dynamic_cast<Out>(in);
+	}
+};

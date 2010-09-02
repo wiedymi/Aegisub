@@ -47,19 +47,10 @@
 #include "audio_controller.h"
 #include "include/aegisub/audio_provider.h"
 #include "include/aegisub/audio_player.h"
-#include "audio_provider_manager.h"
-#include "audio_player_manager.h"
 #include "audio_provider_dummy.h"
 #include "audio_timing.h"
 #include "compat.h"
 #include "video_context.h"
-#include "vfr.h"
-
-
-#undef min
-#undef max
-
-
 
 class AudioMarkerKeyframe : public AudioMarker {
 	int64_t position;
@@ -99,12 +90,12 @@ class AudioMarkerProviderKeyframes : public AudioMarkerProvider, private AudioCo
 		if (!vc) return;
 
 		last_keyframes_revision = vc->GetKeyframesRevision();
-		const wxArrayInt &raw_keyframes = vc->GetKeyFrames();
+		const std::vector<int> &raw_keyframes = vc->GetKeyFrames();
 		keyframe_samples.reserve(raw_keyframes.size());
 		for (size_t i = 0; i < raw_keyframes.size(); ++i)
 		{
 			keyframe_samples.push_back(AudioMarkerKeyframe(
-				VFR_Output.GetTimeAtFrame(raw_keyframes[i], true) * samplerate / 1000));
+				vc->TimeAtFrame(raw_keyframes[i]) * samplerate / 1000));
 		}
 		std::sort(keyframe_samples.begin(), keyframe_samples.end());
 	}
@@ -302,12 +293,12 @@ void AudioController::OpenAudio(const wxString &url)
 				"Failed opening audio file (parsing as plain filename)",
 				&fnf);
 		}
-		provider = AudioProviderFactoryManager::GetAudioProvider(url);
+		provider = AudioProviderFactory::GetProvider(url);
 	}
 
 	try
 	{
-		player = AudioPlayerFactoryManager::GetAudioPlayer();
+		player = AudioPlayerFactory::GetAudioPlayer();
 		player->SetProvider(provider);
 		player->OpenStream();
 	}

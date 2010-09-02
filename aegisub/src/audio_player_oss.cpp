@@ -32,25 +32,18 @@
 /// @ingroup audio_output
 ///
 
-
 #include "config.h"
 
 #ifdef WITH_OSS
 
-///////////
-// Headers
 #include <libaegisub/log.h>
 
 #include "audio_controller.h"
-#include "audio_player_manager.h"
 #include "audio_player_oss.h"
-#include "audio_provider_manager.h"
 #include "frame_main.h"
 #include "compat.h"
 #include "main.h"
-#include "options.h"
 #include "utils.h"
-
 
 /// @brief Constructor 
 ///
@@ -64,16 +57,12 @@ OSSPlayer::OSSPlayer()
     thread = 0;
 }
 
-
-
 /// @brief Destructor 
 ///
 OSSPlayer::~OSSPlayer()
 {
     CloseStream();
 }
-
-
 
 /// @brief Open stream 
 ///
@@ -131,8 +120,6 @@ void OSSPlayer::OpenStream()
     open = true;
 }
 
-
-
 /// @brief Close stream 
 /// @return 
 ///
@@ -146,8 +133,6 @@ void OSSPlayer::CloseStream()
     // No longer working
     open = false;
 }
-
-
 
 /// @brief Play 
 /// @param start 
@@ -168,8 +153,6 @@ void OSSPlayer::Play(int64_t start, int64_t count)
     if (displayTimer && !displayTimer->IsRunning()) displayTimer->Start(15);
     playing = true;
 }
-
-
 
 /// @brief Stop 
 /// @param timerToo 
@@ -204,8 +187,6 @@ void OSSPlayer::Stop(bool timerToo)
     }
 }
 
-
-
 /// @brief DOCME 
 /// @return 
 ///
@@ -213,8 +194,6 @@ bool OSSPlayer::IsPlaying()
 {
     return playing;
 }
-
-
 
 /// @brief Set end 
 /// @param pos 
@@ -231,8 +210,6 @@ void OSSPlayer::SetEndPosition(int64_t pos)
 
 }
 
-
-
 /// @brief Set current position 
 /// @param pos 
 ///
@@ -240,8 +217,6 @@ void OSSPlayer::SetCurrentPosition(int64_t pos)
 {
     cur_frame = start_frame = pos;
 }
-
-
 
 /// @brief DOCME 
 /// @return 
@@ -251,8 +226,6 @@ int64_t OSSPlayer::GetStartPosition()
     return start_frame;
 }
 
-
-
 /// @brief DOCME 
 /// @return 
 ///
@@ -260,8 +233,6 @@ int64_t OSSPlayer::GetEndPosition()
 {
     return end_frame;
 }
-
-
 
 /// @brief Get current position 
 /// @return 
@@ -311,8 +282,6 @@ int64_t OSSPlayer::GetCurrentPosition()
     return cur_frame;
 }
 
-
-
 /// @brief Thread constructor 
 /// @param par 
 ///
@@ -343,7 +312,5 @@ wxThread::ExitCode OSSPlayerThread::Entry() {
 	LOG_D("player/audio/oss") << "Thread dead";
     return 0;
 }
-
-
 
 #endif // WITH_OSS

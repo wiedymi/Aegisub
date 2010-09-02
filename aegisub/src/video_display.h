@@ -43,6 +43,7 @@
 #endif
 
 // Prototypes
+class FrameReadyEvent;
 class VideoSlider;
 class VideoBox;
 class VideoOutGL;
@@ -62,7 +63,7 @@ struct VideoState {
 
 /// @class VideoDisplay
 /// @brief DOCME
-class VideoDisplay: public wxGLCanvas {
+class VideoDisplay : public wxGLCanvas {
 	agi::OptionValue* alwaysShowTools;
 	/// The unscaled size of the displayed video
 	wxSize origSize;
@@ -97,7 +98,7 @@ class VideoDisplay: public wxGLCanvas {
 	void DrawOverscanMask(int sizeH, int sizeV, wxColor color, double alpha) const;
 
 	/// Upload the image for the current frame to the video card
-	void UploadFrameData();
+	void UploadFrameData(FrameReadyEvent&);
 
 	/// @brief Paint event 
 	void OnPaint(wxPaintEvent& event);
@@ -147,6 +148,13 @@ class VideoDisplay: public wxGLCanvas {
 	/// The toolbar used by individual typesetting tools
 	wxToolBar* toolBar;
 
+	/// The OpenGL context for this display
+	std::auto_ptr<wxGLContext> glContext;
+
+	/// @brief Initialize the gl context and set the active context to this one
+	/// @return Could the context be set?
+	bool InitContext();
+
 
 	void OnMode(const wxCommandEvent &event);
 	void SetMode(int mode);
@@ -161,12 +169,12 @@ class VideoDisplay: public wxGLCanvas {
 
 	VideoState video;
 
+	/// The dropdown box for selecting zoom levels
+	wxComboBox *zoomBox;
+
 public:
 	/// The VideoBox this display is contained in
 	VideoBox *box;
-
-	/// The dropdown box for selecting zoom levels
-	wxComboBox *zoomBox;
 
 	/// Whether the display can be freely resized by the user
 	bool freeSize;
@@ -178,7 +186,18 @@ public:
 	/// @param size   Window size. wxDefaultSize is (-1, -1) which indicates that wxWidgets should generate a default size for the window. If no suitable size can be found, the window will be sized to 20x20 pixels so that the window is visible but obviously not correctly sized.
 	/// @param style  Window style.
 	/// @param name   Window name.
-	VideoDisplay(VideoBox *box, VideoSlider *ControlSlider, wxTextCtrl *PositionDisplay, wxTextCtrl *SubsPosition, wxWindow* parent, wxWindowID id, const wxPoint& pos = wxDefaultPosition, const wxSize& size = wxDefaultSize, long style = 0, const wxString& name = wxPanelNameStr);
+	VideoDisplay(
+		VideoBox *box,
+		VideoSlider *ControlSlider,
+		wxTextCtrl *PositionDisplay,
+		wxTextCtrl *SubsPosition,
+		wxComboBox *zoomBox,
+		wxWindow* parent,
+		wxWindowID id,
+		const wxPoint& pos = wxDefaultPosition,
+		const wxSize& size = wxDefaultSize,
+		long style = 0,
+		const wxString& name = wxPanelNameStr);
 	~VideoDisplay();
 	/// @brief Reset the size of the display to the video size
 	void Reset();

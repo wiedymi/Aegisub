@@ -34,9 +34,6 @@
 /// @ingroup audio_output
 ///
 
-
-///////////
-// Headers
 #include "config.h"
 
 #ifdef WITH_DIRECTSOUND
@@ -48,7 +45,6 @@
 #include "frame_main.h"
 #include "main.h"
 #include "utils.h"
-
 
 /// @brief Constructor 
 ///
@@ -65,15 +61,11 @@ DirectSoundPlayer::DirectSoundPlayer() {
 	thread = NULL;
 }
 
-
-
 /// @brief Destructor 
 ///
 DirectSoundPlayer::~DirectSoundPlayer() {
 	CloseStream();
 }
-
-
 
 /// @brief Open stream 
 ///
@@ -126,8 +118,6 @@ void DirectSoundPlayer::OpenStream() {
 	offset = 0;
 }
 
-
-
 /// @brief Close stream 
 ///
 void DirectSoundPlayer::CloseStream() {
@@ -146,8 +136,6 @@ void DirectSoundPlayer::CloseStream() {
 		directSound = NULL;
 	}
 }
-
-
 
 /// @brief Fill buffer 
 /// @param fill 
@@ -238,8 +226,6 @@ RetryLock:
 	return playPos < endPos;
 }
 
-
-
 /// @brief Play 
 /// @param start 
 /// @param count 
@@ -282,8 +268,6 @@ void DirectSoundPlayer::Play(int64_t start,int64_t count) {
 	if (displayTimer && !displayTimer->IsRunning()) displayTimer->Start(15);
 }
 
-
-
 /// @brief Stop 
 /// @param timerToo 
 ///
@@ -314,16 +298,12 @@ void DirectSoundPlayer::Stop(bool timerToo) {
 	}
 }
 
-
-
 /// @brief Set end 
 /// @param pos 
 ///
 void DirectSoundPlayer::SetEndPosition(int64_t pos) {
 	if (playing) endPos = pos;
 }
-
-
 
 /// @brief Set current position 
 /// @param pos 
@@ -332,8 +312,6 @@ void DirectSoundPlayer::SetCurrentPosition(int64_t pos) {
 	startPos = playPos = pos;
 	startTime = GetTickCount();
 }
-
-
 
 /// @brief Get current position 
 /// @return 
@@ -349,8 +327,6 @@ int64_t DirectSoundPlayer::GetCurrentPosition() {
 	return startPos + tdiff * provider->GetSampleRate() / 1000;
 }
 
-
-
 /// @brief Thread constructor 
 /// @param par 
 ///
@@ -359,15 +335,11 @@ DirectSoundPlayerThread::DirectSoundPlayerThread(DirectSoundPlayer *par) : wxThr
 	stopnotify = CreateEvent(NULL, true, false, NULL);
 }
 
-
-
 /// @brief Thread destructor 
 ///
 DirectSoundPlayerThread::~DirectSoundPlayerThread() {
 	CloseHandle(stopnotify);
 }
-
-
 
 /// @brief Thread entry point 
 /// @return 
@@ -419,8 +391,6 @@ wxThread::ExitCode DirectSoundPlayerThread::Entry() {
 	return 0;
 }
 
-
-
 /// @brief Stop playback thread 
 ///
 void DirectSoundPlayerThread::Stop() {
@@ -429,5 +399,4 @@ void DirectSoundPlayerThread::Stop() {
 }
 
 #endif // WITH_DIRECTSOUND
-
 

@@ -34,9 +34,6 @@
 /// @ingroup scripting
 ///
 
-
-
-
 #ifndef AGI_PRE
 #include <wx/event.h>
 #include <wx/thread.h>
@@ -47,18 +44,15 @@
 
 #ifdef __WINDOWS__
 #include "../../contrib/lua51/src/lua.h"
-#include "../../contrib/lua51/src/lauxlib.h"
 #else
 #include <lua.hpp>
 #endif
 
 class wxWindow;
-
+namespace agi { namespace vfr { class Framerate; } }
 
 /// DOCME
 namespace Automation4 {
-
-
 	/// @class LuaAssFile
 	/// @brief Object wrapping an AssFile object for modification through Lua
 	class LuaAssFile {

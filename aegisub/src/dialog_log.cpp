@@ -40,13 +40,14 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <string>
+
 #include <wx/button.h>
 #include <wx/panel.h>
 #include <wx/sizer.h>
 #include <wx/statline.h>
 #include <wx/stattext.h>
 #endif
-#include <string.h>
 
 #include <time.h>
 #include "dialog_log.h"
@@ -82,7 +83,6 @@ LogWindow::LogWindow(wxWindow *parent)
 
 /// @brief Destructor
 LogWindow::~LogWindow() {
-	emit_log->Disable();
 	delete emit_log;
 }
 
@@ -100,7 +100,7 @@ void LogWindow::EmitLog::Write(agi::log::SinkMessage *sm) {
 #ifndef _WIN32
 	tm tmtime;
 	localtime_r(&sm->tv.tv_sec, &tmtime);
-	wxString log = wxString::Format("%c %02d:%02d:%02d %ld <%-25s> [%s:%s:%d]  %s\n",
+	wxString log = wxString::Format("%c %02d:%02d:%02d %-6ld <%-25s> [%s:%s:%d]  %s\n",
 		agi::log::Severity_ID[sm->severity],
 		tmtime.tm_hour,
 		tmtime.tm_min,
@@ -110,9 +110,9 @@ void LogWindow::EmitLog::Write(agi::log::SinkMessage *sm) {
 		sm->file,
 		sm->func,
 		sm->line,
-		strndup(sm->message, sm->len));
+		std::string(sm->message, sm->len));
 #else
-	wxString log = wxString::Format("%c %ld <%-25s> [%s:%s:%d]  %s\n",
+	wxString log = wxString::Format("%c %-6ld <%-25s> [%s:%s:%d]  %s\n",
 		agi::log::Severity_ID[sm->severity],
 		sm->tv.tv_usec,
 		sm->section,

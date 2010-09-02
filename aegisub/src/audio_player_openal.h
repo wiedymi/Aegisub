@@ -34,17 +34,9 @@
 /// @ingroup audio_output
 ///
 
-
 #ifdef WITH_OPENAL
-
-
-///////////
-// Headers
-#include "audio_player_manager.h"
 #include "include/aegisub/audio_player.h"
 #include "include/aegisub/audio_provider.h"
-#include "options.h"
-#include "utils.h"
 
 #ifdef __WINDOWS__
 #include <al.h>
@@ -56,8 +48,6 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #endif
-
-
 
 /// DOCME
 /// @class OpenALPlayer
@@ -76,7 +66,6 @@ private:
 	/// DOCME
 	volatile float volume;
 
-
 	/// DOCME
 	static const ALsizei num_buffers = 8;
 
@@ -85,7 +74,6 @@ private:
 
 	/// DOCME
 	ALsizei samplerate;
-
 
 	/// DOCME
 	volatile unsigned long start_frame; // first frame of playback
@@ -98,7 +86,6 @@ private:
 
 	/// DOCME
 	unsigned long bpf; // bytes per frame
-
 
 	/// DOCME
 	AudioProvider *provider;
@@ -114,7 +101,6 @@ private:
 
 	/// DOCME
 	ALuint source; // playback source
-
 
 	/// DOCME
 	ALsizei buf_first_free; // index into buffers, first free (unqueued) buffer
@@ -153,7 +139,6 @@ public:
 	void SetEndPosition(int64_t pos);
 	void SetCurrentPosition(int64_t pos);
 
-
 	/// @brief DOCME
 	/// @param vol 
 	/// @return 
@@ -165,23 +150,4 @@ public:
 	///
 	double GetVolume() { return volume; }
 };
-
-
-
-
-/// DOCME
-/// @class OpenALPlayerFactory
-/// @brief DOCME
-///
-/// DOCME
-class OpenALPlayerFactory : public AudioPlayerFactory {
-public:
-
-	/// @brief DOCME
-	///
-	AudioPlayer *CreatePlayer() { return new OpenALPlayer(); }
-};
-
 #endif
-
-

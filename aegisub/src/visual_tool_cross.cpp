@@ -37,8 +37,6 @@
 
 #include "ass_file.h"
 #include "gl_text.h"
-#include "selection_controller.h"
-#include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "video_context.h"
 #include "video_display.h"
@@ -46,6 +44,7 @@
 
 VisualToolCross::VisualToolCross(VideoDisplay *parent, VideoState const& video, wxToolBar *)
 : VisualTool<VisualDraggableFeature>(parent, video)
+, glText(new OpenGLText)
 {
 }
 
@@ -102,9 +101,9 @@ void VisualToolCross::Draw() {
 	wxString mouseText = wxString::Format(L"%i,%i", tx, ty);
 
 	int tw,th;
-	OpenGLText::SetFont(L"Verdana", 12, true);
-	OpenGLText::SetColour(wxColour(255, 255, 255));
-	OpenGLText::GetExtent(mouseText, tw, th);
+	glText->SetFont(L"Verdana", 12, true, false);
+	glText->SetColour(wxColour(255, 255, 255), 1.f);
+	glText->GetExtent(mouseText, tw, th);
 
 	// Calculate draw position
 	int dx = video.x;
@@ -119,5 +118,5 @@ void VisualToolCross::Draw() {
 	else dy -= th + 3;
 
 	// Draw text
-	OpenGLText::Print(mouseText, dx, dy);
+	glText->Print(mouseText, dx, dy);
 }

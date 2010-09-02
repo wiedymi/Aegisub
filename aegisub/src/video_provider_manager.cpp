@@ -34,17 +34,13 @@
 /// @ingroup video_input
 ///
 
-
-///////////
-// Headers
 #include "config.h"
 
 #include <libaegisub/log.h>
 
 #include "compat.h"
 #include "main.h"
-#include "options.h"
-#include "vfr.h"
+
 #ifdef WITH_AVISYNTH
 #include "video_provider_avs.h"
 #endif
@@ -54,9 +50,6 @@
 #include "video_provider_ffmpegsource.h"
 #endif
 #include "video_provider_manager.h"
-#ifdef WITH_QUICKTIME
-#include "video_provider_quicktime.h"
-#endif
 #include "video_provider_yuv4mpeg.h"
 
 
@@ -64,81 +57,65 @@
 /// @param video 
 /// @return 
 ///
-VideoProvider *VideoProviderFactoryManager::GetProvider(wxString video) {
-	// First check special case of dummy video
-	if (video.StartsWith(_T("?dummy:"))) {
-		return new DummyVideoProvider(video.wc_str());
-	}
+VideoProvider *VideoProviderFactory::GetProvider(wxString video) {
+	std::vector<std::string> list = GetClasses(OPT_GET("Video/Provider")->GetString());
+	if (video.StartsWith("?dummy")) list.insert(list.begin(), "Dummy");
+	list.insert(list.begin(), "YUV4MPEG");
 
-	try {
-		VideoProvider *y4m_provider = new YUV4MPEGVideoProvider(video);
-		if (y4m_provider)
-			y4m_provider = new VideoProviderCache(y4m_provider);
-		return y4m_provider;
-	}
-	catch (wxString temp) {
-		LOG_E("manager/video/provider/yuv4mpeg") << "Provider creation failed with reason: "<< temp.c_str() << " trying other providers";
-	}
-	catch (...) {
-		LOG_E("manager/video/provider/yuv4mpeg") << "Provider creation failed (uknown reason) trying other providers";
-	}
-
-	// List of providers
-	wxArrayString list = GetFactoryList(lagi_wxString(OPT_GET("Video/Provider")->GetString()));
-
-	// None available
-	if (list.Count() == 0) throw _T("No video providers are available.");
-
-	// Get provider
-	wxString error;
-	for (unsigned int i=0;i<list.Count();i++) {
+	bool fileFound = false;
+	bool fileSupported = false;
+	std::string errors;
+	errors.reserve(1024);
+	for (int i = 0; i < (signed)list.size(); ++i) {
 		try {
-			// Create provider
-			VideoProvider *provider = GetFactory(list[i])->CreateProvider(video);
-			if (provider) {
-				// Cache if necessary
-				if (provider->WantsCaching()) {
-					provider = new VideoProviderCache(provider);
-				}
-				return provider;
+			VideoProvider *provider = Create(list[i], video);
+			LOG_I("manager/video/provider") << list[i] << ": opened " << STD_STR(video);
+			if (provider->WantsCaching()) {
+				return new VideoProviderCache(provider);
 			}
+			return provider;
 		}
-		catch (wxString err) { error += list[i] + _T(" factory: ") + err + _T("\n"); }
-		catch (const wxChar *err) { error += list[i] + _T(" factory: ") + wxString(err) + _T("\n"); }
-		catch (...) { error += list[i] + _T(" factory: Unknown error\n"); }
+		catch (agi::FileNotFoundError const&) {
+			std::string err = list[i] + ": " + STD_STR(video) + " not found.";
+			errors += err + "\n";
+			LOG_D("manager/video/provider") << err;
+			// Keep trying other providers as this one may just not be able to
+			// open a valid path
+		}
+		catch (VideoNotSupported const&) {
+			fileFound = true;
+			std::string err = list[i] + ": " + STD_STR(video) + " is not in a supported format.\n";
+			errors += err + "\n";
+			LOG_D("manager/video/provider") << err;
+		}
+		catch (VideoOpenError const& ex) {
+			fileSupported = true;
+			std::string err = list[i] + ": " + ex.GetMessage();
+			errors += err + "\n";
+			LOG_D("manager/video/provider") << err;
+		}
 	}
 
-	// Failed
-	throw error;
+	// No provider could open the file
+	LOG_E("manager/video/provider") << "Could not open " << STD_STR(video);
+	std::string msg = "Could not open " + STD_STR(video) + ":\n" + errors;
+
+	if (!fileFound) throw agi::FileNotFoundError(STD_STR(video));
+	if (!fileSupported) throw VideoNotSupported(msg);
+	throw VideoOpenError(msg);
 }
-
-
 
 /// @brief Register all providers 
 ///
-void VideoProviderFactoryManager::RegisterProviders() {
+void VideoProviderFactory::RegisterProviders() {
 #ifdef WITH_AVISYNTH
-	RegisterFactory(new AvisynthVideoProviderFactory(),_T("Avisynth"));
+	Register<AvisynthVideoProvider>("Avisynth");
 #endif
 #ifdef WITH_FFMPEGSOURCE
-	RegisterFactory(new FFmpegSourceVideoProviderFactory(),_T("FFmpegSource"));
+	Register<FFmpegSourceVideoProvider>("FFmpegSource");
 #endif
-#ifdef WITH_QUICKTIME
-	RegisterFactory(new QuickTimeVideoProviderFactory(),_T("QuickTime"));
-#endif
+	Register<DummyVideoProvider>("Dummy", true);
+	Register<YUV4MPEGVideoProvider>("YUV4MPEG", true);
 }
 
-
-
-/// @brief Clear all providers 
-///
-void VideoProviderFactoryManager::ClearProviders() {
-	ClearFactories();
-}
-
-
-
-/// DOCME
-template <class VideoProviderFactory> std::map<wxString,VideoProviderFactory*>* FactoryManager<VideoProviderFactory>::factories=NULL;
-
-
+template<> VideoProviderFactory::map *FactoryBase<VideoProvider *(*)(wxString)>::classes = NULL;

@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;NOMINMAX;__STDC_FORMAT_MACROS"
 				MinimalRebuild="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="agi_pre.h"
@@ -109,7 +109,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;WIN64;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;WIN64;_DEBUG;_WINDOWS;NOMINMAX;__STDC_FORMAT_MACROS"
 				MinimalRebuild="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="agi_pre.h"
@@ -177,7 +177,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;NOMINMAX;__STDC_FORMAT_MACROS"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="agi_pre.h"
 				ProgramDataBaseFileName="$(IntDir)\vc90.pdb"
@@ -246,7 +246,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;WIN64;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;WIN64;NDEBUG;_WINDOWS;NOMINMAX;__STDC_FORMAT_MACROS"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="agi_pre.h"
 				DisableSpecificWarnings="4267"
@@ -505,10 +505,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\audio_provider_manager.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\audio_provider_pcm.cpp"
 				>
 			</File>
@@ -517,27 +513,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\audio_provider_quicktime.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\audio_provider_quicktime.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\audio_provider_ram.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\src\audio_provider_ram.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\audio_provider_stream.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\audio_provider_stream.h"
 				>
 			</File>
 		</Filter>
@@ -629,14 +609,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\quicktime_common.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\quicktime_common.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\vfw_wrap.cpp"
 				>
 			</File>
@@ -678,14 +650,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\help_button.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\hilimod_textctrl.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\hilimod_textctrl.h"
 				>
 			</File>
 			<File
@@ -830,14 +794,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\font_file_lister_freetype.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\idle_field_event.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\idle_field_event.h"
 				>
 			</File>
 			<File
@@ -1024,14 +980,6 @@
 				RelativePath="..\..\src\vector2d.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\src\vfr.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\vfr.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Dialogs"
@@ -1165,6 +1113,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\dialog_selected_choices.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\dialog_selected_choices.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\dialog_selection.cpp"
 				>
 			</File>
@@ -1237,14 +1193,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\dialog_tip.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\dialog_tip.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\dialog_translation.cpp"
 				>
 			</File>
@@ -1270,6 +1218,18 @@
 			</File>
 			<File
 				RelativePath="..\..\src\preferences.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\preferences.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\preferences_base.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\preferences_base.h"
 				>
 			</File>
 		</Filter>
@@ -1353,14 +1313,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\options.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\options.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\plugin_manager.cpp"
 				>
 			</File>
@@ -1416,14 +1368,6 @@
 				RelativePath="..\..\src\export_framerate.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\src\export_visible_lines.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\export_visible_lines.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Video backend"
@@ -1434,6 +1378,14 @@
 			</File>
 			<File
 				RelativePath="..\..\src\keyframe.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\threaded_frame_source.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\threaded_frame_source.h"
 				>
 			</File>
 			<File
@@ -1485,14 +1437,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\video_provider_quicktime.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\video_provider_quicktime.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\src\video_provider_yuv4mpeg.cpp"
 				>
 			</File>
@@ -1514,10 +1458,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\spellchecker_hunspell.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\spellchecker_manager.h"
 				>
 			</File>
 			<File
@@ -1642,10 +1582,6 @@
 			</File>
 			<File
 				RelativePath="..\..\src\subtitles_provider_libass.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\subtitles_provider_manager.h"
 				>
 			</File>
 		</Filter>

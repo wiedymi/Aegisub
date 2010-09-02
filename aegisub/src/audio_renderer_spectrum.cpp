@@ -58,7 +58,6 @@
 #include "fft.h"
 #endif
 #include "main.h"
-#include "options.h"
 #include "utils.h"
 
 

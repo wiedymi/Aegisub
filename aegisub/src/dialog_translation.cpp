@@ -51,9 +51,9 @@
 #include "help_button.h"
 #include "hotkeys.h"
 #include "libresrc/libresrc.h"
-#include "options.h"
 #include "selection_controller.h"
 #include "subs_edit_box.h"
+#include "subs_edit_ctrl.h"
 #include "subs_grid.h"
 #include "utils.h"
 #include "video_context.h"
@@ -359,7 +359,7 @@ void DialogTranslation::OnTransBoxKey(wxKeyEvent &event) {
 		// Update line
 		cur->UpdateText();
 		cur->ClearBlocks();
-		subs->FlagAsModified(_("translation assistant"));
+		subs->Commit(_("translation assistant"));
 		grid->CommitChanges();
 		((FrameMain*)main)->UpdateTitle();
 		UpdatePreview();

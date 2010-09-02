@@ -34,16 +34,13 @@
 /// @ingroup video_input
 ///
 
-
-///////////
-// Headers
 #include "config.h"
 
 #ifndef AGI_PRE
 #include <errno.h>
-#include <stdint.h>
 
 #include <algorithm>
+#include <iterator>
 
 #include <wx/filename.h>
 #include <wx/tokenzr.h>
@@ -53,18 +50,14 @@
 #include "ass_file.h"
 #include "ass_time.h"
 #include "dialog_progress.h"
+#include <libaegisub/vfr.h>
 #include "mkv_wrap.h"
-
 
 /// DOCME
 MatroskaWrapper MatroskaWrapper::wrapper;
 
-
-
 /// DOCME
 #define	CACHESIZE     65536
-
-
 
 /// @brief Constructor 
 ///
@@ -72,15 +65,11 @@ MatroskaWrapper::MatroskaWrapper() {
 	file = NULL;
 }
 
-
-
 /// @brief Destructor 
 ///
 MatroskaWrapper::~MatroskaWrapper() {
 	Close();
 }
-
-
 
 /// @brief Open file 
 /// @param filename 
@@ -113,8 +102,6 @@ void MatroskaWrapper::Open(wxString filename,bool parse) {
 	}
 }
 
-
-
 /// @brief Close file 
 /// @return 
 ///
@@ -124,20 +111,16 @@ void MatroskaWrapper::Close() {
 		file = NULL;
 		delete input;
 	}
-	keyFrames.Clear();
+	keyFrames.clear();
 	timecodes.clear();
 }
-
-
 
 /// @brief Return keyframes 
 /// @return 
 ///
-wxArrayInt MatroskaWrapper::GetKeyFrames() {
+std::vector<int> MatroskaWrapper::GetKeyFrames() {
 	return keyFrames;
 }
-
-
 
 /// @brief Comparison operator 
 /// @param t1 
@@ -148,13 +131,11 @@ bool operator < (MkvFrame &t1, MkvFrame &t2) {
 	return t1.time < t2.time;
 }
 
-
-
 /// @brief Actually parse 
 ///
 void MatroskaWrapper::Parse() {
 	// Clear keyframes and timecodes
-	keyFrames.Clear();
+	keyFrames.clear();
 	bytePos.Clear();
 	timecodes.clear();
 	frames.clear();
@@ -201,7 +182,7 @@ void MatroskaWrapper::Parse() {
 				// Cancelled?
 				if (canceled) {
 					Close();
-					throw _T("Canceled");
+					throw agi::UserCancelException("Canceled");
 				}
 
 				// Identical to (frameN % 2048) == 0,
@@ -231,7 +212,7 @@ void MatroskaWrapper::Parse() {
 		int i = 0;
 		for (std::list<MkvFrame>::iterator cur=frames.begin();cur!=frames.end();cur++) {
 			curFrame = *cur;
-			if (curFrame.isKey) keyFrames.Add(i);
+			if (curFrame.isKey) keyFrames.push_back(i);
 			bytePos.Add(curFrame.filePos);
 			timecodes.push_back(curFrame.time);
 			i++;
@@ -244,7 +225,7 @@ void MatroskaWrapper::Parse() {
 		int i = 0;
 		for (std::list<MkvFrame>::iterator cur=frames.begin();cur!=frames.end();cur++) {
 			curFrame = *cur;
-			if (curFrame.isKey) keyFrames.Add(i);
+			if (curFrame.isKey) keyFrames.push_back(i);
 			bytePos.Add(curFrame.filePos);
 			i++;
 		}
@@ -258,55 +239,22 @@ void MatroskaWrapper::Parse() {
 	}
 }
 
-
+static int mkv_round(double num) {
+	return (int)(num + .5);
+}
 
 /// @brief Set target to timecodes 
 /// @param target 
 /// @return 
 ///
-void MatroskaWrapper::SetToTimecodes(FrameRate &target) {
-	// Enough frames?
-	int frames = timecodes.size();
-	if (frames <= 1) return;
+void MatroskaWrapper::SetToTimecodes(agi::vfr::Framerate &target) {
+	if (timecodes.size() <= 1) return;
 
-	// Sort
-	//std::sort<std::vector<double>::iterator>(timecodes.begin(),timecodes.end());
-
-	// Check if it's CFR
-	/*
-	bool isCFR = true;
-	double estimateCFR = timecodes.back() / (timecodes.size()-1);
-	double t1,t2;
-	for (int i=1;i<frames;i++) {
-		t1 = timecodes[i];
-		t2 = timecodes[i-1];
-		int delta = abs(int(t1 - t2 - estimateCFR));
-		if (delta > 2) {
-			isCFR = false;
-			break;
-		}
-	}
-	*/
-	bool isCFR = false;
-	double estimateCFR = 0;
-
-	// Constant framerate
-	if (isCFR) {
-		estimateCFR = 1/estimateCFR * 1000.0;
-		if (fabs(estimateCFR - 24000.0/1001.0) < 0.02) estimateCFR = 24000.0 / 1001.0;
-		if (fabs(estimateCFR - 30000.0/1001.0) < 0.02) estimateCFR = 30000.0 / 1001.0;
-		target.SetCFR(estimateCFR);
-	}
-
-	// Variable framerate
-	else {
-		std::vector<int> times;
-		for (int i=0;i<frames;i++) times.push_back(int(timecodes[i]+0.5));
-		target.SetVFR(times);
-	}
+	std::vector<int> times;
+	times.reserve(timecodes.size());
+	std::transform(timecodes.begin(), timecodes.end(), std::back_inserter(times), &mkv_round);
+	target = agi::vfr::Framerate(times);
 }
-
-
 
 /// @brief Get subtitles 
 /// @param target 
@@ -361,7 +309,7 @@ void MatroskaWrapper::GetSubtitles(AssFile *target) {
 		if (choice == -1) {
 			target->LoadDefault(true);
 			Close();
-			throw _T("Canceled.");
+			throw agi::UserCancelException("cancelled");
 		}
 		trackToRead = tracksFound[choice];
 	}
@@ -429,7 +377,7 @@ void MatroskaWrapper::GetSubtitles(AssFile *target) {
 			if (canceled) {
 				target->LoadDefault(true);
 				Close();
-				throw _T("Canceled");
+				throw agi::UserCancelException("cancelled");
 			}
 
 			// Read to temp
@@ -556,7 +504,6 @@ bool MatroskaWrapper::HasSubtitles(wxString const& filename) {
 #define std_ftell ftello
 #endif
 
-
 /// @brief STDIO class 
 /// @param _st    
 /// @param pos    
@@ -608,7 +555,6 @@ longlong StdIoScan(InputStream *_st, ulonglong start, unsigned signature) {
   return -1;
 }
 
-
 /// @brief This is used to limit readahead.
 /// @param _st 
 /// @return Cache size
@@ -616,7 +562,6 @@ longlong StdIoScan(InputStream *_st, ulonglong start, unsigned signature) {
 unsigned StdIoGetCacheSize(InputStream *_st) {
   return CACHESIZE;
 }
-
 
 /// @brief Get last error message
 /// @param _st 
@@ -627,7 +572,6 @@ const char *StdIoGetLastError(InputStream *_st) {
   return strerror(st->error);
 }
 
-
 /// @brief Memory allocation, this is done via stdlib
 /// @param _st  
 /// @param size 
@@ -636,7 +580,6 @@ const char *StdIoGetLastError(InputStream *_st) {
 void  *StdIoMalloc(InputStream *_st, size_t size) {
   return malloc(size);
 }
-
 
 /// @brief DOCME
 /// @param _st  
@@ -648,7 +591,6 @@ void  *StdIoRealloc(InputStream *_st, void *mem, size_t size) {
   return realloc(mem,size);
 }
 
-
 /// @brief DOCME
 /// @param _st 
 /// @param mem 
@@ -656,7 +598,6 @@ void  *StdIoRealloc(InputStream *_st, void *mem, size_t size) {
 void  StdIoFree(InputStream *_st, void *mem) {
   free(mem);
 }
-
 
 /// @brief DOCME
 /// @param _st 
@@ -667,7 +608,6 @@ void  StdIoFree(InputStream *_st, void *mem) {
 int   StdIoProgress(InputStream *_st, ulonglong cur, ulonglong max) {
   return 1;
 }
-
 
 /// @brief DOCME
 /// @param _st 
@@ -682,7 +622,6 @@ longlong StdIoGetFileSize(InputStream *_st) {
 	std_fseek(st->fp, cpos, SEEK_SET);
 	return epos;
 }
-
 
 /// @brief DOCME
 /// @param filename 
@@ -703,5 +642,4 @@ MkvStdIO::MkvStdIO(wxString filename) {
 		setvbuf(fp, NULL, _IOFBF, CACHESIZE);
 	}
 }
-
 

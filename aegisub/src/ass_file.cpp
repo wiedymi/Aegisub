@@ -54,27 +54,35 @@
 #include "charset_detect.h"
 #include "compat.h"
 #include "main.h"
-#include "options.h"
 #include "subtitle_format.h"
 #include "text_file_reader.h"
 #include "text_file_writer.h"
 #include "utils.h"
 #include "version.h"
-#include "vfr.h"
 
-/// @brief AssFile constructor
-AssFile::AssFile () {
-	loaded = false;
-	Modified = false;
+namespace std {
+	template<>
+	void swap(AssFile &lft, AssFile &rgt) {
+		lft.swap(rgt);
+	}
 }
 
-/// @brief AssFile destructor 
+/// @brief AssFile constructor
+AssFile::AssFile ()
+: commitId(-1)
+, loaded(false)
+{
+}
+
+/// @brief AssFile destructor
 AssFile::~AssFile() {
 	delete_clear(Line);
 }
 
+/// @brief Load generic subs
 void AssFile::Load (const wxString &_filename,wxString charset,bool addToRecent) {
 	bool ok = false;
+	Clear();
 
 	try {
 		// Try to open file
@@ -102,16 +110,17 @@ void AssFile::Load (const wxString &_filename,wxString charset,bool addToRecent)
 
 		// Read file
 		if (reader) {
-			reader->SetTarget(this);
+			AssFile temp;
+			reader->SetTarget(&temp);
 			reader->ReadFile(_filename,charset);
+			swap(temp);
 			ok = true;
 		}
 
 		// Couldn't find a type
 		else throw _T("Unknown file type.");
 	}
-
-	// String error
+	catch (agi::UserCancelException const&) { }
 	catch (const wchar_t *except) {
 		wxMessageBox(except,_T("Error loading file"),wxICON_ERROR | wxOK);
 	}
@@ -142,8 +151,12 @@ void AssFile::Load (const wxString &_filename,wxString charset,bool addToRecent)
 	AddComment(_T("http://www.aegisub.org/"));
 	SetScriptInfo(_T("ScriptType"),_T("v4.00+"));
 
+	// Push the initial state of the file onto the undo stack
+	Commit("", commitId);
+	savedCommitId = commitId;
+
 	// Add to recent
-	if (addToRecent) AddToRecent(_filename);
+	if (addToRecent && ok) AddToRecent(_filename);
 }
 
 void AssFile::Save(wxString _filename,bool setfilename,bool addToRecent,const wxString encoding) {
@@ -172,7 +185,7 @@ void AssFile::Save(wxString _filename,bool setfilename,bool addToRecent,const wx
 
 	// Done
 	if (setfilename) {
-		Modified = false;
+		savedCommitId = commitId;
 		filename = _filename;
 	}
 }
@@ -417,7 +430,11 @@ void AssFile::Clear() {
 
 	loaded = false;
 	filename.clear();
-	Modified = false;
+	UndoStack.clear();
+	RedoStack.clear();
+	undoDescription.clear();
+	commitId = -1;
+	savedCommitId = 0;
 }
 
 void AssFile::LoadDefault (bool defline) {
@@ -433,11 +450,11 @@ void AssFile::LoadDefault (bool defline) {
 	AddLine(_T("PlayResX: 640"),_T("[Script Info]"),version);
 	AddLine(_T("PlayResY: 480"),_T("[Script Info]"),version);
 	AddLine(_T("ScaledBorderAndShadow: yes"),_T("[Script Info]"),version);
-	AddLine(_T(""),_T("[Script Info]"),version);
+	AddLine("",_T("[Script Info]"),version);
 	AddLine(_T("[V4+ Styles]"),_T("[V4+ Styles]"),version);
 	AddLine(_T("Format:  Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding"),_T("[V4+ Styles]"),version);
 	AddLine(defstyle.GetEntryData(),_T("[V4+ Styles]"),version);
-	AddLine(_T(""),_T("[V4+ Styles]"),version);
+	AddLine("",_T("[V4+ Styles]"),version);
 	AddLine(_T("[Events]"),_T("[Events]"),version);
 	AddLine(_T("Format:  Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"),_T("[Events]"),version);
 
@@ -446,20 +463,30 @@ void AssFile::LoadDefault (bool defline) {
 		AddLine(def.GetEntryData(),_T("[Events]"),version);
 	}
 
+	Commit("");
+	savedCommitId = commitId;
 	loaded = true;
 }
 
-AssFile::AssFile (const AssFile &from) {
-	filename = from.filename;
-	loaded = from.loaded;
-	Modified = from.Modified;
+void AssFile::swap(AssFile &that) throw() {
+	// Intentionally does not swap undo stack related things
+	std::swap(filename, that.filename);
+	std::swap(loaded, that.loaded);
+	std::swap(commitId, that.commitId);
+	std::swap(undoDescription, that.undoDescription);
+	std::swap(Line, that.Line);
+}
+
+AssFile::AssFile(const AssFile &from)
+: undoDescription(from.undoDescription)
+, commitId(from.commitId)
+, filename(from.filename)
+, loaded(from.loaded)
+{
 	std::transform(from.Line.begin(), from.Line.end(), std::back_inserter(Line), std::mem_fun(&AssEntry::Clone));
 }
 AssFile& AssFile::operator=(AssFile from) {
-	filename = from.filename;
-	loaded = from.loaded;
-	Modified = from.Modified;
-	std::swap(Line, from.Line);
+	std::swap(*this, from);
 	return *this;
 }
 
@@ -482,7 +509,7 @@ void AssFile::InsertStyle (AssStyle *style) {
 	// No styles found, add them
 	if (lastStyle == Line.end()) {
 		// Add space
-		curEntry = new AssEntry(_T(""));
+		curEntry = new AssEntry("");
 		curEntry->group = lastGroup;
 		Line.push_back(curEntry);
 
@@ -535,10 +562,10 @@ void AssFile::InsertAttachment (AssAttachment *attach) {
 	// Otherwise, create the [Fonts] group and insert
 	else {
 		int version=1;
-		AddLine(_T(""),Line.back()->group,version);
+		AddLine("",Line.back()->group,version);
 		AddLine(attach->group,attach->group,version);
 		Line.push_back(attach);
-		AddLine(_T(""),attach->group,version);
+		AddLine("",attach->group,version);
 	}
 }
 
@@ -616,7 +643,7 @@ void AssFile::SetScriptInfo(const wxString _key,const wxString value) {
 			// Found
 			if (curText.StartsWith(key)) {
 				// Set value
-				if (value != _T("")) {
+				if (value != "") {
 					wxString result = _key;
 					result += _T(": ");
 					result += value;
@@ -636,7 +663,7 @@ void AssFile::SetScriptInfo(const wxString _key,const wxString value) {
 
 		// Add
 		else if (GotIn) {
-			if (value != _T("")) {
+			if (value != "") {
 				wxString result = _key;
 				result += _T(": ");
 				result += value;
@@ -738,130 +765,56 @@ wxString AssFile::GetWildcardList(int mode) {
 	if (mode == 0) return SubtitleFormat::GetWildcards(0);
 	else if (mode == 1) return _T("Advanced Substation Alpha (*.ass)|*.ass");
 	else if (mode == 2) return SubtitleFormat::GetWildcards(1);
-	else return _T("");
+	else return "";
 }
 
-void AssFile::CompressForStack() {
-	for (entryIter cur=Line.begin();cur!=Line.end();cur++) {
-		AssDialogue *diag = dynamic_cast<AssDialogue*>(*cur);
-		if (diag) diag->ClearBlocks();
-	}
-}
-
-bool AssFile::IsModified() {
-	return Modified;
-}
-
-void AssFile::FlagAsModified(wxString desc) {
-	if (!RedoStack.empty()) {
-		delete_clear(RedoStack);
+int AssFile::Commit(wxString desc, int amendId) {
+	++commitId;
+	// Allow coalescing only if it's the last change and the file has not been
+	// saved since the last change
+	if (commitId == amendId+1 && RedoStack.empty() && savedCommitId != commitId) {
+		UndoStack.back() = *this;
+		return commitId;
 	}
 
-	Modified = true;
-	StackPush(desc);
-}
+	RedoStack.clear();
 
-void AssFile::StackPush(wxString desc) {
-	// Places copy on stack
-	AssFile *curcopy = new AssFile(*top);
-	curcopy->CompressForStack();
-	curcopy->undodescription = desc;
-	UndoStack.push_back(curcopy);
-	StackModified = true;
+	// Place copy on stack
+	undoDescription = desc;
+	UndoStack.push_back(*this);
 
 	// Cap depth
-	int n = 0;
-	for (std::list<AssFile*>::iterator cur=UndoStack.begin();cur!=UndoStack.end();cur++) {
-		n++;
-	}
 	int depth = OPT_GET("Limits/Undo Levels")->GetInt();
-	while (n > depth) {
-		delete UndoStack.front();
+	while ((int)UndoStack.size() > depth) {
 		UndoStack.pop_front();
-		n--;
-	}
-}
-
-void AssFile::StackPop() {
-	bool addcopy = false;
-	wxString undodesc="";
-	
-
-	if (StackModified) {
-		undodesc=UndoStack.back()->undodescription;
-		delete UndoStack.back();
-		UndoStack.pop_back();
-		StackModified = false;
-		addcopy = true;
 	}
 
-	if (!UndoStack.empty()) {
-		//delete top;
-		AssFile *undo = UndoStack.back();
-		top->CompressForStack();
-		top->undodescription = undodesc;
-		RedoStack.push_back(top);
-		top = undo;
-		UndoStack.pop_back();
-		Popping = true;
-	}
-
-	if (addcopy) {
-		StackPush(top->undodescription);
-	}
+	return commitId;
 }
 
-void AssFile::StackRedo() {
-	bool addcopy = false;
-	if (StackModified) {
-		delete UndoStack.back();
-		UndoStack.pop_back();
-		StackModified = false;
-		addcopy = true;
-	}
+void AssFile::Undo() {
+	if (UndoStack.size() <= 1) return;
 
-	if (!RedoStack.empty()) {
-		top->CompressForStack();
-		UndoStack.push_back(top);
-		top = RedoStack.back();
-		RedoStack.pop_back();
-		Popping = true;
-	}
-
-	if (addcopy) {
-		StackPush(top->undodescription);
-	}
+	RedoStack.push_back(AssFile());
+	std::swap(RedoStack.back(), *this);
+	UndoStack.pop_back();
+	*this = UndoStack.back();
 }
 
-void AssFile::StackClear() {
-	delete_clear(UndoStack);
-	delete_clear(RedoStack);
+void AssFile::Redo() {
+	if (RedoStack.empty()) return;
 
-	Popping = false;
+	std::swap(*this, RedoStack.back());
+	UndoStack.push_back(*this);
+	RedoStack.pop_back();
 }
 
-void AssFile::StackReset() {
-	StackClear();
-	delete top;
-	top = new AssFile;
-	StackModified = false;
+wxString AssFile::GetUndoDescription() const {
+	return IsUndoStackEmpty() ? "" : UndoStack.back().undoDescription;
 }
 
-bool AssFile::IsUndoStackEmpty() {
-	if (StackModified) return (UndoStack.size() <= 1);
-	else return UndoStack.empty();
-}
-
-bool AssFile::IsRedoStackEmpty() {
-	return RedoStack.empty();
-}
-
-wxString AssFile::GetUndoDescription() {
-	return (IsUndoStackEmpty())?_T(""):(UndoStack.back())->undodescription;
-}
-
-wxString AssFile::GetRedoDescription() {
-	return (IsRedoStackEmpty())?_T(""):(RedoStack.back())->undodescription;
+wxString AssFile::GetRedoDescription() const {
+	return IsRedoStackEmpty() ? "" : RedoStack.back().undoDescription;
 }
 
 bool AssFile::CompStart(const AssDialogue* lft, const AssDialogue* rgt) {
@@ -894,9 +847,7 @@ void AssFile::Sort(std::list<AssEntry*> &lst, CompFunc comp) {
 		entryIter end = begin;
 		while (end != lst.end() && dynamic_cast<AssDialogue*>(*end)) ++end;
 
-		// std::list::sort doesn't support sorting only part of the list, but
-		// splice is constant-time, so just sort a temp list with only the part we
-		// want sorted
+		// used instead of std::list::sort for partial list sorting
 		std::list<AssEntry*> tmp;
 		tmp.splice(tmp.begin(), lst, begin, end);
 		tmp.sort(compE);
@@ -910,7 +861,3 @@ void AssFile::Sort(std::list<AssDialogue*> &lst, CompFunc comp) {
 }
 
 AssFile *AssFile::top;
-std::list<AssFile*> AssFile::UndoStack;
-std::list<AssFile*> AssFile::RedoStack;
-bool AssFile::Popping;
-bool AssFile::StackModified;

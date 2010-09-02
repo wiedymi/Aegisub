@@ -6,8 +6,8 @@ AC_PREREQ(2.57)
 # MAKE SURE YOU UPDATE THE VERSION INFO BELOW WHEN YOU SET THIS TO '1'
 m4_define([aegisub_FINAL_RELEASE], [0])
 
-m4_define([aegisub_version_major], [2])
-m4_define([aegisub_version_minor], [2])
+m4_define([aegisub_version_major], [3])
+m4_define([aegisub_version_minor], [0])
 m4_define([aegisub_version_revision], [0])
 m4_define([aegisub_version], [aegisub_version_major.aegisub_version_minor.aegisub_version_revision])
 m4_define([aegisub_version_data], [aegisub_version_major.aegisub_version_minor])
@@ -778,18 +778,6 @@ AC_SUBST(LIBPOSTPROC_CFLAGS)
 
 
 ###################
-# QuickTime Support
-# (mac/windows only)
-###################
-
-AM_CONDITIONAL([HAVE_QUICKTIME], [test "$build_darwin" = "yes"])
-
-if test "$build_darwin" = "yes"; then
-  AC_DEFINE([WITH_QUICKTIME], [1], [QuickTime support.]),
-fi
-
-
-###################
 # Subtitle Provider
 ###################
 
@@ -1253,7 +1241,6 @@ po/Makefile.in
 reporter/Makefile
 src/Makefile
 src/bitmaps/Makefile
-src/libosxutil/Makefile
 src/libresrc/Makefile
 tools/Makefile
 universalchardet/Makefile

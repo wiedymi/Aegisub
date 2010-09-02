@@ -144,8 +144,8 @@ void SetThreadName(DWORD dwThreadID, LPCSTR szThreadName) {
 ///
 bool AegisubApp::OnInit() {
 #ifdef _DEBUG
-	agi::log::EmitSTDOUT emit_stdout;
-	emit_stdout.Enable();
+	emit_stdout = new agi::log::EmitSTDOUT();
+	emit_stdout->Enable();
 #endif
 
 	// App name (yeah, this is a little weird to get rid of an odd warning)
@@ -184,7 +184,12 @@ bool AegisubApp::OnInit() {
 		// Might be worth displaying an error in the second case
 	}
 #endif
-	config::opt->ConfigUser();
+	try {
+		config::opt->ConfigUser();
+	}
+	catch (agi::Exception const& err) {
+		wxMessageBox(L"Configuration file is invalid. Error reported:\n" + lagi_wxString(err.GetMessage()), L"Error");
+	}
 
 
 #ifdef __VISUALC__
@@ -280,12 +285,15 @@ bool AegisubApp::OnInit() {
 ///
 int AegisubApp::OnExit() {
 	SubtitleFormat::DestroyFormats();
-	VideoContext::Clear();
+	VideoContext::OnExit();
 	delete plugins;
 	delete config::opt;
 	delete config::mru;
 #ifdef WITH_AUTOMATION
 	delete global_scripts;
+#endif
+#ifdef _DEBUG
+	delete emit_stdout;
 #endif
 	return wxApp::OnExit();
 }

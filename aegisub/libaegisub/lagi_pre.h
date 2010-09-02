@@ -27,10 +27,19 @@
 #include <deque>
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <numeric>
 #include <map>
-#include <memory>
 #include <sstream>
 #include <string>
+
+#ifdef _WIN32
+#include <functional>
+#include <memory>
+#else
+#include <tr1/functional>
+#include <tr1/memory>
+#endif
 
 #ifdef __DEPRECATED // Dodge GCC warnings
 # undef __DEPRECATED

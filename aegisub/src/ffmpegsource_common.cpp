@@ -38,10 +38,10 @@
 
 #ifdef WITH_FFMPEGSOURCE
 
-///////////
-// Headers
 #ifndef AGI_PRE
+#include <inttypes.h>
 #include <map>
+
 #include <wx/dir.h>
 #include <wx/choicdlg.h> // Keep this last so wxUSE_CHOICEDLG is set.
 #endif
@@ -54,7 +54,6 @@
 #include "frame_main.h"
 #include "main.h"
 #include "md5.h"
-#include "options.h"
 #include "standard_paths.h"
 
 
@@ -100,7 +99,8 @@ FFMS_Index *FFmpegSourceProvider::DoIndexing(FFMS_Indexer *Indexer, const wxStri
 	// set up progress dialog callback
 	IndexingProgressDialog Progress;
 	Progress.IndexingCanceled = false;
-	Progress.ProgressDialog = new DialogProgress(AegisubApp::Get()->frame, _("Indexing"), &Progress.IndexingCanceled,
+	Progress.ProgressDialog = new DialogProgress(AegisubApp::Get()->frame,
+		_("Indexing"), &Progress.IndexingCanceled,
 		_("Reading timecodes and frame/sample data"), 0, 1);
 	Progress.ProgressDialog->Show();
 	Progress.ProgressDialog->SetProgress(0,1);
@@ -108,12 +108,14 @@ FFMS_Index *FFmpegSourceProvider::DoIndexing(FFMS_Indexer *Indexer, const wxStri
 	// index all audio tracks
 	FFMS_Index *Index = FFMS_DoIndexing(Indexer, Trackmask, FFMS_TRACKMASK_NONE, NULL, NULL, IndexEH,
 		FFmpegSourceProvider::UpdateIndexingProgress, &Progress, &ErrInfo);
+	Progress.ProgressDialog->Destroy();
+	if (Progress.IndexingCanceled) {
+		throw agi::UserCancelException("indexing cancelled by user");
+	}
 	if (Index == NULL) {
-		Progress.ProgressDialog->Destroy();
 		MsgString.Append(_T("Failed to index: ")).Append(wxString(ErrInfo.Buffer, wxConvUTF8));
 		throw MsgString;
 	}
-	Progress.ProgressDialog->Destroy();
 
 	// write index to disk for later use
 	// ignore write errors for now
@@ -126,8 +128,6 @@ FFMS_Index *FFmpegSourceProvider::DoIndexing(FFMS_Indexer *Indexer, const wxStri
 
 	return Index;
 }
-
-
 
 /// @brief Finds all tracks of the given type and return their track numbers and respective codec names 
 /// @param Indexer	The indexer object representing the source file
@@ -143,11 +143,8 @@ std::map<int,wxString> FFmpegSourceProvider::GetTracksOfType(FFMS_Indexer *Index
 			TrackList.insert(std::pair<int,wxString>(i, CodecName));
 		}
 	}
-	
 	return TrackList;
 }
-
-
 
 /// @brief Ask user for which track he wants to load 
 /// @param TrackList	A std::map with the track numbers as keys and codec names as values
@@ -216,7 +213,7 @@ FFMS_IndexErrorHandling FFmpegSourceProvider::GetErrorHandlingMode() {
 		return FFMS_IEH_STOP_TRACK; // questionable default?
 }
 
-
+#include <inttypes.h>
 /// @brief	Generates an unique name for the ffms2 index file and prepares the cache folder if it doesn't exist 
 /// @param filename	The name of the source file
 /// @return			Returns the generated filename.
@@ -232,8 +229,8 @@ wxString FFmpegSourceProvider::GetCacheFilename(const wxString& _filename)
 	wxFileName filename(_filename);
 
 	// Generate string to be hashed
-	wxString toHash = filename.GetFullName() + wxString::Format(_T(":%i"),len)
-		+ wxString::Format(_T(":%i"), filename.GetModificationTime().GetTicks());
+	wxString toHash = wxString::Format("%s %" PRId64 " %" PRId64, filename.GetFullName(), len, (int64_t)filename.GetModificationTime().GetTicks());
+
 
 	// Get the MD5 digest of the string
 	const wchar_t *tmp = toHash.wc_str();

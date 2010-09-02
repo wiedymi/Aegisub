@@ -68,7 +68,6 @@
 #include "compat.h"
 #include "dialog_version_check.h"
 #include "main.h"
-#include "options.h"
 #include "string_codec.h"
 #include "version.h"
 
@@ -172,7 +171,7 @@ wxThread::ExitCode AegisubVersionCheckerThread::Entry()
 	if (!interactive)
 	{
 		// Automatic checking enabled?
-		if (!OPT_GET("App/Auto/Check For Updates")->GetInt())
+		if (!OPT_GET("App/Auto/Check For Updates")->GetBool())
 			return 0;
 
 		// Is it actually time for a check?

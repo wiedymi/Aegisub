@@ -38,11 +38,8 @@
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "libresrc/libresrc.h"
-#include "selection_controller.h"
-#include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "utils.h"
-#include "vfr.h"
 #include "video_context.h"
 #include "video_display.h"
 #include "visual_tool_drag.h"
@@ -291,7 +288,7 @@ bool VisualToolDrag::InitializeDrag(feature_iterator feature) {
 	// Set time of clicked feature to the current frame and shift all other
 	// selected features by the same amount
 	if (feature->type != DRAG_ORIGIN) {
-		int time = VFR_Output.GetTimeAtFrame(frameNumber,true,true) - feature->line->Start.GetMS();
+		int time = VideoContext::Get()->TimeAtFrame(frameNumber) - feature->line->Start.GetMS();
 		int change = time - feature->time;
 
 		for (sel_iterator cur = selectedFeatures.begin(); cur != selectedFeatures.end(); ++cur) {

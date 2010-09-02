@@ -34,24 +34,14 @@
 /// @ingroup main_headers audio_input
 ///
 
-
 #pragma once
 
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <wx/string.h>
 #endif
 
-#include "aegisub.h"
-
-
-//////////////
-// Prototypes
-class VideoProvider;
-
-
+#include <libaegisub/exception.h>
+#include "factory_manager.h"
 
 /// @class AudioProvider
 /// @brief DOCME
@@ -88,28 +78,33 @@ public:
 	AudioProvider();
 	virtual ~AudioProvider();
 
-	virtual wxString GetFilename() const;
+	virtual wxString GetFilename() const { return filename; };
 	virtual void GetAudio(void *buf, int64_t start, int64_t count) const = 0;
 	void GetAudioWithVolume(void *buf, int64_t start, int64_t count, double volume) const;
 
-	int64_t GetNumSamples() const;
-	int GetSampleRate() const;
-	int GetBytesPerSample() const;
-	int GetChannels() const;
+	int64_t GetNumSamples() const { return num_samples; }
+	int GetSampleRate() const     { return sample_rate; }
+	int GetBytesPerSample() const { return bytes_per_sample; }
+	int GetChannels() const       { return channels; }
 	virtual bool AreSamplesNativeEndian() const = 0;
+
+	/// @brief Does this provider benefit from external caching?
+	virtual bool NeedsCache() const { return false; }
 };
 
-
-
+/// DOCME
 /// @class AudioProviderFactory
 /// @brief DOCME
 ///
 /// DOCME
-class AudioProviderFactory {
+class AudioProviderFactory : public Factory1<AudioProvider, wxString> {
 public:
-
-	/// @brief DOCME
-	///
-	virtual ~AudioProviderFactory() {}
-	virtual AudioProvider *CreateProvider(wxString filename)=0;
+	static void RegisterProviders();
+	static AudioProvider *GetProvider(wxString filename, int cache=-1);
 };
+
+DEFINE_BASE_EXCEPTION_NOINNER(AudioProviderError, agi::Exception);
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AudioOpenError, AudioProviderError, "audio/open/failed");
+
+/// Error of some sort occurred while decoding a frame
+DEFINE_SIMPLE_EXCEPTION_NOINNER(AudioDecodeError, AudioProviderError, "audio/error");

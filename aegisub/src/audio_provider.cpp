@@ -35,16 +35,12 @@
 ///
 
 
-///////////
-// Headers
 #include "config.h"
 
 #ifndef AGI_PRE
 #include <wx/thread.h>
 #endif
 
-#include "audio_provider_manager.h"
-#include "include/aegisub/audio_provider.h"
 #ifdef WITH_AVISYNTH
 #include "audio_provider_avs.h"
 #endif
@@ -54,78 +50,20 @@
 #endif
 #include "audio_provider_hd.h"
 #include "audio_provider_pcm.h"
-#ifdef WITH_QUICKTIME
-#include "audio_provider_quicktime.h"
-#endif
 #include "audio_provider_ram.h"
 #include "compat.h"
 #include "main.h"
-#include "options.h"
-
-
-
 
 /// @brief Constructor 
 ///
-AudioProvider::AudioProvider() {
-	raw = NULL;
+AudioProvider::AudioProvider() : raw(NULL) {
 }
-
-
 
 /// @brief Destructor 
 ///
 AudioProvider::~AudioProvider() {
-	// Clear buffers
 	delete[] raw;
 }
-
-
-
-/// @brief Get number of channels 
-/// @return 
-///
-int AudioProvider::GetChannels() const {
-	return channels;
-}
-
-
-
-/// @brief Get number of samples 
-/// @return 
-///
-int64_t AudioProvider::GetNumSamples() const {
-	return num_samples;
-}
-
-
-
-/// @brief Get sample rate 
-/// @return 
-///
-int AudioProvider::GetSampleRate() const {
-	return sample_rate;
-}
-
-
-
-/// @brief Get bytes per sample 
-/// @return 
-///
-int AudioProvider::GetBytesPerSample() const {
-	return bytes_per_sample;
-}
-
-
-
-/// @brief Get filename 
-/// @return 
-///
-wxString AudioProvider::GetFilename() const {
-	return filename;
-}
-
-
 
 /// @brief Get audio with volume 
 /// @param buf    
@@ -162,107 +100,85 @@ void AudioProvider::GetAudioWithVolume(void *buf, int64_t start, int64_t count, 
 	}
 }
 
-
-
 /// @brief Get provider 
 /// @param filename 
 /// @param cache    
 /// @return 
 ///
-AudioProvider *AudioProviderFactoryManager::GetAudioProvider(wxString filename, int cache) {
-	// Prepare provider
+AudioProvider *AudioProviderFactory::GetProvider(wxString filename, int cache) {
 	AudioProvider *provider = NULL;
+	bool found = false;
+	std::string msg;
 
 	if (!OPT_GET("Provider/Audio/PCM/Disable")->GetBool()) {
 		// Try a PCM provider first
-		provider = CreatePCMAudioProvider(filename);
-		if (provider) {
-			if (provider->GetBytesPerSample() == 2 && provider->GetSampleRate() >= 32000 && provider->GetChannels() == 1)
-				return provider;
-			else {
-				provider = CreateConvertAudioProvider(provider);
-				return provider;
-			}
-		}
-	}
-
-	// List of providers
-	wxArrayString list = GetFactoryList(lagi_wxString(OPT_GET("Audio/Provider")->GetString()));
-
-	// None available
-	if (list.Count() == 0) throw _T("No audio providers are available.");
-
-	// Get provider
-	wxString error;
-	for (unsigned int i=0;i<list.Count();i++) {
 		try {
-			AudioProvider *prov = GetFactory(list[i])->CreateProvider(filename.wc_str());
-			if (prov) {
-				provider = prov;
-				break;
+			provider = CreatePCMAudioProvider(filename);
+		}
+		catch (agi::FileNotFoundError const& err) {
+			msg = "PCM audio provider: " + err.GetMessage() + " not found.\n";
+		}
+		catch (AudioOpenError const& err) {
+			found = true;
+			msg += err.GetMessage();
+		}
+	}
+	if (!provider) {
+		std::vector<std::string> list = GetClasses(OPT_GET("Audio/Provider")->GetString());
+		if (list.empty()) throw AudioOpenError("No audio providers are available.");
+
+		for (unsigned int i=0;i<list.size();i++) {
+			try {
+				provider = Create(list[i], filename);
+				if (provider) break;
+			}
+			catch (agi::FileNotFoundError const& err) {
+				msg += list[i] + ": " + err.GetMessage() + " not found.\n";
+			}
+			catch (AudioOpenError const& err) {
+				found = true;
+				msg += list[i] + ": " + err.GetMessage();
 			}
 		}
-		catch (wxString err) { error += list[i] + _T(" factory: ") + err + _T("\n"); }
-		catch (const wxChar *err) { error += list[i] + _T(" factory: ") + wxString(err) + _T("\n"); }
-		catch (...) { error += list[i] + _T(" factory: Unknown error\n"); }
 	}
+	if (!provider) {
+		if (found) {
+			throw AudioOpenError(msg);
+		}
+		else {
+			throw agi::FileNotFoundError(STD_STR(filename));
+		}
+	}
+	bool needsCache = provider->NeedsCache();
 
-	// Failed
-	if (!provider) throw error;
-
-	// Give it a conversor if needed
+	// Give it a converter if needed
 	if (provider->GetBytesPerSample() != 2 || provider->GetSampleRate() < 32000 || provider->GetChannels() != 1)
 		provider = CreateConvertAudioProvider(provider);
 
 	// Change provider to RAM/HD cache if needed
 	if (cache == -1) cache = OPT_GET("Audio/Cache/Type")->GetInt();
-	if (cache) {
-		AudioProvider *final = NULL;
-
-		// Convert to RAM
-		if (cache == 1) final = new RAMAudioProvider(provider);
-		
-		// Convert to HD
-		if (cache == 2) final = new HDAudioProvider(provider);
-		
-		// Reassign
-		if (final) {
-			delete provider;
-			provider = final;
-		}
+	if (!cache || !needsCache) {
+		return provider;
 	}
 
-	// Return
-	return provider;
+	// Convert to RAM
+	if (cache == 1) return new RAMAudioProvider(provider);
+
+	// Convert to HD
+	if (cache == 2) return new HDAudioProvider(provider);
+
+	throw AudioOpenError("Unknown caching method");
 }
-
-
 
 /// @brief Register all providers 
 ///
-void AudioProviderFactoryManager::RegisterProviders() {
+void AudioProviderFactory::RegisterProviders() {
 #ifdef WITH_AVISYNTH
-	RegisterFactory(new AvisynthAudioProviderFactory(),_T("Avisynth"));
+	Register<AvisynthAudioProvider>("Avisynth");
 #endif
 #ifdef WITH_FFMPEGSOURCE
-	RegisterFactory(new FFmpegSourceAudioProviderFactory(),_T("FFmpegSource"));
-#endif
-#ifdef WITH_QUICKTIME
-	RegisterFactory(new QuickTimeAudioProviderFactory(), _T("QuickTime"));
+	Register<FFmpegSourceAudioProvider>("FFmpegSource");
 #endif
 }
 
-
-
-/// @brief Clear all providers 
-///
-void AudioProviderFactoryManager::ClearProviders() {
-	ClearFactories();
-}
-
-
-
-/// DOCME
-template <class AudioProviderFactory> std::map<wxString,AudioProviderFactory*>* FactoryManager<AudioProviderFactory>::factories=NULL;
-
-
+template<> AudioProviderFactory::map *FactoryBase<AudioProvider *(*)(wxString)>::classes = NULL;

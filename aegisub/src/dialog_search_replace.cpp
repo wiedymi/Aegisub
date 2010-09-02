@@ -51,9 +51,9 @@
 #include "dialog_search_replace.h"
 #include "frame_main.h"
 #include "main.h"
-#include "options.h"
 #include "selection_controller.h"
 #include "subs_edit_box.h"
+#include "subs_edit_ctrl.h"
 #include "subs_grid.h"
 #include "video_display.h"
 
@@ -439,7 +439,7 @@ void SearchReplaceEngine::ReplaceNext(bool DoReplace) {
 			}
 
 			// Commit
-			grid->ass->FlagAsModified(_("replace"));
+			grid->ass->Commit(_("replace"));
 			grid->CommitChanges();
 		}
 
@@ -546,9 +546,8 @@ void SearchReplaceEngine::ReplaceAll() {
 
 	// Commit
 	if (count > 0) {
-		grid->ass->FlagAsModified(_("replace"));
+		grid->ass->Commit(_("replace"));
 		grid->CommitChanges();
-		grid->editBox->Update();
 		wxMessageBox(wxString::Format(_("%i matches were replaced."),count));
 	}
 

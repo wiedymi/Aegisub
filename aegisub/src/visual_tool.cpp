@@ -40,25 +40,16 @@
 #include <wx/glcanvas.h>
 #endif
 
-#ifdef __APPLE__
-#include <OpenGL/GL.h>
-#else
-#include <GL/gl.h>
-#endif
-
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "ass_override.h"
 #include "ass_style.h"
 #include "ass_time.h"
-#include "export_visible_lines.h"
 #include "main.h"
-#include "options.h"
 #include "selection_controller.h"
 #include "subs_edit_box.h"
 #include "subs_grid.h"
 #include "utils.h"
-#include "vfr.h"
 #include "video_context.h"
 #include "video_display.h"
 #include "video_provider_manager.h"
@@ -158,8 +149,6 @@ void VisualTool<FeatureType>::OnMouseEvent(wxMouseEvent &event) {
 		}
 		// end drag
 		else {
-			if (realTime) AssLimitToVisibleFilter::SetFrame(-1);
-
 			dragging = false;
 
 			// mouse didn't move, fiddle with selection
@@ -200,8 +189,6 @@ void VisualTool<FeatureType>::OnMouseEvent(wxMouseEvent &event) {
 		}
 		// end hold
 		else {
-			if (realTime) AssLimitToVisibleFilter::SetFrame(-1);
-
 			holding = false;
 			CommitHold();
 			Commit(true);
@@ -237,7 +224,6 @@ void VisualTool<FeatureType>::OnMouseEvent(wxMouseEvent &event) {
 
 				dragging = true;
 				parent->CaptureMouse();
-				if (realTime) AssLimitToVisibleFilter::SetFrame(frameNumber);
 			}
 		}
 		// start hold
@@ -252,7 +238,6 @@ void VisualTool<FeatureType>::OnMouseEvent(wxMouseEvent &event) {
 			if (curDiag && InitializeHold()) {
 				holding = true;
 				parent->CaptureMouse();
-				if (realTime) AssLimitToVisibleFilter::SetFrame(frameNumber);
 			}
 		}
 	}
@@ -268,18 +253,16 @@ void VisualTool<FeatureType>::Commit(bool full, wxString message) {
 		if (message.empty()) {
 			message = _("visual typesetting");
 		}
-		grid->ass->FlagAsModified(message);
+		grid->ass->Commit(message);
 	}
-	grid->CommitChanges(false,!full);
-	if (full)
-		grid->editBox->Update(false, true);
+	grid->CommitChanges(full);
 	externalChange = true;
 }
 
 template<class FeatureType>
 AssDialogue* VisualTool<FeatureType>::GetActiveDialogueLine() {
 	AssDialogue *diag = grid->GetActiveLine();
-	if (grid->IsDisplayed(diag))
+	if (diag && grid->IsDisplayed(diag))
 		return diag;
 	return NULL;
 }

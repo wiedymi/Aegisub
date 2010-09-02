@@ -37,10 +37,9 @@
 
 #pragma once
 
-////////////
-// Includes
 #ifndef AGI_PRE
 #include <list>
+#include <map>
 #include <vector>
 
 #include <wx/grid.h>
@@ -49,13 +48,11 @@
 
 #include "selection_controller.h"
 
-
-//////////////
-// Prototypes
 class AssEntry;
 class AssDialogue;
 class SubsEditBox;
 class FrameMain;
+class VideoContext;
 
 /// DOCME
 typedef std::list<AssEntry*>::iterator entryIter;
@@ -71,8 +68,6 @@ typedef SelectionListener<AssDialogue> SubtitleSelectionListener;
 ///
 /// DOCME
 class BaseGrid : public wxWindow, public BaseSelectionController<AssDialogue> {
-private:
-
 	/// DOCME
 	int lineHeight;
 
@@ -120,10 +115,11 @@ protected:
 	/// DOCME
 	FrameMain *parentFrame;
 
+	VideoContext *context;
+
 	/// DOCME
 	static const int columns = 10;
 	bool showCol[columns];
-
 
 	/// @brief DOCME
 	/// @param alternate
@@ -173,7 +169,10 @@ public:
 	wxArrayInt GetSelection(bool *continuous=NULL) const;
 
 	void ClearMaps();
-	void UpdateMaps();
+	/// @brief Update the row <-> AssDialogue mappings
+	/// @param preserve_selected_rows Try to keep the same rows selected rather
+	///                               rather than the same lines
+	void UpdateMaps(bool preserve_selected_rows = false);
 	void UpdateStyle();
 
 	int GetRows() const;

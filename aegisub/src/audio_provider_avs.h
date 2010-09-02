@@ -34,11 +34,7 @@
 /// @ingroup audio_input
 ///
 
-
-///////////
-// Headers
 #ifdef WITH_AVISYNTH
-#include <Mmreg.h>
 #include "include/aegisub/audio_provider.h"
 #include "avisynth_wrap.h"
 
@@ -49,8 +45,6 @@
 ///
 /// DOCME
 class AvisynthAudioProvider : public AudioProvider, public AviSynthWrapper {
-private:
-
 	/// DOCME
 	wxString filename;
 
@@ -58,38 +52,17 @@ private:
 	PClip clip;
 
 	void LoadFromClip(AVSValue clip);
-	void OpenAVSAudio();
 	void SetFile();
-	void Unload();
 
 public:
 	AvisynthAudioProvider(wxString _filename);
-	~AvisynthAudioProvider();
 
-	wxString GetFilename() const;
+	wxString GetFilename() const { return filename; }
 
 	bool AreSamplesNativeEndian() const { return true; }
+	bool NeedsCache() const { return true; }
 
 	void GetAudio(void *buf, int64_t start, int64_t count) const;
 	void GetWaveForm(int *min,int *peak,int64_t start,int w,int h,int samples,float scale);
 };
-
-
-
-/// DOCME
-/// @class AvisynthAudioProviderFactory
-/// @brief DOCME
-///
-/// DOCME
-class AvisynthAudioProviderFactory : public AudioProviderFactory {
-public:
-
-	/// @brief DOCME
-	/// @param file 
-	///
-	AudioProvider *CreateProvider(wxString file) { return new AvisynthAudioProvider(file); }
-};
-
 #endif
-
-

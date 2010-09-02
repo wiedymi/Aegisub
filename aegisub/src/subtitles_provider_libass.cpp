@@ -34,39 +34,41 @@
 /// @ingroup subtitle_rendering
 ///
 
-///////////
-// Headers
 #include "config.h"
-
 
 #ifdef WITH_LIBASS
 
 #ifndef AGI_PRE
 #include <wx/filefn.h>
+#include <wx/utils.h>
 #endif
 
 #ifdef __APPLE__
-extern "C" {
 #include <sys/param.h>
-#include "libosxutil/libosxutil.h"
-}
+#include <libaegisub/util_osx.h>
 #endif
 
 #include <libaegisub/log.h>
 
 #include "ass_file.h"
+#include "dialog_progress.h"
+#include "main.h"
 #include "standard_paths.h"
 #include "subtitles_provider_libass.h"
 #include "utils.h"
 #include "video_context.h"
-
+#include "video_frame.h"
 
 
 /// @brief Handle libass messages
 ///
 static void msg_callback(int level, const char *fmt, va_list args, void *data) {
 	char buf[256];
-	snprintf(buf, sizeof(buf), fmt, args);
+#ifdef _WIN32
+	vsprintf_s(buf, sizeof(buf), fmt, args);
+#else
+	vsnprintf(buf, sizeof(buf), fmt, args);
+#endif
 
 	if (level < 2) // warning/error
 		LOG_I("subtitle/provider/libass") << buf;
@@ -74,57 +76,50 @@ static void msg_callback(int level, const char *fmt, va_list args, void *data) {
 		LOG_D("subtitle/provider/libass") << buf;
 }
 
-
-
-/// @brief Constructor
-///
-LibassSubtitlesProvider::LibassSubtitlesProvider() {
-	// Initialize library
-	static bool first = true;
-	if (first) {
-		ass_library = ass_library_init();
-		if (!ass_library) throw _T("ass_library_init failed");
-
-		wxString fonts_dir = StandardPaths::DecodePath(_T("?user/libass_fonts/"));
-		if (!wxDirExists(fonts_dir))
-			// It's only one level below the user dir, and we assume the user dir already exists at this point.
-			wxMkdir(fonts_dir);
-
-		ass_set_fonts_dir(ass_library, fonts_dir.mb_str(wxConvFile));
-		ass_set_extract_fonts(ass_library, 0);
-		ass_set_style_overrides(ass_library, NULL);
-		ass_set_message_cb(ass_library, msg_callback, this);
-		first = false;
-	}
-
-	// Initialize renderer
-	ass_track = NULL;
-	ass_renderer = ass_renderer_init(ass_library);
-	if (!ass_renderer) throw _T("ass_renderer_init failed");
-	ass_set_font_scale(ass_renderer, 1.);
-
+static void load_config(ASS_Renderer *ass_renderer) {
 #ifdef __APPLE__
 	char config_path[MAXPATHLEN];
 	char *config_dir;
 
-	config_dir = OSX_GetBundleResourcesDirectory();
+	config_dir = agi::util::OSX_GetBundleResourcesDirectory();
 	snprintf(config_path, MAXPATHLEN, "%s/etc/fonts/fonts.conf", config_dir);
 	free(config_dir);
 #else
 	const char *config_path = NULL;
 #endif
 
-	ass_set_fonts(ass_renderer, NULL, "Sans", 1, config_path, 1);
+	ass_set_fonts(ass_renderer, NULL, "Sans", 1, config_path, true);
 }
 
+/// @brief Constructor
+///
+LibassSubtitlesProvider::LibassSubtitlesProvider(std::string) {
+	if (cache_worker) {
+		bool canceled;
+		DialogProgress *progress = new DialogProgress(reinterpret_cast<wxWindow*>(AegisubApp::Get()->frame), L"", &canceled, L"Caching fonts", 0, 1);
+		progress->Show();
+		while (cache_worker) {
+			if (canceled) throw agi::UserCancelException("Font caching cancelled");
+			progress->Pulse();
+			wxYield();
+			wxMilliSleep(100);
+		}
+		progress->Destroy();
+	}
+	ass_set_message_cb(ass_library, msg_callback, this);
 
+	// Initialize renderer
+	ass_track = NULL;
+	ass_renderer = ass_renderer_init(ass_library);
+	if (!ass_renderer) throw _T("ass_renderer_init failed");
+	ass_set_font_scale(ass_renderer, 1.);
+	load_config(ass_renderer);
+}
 
 /// @brief Destructor
 ///
 LibassSubtitlesProvider::~LibassSubtitlesProvider() {
 }
-
-
 
 /// @brief Load subtitles
 /// @param subs
@@ -139,8 +134,6 @@ void LibassSubtitlesProvider::LoadSubtitles(AssFile *subs) {
 	ass_track = ass_read_memory(ass_library, &data[0], data.size(),(char *)"UTF-8");
 	if (!ass_track) throw _T("libass failed to load subtitles.");
 }
-
-
 
 /// DOCME
 #define _r(c)  ((c)>>24)
@@ -210,10 +203,34 @@ void LibassSubtitlesProvider::DrawSubtitles(AegiVideoFrame &frame,double time) {
 	}
 }
 
+class FontConfigCacheThread : public wxThread {
+	ASS_Library *ass_library;
+	FontConfigCacheThread** thisPtr;
+	ExitCode Entry() {
+		ASS_Renderer *ass_renderer = ass_renderer_init(ass_library);
+		load_config(ass_renderer);
+		ass_renderer_done(ass_renderer);
+		*thisPtr = NULL;
+		return EXIT_SUCCESS;
+	}
+public:
+	FontConfigCacheThread(ASS_Library *ass_library, FontConfigCacheThread **thisPtr)
+		: ass_library(ass_library)
+		, thisPtr(thisPtr)
+	{
+		*thisPtr = this;
+		Create();
+		Run();
+	}
+};
 
+void LibassSubtitlesProvider::CacheFonts() {
+	ass_library = ass_library_init();
+	new FontConfigCacheThread(ass_library, &cache_worker);
+}
 
 /// DOCME
 ASS_Library* LibassSubtitlesProvider::ass_library;
-
+FontConfigCacheThread* LibassSubtitlesProvider::cache_worker = NULL;
 
 #endif // WITH_LIBASS

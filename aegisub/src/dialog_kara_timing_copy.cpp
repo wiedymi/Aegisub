@@ -830,7 +830,7 @@ DialogKanjiTimer::DialogKanjiTimer(wxWindow *parent, SubtitlesGrid *_grid)
 	SetIcon(BitmapToIcon(GETIMAGE(kara_timing_copier_24)));
 
 	// Variables
-	subs = AssFile::top;
+	subs = _grid->ass;
 	grid = _grid;
 	currentSourceLine = subs->Line.begin();
 	currentDestinationLine = subs->Line.begin();
@@ -941,7 +941,7 @@ void DialogKanjiTimer::OnClose(wxCommandEvent &event) {
 		line->Text = p.second;
 	}
 	if (modified) {
-		grid->ass->FlagAsModified(_("kanji timing"));
+		grid->ass->Commit(_("kanji timing"));
 		grid->CommitChanges();
 		grid->UpdateMaps();
 		LinesToChange.clear();

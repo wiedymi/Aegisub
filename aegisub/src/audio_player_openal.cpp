@@ -34,42 +34,21 @@
 /// @ingroup audio_output
 ///
 
-
 #include "config.h"
 
 #ifdef WITH_OPENAL
 
-
-///////////
-// Headers
 #include <libaegisub/log.h>
 
 #include "audio_controller.h"
-#include "audio_player_manager.h"
 #include "audio_player_openal.h"
-#include "audio_provider_manager.h"
 #include "frame_main.h"
-#include "options.h"
 #include "utils.h"
-
-#ifdef __WINDOWS__
-#include <al.h>
-#include <alc.h>
-#elif defined(__APPLE__)
-#include <OpenAL/AL.h>
-#include <OpenAL/ALC.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
-#endif
-
 
 // Auto-link to OpenAL lib for MSVC
 #ifdef _MSC_VER
 #pragma comment(lib, "openal32.lib")
 #endif
-
-
 
 /// @brief Constructor 
 ///
@@ -82,16 +61,12 @@ OpenALPlayer::OpenALPlayer()
 	provider = 0;
 }
 
-
-
 /// @brief Destructor 
 ///
 OpenALPlayer::~OpenALPlayer()
 {
 	CloseStream();
 }
-
-
 
 /// @brief Open stream 
 ///
@@ -148,8 +123,6 @@ void OpenALPlayer::OpenStream()
 	open = true;
 }
 
-
-
 /// @brief Close stream 
 /// @return 
 ///
@@ -167,8 +140,6 @@ void OpenALPlayer::CloseStream()
 	// No longer working
 	open = false;
 }
-
-
 
 /// @brief Play 
 /// @param start 
@@ -205,8 +176,6 @@ void OpenALPlayer::Play(int64_t start,int64_t count)
 	if (displayTimer && !displayTimer->IsRunning()) displayTimer->Start(15);
 }
 
-
-
 /// @brief Stop 
 /// @param timerToo 
 /// @return 
@@ -231,8 +200,6 @@ void OpenALPlayer::Stop(bool timerToo)
                 displayTimer->Stop();
         }
 }
-
-
 
 /// @brief DOCME
 /// @param count 
@@ -274,8 +241,6 @@ void OpenALPlayer::FillBuffers(ALsizei count)
 	free(data);
 }
 
-
-
 /// @brief DOCME
 ///
 void OpenALPlayer::Notify()
@@ -313,8 +278,6 @@ void OpenALPlayer::Notify()
 	}
 }
 
-
-
 /// @brief DOCME
 /// @return 
 ///
@@ -322,8 +285,6 @@ bool OpenALPlayer::IsPlaying()
 {
 	return playing;
 }
-
-
 
 /// @brief Set end 
 /// @param pos 
@@ -333,8 +294,6 @@ void OpenALPlayer::SetEndPosition(int64_t pos)
 	end_frame = pos;
 }
 
-
-
 /// @brief Set current position 
 /// @param pos 
 ///
@@ -342,8 +301,6 @@ void OpenALPlayer::SetCurrentPosition(int64_t pos)
 {
 	cur_frame = pos;
 }
-
-
 
 /// @brief DOCME
 /// @return 
@@ -353,8 +310,6 @@ int64_t OpenALPlayer::GetStartPosition()
 	return start_frame;
 }
 
-
-
 /// @brief DOCME
 /// @return 
 ///
@@ -362,8 +317,6 @@ int64_t OpenALPlayer::GetEndPosition()
 {
 	return end_frame;
 }
-
-
 
 /// @brief Get current position 
 ///
@@ -375,8 +328,4 @@ int64_t OpenALPlayer::GetCurrentPosition()
 	return buffers_played * buffer_length + start_frame + extra * samplerate / 1000;
 }
 
-
 #endif // WITH_OPENAL
-
-
-

@@ -34,30 +34,29 @@
 /// @ingroup main_ui
 ///
 
-
-////////////
-// Includes
 #include "config.h"
 
 #ifndef AGI_PRE
 #include <algorithm>
 #include <iterator>
+
+#include <wx/dcclient.h>
+#include <wx/dcmemory.h>
 #include <wx/sizer.h>
 #endif
+
+#include "base_grid.h"
 
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "ass_style.h"
 #include "audio_controller.h"
 #include "selection_controller.h"
-#include "base_grid.h"
 #include "compat.h"
 #include "frame_main.h"
 #include "main.h"
-#include "options.h"
 #include "subs_edit_box.h"
 #include "utils.h"
-#include "vfr.h"
 #include "video_box.h"
 #include "video_context.h"
 #include "video_slider.h"
@@ -80,6 +79,7 @@ static inline void set_difference(const S1 &src1, const S2 &src2, D &dst) {
 ///
 BaseGrid::BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wxSize& size, long style, const wxString& name)
 : wxWindow(parent, id, pos, size, style, name)
+, context(VideoContext::Get())
 {
 	// Misc variables
 	lastRow = -1;
@@ -106,6 +106,25 @@ BaseGrid::BaseGrid(wxWindow* parent, wxWindowID id, const wxPoint& pos, const wx
 
 	// Set style
 	UpdateStyle();
+
+	agi::OptionValue::ChangeListener UpdateStyle(std::tr1::bind(&BaseGrid::UpdateStyle, this));
+	OPT_GET("Subtitle/Grid/Font Face")->Subscribe(this, UpdateStyle);
+	OPT_GET("Subtitle/Grid/Font Size")->Subscribe(this, UpdateStyle);
+
+	agi::OptionValue::ChangeListener Refresh(std::tr1::bind(&BaseGrid::Refresh, this, false, (wxRect*)NULL));
+	OPT_GET("Colour/Subtitle Grid/Active Border")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Background/Background")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Background/Comment")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Background/Inframe")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Background/Selected Comment")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Background/Selection")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Collision")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Header")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Left Column")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Lines")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Selection")->Subscribe(this, Refresh);
+	OPT_GET("Colour/Subtitle Grid/Standard")->Subscribe(this, Refresh);
+	OPT_GET("Subtitle/Grid/Highlight Subtitles in Frame")->Subscribe(this, Refresh);
 }
 
 
@@ -165,6 +184,85 @@ void BaseGrid::ClearMaps() {
 
 	AnnounceSelectedSetChanged(Selection(), old_selection);
 }
+
+/// @brief Update maps 
+///
+void BaseGrid::UpdateMaps(bool preserve_selected_rows) {
+	BeginBatch();
+	int active_row = line_index_map[active_line];
+
+	std::vector<int> sel_rows;
+	if (preserve_selected_rows) {
+		sel_rows.reserve(selection.size());
+		std::transform(selection.begin(), selection.end(), std::back_inserter(sel_rows),
+			std::bind1st(std::mem_fun(&BaseGrid::GetDialogueIndex), this));
+	}
+
+	index_line_map.clear();
+	line_index_map.clear();
+
+	for (entryIter cur=AssFile::top->Line.begin();cur != AssFile::top->Line.end();cur++) {
+		AssDialogue *curdiag = dynamic_cast<AssDialogue*>(*cur);
+		if (curdiag) {
+			line_index_map[curdiag] = (int)index_line_map.size();
+			index_line_map.push_back(curdiag);
+		}
+	}
+
+	if (preserve_selected_rows) {
+		Selection sel;
+
+		// If the file shrank enough that no selected rows are left, select the
+		// last row
+		if (sel_rows.empty()) {
+			sel_rows.push_back(index_line_map.size() - 1);
+		}
+		else if (sel_rows[0] >= (int)index_line_map.size()) {
+			sel_rows[0] = index_line_map.size() - 1;
+		}
+		for (size_t i = 0; i < sel_rows.size(); i++) {
+			if (sel_rows[i] >= (int)index_line_map.size()) break;
+			sel.insert(index_line_map[sel_rows[i]]);
+		}
+
+		SetSelectedSet(sel);
+	}
+	else {
+		Selection lines;
+		std::copy(index_line_map.begin(), index_line_map.end(), std::inserter(lines, lines.begin()));
+		Selection new_sel;
+		// Remove lines which no longer exist from the selection
+		set_intersection(selection.begin(), selection.end(),
+			lines.begin(), lines.end(),
+			std::inserter(new_sel, new_sel.begin()));
+
+		SetSelectedSet(new_sel);
+	}
+
+	// The active line may have ceased to exist; pick a new one if so
+	if (line_index_map.find(active_line) == line_index_map.end()) {
+		if (active_row < (int)index_line_map.size()) {
+			SetActiveLine(index_line_map[active_row]);
+		}
+		else if (preserve_selected_rows && !selection.empty()) {
+			SetActiveLine(index_line_map[sel_rows[0]]);
+		}
+		else {
+			SetActiveLine(index_line_map.back());
+		}
+	}
+
+	if (selection.empty() && active_line) {
+		Selection sel;
+		sel.insert(active_line);
+		SetSelectedSet(sel);
+	}
+
+	EndBatch();
+
+	Refresh(false);
+}
+
 
 
 
@@ -553,8 +651,8 @@ void BaseGrid::DrawImage(wxDC &dc) {
 			strings.Add(wxString::Format(_T("%i"),curRow+1));
 			strings.Add(wxString::Format(_T("%i"),curDiag->Layer));
 			if (byFrame) {
-				strings.Add(wxString::Format(_T("%i"),VFR_Output.GetFrameAtTime(curDiag->Start.GetMS(),true)));
-				strings.Add(wxString::Format(_T("%i"),VFR_Output.GetFrameAtTime(curDiag->End.GetMS(),false)));
+				strings.Add(wxString::Format(_T("%i"),context->FrameAtTime(curDiag->Start.GetMS(),agi::vfr::START)));
+				strings.Add(wxString::Format(_T("%i"),context->FrameAtTime(curDiag->End.GetMS(),agi::vfr::END)));
 			}
 			else {
 				strings.Add(curDiag->Start.GetASSFormated());
@@ -788,7 +886,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 		// Normal click
 		if ((click || dclick) && !shift && !ctrl && !alt) {
 			SetActiveLine(dlg);
-			if (dclick) VideoContext::Get()->JumpToTime(dlg->Start.GetMS());
+			if (dclick) context->JumpToTime(dlg->Start.GetMS());
 			SelectRow(row,false);
 			parentFrame->UpdateToolbar();
 			lastRow = row;
@@ -863,27 +961,22 @@ void BaseGrid::ScrollTo(int y) {
 /// @brief Adjust scrollbar 
 ///
 void BaseGrid::AdjustScrollbar() {
-	// Variables
 	int w,h,sw,sh;
 	GetClientSize(&w,&h);
 	int drawPerScreen = h/lineHeight;
 	int rows = GetRows();
 	bool barToEnable = drawPerScreen < rows+2;
-	bool barEnabled = scrollBar->IsEnabled();
 
-	// Set yPos
 	yPos = MID(0,yPos,rows - drawPerScreen);
 
-	// Set size
 	scrollBar->Freeze();
 	scrollBar->GetSize(&sw,&sh);
 	scrollBar->SetSize(w-sw,0,sw,h);
 
-	// Set parameters
-	if (barEnabled) {
+	if (barToEnable != scrollBar->IsEnabled()) scrollBar->Enable(barToEnable);
+	if (barToEnable) {
 		scrollBar->SetScrollbar(yPos,drawPerScreen,rows+2,drawPerScreen-2,true);
 	}
-	if (barToEnable != barEnabled) scrollBar->Enable(barToEnable);
 	scrollBar->Thaw();
 }
 
@@ -965,9 +1058,9 @@ void BaseGrid::SetColumnWidths() {
 
 			// Times
 			if (byFrame) {
-				int tmp = VFR_Output.GetFrameAtTime(curDiag->Start.GetMS(),true);
+				int tmp = context->FrameAtTime(curDiag->Start.GetMS(),agi::vfr::START);
 				if (tmp > maxStart) maxStart = tmp;
-				tmp = VFR_Output.GetFrameAtTime(curDiag->End.GetMS(),true);
+				tmp = context->FrameAtTime(curDiag->End.GetMS(),agi::vfr::END);
 				if (tmp > maxEnd) maxEnd = tmp;
 			}
 		}
@@ -983,18 +1076,6 @@ void BaseGrid::SetColumnWidths() {
 		startLen = fw + 10;
 		dc.GetTextExtent(wxString::Format(_T("%i"),maxEnd), &fw, &fh, NULL, NULL, &font);
 		endLen = fw + 10;
-	}
-
-	// Style length
-	if (false && AssFile::top) {
-		AssStyle *curStyle;
-		for (entryIter curIter=AssFile::top->Line.begin();curIter!=AssFile::top->Line.end();curIter++) {
-			curStyle = dynamic_cast<AssStyle*>(*curIter);
-			if (curStyle) {
-				dc.GetTextExtent(curStyle->name, &fw, &fh, NULL, NULL, &font);
-				if (fw > styleLen) styleLen = fw;
-			}
-		}
 	}
 
 	// Finish actor/effect/style
@@ -1054,37 +1135,11 @@ int BaseGrid::GetDialogueIndex(AssDialogue *diag) const {
 bool BaseGrid::IsDisplayed(AssDialogue *line) {
 	VideoContext* con = VideoContext::Get();
 	if (!con->IsLoaded()) return false;
-	int f1 = VFR_Output.GetFrameAtTime(line->Start.GetMS(),true);
-	int f2 = VFR_Output.GetFrameAtTime(line->End.GetMS(),false);
-	if (f1 <= con->GetFrameN() && f2 >= con->GetFrameN()) return true;
-	return false;
+	int frame = con->GetFrameN();
+	return
+		con->FrameAtTime(line->Start.GetMS(),agi::vfr::START) <= frame &&
+		con->FrameAtTime(line->End.GetMS(),agi::vfr::END) >= frame;
 }
-
-
-
-/// @brief Update maps 
-///
-void BaseGrid::UpdateMaps() {
-	index_line_map.clear();
-	line_index_map.clear();
-	
-	for (entryIter cur=AssFile::top->Line.begin();cur != AssFile::top->Line.end();cur++) {
-		AssDialogue *curdiag = dynamic_cast<AssDialogue*>(*cur);
-		if (curdiag) {
-			line_index_map[curdiag] = (int)index_line_map.size();
-			index_line_map.push_back(curdiag);
-		}
-	}
-
-	if (line_index_map.find(active_line) == line_index_map.end()) {
-		// this isn't supposed to happen
-		SetActiveLine(0);
-	}
-
-	Refresh(false);
-}
-
-
 
 /// @brief Key press 
 /// @param event 
@@ -1107,7 +1162,7 @@ void BaseGrid::OnKeyPress(wxKeyEvent &event) {
 
 	// Left/right, forward to seek bar if video is loaded
 	if (key == WXK_LEFT || key == WXK_RIGHT) {
-		if (VideoContext::Get()->IsLoaded()) {
+		if (context->IsLoaded()) {
 			parentFrame->videoBox->videoSlider->SetFocus();
 			parentFrame->videoBox->videoSlider->GetEventHandler()->ProcessEvent(event);
 			return;
@@ -1200,8 +1255,8 @@ void BaseGrid::OnKeyPress(wxKeyEvent &event) {
 	// Other events, send to audio display
 	/// @todo Reinstate this, or make a better solution, when audio is getting stabler again
 	/*
-	if (VideoContext::Get()->audio->loaded) {
-		VideoContext::Get()->audio->GetEventHandler()->ProcessEvent(event);
+	if (context->audio->loaded) {
+		context->audio->GetEventHandler()->ProcessEvent(event);
 	}
 	*/
 	else event.Skip();

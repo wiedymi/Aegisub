@@ -37,6 +37,8 @@
 
 #ifndef AGI_PRE
 #include <fstream>
+#include <list>
+#include <vector>
 
 #include <wx/regex.h>
 #include <wx/tokenzr.h>
@@ -45,7 +47,6 @@
 #include "ass_dialogue.h"
 #include "ass_override.h"
 #include "utils.h"
-#include "vfr.h"
 
 AssDialogue::AssDialogue()
 : Comment(false)
@@ -109,18 +110,11 @@ AssDialogue::AssDialogue(wxString _data,int version)
 }
 
 AssDialogue::~AssDialogue () {
-	Clear();
-}
-
-void AssDialogue::Clear () {
-	ClearBlocks();
+	delete_clear(Blocks);
 }
 
 void AssDialogue::ClearBlocks() {
-	for (std::vector<AssDialogueBlock*>::iterator cur=Blocks.begin();cur!=Blocks.end();cur++) {
-		delete *cur;
-	}
-	Blocks.clear();
+	delete_clear(Blocks);
 }
 
 bool AssDialogue::Parse(wxString rawData, int version) {
@@ -215,48 +209,37 @@ bool AssDialogue::Parse(wxString rawData, int version) {
 	return true;
 }
 
-wxString AssDialogue::GetData(bool ssa) {
-	wxString final;
+wxString AssDialogue::GetData(bool ssa) const {
+	wxString s = Style;
+	wxString a = Actor;
+	wxString e = Effect;
+	s.Replace(L",",L";");
+	a.Replace(L",",L";");
+	e.Replace(L",",L";");
 
-	if (Comment) final = L"Comment: ";
-	else final = L"Dialogue: ";
-
-	if (ssa) final += L"Marked=0,";
-
-	final += wxString::Format(L"%01i",Layer);
-	final += L",";
-
-	final += Start.GetASSFormated() + L",";
-	final += End.GetASSFormated() + L",";
-
-	Style.Replace(L",",L";");
-	Actor.Replace(L",",L";");
-	final += Style + L",";
-	final += Actor + L",";
-
-	final += GetMarginString(0);
-	final += L",";
-	final += GetMarginString(1);
-	final += L",";
-	final += GetMarginString(2);
-	final += L",";
-
-	Effect.Replace(L",",L";");
-	final += Effect + L",";
-	final += Text;
+	wxString str = wxString::Format(
+		L"%s: %s,%s,%s,%s,%s,%d,%d,%d,%s,%s",
+		Comment ? L"Comment" : L"Dialogue",
+		ssa ? L"Marked=0" : wxString::Format("%01d", Layer).c_str(),
+		Start.GetASSFormated().c_str(),
+		End.GetASSFormated().c_str(),
+		s.c_str(), a.c_str(),
+		Margin[0], Margin[1], Margin[2],
+		e.c_str(),
+		Text.c_str());
 
 	// Make sure that final has no line breaks
-	final.Replace(L"\n","");
-	final.Replace(L"\r","");
+	str.Replace(L"\n", "");
+	str.Replace(L"\r", "");
 
-	return final;
+	return str;
 }
 
-const wxString AssDialogue::GetEntryData() {
+const wxString AssDialogue::GetEntryData() const {
 	return GetData(false);
 }
 
-wxString AssDialogue::GetSSAText () {
+wxString AssDialogue::GetSSAText () const {
 	return GetData(true);
 }
 
@@ -644,7 +627,7 @@ void AssDialogue::SetMarginString(const wxString origvalue,int which) {
 	Margin[which] = value;
 }
 
-wxString AssDialogue::GetMarginString(int which,bool pad) {
+wxString AssDialogue::GetMarginString(int which,bool pad) const {
 	if (which < 0 || which >= 4) throw Aegisub::InvalidMarginIdError();
 	int value = Margin[which];
 	if (pad) return wxString::Format(_T("%04i"),value);

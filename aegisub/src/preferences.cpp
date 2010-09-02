@@ -20,6 +20,8 @@
 
 
 #ifndef AGI_PRE
+#include <iterator>
+
 #include <wx/checkbox.h>
 #include <wx/combobox.h>
 #include <wx/filefn.h>
@@ -37,532 +39,331 @@
 #include "libresrc/libresrc.h"
 #include "preferences.h"
 #include "main.h"
-#include "subtitles_provider_manager.h"
+#include "include/aegisub/audio_player.h"
+#include "include/aegisub/audio_provider.h"
+#include "include/aegisub/subtitles_provider.h"
 #include "video_provider_manager.h"
-#include "audio_player_manager.h"
-#include "audio_provider_manager.h"
 
 /// Define make all platform-specific options visible in a single view.
 #define SHOW_ALL 1
 
-DEFINE_BASE_EXCEPTION_NOINNER(PreferencesError, agi::Exception)
-DEFINE_SIMPLE_EXCEPTION_NOINNER(PreferenceIncorrectType, PreferencesError, "preferences/incorrect_type")
-DEFINE_SIMPLE_EXCEPTION_NOINNER(PreferenceNotSupported, PreferencesError, "preferences/not_supported")
+#include "preferences_base.h"
 
-Preferences::Preferences(wxWindow *parent): wxDialog(parent, -1, _("Preferences"), wxDefaultPosition, wxSize(-1, 500)) {
-//	SetIcon(BitmapToIcon(GETIMAGE(options_button_24)));
+/// General preferences page
+General::General(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("General")) {
 
-	book = new wxTreebook(this, -1, wxDefaultPosition, wxDefaultSize);
+	wxFlexGridSizer *startup = PageSizer(_("Startup"));
+	OptionAdd(startup, _("Check for updates"), "App/Auto/Check For Updates");
+	OptionAdd(startup, _("Show Splash Screen"), "App/Splash");
 
-	General(book);
-	Subtitles(book);
-	Audio(book);
-	Video(book);
-	Interface(book);
-	Interface_Colours(book);
-	Interface_Hotkeys(book);
-	Paths(book);
-	File_Associations(book);
-	Backup(book);
-	Automation(book);
-	Advanced(book);
-	Advanced_Interface(book);
-	Advanced_Audio(book);
-	Advanced_Video(book);
-
-	book->Fit();
-
-	/// @todo Save the last page and start with that page on next launch.
-	book->ChangeSelection(5);
-
-	// Bottom Buttons
-	wxStdDialogButtonSizer *stdButtonSizer = new wxStdDialogButtonSizer();
-	stdButtonSizer->AddButton(new wxButton(this,wxID_OK));
-	stdButtonSizer->AddButton(new wxButton(this,wxID_CANCEL));
-	stdButtonSizer->AddButton(new wxButton(this,wxID_APPLY));
-	stdButtonSizer->Realize();
-	wxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-	wxButton *defaultButton = new wxButton(this,2342,_("Restore Defaults"));
-	buttonSizer->Add(defaultButton,0,wxEXPAND);
-	buttonSizer->AddStretchSpacer(1);
-	buttonSizer->Add(stdButtonSizer,0,wxEXPAND);
-
-
-	// Main Sizer
-	wxSizer *mainSizer = new wxBoxSizer(wxVERTICAL);
-	mainSizer->Add(book, 1 ,wxEXPAND | wxALL, 5);
-	mainSizer->Add(buttonSizer,0,wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,5);
-	SetSizerAndFit(mainSizer);
-	this->SetMinSize(wxSize(-1, 500));
-	this->SetMaxSize(wxSize(-1, 500));
-	CenterOnParent();
-
-
-
-}
-
-void Preferences::OptionChoice(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, const wxArrayString &choices, const char *opt_name) {
-	agi::OptionValue *opt = OPT_GET(opt_name);
-
-	int type = opt->GetType();
-	wxString selection;
-
-	switch (type) {
-		case agi::OptionValue::Type_Int: {
-			selection = choices.Item(opt->GetInt());
-			break;
-		}
-		case agi::OptionValue::Type_String: {
-			selection.assign(opt->GetString());
-			break;
-		}
-
-		default:
-			throw PreferenceNotSupported("Unsupported type");
-	}
-
-	flex->Add(new wxStaticText(parent, wxID_ANY, name), 1, wxALIGN_CENTRE_VERTICAL);
-	wxComboBox *cb = new wxComboBox(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY | wxCB_DROPDOWN);
-	cb->SetValue(selection);
-	flex->Add(cb, 1, wxEXPAND, 0);
-}
-
-
-void Preferences::OptionBrowse(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, BrowseType browse_type, const char *opt_name) {
-
-	agi::OptionValue *opt = OPT_GET(opt_name);
-
-	if (opt->GetType() != agi::OptionValue::Type_String)
-		throw PreferenceIncorrectType("Option must be agi::OptionValue::Type_String for BrowseButton.");
-
-	flex->Add(new wxStaticText(parent, wxID_ANY, name), 1, wxALIGN_CENTRE_VERTICAL);
-
-	wxFlexGridSizer *button_flex = new wxFlexGridSizer(2,5,5);
-	button_flex->AddGrowableCol(0,1);
-	flex->Add(button_flex, 1, wxEXPAND, 5);
-
-	wxTextCtrl *text = new wxTextCtrl(parent, wxID_ANY , opt->GetString(), wxDefaultPosition, wxDefaultSize);
-	button_flex->Add(text, 1, wxEXPAND);
-	BrowseButton *browse = new BrowseButton(parent, wxID_ANY, wxEmptyString, browse_type);
-	browse->Bind(text);
-	button_flex->Add(browse, 1, wxEXPAND);
-
-}
-
-
-
-void Preferences::OptionAdd(wxPanel *parent, wxFlexGridSizer *flex, const wxString &name, const char *opt_name, double min, double max, double inc) {
-
-	agi::OptionValue *opt = OPT_GET(opt_name);
-
-	int type = opt->GetType();
-
-	switch (type) {
-
-		case agi::OptionValue::Type_Bool: {
-			wxCheckBox *cb = new wxCheckBox(parent, wxID_ANY, name);
-			flex->Add(cb, 1, wxEXPAND, 0);
-			cb->SetValue(opt->GetBool());
-			break;
-		}
-
-		case agi::OptionValue::Type_Int:
-		case agi::OptionValue::Type_Double: {
-			flex->Add(new wxStaticText(parent, wxID_ANY, name), 1, wxALIGN_CENTRE_VERTICAL);
-			wxSpinCtrlDouble *scd = new wxSpinCtrlDouble(parent, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, min, max, opt->GetInt(), inc);
-			flex->Add(scd);
-
-			break;
-		}
-
-		case agi::OptionValue::Type_String: {
-			flex->Add(new wxStaticText(parent, wxID_ANY, name), 1, wxALIGN_CENTRE_VERTICAL);
-			wxTextCtrl *text = new wxTextCtrl(parent, wxID_ANY , lagi_wxString(opt->GetString()), wxDefaultPosition, wxDefaultSize);
-			flex->Add(text, 1, wxEXPAND);
-			break;
-		}
-
-		case agi::OptionValue::Type_Colour: {
-			flex->Add(new wxStaticText(parent, wxID_ANY, name), 1, wxALIGN_CENTRE_VERTICAL);
-			flex->Add(new ColourButton(parent, wxID_ANY, wxSize(40,10), lagi_wxColour(opt->GetColour())));
-			break;
-		}
-
-		default:
-			throw PreferenceNotSupported("Unsupported type");
-	}
-
-}
-
-Preferences::~Preferences() {
-
-}
-
-
-void Preferences::OnOK(wxCommandEvent &event) {
-	EndModal(0);
-}
-
-
-void Preferences::OnApply(wxCommandEvent &event) {
-}
-
-
-void Preferences::OnCancel(wxCommandEvent &event) {
-	EndModal(0);
-}
-
-
-#define PAGE_CREATE(name)                           \
-	wxPanel *panel = new wxPanel(book, -1);         \
-	book->AddPage(panel, name, true);               \
-	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);    \
-
-#define SUBPAGE_CREATE(name)                        \
-	wxPanel *panel = new wxPanel(book, -1);         \
-	book->AddSubPage(panel, name, true);            \
-	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);    \
-
-
-#define PAGE_SIZER(name, name_value)                                                           \
-	wxSizer *name_value##_sizer = new wxStaticBoxSizer(wxHORIZONTAL, panel, name);             \
-	sizer->Add(name_value##_sizer, 0,wxEXPAND, 5);                                             \
-	wxFlexGridSizer *name_value##_flex = new wxFlexGridSizer(2,5,5);                           \
-	name_value##_flex->AddGrowableCol(0,1);                                                    \
-	name_value##_sizer->Add(name_value##_flex, 1, wxEXPAND, 5);                                \
-	sizer->AddSpacer(8);
-
-// name_value##_flex->SetFlexibleDirection(wxVERTICAL);
-
-#define PAGE_END() \
-	panel->SetSizerAndFit(sizer);
-
-/// Skip a cell in a FlexGridSizer -- there's probably a better way to do this.
-#define CELL_SKIP(flex) \
-	flex->Add(new wxStaticText(panel, wxID_ANY , wxEmptyString), 0, wxALL, 5);
-
-
-
-void Preferences::Subtitles(wxTreebook *book) {
-	PAGE_CREATE(_("Subtitles"))
-
-	PAGE_SIZER(_("Options"), general)
-
-	OptionAdd(panel, general_flex, _("Enable call tips"), "App/Call Tips");
-	OptionAdd(panel, general_flex, _("Enable syntax highlighting"), "Subtitle/Highlight/Syntax");
-	OptionAdd(panel, general_flex, _("Link commiting of times"), "Subtitle/Edit Box/Link Time Boxes Commit");
-	OptionAdd(panel, general_flex, _("Overwrite-Insertion in time boxes"), "Subtitle/Time Edit/Insert Mode");
-
-	PAGE_SIZER(_("Grid"), grid)
-	OptionAdd(panel, grid_flex, _("Allow grid to take focus"), "Subtitle/Grid/Focus Allow");
-	OptionAdd(panel, grid_flex, _("Highlight visible subtitles"), "Subtitle/Grid/Highlight Subtitles in Frame");
-
-	PAGE_END()
-}
-
-
-void Preferences::General(wxTreebook *book) {
-
-	PAGE_CREATE(_("General"))
-
-	PAGE_SIZER(_("Startup"), startup)
-	OptionAdd(panel, startup_flex, _("Check for updates"), "App/Splash");
-	OptionAdd(panel, startup_flex, _("Show Splash Screen"), "App/Splash");
-
-	PAGE_SIZER(_("Recently Used Lists"), recent)
-	OptionAdd(panel, recent_flex, _("Files"), "Limits/MRU");
-	OptionAdd(panel, recent_flex, _("Find/Replace"), "Limits/Find Replace");
+	wxFlexGridSizer *recent = PageSizer(_("Recently Used Lists"));
+	OptionAdd(recent, _("Files"), "Limits/MRU");
+	OptionAdd(recent, _("Find/Replace"), "Limits/Find Replace");
 	sizer->AddSpacer(15);
 
-	PAGE_SIZER(_("Undo / Redo Settings"), undo)
-	OptionAdd(panel, undo_flex, _("Undo Levels"), "Limits/MRU");
+	wxFlexGridSizer *undo = PageSizer(_("Undo / Redo Settings"));
+	OptionAdd(undo, _("Undo Levels"), "Limits/MRU");
 
-	PAGE_END()
+	SetSizerAndFit(sizer);
 }
 
 
-void Preferences::Audio(wxTreebook *book) {
-	PAGE_CREATE(_("Audio"))
+/// Subtitles preferences page
+Subtitles::Subtitles(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Subtitles")) {
 
-	PAGE_SIZER(_("Options"), general)
-	OptionAdd(panel, general_flex, _("Grab times from line upon selection"), "Audio/Grab Times on Select");
-	OptionAdd(panel, general_flex, _("Default mouse wheel to zoom"), "Audio/Wheel Default to Zoom");
-	OptionAdd(panel, general_flex, _("Lock scroll on cursor"), "Audio/Lock Scroll on Cursor");
-	OptionAdd(panel, general_flex, _("Snap to keyframes"), "Audio/Display/Snap/Keyframes");
-	OptionAdd(panel, general_flex, _("Snap to adjacent lines"), "Audio/Display/Snap/Other Lines");
-	OptionAdd(panel, general_flex, _("Auto-focus on mouse over"), "Audio/Auto/Focus");
-	OptionAdd(panel, general_flex, _("Play audio when stepping in video"), "Audio/Plays When Stepping Video");
+	wxFlexGridSizer *general = PageSizer(_("Options"));
+	OptionAdd(general, _("Enable call tips"), "App/Call Tips");
+	OptionAdd(general, _("Enable syntax highlighting"), "Subtitle/Highlight/Syntax");
+	OptionAdd(general, _("Link commiting of times"), "Subtitle/Edit Box/Link Time Boxes Commit");
+	OptionAdd(general, _("Overwrite-Insertion in time boxes"), "Subtitle/Time Edit/Insert Mode");
 
-	CELL_SKIP(general_flex)
+	wxFlexGridSizer *grid = PageSizer(_("Grid"));
+	OptionAdd(grid, _("Allow grid to take focus"), "Subtitle/Grid/Focus Allow");
+	OptionAdd(grid, _("Highlight visible subtitles"), "Subtitle/Grid/Highlight Subtitles in Frame");
 
-	OptionAdd(panel, general_flex, _("Default timing length"), "Timing/Default Duration", 0, 36000);
-	OptionAdd(panel, general_flex, _("Default lead-in length"), "Audio/Lead/IN", 0, 36000);
-	OptionAdd(panel, general_flex, _("Default lead-out length"), "Audio/Lead/OUT", 0, 36000);
+	SetSizerAndFit(sizer);
+}
+
+
+/// Audio preferences page
+Audio::Audio(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Audio")) {
+
+	wxFlexGridSizer *general = PageSizer(_("Options"));
+	OptionAdd(general, _("Grab times from line upon selection"), "Audio/Grab Times on Select");
+	OptionAdd(general, _("Default mouse wheel to zoom"), "Audio/Wheel Default to Zoom");
+	OptionAdd(general, _("Lock scroll on cursor"), "Audio/Lock Scroll on Cursor");
+	OptionAdd(general, _("Snap to keyframes"), "Audio/Display/Snap/Keyframes");
+	OptionAdd(general, _("Snap to adjacent lines"), "Audio/Display/Snap/Other Lines");
+	OptionAdd(general, _("Auto-focus on mouse over"), "Audio/Auto/Focus");
+	OptionAdd(general, _("Play audio when stepping in video"), "Audio/Plays When Stepping Video");
+	CellSkip(general);
+	OptionAdd(general, _("Default timing length"), "Timing/Default Duration", 0, 36000);
+	OptionAdd(general, _("Default lead-in length"), "Audio/Lead/IN", 0, 36000);
+	OptionAdd(general, _("Default lead-out length"), "Audio/Lead/OUT", 0, 36000);
 
 	const wxString dtl_arr[3] = { _("Don't show"), _("Show previous"), _("Show all") };
 	wxArrayString choice_dtl(3, dtl_arr);
-	OptionChoice(panel, general_flex, _("Show inactive lines"), choice_dtl, "Audio/Inactive Lines Display Mode");
+	OptionChoice(general, _("Show inactive lines"), choice_dtl, "Audio/Inactive Lines Display Mode");
+	OptionAdd(general, _("Start-marker drag sensitivity"), "Audio/Start Drag Sensitivity", 1, 15);
 
-	OptionAdd(panel, general_flex, _("Start-marker drag sensitivity"), "Audio/Start Drag Sensitivity", 1, 15);
+	wxFlexGridSizer *display = PageSizer(_("Display Visual Options"));
+	OptionAdd(display, _("Secondary lines"), "Audio/Display/Draw/Secondary Lines");
+	OptionAdd(display, _("Selection background"), "Audio/Display/Draw/Selection Background");
+	OptionAdd(display, _("Timeline"), "Audio/Display/Draw/Timeline");
+	OptionAdd(display, _("Cursor time"), "Audio/Display/Draw/Cursor Time");
+	OptionAdd(display, _("Keyframes"), "Audio/Display/Draw/Keyframes");
+	OptionAdd(display, _("Video position"), "Audio/Display/Draw/Video Position");
 
-	PAGE_SIZER(_("Display Visual Options"), display)
-	OptionAdd(panel, display_flex, _("Secondary lines"), "Audio/Display/Draw/Secondary Lines");
-	OptionAdd(panel, display_flex, _("Selection background"), "Audio/Display/Draw/Selection Background");
-	OptionAdd(panel, display_flex, _("Timeline"), "Audio/Display/Draw/Timeline");
-	OptionAdd(panel, display_flex, _("Cursor time"), "Audio/Display/Draw/Cursor Time");
-	OptionAdd(panel, display_flex, _("Keyframes"), "Audio/Display/Draw/Keyframes");
-	OptionAdd(panel, display_flex, _("Video position"), "Audio/Display/Draw/Video Position");
-
-	PAGE_END()
+	SetSizerAndFit(sizer);
 }
 
 
-void Preferences::Video(wxTreebook *book) {
+/// Video preferences page
+Video::Video(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Video")) {
 
-	PAGE_CREATE(_("Video"))
-
-	PAGE_SIZER(_("Options"), general)
-
-	OptionAdd(panel, general_flex, _("Show keyframes in slider"), "Video/Slider/Show Keyframes");
-	OptionAdd(panel, general_flex, _("Always show visual tools"), "Tool/Visual/Always Show");
+	wxFlexGridSizer *general = PageSizer(_("Options"));
+	OptionAdd(general, _("Show keyframes in slider"), "Video/Slider/Show Keyframes");
+	OptionAdd(general, _("Always show visual tools"), "Tool/Visual/Always Show");
 
 	const wxString cres_arr[3] = { _("Never"), _("Ask"), _("Always") };
 	wxArrayString choice_res(3, cres_arr);
-	OptionChoice(panel, general_flex, _("Match video resolution on open"), choice_res, "Video/Check Script Res");
+	OptionChoice(general, _("Match video resolution on open"), choice_res, "Video/Check Script Res");
 
 	const wxString czoom_arr[24] = { _T("12.5%"), _T("25%"), _T("37.5%"), _T("50%"), _T("62.5%"), _T("75%"), _T("87.5%"), _T("100%"), _T("112.5%"), _T("125%"), _T("137.5%"), _T("150%"), _T("162.5%"), _T("175%"), _T("187.5%"), _T("200%"), _T("212.5%"), _T("225%"), _T("237.5%"), _T("250%"), _T("262.5%"), _T("275%"), _T("287.5%"), _T("300%") };
 	wxArrayString choice_zoom(24, czoom_arr);
-	OptionChoice(panel, general_flex, _("Default Zoom"), choice_zoom, "Video/Default Zoom");
+	OptionChoice(general, _("Default Zoom"), choice_zoom, "Video/Default Zoom");
 
-	OptionAdd(panel, general_flex, _("Fast jump step in frames"), "Video/Slider/Fast Jump Step");
+	OptionAdd(general, _("Fast jump step in frames"), "Video/Slider/Fast Jump Step");
 
 	const wxString cscr_arr[3] = { _("?video"), _("?script"), _(".") };
 	wxArrayString scr_res(3, cscr_arr);
-	OptionChoice(panel, general_flex, _("Screenshot save path"), scr_res, "Path/Screenshot");
+	OptionChoice(general, _("Screenshot save path"), scr_res, "Path/Screenshot");
 
-
-
-	panel->SetSizerAndFit(sizer);
-
-
+	SetSizerAndFit(sizer);
 }
 
 
-void Preferences::Interface(wxTreebook *book) {
-	PAGE_CREATE(_("Interface"))
+/// Interface preferences page
+Interface::Interface(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Interface")) {
 
-	PAGE_SIZER(_("Subtitle Grid"), grid)
-	OptionBrowse(panel, grid_flex, _("Font face"), BROWSE_FONT, "Subtitle/Grid/Font Face");
-	OptionAdd(panel, grid_flex, _("Font size"), "Subtitle/Grid/Font Size", 3, 42);
+	wxFlexGridSizer *grid = PageSizer(_("Subtitle Grid"));
+	OptionBrowse(grid, _("Font face"), BROWSE_FONT, "Subtitle/Grid/Font Face");
+	OptionAdd(grid, _("Font size"), "Subtitle/Grid/Font Size", 3, 42);
 
-	OptionAdd(panel, grid_flex, _("Hide overrides symbol"), "Subtitle/Grid/Hide Overrides Char");
+	OptionAdd(grid, _("Hide overrides symbol"), "Subtitle/Grid/Hide Overrides Char");
 
-	PAGE_END()
+	SetSizerAndFit(sizer);
 }
 
-void Preferences::Interface_Colours(wxTreebook *book) {
 
-	wxScrolled<wxPanel> *panel = new wxScrolled<wxPanel>(book, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
-	panel->SetScrollbars(0, 20, 0, 50);
-	book->AddSubPage(panel, _("Colours"), true);
-	wxSizer *sizer = new wxBoxSizer(wxVERTICAL);
+/// Interface Colours preferences subpage
+Interface_Colours::Interface_Colours(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Colours"), PAGE_SCROLL|PAGE_SUB) {
+	delete sizer;
+	wxSizer *main_sizer = sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	PAGE_SIZER(_("General"), general)
-	OptionAdd(panel, general_flex, _("Modified Background"), "Colour/Background/Modified");
+	wxFlexGridSizer *audio = PageSizer(_("Audio Display"));
+	OptionAdd(audio, _("Play cursor"), "Colour/Audio Display/Play Cursor");
+	OptionAdd(audio, _("Background"), "Colour/Audio Display/Background/Background");
+	OptionAdd(audio, _("Selection background"), "Colour/Audio Display/Background/Selection");
+	OptionAdd(audio, _("Selection background modified"), "Colour/Audio Display/Background/Selection Modified");
+	OptionAdd(audio, _("Seconds boundaries"), "Colour/Audio Display/Seconds Boundaries");
+	OptionAdd(audio, _("Waveform"), "Colour/Audio Display/Waveform");
+	OptionAdd(audio, _("Waveform selected"), "Colour/Audio Display/Waveform Selected");
+	OptionAdd(audio, _("Waveform Modified"), "Colour/Audio Display/Waveform Modified");
+	OptionAdd(audio, _("Waveform Inactive"), "Colour/Audio Display/Waveform Inactive");
+	OptionAdd(audio, _("Line boundary start"), "Colour/Audio Display/Line boundary Start");
+	OptionAdd(audio, _("Line boundary end"), "Colour/Audio Display/Line boundary End");
+	OptionAdd(audio, _("Line boundary inactive line"), "Colour/Audio Display/Line Boundary Inactive Line");
+	OptionAdd(audio, _("Syllable text"), "Colour/Audio Display/Syllable Text");
+	OptionAdd(audio, _("Syllable boundaries"), "Colour/Audio Display/Syllable Boundaries");
 
-	PAGE_SIZER(_("Audio Display"), audio)
-	OptionAdd(panel, audio_flex, _("Play cursor"), "Colour/Audio Display/Play Cursor");
-	OptionAdd(panel, audio_flex, _("Background"), "Colour/Audio Display/Background/Background");
-	OptionAdd(panel, audio_flex, _("Selection background"), "Colour/Audio Display/Background/Selection");
-	OptionAdd(panel, audio_flex, _("Selection background modified"), "Colour/Audio Display/Background/Selection Modified");
-	OptionAdd(panel, audio_flex, _("Seconds boundaries"), "Colour/Audio Display/Seconds Boundaries");
-	OptionAdd(panel, audio_flex, _("Waveform"), "Colour/Audio Display/Waveform");
-	OptionAdd(panel, audio_flex, _("Waveform selected"), "Colour/Audio Display/Waveform Selected");
-	OptionAdd(panel, audio_flex, _("Waveform Modified"), "Colour/Audio Display/Waveform Modified");
-	OptionAdd(panel, audio_flex, _("Waveform Inactive"), "Colour/Audio Display/Waveform Inactive");
-	OptionAdd(panel, audio_flex, _("Line boundary start"), "Colour/Audio Display/Line boundary Start");
-	OptionAdd(panel, audio_flex, _("Line boundary end"), "Colour/Audio Display/Line boundary End");
-	OptionAdd(panel, audio_flex, _("Line boundary inactive line"), "Colour/Audio Display/Line Boundary Inactive Line");
-	OptionAdd(panel, audio_flex, _("Syllable text"), "Colour/Audio Display/Syllable Text");
-	OptionAdd(panel, audio_flex, _("Syllable boundaries"), "Colour/Audio Display/Syllable Boundaries");
+	sizer = new wxBoxSizer(wxVERTICAL);
+	main_sizer->Add(sizer);
 
-	PAGE_SIZER(_("Syntax Highlighting"), syntax)
-	OptionAdd(panel, syntax_flex, _("Normal"), "Colour/Subtitle/Syntax/Normal");
-	OptionAdd(panel, syntax_flex, _("Brackets"), "Colour/Subtitle/Syntax/Brackets");
-	OptionAdd(panel, syntax_flex, _("Slashes and Parentheses"), "Colour/Subtitle/Syntax/Slashes");
-	OptionAdd(panel, syntax_flex, _("Tags"), "Colour/Subtitle/Syntax/Highlight Tags");
-	OptionAdd(panel, syntax_flex, _("Parameters"), "Colour/Subtitle/Syntax/Parameters");
-	OptionAdd(panel, syntax_flex, _("Error"), "Colour/Subtitle/Syntax/Error");
-	OptionAdd(panel, syntax_flex, _("Error Background"), "Colour/Subtitle/Syntax/Background/Error");
-	OptionAdd(panel, syntax_flex, _("Line Break"), "Colour/Subtitle/Syntax/Line Break");
-	OptionAdd(panel, syntax_flex, _("Karaoke templates"), "Colour/Subtitle/Syntax/Karaoke Template");
+	wxFlexGridSizer *syntax = PageSizer(_("Syntax Highlighting"));
+	OptionAdd(syntax, _("Normal"), "Colour/Subtitle/Syntax/Normal");
+	OptionAdd(syntax, _("Brackets"), "Colour/Subtitle/Syntax/Brackets");
+	OptionAdd(syntax, _("Slashes and Parentheses"), "Colour/Subtitle/Syntax/Slashes");
+	OptionAdd(syntax, _("Tags"), "Colour/Subtitle/Syntax/Highlight Tags");
+	OptionAdd(syntax, _("Parameters"), "Colour/Subtitle/Syntax/Parameters");
+	OptionAdd(syntax, _("Error"), "Colour/Subtitle/Syntax/Error");
+	OptionAdd(syntax, _("Error Background"), "Colour/Subtitle/Syntax/Background/Error");
+	OptionAdd(syntax, _("Line Break"), "Colour/Subtitle/Syntax/Line Break");
+	OptionAdd(syntax, _("Karaoke templates"), "Colour/Subtitle/Syntax/Karaoke Template");
 
-	PAGE_SIZER(_("Subtitle Grid"), grid)
-	OptionAdd(panel, grid_flex, _("Standard foreground"), "Colour/Subtitle Grid/Standard");
-	OptionAdd(panel, grid_flex, _("Standard background"), "Colour/Subtitle Grid/Background/Background");
-	OptionAdd(panel, grid_flex, _("Selection foreground"), "Colour/Subtitle Grid/Selection");
-	OptionAdd(panel, grid_flex, _("Selection background"), "Colour/Subtitle Grid/Background/Selection");
-	OptionAdd(panel, grid_flex, _("Comment background"), "Colour/Subtitle Grid/Background/Comment");
-	OptionAdd(panel, grid_flex, _("Selected comment background"), "Colour/Subtitle Grid/Background/Selected Comment");
-	OptionAdd(panel, grid_flex, _("Left Column"), "Colour/Subtitle Grid/Left Column");
-	OptionAdd(panel, grid_flex, _("Active Line Border"), "Colour/Subtitle Grid/Active Border");
-	OptionAdd(panel, grid_flex, _("Lines"), "Colour/Subtitle Grid/Lines");
-	PAGE_END()
+	wxFlexGridSizer *grid = PageSizer(_("Subtitle Grid"));
+	OptionAdd(grid, _("Standard foreground"), "Colour/Subtitle Grid/Standard");
+	OptionAdd(grid, _("Standard background"), "Colour/Subtitle Grid/Background/Background");
+	OptionAdd(grid, _("Selection foreground"), "Colour/Subtitle Grid/Selection");
+	OptionAdd(grid, _("Selection background"), "Colour/Subtitle Grid/Background/Selection");
+	OptionAdd(grid, _("Comment background"), "Colour/Subtitle Grid/Background/Comment");
+	OptionAdd(grid, _("Selected comment background"), "Colour/Subtitle Grid/Background/Selected Comment");
+	OptionAdd(grid, _("Left Column"), "Colour/Subtitle Grid/Left Column");
+	OptionAdd(grid, _("Active Line Border"), "Colour/Subtitle Grid/Active Border");
+	OptionAdd(grid, _("Lines"), "Colour/Subtitle Grid/Lines");
+
+	sizer = main_sizer;
+
+	SetSizerAndFit(sizer);
 }
 
-void Preferences::Interface_Hotkeys(wxTreebook *book) {
-	SUBPAGE_CREATE(_("Hotkeys"))
 
-	PAGE_SIZER(_("Hotkeys"), hotkey)
-	hotkey_flex->Add(new wxStaticText(panel, wxID_ANY , _T("To be added after hotkey rewrite.")), 0, wxALL, 5);
+/// Interface Hotkeys preferences subpage
+Interface_Hotkeys::Interface_Hotkeys(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Hotkeys"), PAGE_SUB) {
 
-	PAGE_END()
+	wxFlexGridSizer *hotkeys = PageSizer(_("Hotkeys"));
+	hotkeys->Add(new wxStaticText(this, wxID_ANY, _T("To be added after hotkey rewrite.")), 0, wxALL, 5);
+	SetSizerAndFit(sizer);
 }
 
-void Preferences::Paths(wxTreebook *book) {
-	PAGE_CREATE(_("Paths"))
 
-//	OptionBrowse(panel, general_flex, _("Dictionaries path"), BROWSE_FOLDER, "Path/Dictionary")
+/// Paths preferences page class Paths: public OptionPage { public:
+Paths::Paths(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Paths")) {
 
-	PAGE_END()
+	wxFlexGridSizer *general = PageSizer(_("General"));
+	general->Add(new wxStaticText(this, wxID_ANY, _T("TBD..")), 0, wxALL, 5);
+
+	SetSizerAndFit(sizer);
 }
 
-void Preferences::File_Associations(wxTreebook *book) {
-	PAGE_CREATE(_("File Assoc."))
-	PAGE_END()
+
+/// File Associations preferences page
+File_Associations::File_Associations(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("File Associations")) {
+
+	wxFlexGridSizer *assoc = PageSizer(_("General"));
+	assoc->Add(new wxStaticText(this, wxID_ANY, _T("TBD..")), 0, wxALL, 5);
+
+	SetSizerAndFit(sizer);
 }
 
-void Preferences::Backup(wxTreebook *book) {
-	PAGE_CREATE(_("Backup"))
 
+/// Backup preferences page
+Backup::Backup(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Backup")) {
+	wxFlexGridSizer *save = PageSizer(_("Automatic Save"));
+	OptionAdd(save, _("Enable"), "App/Auto/Backup");
+	CellSkip(save);
+	OptionAdd(save, _("Interval in seconds."), "App/Auto/Save Every Seconds");
+	OptionBrowse(save, _("Path"), BROWSE_FOLDER, "Path/Auto/Save");
 
-	PAGE_SIZER(_("Automatic Save"), save)
-	OptionAdd(panel, save_flex, _("Enable"), "App/Auto/Backup");
-	CELL_SKIP(save_flex)
-	OptionAdd(panel, save_flex, _("Interval in seconds."), "App/Auto/Save Every Seconds");
-	OptionBrowse(panel, save_flex, _("Path"), BROWSE_FOLDER, "Path/Auto/Save");
+	wxFlexGridSizer *backup = PageSizer(_("Automatic Backup"));
+	CellSkip(backup);
+	OptionAdd(backup, _("Enable"), "App/Auto/Backup");
+	OptionBrowse(backup, _("Path"), BROWSE_FOLDER, "Path/Auto/Backup");
 
-	PAGE_SIZER(_("Automatic Backup"), backup)
-	CELL_SKIP(backup_flex)
-	OptionAdd(panel, backup_flex, _("Enable"), "App/Auto/Backup");
-	OptionBrowse(panel, backup_flex, _("Path"), BROWSE_FOLDER, "Path/Auto/Backup");
-
-	PAGE_END()
+	SetSizerAndFit(sizer);
 }
 
-void Preferences::Automation(wxTreebook *book) {
-	PAGE_CREATE(_("Automation"))
 
-	PAGE_SIZER(_("Options"), general)
 
-	OptionAdd(panel, general_flex, _("Base path"), "Path/Automation/Base");
-	OptionAdd(panel, general_flex, _("Include path"), "Path/Automation/Include");
-	OptionAdd(panel, general_flex, _("Auto-load path"), "Path/Automation/Autoload");
+/// Automation preferences page
+Automation::Automation(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Automation")) {
+	wxFlexGridSizer *general = PageSizer(_("General"));
+
+	OptionAdd(general, _("Base path"), "Path/Automation/Base");
+	OptionAdd(general, _("Include path"), "Path/Automation/Include");
+	OptionAdd(general, _("Auto-load path"), "Path/Automation/Autoload");
 
 	const wxString tl_arr[6] = { _("Fatal"), _("Error"), _("Warning"), _("Hint"), _("Debug"), _("Trace") };
 	wxArrayString tl_choice(6, tl_arr);
-	OptionChoice(panel, general_flex, _("Trace level"), tl_choice, "Automation/Trace Level");
+	OptionChoice(general, _("Trace level"), tl_choice, "Automation/Trace Level");
 
 	const wxString tp_arr[3] = { _("Normal"), _("Below Normal (recommended)"), _("Lowest") };
 	wxArrayString tp_choice(3, tp_arr);
-	OptionChoice(panel, general_flex, _("Thread priority"), tp_choice, "Automation/Lua/Thread Priority");
+	OptionChoice(general, _("Thread priority"), tp_choice, "Automation/Lua/Thread Priority");
 
 	const wxString ar_arr[4] = { _("No scripts"), _("Subtitle-local scripts"), _("Global autoload scripts"), _("All scripts") };
 	wxArrayString ar_choice(4, ar_arr);
-	OptionChoice(panel, general_flex, _("Autoreload on Export"), ar_choice, "Automation/Autoreload Mode");
+	OptionChoice(general, _("Autoreload on Export"), ar_choice, "Automation/Autoreload Mode");
 
-
-	PAGE_END()
+	SetSizerAndFit(sizer);
 }
 
 
-void Preferences::Advanced(wxTreebook *book) {
-	PAGE_CREATE(_("Advanced"))
+/// Advanced preferences page
+Advanced::Advanced(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Advanced")) {
+	wxFlexGridSizer *general = PageSizer(_("General"));
 
-	wxStaticText *warning = new wxStaticText(panel, wxID_ANY ,_("Changing these settings might result in bugs and/or crashes.  Do not touch these unless you know what you're doing."));
+	wxStaticText *warning = new wxStaticText(this, wxID_ANY ,_("Changing these settings might result in bugs and/or crashes.  Do not touch these unless you know what you're doing."));
 	warning->SetFont(wxFont(12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
-	sizer->Fit(panel);
+	sizer->Fit(this);
 	warning->Wrap(400);
-	sizer->Add(warning, 0, wxALL, 5);
+	general->Add(warning, 0, wxALL, 5);
 
-	PAGE_END()
-}
-
-void Preferences::Advanced_Interface(wxTreebook *book) {
-	SUBPAGE_CREATE(_("Interface"))
-	PAGE_END()
+	SetSizerAndFit(sizer);
 }
 
 
-void Preferences::Advanced_Audio(wxTreebook *book) {
-	SUBPAGE_CREATE(_("Audio"))
+/// Advanced Interface preferences subpage
+Advanced_Interface::Advanced_Interface(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Backup"), PAGE_SUB) {
+	wxFlexGridSizer *interface_ = PageSizer(_("Interface"));
 
-	PAGE_SIZER(_("Options"), expert)
+	interface_->Add(new wxStaticText(this, wxID_ANY, _T("TBD..")), 0, wxALL, 5);
 
-	wxArrayString ap_choice = AudioProviderFactoryManager::GetFactoryList();
-	OptionChoice(panel, expert_flex, _("Audio provider"), ap_choice, "Audio/Provider");
+	SetSizerAndFit(sizer);
+}
 
-	wxArrayString apl_choice = AudioPlayerFactoryManager::GetFactoryList();
-	OptionChoice(panel, expert_flex, _("Audio player"), apl_choice, "Audio/Player");
+static wxArrayString vec_to_arrstr(std::vector<std::string> const& vec) {
+	wxArrayString arrstr;
+	std::copy(vec.begin(), vec.end(), std::back_inserter(arrstr));
+	return arrstr;
+}
 
-	PAGE_SIZER(_("Cache"), cache)
+/// Advanced Audio preferences subpage
+Advanced_Audio::Advanced_Audio(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Audio"), PAGE_SUB) {
+	wxFlexGridSizer *expert = PageSizer(_("Expert"));
+
+	wxArrayString ap_choice = vec_to_arrstr(AudioProviderFactory::GetClasses());
+	OptionChoice(expert, _("Audio provider"), ap_choice, "Audio/Provider");
+
+	wxArrayString apl_choice = vec_to_arrstr(AudioPlayerFactory::GetClasses());
+	OptionChoice(expert, _("Audio player"), apl_choice, "Audio/Player");
+
+	wxFlexGridSizer *cache = PageSizer(_("Cache"));
 	const wxString ct_arr[3] = { _("None (NOT RECOMMENDED)"), _("RAM"), _("Hard Disk") };
 	wxArrayString ct_choice(3, ct_arr);
-	OptionChoice(panel, cache_flex, _("Cache type"), ct_choice, "Audio/Cache/Type");
+	OptionChoice(cache, _("Cache type"), ct_choice, "Audio/Cache/Type");
 
-	OptionBrowse(panel, cache_flex, _("Path"), BROWSE_FOLDER, "Audio/Cache/HD/Location");
-	OptionAdd(panel, cache_flex, _("File name"), "Audio/Cache/HD/Name");
+	OptionBrowse(cache, _("Path"), BROWSE_FOLDER, "Audio/Cache/HD/Location");
+	OptionAdd(cache, _("File name"), "Audio/Cache/HD/Name");
 
+	wxFlexGridSizer *spectrum = PageSizer(_("Spectrum"));
 
-	PAGE_SIZER(_("Spectrum"), spectrum)
-
-	OptionAdd(panel, spectrum_flex, _("Cutoff"), "Audio/Renderer/Spectrum/Cutoff");
+	OptionAdd(spectrum, _("Cutoff"), "Audio/Renderer/Spectrum/Cutoff");
 
 	const wxString sq_arr[4] = { _("Regular quality"), _("Better quality"), _("High quality"), _("Insane quality") };
 	wxArrayString sq_choice(4, sq_arr);
-	OptionChoice(panel, spectrum_flex, _("Quality"), sq_choice, "Audio/Renderer/Spectrum/Quality");
-	OptionAdd(panel, spectrum_flex, _("Cache memory max (MB)"), "Audio/Renderer/Spectrum/Memory Max", 2, 1024);
+	OptionChoice(spectrum, _("Quality"), sq_choice, "Audio/Renderer/Spectrum/Quality");
+
+	OptionAdd(spectrum, _("Cache memory max (MB)"), "Audio/Renderer/Spectrum/Memory Max", 2, 1024);
 
 #if defined(WIN32) || defined(SHOW_ALL)
-	PAGE_SIZER(_("Windows Only"), windows);
+	wxFlexGridSizer *windows = PageSizer(_("Windows Specific"));
 	const wxString adm_arr[3] = { _T("ConvertToMono"), _T("GetLeftChannel"), _T("GetRightChannel") };
 	wxArrayString adm_choice(3, adm_arr);
-	OptionChoice(panel, windows_flex, _("Avisynth down-mixer"), adm_choice, "Audio/Downmixer");
+	OptionChoice(windows, _("Avisynth down-mixer"), adm_choice, "Audio/Downmixer");
 #endif
 
-	PAGE_END()
+	SetSizerAndFit(sizer);
 }
 
 
-void Preferences::Advanced_Video(wxTreebook *book) {
-	SUBPAGE_CREATE(_("Video"))
+/// Advanced Video preferences subpage
+Advanced_Video::Advanced_Video(wxTreebook *book, Preferences *parent): OptionPage(book, parent, _("Video"), PAGE_SUB) {
+	wxFlexGridSizer *expert = PageSizer(_("Expert"));
 
-	PAGE_SIZER(_("Options"), expert)
-	wxArrayString vp_choice = VideoProviderFactoryManager::GetFactoryList();
-	OptionChoice(panel, expert_flex, _("Video provider"), vp_choice, "Video/Provider");
+	wxArrayString vp_choice = vec_to_arrstr(VideoProviderFactory::GetClasses());
+	OptionChoice(expert, _("Video provider"), vp_choice, "Video/Provider");
 
-	wxArrayString sp_choice = SubtitlesProviderFactoryManager::GetFactoryList();
-	OptionChoice(panel, expert_flex, _("Subtitle provider"), sp_choice, "Subtitle/Provider");
-
+	wxArrayString sp_choice = vec_to_arrstr(SubtitlesProviderFactory::GetClasses());
+	OptionChoice(expert, _("Subtitle provider"), sp_choice, "Subtitle/Provider");
 
 
 #if defined(WIN32) || defined(SHOW_ALL)
-	PAGE_SIZER(_("Windows Only"), windows);
-
-	OptionAdd(panel, windows_flex, _("Allow pre-2.56a Avisynth"), "Provider/Avisynth/Allow Ancient");
-	CELL_SKIP(windows_flex)
-	OptionAdd(panel, windows_flex, _("Avisynth memory limit"), "Provider/Avisynth/Memory Max");
+	wxFlexGridSizer *windows = PageSizer(_("Windows Specific"));
+	OptionAdd(windows, _("Allow pre-2.56a Avisynth"), "Provider/Avisynth/Allow Ancient");
+	CellSkip(windows);
+	OptionAdd(windows, _("Avisynth memory limit"), "Provider/Avisynth/Memory Max");
 #endif
 
-	PAGE_END()
+	SetSizerAndFit(sizer);
 }
-
-
-
-
-BEGIN_EVENT_TABLE(Preferences, wxDialog)
-    EVT_BUTTON(wxID_OK, Preferences::OnOK)
-    EVT_BUTTON(wxID_CANCEL, Preferences::OnCancel)
-    EVT_BUTTON(wxID_APPLY, Preferences::OnApply)
-END_EVENT_TABLE()
-

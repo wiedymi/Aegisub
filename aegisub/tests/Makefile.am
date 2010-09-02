@@ -13,8 +13,10 @@ run_SOURCES = \
 		libaegisub_access.cpp \
 		libaegisub_cajun.cpp \
 		libaegisub_iconv.cpp \
+		libaegisub_line_iterator.cpp \
+		libaegisub_mru.cpp \
 		libaegisub_util.cpp \
-		libaegisub_mru.cpp
+		libaegisub_vfr.cpp
 		
 run_SOURCES += \
 	*.h

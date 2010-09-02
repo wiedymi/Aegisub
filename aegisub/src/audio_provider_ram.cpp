@@ -34,9 +34,6 @@
 /// @ingroup audio_input
 ///
 
-
-///////////
-// Headers
 #include "config.h"
 
 #include "audio_controller.h"
@@ -53,12 +50,11 @@
 /// DOCME
 #define CacheBlockSize ((1 << CacheBits))
 
-
-
 /// @brief Constructor 
 /// @param source 
 ///
-RAMAudioProvider::RAMAudioProvider(AudioProvider *source) {
+RAMAudioProvider::RAMAudioProvider(AudioProvider *src) {
+	std::auto_ptr<AudioProvider> source(src);
 	// Init
 	blockcache = NULL;
 	blockcount = 0;
@@ -80,7 +76,7 @@ RAMAudioProvider::RAMAudioProvider(AudioProvider *source) {
 	}
 	catch (...) { 
 		Clear();
-		throw wxString(_T("Couldn't open audio, not enough ram available."));
+		throw AudioOpenError("Couldn't open audio, not enough ram available.");
 	}
 
 	// Copy parameters
@@ -99,7 +95,6 @@ RAMAudioProvider::RAMAudioProvider(AudioProvider *source) {
 	// Read cache
 	int readsize = CacheBlockSize / source->GetBytesPerSample();
 	for (int i=0;i<blockcount && !canceled; i++) {
-		//tempclip->GetAudio((char*)blockcache[i],i*readsize, i == blockcount-1 ? (num_samples - i*readsize) : readsize,env);
 		source->GetAudio((char*)blockcache[i],i*readsize, i == blockcount-1 ? (source->GetNumSamples() - i*readsize) : readsize);
 		progress->SetProgress(i,blockcount-1);
 	}
@@ -108,19 +103,15 @@ RAMAudioProvider::RAMAudioProvider(AudioProvider *source) {
 	progress->Destroy();
 	if (canceled) {
 		Clear();
-		throw wxString(_T("Audio loading cancelled by user"));
+		throw agi::UserCancelException("Audio loading cancelled by user");
 	}
 }
-
-
 
 /// @brief Destructor 
 ///
 RAMAudioProvider::~RAMAudioProvider() {
 	Clear();
 }
-
-
 
 /// @brief Clear 
 ///
@@ -135,8 +126,6 @@ void RAMAudioProvider::Clear() {
 	blockcache = NULL;
 	blockcount = 0;
 }
-
-
 
 /// @brief Get audio 
 /// @param buf   
@@ -186,5 +175,3 @@ void RAMAudioProvider::GetAudio(void *buf, int64_t start, int64_t count) const {
 		}
 	}
 }
-
-

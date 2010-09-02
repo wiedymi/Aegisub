@@ -45,16 +45,19 @@
 
 #include "ass_dialogue.h"
 #include "main.h"
-#include "options.h"
 #include "subs_edit_box.h"
 #include "selection_controller.h"
 #include "subs_grid.h"
 #include "utils.h"
-#include "vfr.h"
 #include "video_context.h"
 #include "video_display.h"
 #include "video_slider.h"
 
+/// IDs
+enum {
+	NextFrame = 1300,
+	PrevFrame
+};
 
 /// @brief Constructor 
 /// @param parent 
@@ -71,18 +74,12 @@ VideoSlider::VideoSlider (wxWindow* parent, wxWindowID id)
 	SetMinSize(wxSize(20, 25));
 	locked = false;
 	SetRange(0,1);
+	OPT_GET("Video/Slider/Show Keyframes")->Subscribe(this, std::tr1::bind(&wxWindow::Refresh, this, false, (wxRect*)NULL));
 }
 
-
-
-/// @brief Get value 
-/// @return 
-///
-int VideoSlider::GetValue() {
-	return val;
+VideoSlider::~VideoSlider() {
+	OPT_GET("Video/Slider/Show Keyframes")->Unsubscribe(this);
 }
-
-
 
 /// @brief Set value 
 /// @param value 
@@ -227,8 +224,8 @@ void VideoSlider::OnMouse(wxMouseEvent &event) {
 		if (canDrag) {
 			// Shift click to snap to keyframe
 			if (shift && Display) {
-				wxArrayInt KeyFrames = VideoContext::Get()->GetKeyFrames();
-				int keys = KeyFrames.Count();
+				std::vector<int> KeyFrames = VideoContext::Get()->GetKeyFrames();
+				int keys = KeyFrames.size();
 				int clickedFrame = GetValueAtX(x);
 				int closest = 0;
 				int cur;
@@ -333,8 +330,8 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 
 			// Jump to next sub boundary
 			if (direction != 0) {
-				int target1 = VFR_Output.GetFrameAtTime(curDiag->Start.GetMS(),true);
-				int target2 = VFR_Output.GetFrameAtTime(curDiag->End.GetMS(),false);
+				int target1 = VideoContext::Get()->FrameAtTime(curDiag->Start.GetMS(),agi::vfr::START);
+				int target2 = VideoContext::Get()->FrameAtTime(curDiag->End.GetMS(),agi::vfr::END);
 				bool drawn = false;
 
 				// Forward
@@ -377,8 +374,8 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 				// Prepare
 				int prevKey = 0;
 				int nextKey = VideoContext::Get()->GetLength()-1;
-				wxArrayInt KeyFrames = VideoContext::Get()->GetKeyFrames();
-				int keys = KeyFrames.Count();
+				std::vector<int> KeyFrames = VideoContext::Get()->GetKeyFrames();
+				int keys = KeyFrames.size();
 				int cur = VideoContext::Get()->GetFrameN();
 				int i;
 				int temp;
@@ -482,8 +479,8 @@ void VideoSlider::DrawImage(wxDC &destdc) {
 	int curX;
 	if (Display && OPT_GET("Video/Slider/Show Keyframes")->GetBool()) {
 		dc.SetPen(wxPen(shad));
-		wxArrayInt KeyFrames = VideoContext::Get()->GetKeyFrames();
-		int keys = KeyFrames.Count();
+		std::vector<int> KeyFrames = VideoContext::Get()->GetKeyFrames();
+		int keys = KeyFrames.size();
 		for (int i=0;i<keys;i++) {
 			curX = GetXAtValue(KeyFrames[i]);
 			dc.DrawLine(curX,2,curX,8);

@@ -37,10 +37,6 @@
 #include "config.h"
 
 #ifdef WITH_OSS
-
-
-///////////
-// Headers
 #ifndef AGI_PRE
 #include <sys/ioctl.h>
 #endif
@@ -56,15 +52,8 @@
 
 #include "include/aegisub/audio_player.h"
 #include "include/aegisub/audio_provider.h"
-#include "options.h"
-#include "utils.h"
 
-
-//////////////
-// Prototypes
 class OSSPlayer;
-
-
 
 /// DOCME
 /// @class OSSPlayerThread
@@ -82,8 +71,6 @@ public:
 
     wxThread::ExitCode Entry();
 };
-
-
 
 /// DOCME
 /// @class OSSPlayer
@@ -154,21 +141,4 @@ public:
     ///
     double GetVolume() { return volume; }
 };
-
-
-
-
-/// DOCME
-/// @class OSSPlayerFactory
-/// @brief DOCME
-///
-/// DOCME
-class OSSPlayerFactory : public AudioPlayerFactory {
-public:
-
-    /// @brief DOCME
-    ///
-    AudioPlayer *CreatePlayer() { return new OSSPlayer(); }
-};
-
 #endif

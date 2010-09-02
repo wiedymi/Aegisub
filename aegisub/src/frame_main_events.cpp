@@ -34,7 +34,6 @@
 /// @ingroup main_ui
 
 
-////////////////// Include headers
 #include "config.h"
 
 #ifndef AGI_PRE
@@ -56,7 +55,6 @@
 #ifdef WITH_AUTOMATION
 #include "auto4_base.h"
 #endif
-#include "charset_conv.h"
 #include "compat.h"
 #include "dialog_about.h"
 #include "dialog_attachments.h"
@@ -82,27 +80,25 @@
 #include "dialog_video_details.h"
 #include "frame_main.h"
 #include "hotkeys.h"
+#include "include/aegisub/audio_player.h"
 #include "keyframe.h"
 #include "libresrc/libresrc.h"
 #include "main.h"
-#include "options.h"
 #include "preferences.h"
 #include "standard_paths.h"
 #include "selection_controller.h"
 #include "subs_edit_box.h"
+#include "subs_edit_ctrl.h"
 #include "subs_grid.h"
 #include "toggle_bitmap.h"
 #include "utils.h"
-#include "vfr.h"
 #include "video_box.h"
 #include "video_context.h"
 #include "video_display.h"
 #include "video_slider.h"
 
 #ifdef __APPLE__
-extern "C" {
-#include "libosxutil/libosxutil.h"
-}
+#include <libaegisub/util_osx.h>
 #endif
 
 BEGIN_EVENT_TABLE(FrameMain, wxFrame)
@@ -233,7 +229,6 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_MENU(Grid_Next_Line,FrameMain::OnNextLine)
 	EVT_MENU(Grid_Prev_Line,FrameMain::OnPrevLine)
 	EVT_MENU(Grid_Toggle_Tags,FrameMain::OnToggleTags)
-	EVT_MENU(Edit_Box_Commit,FrameMain::OnEditBoxCommit)
 
 	EVT_MENU(Medusa_Play, FrameMain::OnMedusaPlay)
 	EVT_MENU(Medusa_Stop, FrameMain::OnMedusaStop)
@@ -276,7 +271,7 @@ void FrameMain::RebuildRecentList(wxString listName,wxMenu *menu,int startID) {
 	wxString n;
 	wxArrayString entries = lagi_MRU_wxAS(listName);
 	for (size_t i=0;i<entries.Count();i++) {
-		n = wxString::Format(_T("%i"),i+1);
+		n = wxString::Format(_T("%ld"),i+1);
 		if (i < 9) n = _T("&") + n;
 		wxFileName shortname(entries[i]);
 		wxString filename = shortname.GetFullName();
@@ -344,8 +339,8 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Enable(Menu_Video_AR_235,attached);
 		MenuBar->Enable(Menu_Video_AR_Custom,attached);
 		MenuBar->Enable(Menu_Video_Detach,state);
-		MenuBar->Enable(Menu_File_Save_VFR,VFR_Output.GetFrameRateType() == VFR);
-		MenuBar->Enable(Menu_File_Close_VFR,VFR_Output.GetFrameRateType() == VFR);
+		MenuBar->Enable(Menu_File_Save_VFR,VideoContext::Get()->TimecodesLoaded());
+		MenuBar->Enable(Menu_File_Close_VFR,VideoContext::Get()->OverTimecodesLoaded());
 		MenuBar->Enable(Menu_Video_Close_Keyframes,VideoContext::Get()->OverKeyFramesLoaded());
 		MenuBar->Enable(Menu_Video_Save_Keyframes,VideoContext::Get()->KeyFramesLoaded());
 		MenuBar->Enable(Menu_Video_Details,state);
@@ -411,7 +406,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Enable(Menu_Subtitles_Insert,state);
 		state = count > 0 && continuous;
 		MenuBar->Enable(MENU_DUPLICATE,state);
-		state = count > 0 && continuous && VFR_Output.IsLoaded();
+		state = count > 0 && continuous && VideoContext::Get()->TimecodesLoaded();
 		MenuBar->Enable(MENU_DUPLICATE_NEXT_FRAME,state);
 		state = count == 2;
 		MenuBar->Enable(MENU_SWAP,state);
@@ -448,16 +443,16 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	else if (curMenu == editMenu) {
 		// Undo state
 		wxMenuItem *item;
-		wxString undo_text = _("&Undo") + wxString(_T(" ")) + AssFile::GetUndoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Undo"));
+		wxString undo_text = _("&Undo") + wxString(_T(" ")) + ass->GetUndoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Undo"));
 		item = editMenu->FindItem(Menu_Edit_Undo);
 		item->SetItemLabel(undo_text);
-		item->Enable(!AssFile::IsUndoStackEmpty());
+		item->Enable(!ass->IsUndoStackEmpty());
 
 		// Redo state
-		wxString redo_text = _("&Redo") + wxString(_T(" ")) + AssFile::GetRedoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Redo"));
+		wxString redo_text = _("&Redo") + wxString(_T(" ")) + ass->GetRedoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Redo"));
 		item = editMenu->FindItem(Menu_Edit_Redo);
 		item->SetItemLabel(redo_text);
-		item->Enable(!AssFile::IsRedoStackEmpty());
+		item->Enable(!ass->IsRedoStackEmpty());
 
 		// Copy/cut/paste
 		wxArrayInt sels = SubsGrid->GetSelection();
@@ -552,7 +547,7 @@ void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
 /// @param event 
 void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
 	int number = event.GetId()-Menu_Keyframes_Recent;
-	KeyFrameFile::Load(lagi_wxString(config::mru->GetEntry("Keyframes", number)));
+	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", number)));
 	videoBox->videoSlider->Refresh();
 	/// @todo Reinstate this when the audio controller can handle keyframes
 	//audioBox->audioDisplay->Update();
@@ -589,7 +584,6 @@ void FrameMain::OnLog(wxCommandEvent &) {
 	log->Show(1);
 }
 
-
 /// @brief Open check updates
 void FrameMain::OnCheckUpdates(wxCommandEvent &) {
 	PerformVersionCheck(true);
@@ -604,9 +598,10 @@ void FrameMain::OnContents(wxCommandEvent&) {
 /// @param event
 void FrameMain::OnFiles(wxCommandEvent&) {
 #ifdef __WXMAC__
-	char *shared_path = OSX_GetBundleSharedSupportDirectory();
+	char *shared_path = agi::util::OSX_GetBundleSharedSupportDirectory();
 	wxString help_path = wxString::Format(_T("%s/doc"), wxString(shared_path, wxConvUTF8).c_str());
-	OSX_OpenLocation(help_path.c_str());
+	agi::util::OSX_OpenLocation(help_path.c_str());
+	free(shared_path);
 #endif
 }
 
@@ -788,7 +783,7 @@ void FrameMain::OnExportSubtitles(wxCommandEvent &) {
 	}
 #endif
 
-	DialogExport exporter(this);
+	DialogExport exporter(this, ass);
 	exporter.ShowModal();
 }
 
@@ -811,7 +806,7 @@ void FrameMain::OnSaveVFR(wxCommandEvent &) {
 		           + _("All Files") + _T(" (*.*)|*.*");
 	wxString filename = wxFileSelector(_("Save timecodes file"),path,_T(""),_T(""),str,wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 	if (!filename.empty()) {
-		SaveVFR(filename);
+		VideoContext::Get()->SaveTimecodes(filename);
 		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
 	}
 }
@@ -819,19 +814,26 @@ void FrameMain::OnSaveVFR(wxCommandEvent &) {
 
 /// @brief Close VFR tags 
 void FrameMain::OnCloseVFR(wxCommandEvent &) {
-	LoadVFR(_T(""));
+	LoadVFR("");
 }
 
 /// @brief Open keyframes 
 void FrameMain::OnOpenKeyframes (wxCommandEvent &) {
 	// Pick file
 	wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
-	wxString filename = wxFileSelector(_T("Select the keyframes file to open"),path,_T(""),_T(".txt"),_T("All supported formats (*.txt, *.pass, *.stats, *.log)|*.txt;*.pass;*.stats;*.log|All files (*.*)|*.*"),wxFD_FILE_MUST_EXIST | wxFD_OPEN);
-	if (filename.IsEmpty()) return;
+	wxString filename = wxFileSelector(
+		_T("Select the keyframes file to open"),
+		path,
+		_T("")
+		,_T(".txt"),
+		_T("All supported formats (*.txt, *.pass, *.stats, *.log)|*.txt;*.pass;*.stats;*.log|All files (*.*)|*.*"),
+		wxFD_FILE_MUST_EXIST | wxFD_OPEN);
+
+	if (filename.empty()) return;
 	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
 
 	// Load
-	KeyFrameFile::Load(filename);
+	VideoContext::Get()->LoadKeyframes(filename);
 	videoBox->videoSlider->Refresh();
 	/// @todo Reinstate this when the audio controller can handle keyframes
 	//audioBox->audioDisplay->Update();
@@ -840,7 +842,7 @@ void FrameMain::OnOpenKeyframes (wxCommandEvent &) {
 
 /// @brief Close keyframes 
 void FrameMain::OnCloseKeyframes (wxCommandEvent &) {
-	VideoContext::Get()->CloseOverKeyFrames();
+	VideoContext::Get()->CloseKeyframes();
 	videoBox->videoSlider->Refresh();
 	/// @todo Reinstate this when the audio controller can handle keyframes
 	//audioBox->audioDisplay->Update();
@@ -855,8 +857,7 @@ void FrameMain::OnSaveKeyframes (wxCommandEvent &) {
 	if (filename.IsEmpty()) return;
 	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
 
-	// Save
-	KeyFrameFile::Save(filename);
+	VideoContext::Get()->SaveKeyframes(filename);
 }
 
 /// @brief Zoom levels 
@@ -946,7 +947,7 @@ void FrameMain::OnShift(wxCommandEvent&) {
 /// @brief Open properties 
 void FrameMain::OnOpenProperties (wxCommandEvent &) {
 	VideoContext::Get()->Stop();
-	DialogProperties Properties(this);
+	DialogProperties Properties(this, ass);
 	int res = Properties.ShowModal();
 	if (res) {
 		SubsGrid->CommitChanges();
@@ -965,7 +966,7 @@ void FrameMain::OnOpenStylesManager(wxCommandEvent&) {
 /// @brief Open attachments 
 void FrameMain::OnOpenAttachments(wxCommandEvent&) {
 	VideoContext::Get()->Stop();
-	DialogAttachments attachments(this);
+	DialogAttachments attachments(this, ass);
 	attachments.ShowModal();
 }
 
@@ -974,7 +975,7 @@ void FrameMain::OnOpenTranslation(wxCommandEvent&) {
 	VideoContext::Get()->Stop();
 	int start = SubsGrid->GetFirstSelRow();
 	if (start == -1) start = 0;
-	DialogTranslation Trans(this,AssFile::top,SubsGrid,start,true);
+	DialogTranslation Trans(this,ass,SubsGrid,start,true);
 	Trans.ShowModal();
 }
 
@@ -987,7 +988,7 @@ void FrameMain::OnOpenSpellCheck (wxCommandEvent &) {
 /// @brief Open Fonts Collector 
 void FrameMain::OnOpenFontsCollector (wxCommandEvent &) {
 	VideoContext::Get()->Stop();
-	DialogFontsCollector Collector(this);
+	DialogFontsCollector Collector(this, ass);
 	Collector.ShowModal();
 }
 
@@ -1069,153 +1070,132 @@ void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
 #ifdef WITH_AUTOMATION
 	SubsGrid->BeginBatch();
 	// First get selection data
-	// This much be done before clearing the maps, since selection data are lost during that
 	std::vector<int> selected_lines = SubsGrid->GetAbsoluteSelection();
 	int first_sel = SubsGrid->GetFirstSelRow();
-	// Clear all maps from the subs grid before running the macro
-	// The stuff done by the macro might invalidate some of the iterators held by the grid, which will cause great crashing
-	SubsGrid->ClearMaps();
 	// Run the macro...
 	activeMacroItems[event.GetId()-Menu_Automation_Macro]->Process(SubsGrid->ass, selected_lines, first_sel, this);
 	// Have the grid update its maps, this properly refreshes it to reflect the changed subs
 	SubsGrid->UpdateMaps();
 	SubsGrid->SetSelectionFromAbsolute(selected_lines);
-	SubsGrid->CommitChanges(true, false);
-	SubsGrid->AdjustScrollbar();
+	SubsGrid->CommitChanges();
 	SubsGrid->EndBatch();
 #endif
 }
 
 /// @brief Snap subs to video 
 void FrameMain::OnSnapSubsStartToVid (wxCommandEvent &) {
-	if (VideoContext::Get()->IsLoaded() && SubsGrid->GetSelection().Count() > 0) {
-		SubsGrid->SetSubsToVideo(true);
-	}
+	SubsGrid->SetSubsToVideo(true);
 }
-
 
 /// @brief DOCME
 void FrameMain::OnSnapSubsEndToVid (wxCommandEvent &) {
-	if (VideoContext::Get()->IsLoaded() && SubsGrid->GetSelection().Count() > 0) {
-		SubsGrid->SetSubsToVideo(false);
-	}
+	SubsGrid->SetSubsToVideo(false);
 }
 
 /// @brief Jump video to subs 
 void FrameMain::OnSnapVidToSubsStart (wxCommandEvent &) {
-	if (VideoContext::Get()->IsLoaded() && SubsGrid->GetSelection().Count() > 0) {
-		SubsGrid->SetVideoToSubs(true);
-	}
+	SubsGrid->SetVideoToSubs(true);
 }
 
 
 /// @brief DOCME
 void FrameMain::OnSnapVidToSubsEnd (wxCommandEvent &) {
-	if (VideoContext::Get()->IsLoaded() && SubsGrid->GetSelection().Count() > 0) {
-		SubsGrid->SetVideoToSubs(false);
-	}
+	SubsGrid->SetVideoToSubs(false);
 }
 
 /// @brief Snap to scene 
 void FrameMain::OnSnapToScene (wxCommandEvent &) {
-	if (VideoContext::Get()->IsLoaded()) {
-		// Get frames
-		wxArrayInt sel = SubsGrid->GetSelection();
-		int curFrame = VideoContext::Get()->GetFrameN();
-		int prev = 0;
-		int next = 0;
-		int frame = 0;
-		wxArrayInt keyframes = VideoContext::Get()->GetKeyFrames();
-		size_t n = keyframes.Count();
-		bool found = false;
-		for (size_t i=0;i<n;i++) {
-			frame = keyframes[i];
+	VideoContext *con = VideoContext::Get();
+	if (!con->IsLoaded() || !con->KeyFramesLoaded()) return;
 
-			if (frame == curFrame) {
-				prev = frame;
-				if (i < n-1) next = keyframes[i+1];
-				else next = VideoContext::Get()->GetLength();
-				found = true;
-				break;
-			}
+	// Get frames
+	wxArrayInt sel = SubsGrid->GetSelection();
+	int curFrame = con->GetFrameN();
+	int prev = 0;
+	int next = 0;
 
-			if (frame > curFrame) {
-				if (i != 0) prev = keyframes[i-1];
-				else prev = 0;
-				next = frame;
-				found = true;
-				break;
-			}
-		}
-
-		// Last section?
-		if (!found) {
-			if (n > 0) prev = keyframes[n-1];
-			else prev = 0;
-			next = VideoContext::Get()->GetLength();
-		}
-
-		// Get times
-		int start_ms = VFR_Output.GetTimeAtFrame(prev,true);
-		int end_ms = VFR_Output.GetTimeAtFrame(next-1,false);
-		AssDialogue *cur;
-
-		// Update rows
-		for (size_t i=0;i<sel.Count();i++) {
-			cur = SubsGrid->GetDialogue(sel[i]);
-			cur->Start.SetMS(start_ms);
-			cur->End.SetMS(end_ms);
-		}
-
-		// Commit
-		SubsGrid->editBox->Update(true);
-		SubsGrid->ass->FlagAsModified(_("snap to scene"));
-		SubsGrid->CommitChanges();
+	const std::vector<int> &keyframes = con->GetKeyFrames();
+	if (curFrame < keyframes.front()) {
+		next = keyframes.front();
 	}
+	else if (curFrame >= keyframes.back()) {
+		prev = keyframes.back();
+		next = con->GetLength();
+	}
+	else {
+		std::vector<int>::const_iterator kf = std::lower_bound(keyframes.begin(), keyframes.end(), curFrame);
+		if (*kf == curFrame) {
+			prev = *kf;
+			next = *(kf + 1);
+		}
+		else {
+			prev = *(kf - 1);
+			next = *kf;
+		}
+	}
+
+	// Get times
+	int start_ms = con->TimeAtFrame(prev,agi::vfr::START);
+	int end_ms = con->TimeAtFrame(next-1,agi::vfr::END);
+	AssDialogue *cur;
+
+	// Update rows
+	for (size_t i=0;i<sel.Count();i++) {
+		cur = SubsGrid->GetDialogue(sel[i]);
+		cur->Start.SetMS(start_ms);
+		cur->End.SetMS(end_ms);
+	}
+
+	// Commit
+	SubsGrid->editBox->Update(true);
+	SubsGrid->ass->Commit(_("snap to scene"));
+	SubsGrid->CommitChanges();
 }
 
 /// @brief Shift to frame 
 void FrameMain::OnShiftToFrame (wxCommandEvent &) {
-	if (VideoContext::Get()->IsLoaded()) {
-		wxArrayInt sels = SubsGrid->GetSelection();
-		size_t n=sels.Count();
-		if (n == 0) return;
+	if (!VideoContext::Get()->IsLoaded()) return;
 
-		// Get shifting in ms
-		AssDialogue *cur = SubsGrid->GetDialogue(sels[0]);
-		if (!cur) return;
-		int shiftBy = VFR_Output.GetTimeAtFrame(VideoContext::Get()->GetFrameN(),true) - cur->Start.GetMS();
+	wxArrayInt sels = SubsGrid->GetSelection();
+	size_t n=sels.Count();
+	if (n == 0) return;
 
-		// Update
-		for (size_t i=0;i<n;i++) {
-			cur = SubsGrid->GetDialogue(sels[i]);
-			if (cur) {
-				cur->Start.SetMS(cur->Start.GetMS()+shiftBy);
-				cur->End.SetMS(cur->End.GetMS()+shiftBy);
-			}
+	// Get shifting in ms
+	AssDialogue *cur = SubsGrid->GetDialogue(sels[0]);
+	if (!cur) return;
+	int shiftBy = VideoContext::Get()->TimeAtFrame(VideoContext::Get()->GetFrameN(),agi::vfr::START) - cur->Start.GetMS();
+
+	// Update
+	for (size_t i=0;i<n;i++) {
+		cur = SubsGrid->GetDialogue(sels[i]);
+		if (cur) {
+			cur->Start.SetMS(cur->Start.GetMS()+shiftBy);
+			cur->End.SetMS(cur->End.GetMS()+shiftBy);
 		}
-
-		// Commit
-		SubsGrid->ass->FlagAsModified(_("shift to frame"));
-		SubsGrid->CommitChanges();
-		SubsGrid->editBox->Update(true,false);
 	}
+
+	// Commit
+	SubsGrid->ass->Commit(_("shift to frame"));
+	SubsGrid->CommitChanges(false);
+	SubsGrid->editBox->Update(true);
 }
 
 /// @brief Undo 
 void FrameMain::OnUndo(wxCommandEvent&) {
 	VideoContext::Get()->Stop();
-	AssFile::StackPop();
-	SubsGrid->UpdateMaps();
-	AssFile::Popping = false;
+	ass->Undo();
+	UpdateTitle();
+	SubsGrid->UpdateMaps(true);
+	VideoContext::Get()->Refresh();
 }
 
 /// @brief Redo 
 void FrameMain::OnRedo(wxCommandEvent&) {
 	VideoContext::Get()->Stop();
-	AssFile::StackRedo();
-	SubsGrid->UpdateMaps();
-	AssFile::Popping = false;
+	ass->Redo();
+	UpdateTitle();
+	SubsGrid->UpdateMaps(true);
+	VideoContext::Get()->Refresh();
 }
 
 /// @brief Find 
@@ -1383,22 +1363,22 @@ void FrameMain::OnSelect (wxCommandEvent &) {
 
 /// @brief Sort subtitles by start time
 void FrameMain::OnSortStart (wxCommandEvent &) {
-	AssFile::top->Sort();
-	AssFile::top->FlagAsModified(_("sort"));
+	ass->Sort();
+	ass->Commit(_("sort"));
 	SubsGrid->UpdateMaps();
 	SubsGrid->CommitChanges();
 }
 /// @brief Sort subtitles by end time
 void FrameMain::OnSortEnd (wxCommandEvent &) {
-	AssFile::top->Sort(AssFile::CompEnd);
-	AssFile::top->FlagAsModified(_("sort"));
+	ass->Sort(AssFile::CompEnd);
+	ass->Commit(_("sort"));
 	SubsGrid->UpdateMaps();
 	SubsGrid->CommitChanges();
 }
 /// @brief Sort subtitles by style name
 void FrameMain::OnSortStyle (wxCommandEvent &) {
-	AssFile::top->Sort(AssFile::CompStyle);
-	AssFile::top->FlagAsModified(_("sort"));
+	ass->Sort(AssFile::CompStyle);
+	ass->Commit(_("sort"));
 	SubsGrid->UpdateMaps();
 	SubsGrid->CommitChanges();
 }
@@ -1414,9 +1394,9 @@ void FrameMain::OnOpenStylingAssistant (wxCommandEvent &) {
 void FrameMain::OnAutoSave(wxTimerEvent &) {
 	// Auto Save
 	try {
-		if (AssFile::top->loaded) {
+		if (ass->loaded) {
 			// Set path
-			wxFileName origfile(AssFile::top->filename);
+			wxFileName origfile(ass->filename);
 			wxString path = lagi_wxString(OPT_GET("Path/Auto/Save")->GetString());
 			if (path.IsEmpty()) path = origfile.GetPath();
 			wxFileName dstpath(path);
@@ -1435,7 +1415,7 @@ void FrameMain::OnAutoSave(wxTimerEvent &) {
 			wxFileName temp = dstpath;
 			temp.SetName(dstpath.GetName() + ".temp");
 
-			AssFile::top->Save(temp.GetFullPath(),false,false);
+			ass->Save(temp.GetFullPath(),false,false);
 			wxRenameFile(temp.GetFullPath(), dstpath.GetFullPath());
 
 			// Set status bar
@@ -1514,32 +1494,6 @@ void FrameMain::OnSetTags(wxCommandEvent &event) {
 	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(event.GetId() - Menu_View_FullTags);
 	SubsGrid->Refresh(false);
 }
-
-/// @brief Commit Edit Box's changes 
-/// @param event 
-void FrameMain::OnEditBoxCommit(wxCommandEvent &event) {
-	// Find focus
-	wxWindow *focus = FindFocus();
-	if (!focus) return;
-
-	// Is the text edit
-	if (focus == EditBox->TextEdit) {
-		EditBox->Commit(true);
-		EditBox->Update(true);
-	}
-
-	// Other window
-	else {
-		//wxKeyEvent keyevent;
-		//keyevent.m_keyCode = WXK_RETURN;
-		//keyevent.m_controlDown = true;
-		//keyevent.SetEventType(wxEVT_KEY_DOWN);
-		wxCommandEvent keyevent(wxEVT_COMMAND_TEXT_ENTER,focus->GetId());
-		focus->GetEventHandler()->AddPendingEvent(keyevent);
-	}
-}
-
-
 
 /// @brief Choose a different language 
 void FrameMain::OnChooseLanguage (wxCommandEvent &) {

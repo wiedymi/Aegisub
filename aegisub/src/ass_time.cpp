@@ -50,7 +50,6 @@
 
 #include "ass_time.h"
 #include "utils.h"
-#include "vfr.h"
 
 
 /// @brief AssTime constructors
@@ -172,7 +171,7 @@ void AssTime::SetMS (int _ms) {
 /// @param msPrecision 
 /// @return 
 ///
-wxString AssTime::GetASSFormated (bool msPrecision) {
+wxString AssTime::GetASSFormated (bool msPrecision) const {
 	int h,m,s,ms;
 	int _ms = time;
 
@@ -323,6 +322,13 @@ bool operator != (const AssTime &t1, const AssTime &t2) {
 	return (t1.GetMS() != t2.GetMS());
 }
 
+AssTime operator + (const AssTime &t1, const AssTime &t2) {
+	return AssTime(t1.GetMS() + t2.GetMS());
+}
+
+AssTime operator - (const AssTime &t1, const AssTime &t2) {
+	return AssTime(t1.GetMS() - t2.GetMS());
+}
 
 
 /// DOCME

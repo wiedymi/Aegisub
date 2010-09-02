@@ -18,6 +18,8 @@
 /// @brief Wrapper for libiconv to present a more C++-friendly API
 /// @ingroup libaegisub
 
+#pragma once
+
 #ifndef LAGI_PRE
 #include <string.h>
 #include <memory>
@@ -51,13 +53,12 @@ T const& GetEncodingsList() {
 
 typedef void* iconv_t;
 
+// Helper class that abstracts away the differences betwen libiconv and
+// POSIX iconv implementations
+class Converter;
+
 /// @brief A C++ wrapper for iconv
 class IconvWrapper {
-private:
-	// Helper class that abstracts away the differences betwen libiconv and
-	// POSIX iconv implementations
-	class Converter;
-
 	iconv_t cd;
 	size_t toNulLen;
 	size_t fromNulLen;
