@@ -77,8 +77,8 @@ P_INCLUDE				=@includedir@
 P_LIB					=@libdir@
 
 DIR_DESKTOP				=${prefix}/share/applications
-DIR_DATA				=$(P_DATAROOT)/aegisub/$(AEGISUB_VERSION_DATA)/
-DIR_DOC					=$(P_DATAROOT)/doc/aegisub/$(AEGISUB_VERSION_DATA)/
+DIR_DATA				=$(P_DATAROOT)/aegisub/$(AEGISUB_VERSION_DATA)
+DIR_DOC					=$(P_DATAROOT)/doc/aegisub/$(AEGISUB_VERSION_DATA)
 
 
 
