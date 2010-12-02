@@ -86,8 +86,17 @@ ifeq (yes, $(PRECOMPILED_HEADER))
   ifdef PRECOMPILED_HEADER_NAME
     CXXFLAGS += -include $(PRECOMPILED_HEADER_NAME) -Winvalid-pch -fpch-deps -fpch-preprocess
     $(OBJ): | $(PRECOMPILED_HEADER_NAME).gch
-    CXX_ENV = $(CCACHE_ENV)
   endif
+endif
+
+
+########
+# CCACHE
+########
+ifeq (yes, $(CCACHE_ENABLE))
+CXX_ENV		= $(CCACHE_ENV)
+BIN_CC		:= ccache $(BIN_CC)
+BIN_CXX		:= ccache $(BIN_CXX)
 endif
 
 

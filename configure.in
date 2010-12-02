@@ -1112,6 +1112,20 @@ if test "$enable_efence" = "yes" && test "$enable_ccmalloc" = "yes"; then
 fi  
 
 
+########
+# ccache
+########
+AC_MSG_CHECKING([whether to enable ccache])
+AC_ARG_ENABLE(ccache, [  --enable-ccache       enable ccache (default=no)])
+if test "$enable_ccache" = "yes"; then
+  AC_MSG_RESULT([yes])
+else
+  enable_ccache="no"
+  AC_MSG_RESULT([no])
+fi
+AC_SUBST(enable_ccache)
+
+
 ##############################
 # Internationalisation support
 ##############################
