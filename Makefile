@@ -78,7 +78,16 @@ EXTRA_DIST += \
 	packages/osx_dmg/dmg_set_style.applescript
 
 
+DISTCLEANFILES += \
+	acconf.h \
+	configure \
+	acconf.h.in~ \
+	svn_revision \
+	Makefile.inc \
+	config.log \
+	acconf.h.in \
+	config.status \
+	autom4te.cache \
+	aclocal.m4 \
+
 include Makefile.target
-
-
-
