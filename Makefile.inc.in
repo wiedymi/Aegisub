@@ -173,6 +173,6 @@ BIN_CXX			= @CXX@
 # required for the autoconf subtitutions above.
 prefix =
 exec_prefix =
+# Requires gmake 3.82
 #undefine prefix
 #undefine exec_prefix
-
