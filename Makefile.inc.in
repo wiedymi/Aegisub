@@ -44,7 +44,6 @@ LIB_SHARED_LINK_OSX	= -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -compatibili
 #########
 # STRINGS
 #########
-datarootdir				=@datarootdir@
 DIR_DATA				=@DIR_DATA@
 DIR_DOC					=@DIR_DOC@
 AEGISUB_COMMAND			=@AEGISUB_COMMAND@
@@ -63,9 +62,24 @@ GETTEXT_PACKAGE			=@GETTEXT_PACKAGE@
 #######
 # PATHS
 #######
-DESKTOP_DATADIR			=@DESKTOP_DATADIR@
-DIR_DATA				=@DIR_DATA@
-DIR_DOC					=@DIR_DOC@
+P_PREFIX				=@prefix@
+prefix					= ${P_PREFIX}
+P_PREFIX_EXEC			=@exec_prefix@
+exec_prefix				= ${P_PREFIX_EXEC}
+P_BINDIR				=@bindir@
+P_SBINDIR				=@sbindir@
+P_LIBEXEC				=@libexecdir@
+P_DATAROOT				=@datarootdir@
+P_SYSCONF				=@sysconfdir@
+P_SHAREDSTATE			=@sharedstatedir@
+P_LOCALSTATE			=@localstatedir@
+P_INCLUDE				=@includedir@
+P_LIB					=@libdir@
+
+DIR_DESKTOP				=${prefix}/share/applications
+DIR_DATA				=$(P_DATAROOT)/aegisub/$(AEGISUB_VERSION_DATA)/
+DIR_DOC					=$(P_DATAROOT)/doc/aegisub/$(AEGISUB_VERSION_DATA)/
+
 
 
 ###############
@@ -154,4 +168,9 @@ BIN_MSGFMT		= @MSGFMT@
 BIN_CC			= @CC@
 BIN_CXX			= @CXX@
 
+
+# We don't want these variables propogating they're only
+# required for the autoconf subtitutions above.
+undefine prefix
+undefine exec_prefix
 

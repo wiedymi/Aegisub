@@ -141,11 +141,6 @@ AEGISUB_VERSION_DATA=aegisub_version_data
 AC_DEFINE_UNQUOTED(AEGISUB_VERSION_DATA, ["$AEGISUB_VERSION_DATA"], [Data path suffix.])
 AC_SUBST(AEGISUB_VERSION_DATA)
 
-# Shared data and Documents location.
-DIR_DATA="$datadir/$PACKAGE/aegisub_version_data"
-AC_SUBST(DIR_DATA)
-DIR_DOC="$datadir/doc/$PACKAGE/aegisub_version_data"
-AC_SUBST(DIR_DOC)
 
 # Name of aegisub binary.
 AEGISUB_COMMAND="aegisub-$AEGISUB_VERSION_MAJOR.$AEGISUB_VERSION_MINOR"
@@ -156,7 +151,7 @@ AC_ARG_WITH(desktop-dir, [  --with-desktop-dir=PATH desktop file locations (defa
 if ! test -z "$with_desktop_dir" ; then
   DESKTOP_DATADIR=$with_desktop_dir
 else
-  DESKTOP_DATADIR="$datadir"
+  DESKTOP_DATADIR="$datarootdir/applications"
 fi
 AC_SUBST(DESKTOP_DATADIR)
 
