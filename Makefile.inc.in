@@ -171,6 +171,8 @@ BIN_CXX			= @CXX@
 
 # We don't want these variables propogating they're only
 # required for the autoconf subtitutions above.
-undefine prefix
-undefine exec_prefix
+prefix =
+exec_prefix =
+#undefine prefix
+#undefine exec_prefix
 
