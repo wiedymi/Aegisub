@@ -42,6 +42,6 @@ EXTRA_DIST = \
 	64x64/aegisub.png \
 	scalable/aegisub.svg
 
-DISTCLEANFILES = aegisub.desktop
+CLEANFILES = aegisub.desktop
 
 include ../Makefile.target
