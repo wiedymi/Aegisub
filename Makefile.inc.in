@@ -169,10 +169,3 @@ BIN_CC			= @CC@
 BIN_CXX			= @CXX@
 
 
-# We don't want these variables propogating they're only
-# required for the autoconf subtitutions above.
-prefix =
-exec_prefix =
-# Requires gmake 3.82
-#undefine prefix
-#undefine exec_prefix
