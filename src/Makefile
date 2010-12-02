@@ -17,12 +17,9 @@ LDFLAGS += -lz
 endif
 
 
-
 ###############
 # AUDIO PLAYERS
 ###############
-SRC_OPT += audio_player.cpp
-audio_player.o: CXXFLAGS += $(CFLAGS_ALSA) $(CFLAGS_PORTAUDIO) $(CFLAGS_LIBPULSE) $(CFLAGS_OPENAL)
 
 ifeq (yes, $(HAVE_ALSA))
 SRC_OPT += audio_player_alsa.cpp
@@ -99,17 +96,15 @@ endif
 #####################
 # SOURCE-LEVEL CFLAGS
 #####################
-font_file_lister.o:				CXXFLAGS += $(CFLAGS_FREETYPE)
+audio_player.o:					CXXFLAGS += $(CFLAGS_ALSA) $(CFLAGS_PORTAUDIO) $(CFLAGS_LIBPULSE) $(CFLAGS_OPENAL)
 audio_provider.o:				CXXFLAGS += $(CFLAGS_FFMPEGSOURCE)
 auto4_base.o:					CXXFLAGS += $(CFLAGS_FREETYPE)
-video_provider_manager.o:		CXXFLAGS += $(CFLAGS_FFMPEGSOURCE)
 charset_detect.o:				CXXFLAGS += -D_X86_
+font_file_lister_fontconfig.o:	CXXFLAGS += $(CFLAGS_FONTCONFIG) $(CFLAGS_FREETYPE)
+font_file_lister.o:				CXXFLAGS += $(CFLAGS_FREETYPE)
 text_file_reader.o:				CXXFLAGS += -D_X86_
-font_file_lister_fontconfig.o: CXXFLAGS += $(CFLAGS_FONTCONFIG) $(CFLAGS_FREETYPE)
+video_provider_manager.o:		CXXFLAGS += $(CFLAGS_FFMPEGSOURCE)
 
-
-
-#	$(precompiled_header) \
 
 # Ensure any optional source files above are added for compilation.
 SRC += $(SRC_OPT)
@@ -131,6 +126,7 @@ SRC += \
 	audio_box.cpp \
 	audio_display.cpp \
 	audio_karaoke.cpp \
+	audio_player.cpp \
 	audio_provider.cpp \
 	audio_provider_convert.cpp \
 	audio_provider_downmix.cpp \
