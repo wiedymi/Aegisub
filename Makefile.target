@@ -47,6 +47,21 @@ clean: $(SUBDIRS)
 	$(BIN_RM) -f $(OBJ) $(CLEANFILES) $(LIB) $(LIB_SHARED) $(PROGRAM)
 
 
+#########
+# INSTALL
+#########
+
+#ifeq (install, $(MAKECMDGOALS))
+INSTALL_SHARE = $(addprefix share/doc/, $(DATA_SHARE_DOC)) \
+				$(addprefix share/, $(DATA_SHARE))
+#endif
+
+install: $(LIB_SHARED) $(PROGRAM)
+	@echo $(INSTALL_SHARE)
+#	@echo $(LIB_SHARED) $(PROGRAM)
+#	@echo $(EXTRA_DIST)
+
+
 ##############
 # DISTRIBUTION
 ##############
