@@ -106,7 +106,11 @@ reporter: src
 ifeq (yes, $(PRECOMPILED_HEADER))
   ifdef PRECOMPILED_HEADER_NAME
     CXXFLAGS += -include $(PRECOMPILED_HEADER_NAME) -Winvalid-pch -fpch-deps -fpch-preprocess
+    # This hack is required until we can use the 'private' keyword (gmake 3.82) to avoid all the
+    # per-object CXXFLAGS being triggered by the ($OBJ) line.
+    CXXFLAGS_GNU_MAKE_SUCKS := $(CXXFLAGS)
     $(OBJ): | $(PRECOMPILED_HEADER_NAME).gch
+    $(PRECOMPILED_HEADER_NAME).gch: CXXFLAGS = $(CXXFLAGS_GNU_MAKE_SUCKS)
   endif
 endif
 
