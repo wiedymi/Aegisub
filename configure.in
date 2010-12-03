@@ -146,14 +146,25 @@ AC_SUBST(AEGISUB_VERSION_DATA)
 AEGISUB_COMMAND="aegisub-$AEGISUB_VERSION_MAJOR.$AEGISUB_VERSION_MINOR"
 AC_SUBST(AEGISUB_COMMAND)
 
+
 # Handle location of desktop files: http://freedesktop.org/wiki/Specifications/desktop-entry-spec
-AC_ARG_WITH(desktop-dir, [  --with-desktop-dir=PATH desktop file locations (default: PREFIX/share)])
+AC_ARG_WITH(desktop-dir, [  --with-desktop-dir=PATH desktop file locations (default: PREFIX/share/applications)])
 if ! test -z "$with_desktop_dir" ; then
-  DESKTOP_DATADIR=$with_desktop_dir
+  P_DESKTOP=$with_desktop_dir
 else
-  DESKTOP_DATADIR="$datarootdir/applications"
+  P_DESKTOP="$datarootdir/applications"
 fi
-AC_SUBST(DESKTOP_DATADIR)
+AC_SUBST(P_DESKTOP)
+
+
+# Handle location of icons: http://standards.freedesktop.org/icon-theme-spec/icon-theme-spec-latest.html
+AC_ARG_WITH(icon-dir, [  --with-icon-dir=PATH icon locations (default: PREFIX/share/icons)])
+if ! test -z "$with_icon_dir" ; then
+  P_ICON=$with_icon_dir
+else
+  P_ICON="$datarootdir/icons"
+fi
+AC_SUBST(P_ICON)
 
 
 # Install prefix

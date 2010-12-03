@@ -44,8 +44,6 @@ LIB_SHARED_LINK_OSX	= -dynamiclib -Wl,-undefined -Wl,dynamic_lookup -compatibili
 #########
 # STRINGS
 #########
-DIR_DATA				=@DIR_DATA@
-DIR_DOC					=@DIR_DOC@
 AEGISUB_COMMAND			=@AEGISUB_COMMAND@
 AEGISUB_VERSION_DATA	=@AEGISUB_VERSION_DATA@
 BUILD_DATE				=@BUILD_DATE@
@@ -76,9 +74,10 @@ P_LOCALSTATE			=@localstatedir@
 P_INCLUDE				=@includedir@
 P_LIB					=@libdir@
 
-DIR_DESKTOP				=${prefix}/share/applications
-DIR_DATA				=$(P_DATAROOT)/aegisub/$(AEGISUB_VERSION_DATA)
-DIR_DOC					=$(P_DATAROOT)/doc/aegisub/$(AEGISUB_VERSION_DATA)
+P_DESKTOP				=@P_DESKTOP@
+P_ICON					=@P_ICON@
+P_DATA					=$(P_DATAROOT)/aegisub/$(AEGISUB_VERSION_DATA)
+P_DOC					=$(P_DATAROOT)/doc/aegisub/$(AEGISUB_VERSION_DATA)
 
 
 
