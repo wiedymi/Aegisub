@@ -148,7 +148,8 @@ AC_SUBST(AEGISUB_COMMAND)
 
 
 # Handle location of desktop files: http://freedesktop.org/wiki/Specifications/desktop-entry-spec
-AC_ARG_WITH(desktop-dir, [  --with-desktop-dir=PATH desktop file locations (default: PREFIX/share/applications)])
+AC_ARG_WITH(desktop-dir, [  --with-desktop-dir=PATH desktop file locations
+                          (default: PREFIX/share/applications)])
 if ! test -z "$with_desktop_dir" ; then
   P_DESKTOP=$with_desktop_dir
 else
@@ -1122,7 +1123,7 @@ fi
 # ccache
 ########
 AC_MSG_CHECKING([whether to enable ccache])
-AC_ARG_ENABLE(ccache, [  --enable-ccache       enable ccache (default=no)])
+AC_ARG_ENABLE(ccache, [  --enable-ccache         enable ccache (default=no)])
 if test "$enable_ccache" = "yes"; then
   AC_MSG_RESULT([yes])
 else
