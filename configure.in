@@ -204,7 +204,9 @@ AC_LANG(C++)
 AM_PROG_CC_C_O
 # This is reported to be required on Ubuntu, I haven't had time to check.
 define([AC_LIBTOOL_LANG_F77_CONFIG], [:])
-AC_PROG_INSTALL
+#AC_PROG_INSTALL
+BIN_INSTALL="$ac_pwd/install-sh"
+AC_SUBST(BIN_INSTALL)
 AC_PROG_RANLIB
 PKG_PROG_PKG_CONFIG([pkgconfig_required_version])
 
