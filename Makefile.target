@@ -58,12 +58,17 @@ endif
 #########
 
 #ifeq (install, $(MAKECMDGOALS))
-INSTALL_SHARE = $(addprefix share/doc/, $(DATA_SHARE_DOC)) \
-				$(addprefix share/, $(DATA_SHARE))
+INSTALL_SHARE	= $(addprefix $(P_DOC)/, $(DATA_SHARE_DOC)) \
+				  $(addprefix $(P_DATA)/, $(DATA_SHARE))
+INSTALL_LIB 	= $(addprefix $(P_LIB)/, $(LIB_SHARED) $(LIB_SHARED_FULL))
+
 #endif
 
-install: $(LIB_SHARED) $(PROGRAM)
-	@echo $(INSTALL_SHARE)
+install: $(SUBDIRS) $(LIB_SHARED) $(PROGRAM)
+	@for i in $(INSTALL_SHARE) $(INSTALL_LIB); do \
+		echo $$i; \
+	done
+#	@echo $(INSTALL_SHARE)
 #	@echo $(LIB_SHARED) $(PROGRAM)
 #	@echo $(EXTRA_DIST)
 
