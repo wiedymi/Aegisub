@@ -34,7 +34,7 @@ install:
 	@$(BIN_MKDIR) -p $(addprefix $(P_ICON)/hicolor/, $(dir $(ICON_HICOLOR)))
 	@for i in $(ICON_HICOLOR); do \
 		$(BIN_ECHO) "$(BIN_INSTALL) $$i $(P_ICON)/hicolor/$$i"; \
-		$(BIN_INSTALL) $$i $(P_ICON)/$$i; \
+		$(BIN_INSTALL) $$i $(P_ICON)/hicolor/$$i; \
 	done
 	$(BIN_TOUCH) $(P_ICON)/hicolor
 	@$(BIN_MKDIR) -p $(P_ICON)/scalable
