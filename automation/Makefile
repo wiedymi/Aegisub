@@ -31,12 +31,14 @@ DATA_AUTOMATION_DOC += \
 	demos/future-windy-blur.lua \
 	demos/raytracer.lua
 
+all: ;
+
 
 install: install-share
 	@$(BIN_MKDIR) -p $(addprefix $(P_DATA)/automation/, $(dir $(DATA_AUTOMATION)))
 	@for i in $(DATA_AUTOMATION); do \
 		$(BIN_ECHO) "$(BIN_INSTALL) $$i $(P_DATA)/automation/$$i"; \
-		echo $(BIN_INSTALL) $$i $(P_DATA)/automation/$$i; \
+		$(BIN_INSTALL) $$i $(P_DATA)/automation/$$i; \
 	done
 
 DATA_SHARE_DOC	= $(DATA_GENERAL_DOC) $(DATA_AUTOMATION_DOC)
