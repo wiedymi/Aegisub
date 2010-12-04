@@ -12,35 +12,35 @@ all:
 install-data-hook:
 	touch "$(DESTDIR)$(DESKTOP_DATADIR)/icons/hicolor"
 
-
-icons16dir = $(DESKTOP_DATADIR)/icons/hicolor/16x16/apps
-icons16_DATA = 16x16/aegisub.png
-
-icons22dir = $(DESKTOP_DATADIR)/icons/hicolor/22x22/apps
-icons22_DATA = 22x22/aegisub.png
-
-icons24dir = $(DESKTOP_DATADIR)/icons/hicolor/24x24/apps
-icons24_DATA = 24x24/aegisub.png
-
-icons32dir = $(DESKTOP_DATADIR)/icons/hicolor/32x32/apps
-icons32_DATA = 32x32/aegisub.png
-
-icons48dir = $(DESKTOP_DATADIR)/icons/hicolor/48x48/apps
-icons48_DATA = 48x48/aegisub.png
-
-icons64dir = $(DESKTOP_DATADIR)/icons/hicolor/64x64/apps
-icons64_DATA = 64x64/aegisub.png
-
-
-EXTRA_DIST = \
-	aegisub.desktop.in \
+ICON_HICOLOR = \
 	16x16/aegisub.png \
 	22x22/aegisub.png \
 	24x24/aegisub.png \
 	32x32/aegisub.png \
 	48x48/aegisub.png \
-	64x64/aegisub.png \
+	64x64/aegisub.png
+
+ICON_SCALABLE = \
 	scalable/aegisub.svg
+
+DESKTOP_FILE = \
+	aegisub.desktop
+
+EXTRA_DIST = \
+	aegisub.desktop.in \
+	$(ICON_HICOLOR) \
+	$(ICON_SCALABLE)
+
+install:
+	@$(BIN_MKDIR) -p $(P_DESKTOP)
+	$(BIN_INSTALL) $(DESKTOP_FILE) $(P_DESKTOP)/$(DESKTOP_FILE)
+	@$(BIN_MKDIR) -p $(addprefix $(P_ICON)/, $(dir $(ICON_HICOLOR)))
+	@for i in $(ICON_HICOLOR); do \
+		$(BIN_ECHO) "$(BIN_INSTALL) $$i $(P_ICON)/$$i"; \
+		$(BIN_INSTALL) $$i $(P_ICON)/$$i; \
+	done
+
+
 
 CLEANFILES = aegisub.desktop
 
