@@ -7,10 +7,7 @@ iconsscalabledir = $(DESKTOP_DATADIR)/icons/hicolor/scalable/apps
 iconsscalable_DATA = scalable/aegisub.svg
 
 
-all:
-
-install-data-hook:
-	touch "$(DESTDIR)$(DESKTOP_DATADIR)/icons/hicolor"
+all: ;
 
 ICON_HICOLOR = \
 	16x16/aegisub.png \
@@ -34,12 +31,14 @@ EXTRA_DIST = \
 install:
 	@$(BIN_MKDIR) -p $(P_DESKTOP)
 	$(BIN_INSTALL) $(DESKTOP_FILE) $(P_DESKTOP)/$(DESKTOP_FILE)
-	@$(BIN_MKDIR) -p $(addprefix $(P_ICON)/, $(dir $(ICON_HICOLOR)))
+	@$(BIN_MKDIR) -p $(addprefix $(P_ICON)/hicolor/, $(dir $(ICON_HICOLOR)))
 	@for i in $(ICON_HICOLOR); do \
-		$(BIN_ECHO) "$(BIN_INSTALL) $$i $(P_ICON)/$$i"; \
+		$(BIN_ECHO) "$(BIN_INSTALL) $$i $(P_ICON)/hicolor/$$i"; \
 		$(BIN_INSTALL) $$i $(P_ICON)/$$i; \
 	done
-
+	$(BIN_TOUCH) $(P_ICON)/hicolor
+	@$(BIN_MKDIR) -p $(P_ICON)/scalable
+	$(BIN_CP) $(ICON_SCALABLE) $(P_ICON)/$(ICON_SCALABLE)
 
 
 CLEANFILES = aegisub.desktop
