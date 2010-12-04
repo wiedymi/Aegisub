@@ -56,21 +56,36 @@ endif
 #########
 # INSTALL
 #########
+ifeq (install, $(MAKECMDGOALS))
+INSTALL_LIB 		= $(addprefix $(P_LIB)/, $(LIB_SHARED) $(LIB_SHARED_FULL))
+endif
 
-#ifeq (install, $(MAKECMDGOALS))
-INSTALL_SHARE	= $(addprefix $(P_DOC)/, $(DATA_SHARE_DOC)) \
-				  $(addprefix $(P_DATA)/, $(DATA_SHARE))
-INSTALL_LIB 	= $(addprefix $(P_LIB)/, $(LIB_SHARED) $(LIB_SHARED_FULL))
+#install: $(SUBDIRS) install-share
 
-#endif
-
-install: $(SUBDIRS) $(LIB_SHARED) $(PROGRAM)
-	@for i in $(INSTALL_SHARE) $(INSTALL_LIB); do \
-		echo $$i; \
-	done
+#install: $(SUBDIRS) $(LIB_SHARED) $(PROGRAM)
+#	@for i in $(INSTALL_SHARE) $(INSTALL_LIB); do \
+#		echo $$i; \
+#	done
 #	@echo $(INSTALL_SHARE)
 #	@echo $(LIB_SHARED) $(PROGRAM)
 #	@echo $(EXTRA_DIST)
+
+install-share:
+ifdef DATA_SHARE
+	@$(BIN_MKDIR) -p $(addprefix $(P_DATA)/, $(dir $(DATA_SHARE)))
+	@for i in $(DATA_SHARE); do \
+		$(BIN_ECHO) "$(BIN_INSTALL) $$i $(P_DATA)/$$i"; \
+		$(BIN_INSTALL) $$i $(P_DATA)/$$i; \
+	done
+endif
+ifdef DATA_SHARE_DOC
+	@$(BIN_MKDIR) -p $(addprefix $(P_DOC)/, $(dir $(DATA_SHARE_DOC)))
+	@for i in $(DATA_SHARE_DOC); do \
+		$(BIN_ECHO) "$(BIN_INSTALL) $$i $(P_DOC)/$$i"; \
+		$(BIN_INSTALL) $$i $(P_DOC)/$$i; \
+	done
+endif
+
 
 
 ##############
