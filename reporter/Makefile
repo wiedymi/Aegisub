@@ -1,6 +1,7 @@
 include ../Makefile.inc
 
 PROGRAM = reporter-3.0
+PROGRAM_INSTALL = yes
 PRECOMPILED_HEADER_NAME=r_pre.h
 
 

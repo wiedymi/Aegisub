@@ -3,6 +3,7 @@ include ../Makefile.inc
 
 
 LIB_SHARED = libaegisub-3.0.so
+LIB_SHARED_INSTALL = yes
 LIB_VERSION = 3
 
 CXXFLAGS = -Iinclude -I../src -I.. -pedantic -DLAGI -fPIC

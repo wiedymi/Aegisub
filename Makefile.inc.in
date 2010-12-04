@@ -170,3 +170,4 @@ BIN_CP			= cp
 BIN_MKDIR		= mkdir
 BIN_MKDIR_P		= mkdir -p
 BIN_ECHO		= echo
+BIN_TOUCH		= touch

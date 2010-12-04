@@ -1,6 +1,8 @@
 include ../Makefile.inc
 
 PROGRAM = aegisub-3.0
+PROGRAM_INSTALL = yes
+
 PRECOMPILED_HEADER_NAME=agi_pre.h
 
 SUBDIRS = libresrc

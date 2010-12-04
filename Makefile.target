@@ -60,15 +60,20 @@ ifeq (install, $(MAKECMDGOALS))
 INSTALL_LIB 		= $(addprefix $(P_LIB)/, $(LIB_SHARED) $(LIB_SHARED_FULL))
 endif
 
-#install: $(SUBDIRS) install-share
+install: $(SUBDIRS) install-share install-program install-lib
 
-#install: $(SUBDIRS) $(LIB_SHARED) $(PROGRAM)
-#	@for i in $(INSTALL_SHARE) $(INSTALL_LIB); do \
-#		echo $$i; \
-#	done
-#	@echo $(INSTALL_SHARE)
-#	@echo $(LIB_SHARED) $(PROGRAM)
-#	@echo $(EXTRA_DIST)
+install-program:
+ifdef PROGRAM_INSTALL
+	@$(BIN_MKDIR) -p $(P_BINDIR)
+	@$(BIN_INSTALL) $(PROGRAM) $(P_BINDIR)/$(PROGRAM)
+endif
+
+install-lib:
+ifdef LIB_SHARED_INSTALL
+	$(BIN_MKDIR) -p $(P_LIB)
+	$(BIN_INSTALL) $(LIB_SHARED_FULL) $(P_LIB)/$(LIB_SHARED_FULL)
+	$(BIN_LN) -sf $(P_LIB)/$(LIB_SHARED_FULL) $(P_LIB)/$(LIB_SHARED)
+endif
 
 install-share:
 ifdef DATA_SHARE
