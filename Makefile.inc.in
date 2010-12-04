@@ -73,6 +73,7 @@ P_SHAREDSTATE			=@sharedstatedir@
 P_LOCALSTATE			=@localstatedir@
 P_INCLUDE				=@includedir@
 P_LIB					=@libdir@
+P_LOCALE				=$(P_DATAROOT)/locale
 
 P_DESKTOP				=@P_DESKTOP@
 P_ICON					=@P_ICON@
