@@ -55,6 +55,7 @@
 #ifdef WITH_AUTOMATION
 #include "auto4_base.h"
 #endif
+#include "command/command.h"
 #include "compat.h"
 #include "dialog_about.h"
 #include "dialog_attachments.h"
@@ -102,145 +103,29 @@
 #endif
 
 BEGIN_EVENT_TABLE(FrameMain, wxFrame)
-	EVT_TIMER(AutoSave_Timer, FrameMain::OnAutoSave)
-	EVT_TIMER(StatusClear_Timer, FrameMain::OnStatusClear)
+	EVT_TIMER(ID_APP_TIMER_AUTOSAVE, FrameMain::OnAutoSave)
+	EVT_TIMER(ID_APP_TIMER_STATUSCLEAR, FrameMain::OnStatusClear)
 
 	EVT_CLOSE(FrameMain::OnCloseWindow)
 
-	EVT_SASH_DRAGGED(Main_AudioSash, FrameMain::OnAudioBoxResize)
+	EVT_SASH_DRAGGED(ID_SASH_MAIN_AUDIO, FrameMain::OnAudioBoxResize)
 
 	EVT_MENU_OPEN(FrameMain::OnMenuOpen)
-	EVT_MENU_RANGE(Menu_File_Recent,Menu_File_Recent+99, FrameMain::OnOpenRecentSubs)
-	EVT_MENU_RANGE(Menu_Video_Recent,Menu_Video_Recent+99, FrameMain::OnOpenRecentVideo)
-	EVT_MENU_RANGE(Menu_Audio_Recent,Menu_Audio_Recent+99, FrameMain::OnOpenRecentAudio)
-	EVT_MENU_RANGE(Menu_Timecodes_Recent,Menu_Timecodes_Recent+99, FrameMain::OnOpenRecentTimecodes)
-	EVT_MENU_RANGE(Menu_Keyframes_Recent,Menu_Keyframes_Recent+99, FrameMain::OnOpenRecentKeyframes)
-	EVT_MENU_RANGE(Menu_Automation_Macro,Menu_Automation_Macro+99, FrameMain::OnAutomationMacro)
 
-	EVT_MENU_RANGE(MENU_GRID_START+1,MENU_GRID_END-1,FrameMain::OnGridEvent)
-	EVT_MENU(Menu_File_New_Window, FrameMain::OnNewWindow)
-	EVT_MENU(Menu_File_Exit, FrameMain::OnExit)
-	EVT_MENU(Menu_File_Open_Video, FrameMain::OnOpenVideo)
-	EVT_MENU(Menu_File_Close_Video, FrameMain::OnCloseVideo)
-	EVT_MENU(Menu_File_Open_Subtitles, FrameMain::OnOpenSubtitles)
-	EVT_MENU(Menu_File_Open_Subtitles_Charset, FrameMain::OnOpenSubtitlesCharset)
-	EVT_MENU(Menu_File_Open_Subtitles_From_Video, FrameMain::OnOpenSubtitlesVideo)
-	EVT_MENU(Menu_File_New_Subtitles, FrameMain::OnNewSubtitles)
-	EVT_MENU(Menu_File_Save_Subtitles, FrameMain::OnSaveSubtitles)
-	EVT_MENU(Menu_File_Save_Subtitles_As, FrameMain::OnSaveSubtitlesAs)
-	EVT_MENU(Menu_File_Save_Subtitles_With_Charset, FrameMain::OnSaveSubtitlesCharset)
-	EVT_MENU(Menu_File_Export_Subtitles, FrameMain::OnExportSubtitles)
-	EVT_MENU(Menu_File_Open_VFR, FrameMain::OnOpenVFR)
-	EVT_MENU(Menu_File_Save_VFR, FrameMain::OnSaveVFR)
-	EVT_MENU(Menu_File_Close_VFR, FrameMain::OnCloseVFR)
-	EVT_MENU(Menu_Video_Load_Keyframes, FrameMain::OnOpenKeyframes)
-	EVT_MENU(Menu_Video_Save_Keyframes, FrameMain::OnSaveKeyframes)
-	EVT_MENU(Menu_Video_Close_Keyframes, FrameMain::OnCloseKeyframes)
+//	EVT_MENU(cmd::id("subtitle/new"), FrameMain::cmd_call)
+//	EVT_MENU(cmd::id("subtitle/open"), FrameMain::cmd_call)
+//	EVT_MENU(cmd::id("subtitle/save"), FrameMain::cmd_call)
 
-	EVT_MENU(Menu_View_Zoom_50, FrameMain::OnSetZoom50)
-	EVT_MENU(Menu_View_Zoom_100, FrameMain::OnSetZoom100)
-	EVT_MENU(Menu_View_Zoom_200, FrameMain::OnSetZoom200)
-	EVT_COMBOBOX(Toolbar_Zoom_Dropdown, FrameMain::OnSetZoom)
-	EVT_TEXT_ENTER(Toolbar_Zoom_Dropdown, FrameMain::OnSetZoom)
-	EVT_MENU(Video_Frame_Play, FrameMain::OnVideoPlay)
-	EVT_MENU(Menu_Video_Zoom_In, FrameMain::OnZoomIn)
-	EVT_MENU(Menu_Video_Zoom_Out, FrameMain::OnZoomOut)
-	EVT_MENU(Menu_Video_AR_Default, FrameMain::OnSetARDefault)
-	EVT_MENU(Menu_Video_AR_Full, FrameMain::OnSetARFull)
-	EVT_MENU(Menu_Video_AR_Wide, FrameMain::OnSetARWide)
-	EVT_MENU(Menu_Video_AR_235, FrameMain::OnSetAR235)
-	EVT_MENU(Menu_Video_AR_Custom, FrameMain::OnSetARCustom)
-	EVT_MENU(Menu_Video_JumpTo, FrameMain::OnJumpTo)
-	EVT_MENU(Menu_Video_Select_Visible, FrameMain::OnSelectVisible)
-	EVT_MENU(Menu_Video_Detach, FrameMain::OnDetachVideo)
-	EVT_MENU(Menu_Video_Dummy, FrameMain::OnDummyVideo)
-	EVT_MENU(Menu_Video_Overscan, FrameMain::OnOverscan)
-	EVT_MENU(Menu_Video_Details, FrameMain::OnOpenVideoDetails)
+//	EVT_MENU_RANGE(Menu_File_Recent,Menu_File_Recent+99, FrameMain::OnOpenRecentSubs)
+//	EVT_MENU_RANGE(Menu_Video_Recent,Menu_Video_Recent+99, FrameMain::OnOpenRecentVideo)
+//	EVT_MENU_RANGE(Menu_Audio_Recent,Menu_Audio_Recent+99, FrameMain::OnOpenRecentAudio)
+//	EVT_MENU_RANGE(Menu_Timecodes_Recent,Menu_Timecodes_Recent+99, FrameMain::OnOpenRecentTimecodes)
+//	EVT_MENU_RANGE(Menu_Keyframes_Recent,Menu_Keyframes_Recent+99, FrameMain::OnOpenRecentKeyframes)
+//	EVT_MENU_RANGE(Menu_Automation_Macro,Menu_Automation_Macro+99, FrameMain::OnAutomationMacro)
 
-	EVT_MENU(Menu_Audio_Open_File, FrameMain::OnOpenAudio)
-	EVT_MENU(Menu_Audio_Open_From_Video, FrameMain::OnOpenAudioFromVideo)
-	EVT_MENU(Menu_Audio_Close, FrameMain::OnCloseAudio)	
-	EVT_MENU(Menu_Audio_Spectrum, FrameMain::OnAudioDisplayMode)
-	EVT_MENU(Menu_Audio_Waveform, FrameMain::OnAudioDisplayMode)
-#ifdef _DEBUG
-	EVT_MENU(Menu_Audio_Open_Dummy, FrameMain::OnOpenDummyAudio)
-	EVT_MENU(Menu_Audio_Open_Dummy_Noise, FrameMain::OnOpenDummyNoiseAudio)
-#endif
-
-	EVT_MENU(Menu_Edit_Undo, FrameMain::OnUndo)
-	EVT_MENU(Menu_Edit_Redo, FrameMain::OnRedo)
-	EVT_MENU(Menu_Edit_Cut, FrameMain::OnCut)
-	EVT_MENU(Menu_Edit_Copy, FrameMain::OnCopy)
-	EVT_MENU(Menu_Edit_Paste, FrameMain::OnPaste)
-	EVT_MENU(Menu_Edit_Paste_Over, FrameMain::OnPasteOver)
-	EVT_MENU(Menu_Edit_Find, FrameMain::OnFind)
-	EVT_MENU(Menu_Edit_Find_Next, FrameMain::OnFindNext)
-	EVT_MENU(Menu_Edit_Replace, FrameMain::OnReplace)
-	EVT_MENU(Menu_Edit_Shift, FrameMain::OnShift)
-	EVT_MENU(Menu_Edit_Select, FrameMain::OnSelect)
-
-	EVT_MENU(Menu_Subtitles_Sort_Start, FrameMain::OnSortStart)
-	EVT_MENU(Menu_Subtitles_Sort_End, FrameMain::OnSortEnd)
-	EVT_MENU(Menu_Subtitles_Sort_Style, FrameMain::OnSortStyle)
-
-	EVT_MENU(Menu_Tools_Properties, FrameMain::OnOpenProperties)
-	EVT_MENU(Menu_Tools_Styles_Manager, FrameMain::OnOpenStylesManager)
-	EVT_MENU(Menu_Tools_Attachments, FrameMain::OnOpenAttachments)
-	EVT_MENU(Menu_Tools_Translation, FrameMain::OnOpenTranslation)
-	EVT_MENU(Menu_Tools_SpellCheck, FrameMain::OnOpenSpellCheck)
-	EVT_MENU(Menu_Tools_Fonts_Collector, FrameMain::OnOpenFontsCollector)
-	EVT_MENU(Menu_Tools_Automation, FrameMain::OnOpenAutomation)
-	EVT_MENU(Menu_Tools_Styling, FrameMain::OnOpenStylingAssistant)
-	EVT_MENU(Menu_Tools_Resample, FrameMain::OnOpenResample)
-	EVT_MENU(Menu_Tools_Timing_Processor, FrameMain::OnOpenTimingProcessor)
-	EVT_MENU(Menu_Tools_Kanji_Timer, FrameMain::OnOpenKanjiTimer)
-	EVT_MENU(Menu_Tools_Options, FrameMain::OnOpenPreferences)
-	EVT_MENU(Menu_Tools_ASSDraw, FrameMain::OnOpenASSDraw)
-	
-	EVT_MENU(Menu_Subs_Snap_Start_To_Video, FrameMain::OnSnapSubsStartToVid)
-	EVT_MENU(Menu_Subs_Snap_End_To_Video, FrameMain::OnSnapSubsEndToVid)
-	EVT_MENU(Menu_Subs_Snap_Video_To_Start, FrameMain::OnSnapVidToSubsStart)
-	EVT_MENU(Menu_Subs_Snap_Video_To_End, FrameMain::OnSnapVidToSubsEnd)
-	EVT_MENU(Menu_Video_Snap_To_Scene, FrameMain::OnSnapToScene)
-	EVT_MENU(Menu_Video_Shift_To_Frame, FrameMain::OnShiftToFrame)
-
-	EVT_MENU(Menu_Help_Contents, FrameMain::OnContents)
-	EVT_MENU(Menu_Help_Files, FrameMain::OnFiles)
-	EVT_MENU(Menu_Help_Website, FrameMain::OnWebsite)
-	EVT_MENU(Menu_Help_Forums, FrameMain::OnForums)
-	EVT_MENU(Menu_Help_BugTracker, FrameMain::OnBugTracker)
-	EVT_MENU(Menu_Help_IRCChannel, FrameMain::OnIRCChannel)
-	EVT_MENU(Menu_Help_Check_Updates, FrameMain::OnCheckUpdates)
-	EVT_MENU(Menu_Help_About, FrameMain::OnAbout)
-	EVT_MENU(Menu_Help_Log, FrameMain::OnLog)
-
-	EVT_MENU(Menu_View_Language, FrameMain::OnChooseLanguage)
-	EVT_MENU(Menu_View_Standard, FrameMain::OnViewStandard)
-	EVT_MENU(Menu_View_Audio, FrameMain::OnViewAudio)
-	EVT_MENU(Menu_View_Video, FrameMain::OnViewVideo)
-	EVT_MENU(Menu_View_Subs, FrameMain::OnViewSubs)
-	EVT_MENU(Menu_View_FullTags, FrameMain::OnSetTags)
-	EVT_MENU(Menu_View_ShortTags, FrameMain::OnSetTags)
-	EVT_MENU(Menu_View_NoTags, FrameMain::OnSetTags)
-
-	EVT_MENU(Video_Prev_Frame,FrameMain::OnPrevFrame)
-	EVT_MENU(Video_Next_Frame,FrameMain::OnNextFrame)
-	EVT_MENU(Video_Focus_Seek,FrameMain::OnFocusSeek)
-	EVT_MENU(Grid_Next_Line,FrameMain::OnNextLine)
-	EVT_MENU(Grid_Prev_Line,FrameMain::OnPrevLine)
-	EVT_MENU(Grid_Toggle_Tags,FrameMain::OnToggleTags)
-
-	EVT_MENU(Medusa_Play, FrameMain::OnMedusaPlay)
-	EVT_MENU(Medusa_Stop, FrameMain::OnMedusaStop)
-	EVT_MENU(Medusa_Play_After, FrameMain::OnMedusaPlayAfter)
-	EVT_MENU(Medusa_Play_Before, FrameMain::OnMedusaPlayBefore)
-	EVT_MENU(Medusa_Next, FrameMain::OnMedusaNext)
-	EVT_MENU(Medusa_Prev, FrameMain::OnMedusaPrev)
-	EVT_MENU(Medusa_Shift_Start_Forward, FrameMain::OnMedusaShiftStartForward)
-	EVT_MENU(Medusa_Shift_Start_Back, FrameMain::OnMedusaShiftStartBack)
-	EVT_MENU(Medusa_Shift_End_Forward, FrameMain::OnMedusaShiftEndForward)
-	EVT_MENU(Medusa_Shift_End_Back, FrameMain::OnMedusaShiftEndBack)
-	EVT_MENU(Medusa_Enter, FrameMain::OnMedusaEnter)
+//	EVT_MENU_RANGE(MENU_GRID_START+1,MENU_GRID_END-1,FrameMain::OnGridEvent)
+//	EVT_COMBOBOX(Toolbar_Zoom_Dropdown, FrameMain::OnSetZoom)
+//	EVT_TEXT_ENTER(Toolbar_Zoom_Dropdown, FrameMain::OnSetZoom)
 
 #ifdef __WXMAC__
    EVT_MENU(wxID_ABOUT, FrameMain::OnAbout)
@@ -293,9 +178,9 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	// File menu
 	if (curMenu == fileMenu) {
 		// Rebuild recent
-		RebuildRecentList(_T("Subtitle"),RecentSubs,Menu_File_Recent);
+		RebuildRecentList(_T("Subtitle"),RecentSubs,ID_RECENT_FILE);
 
-		MenuBar->Enable(Menu_File_Open_Subtitles_From_Video,VideoContext::Get()->HasSubtitles());
+		MenuBar->Enable(cmd::id("subtitle/open/video"),VideoContext::Get()->HasSubtitles());
 	}
 
 	// View menu
@@ -305,17 +190,22 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		bool vid = VideoContext::Get()->IsLoaded() && !detachedVideo;
 
 		// Set states
-		MenuBar->Enable(Menu_View_Audio,aud);
-		MenuBar->Enable(Menu_View_Video,vid);
-		MenuBar->Enable(Menu_View_Standard,aud && vid);
+		MenuBar->Enable(cmd::id("app/display/audio_subs"),aud);
+		MenuBar->Enable(cmd::id("app/display/video_subs"),vid);
+		MenuBar->Enable(cmd::id("app/display/full"),aud && vid);
 
 		// Select option
-		if (!showVideo && !showAudio) MenuBar->Check(Menu_View_Subs,true);
-		else if (showVideo && !showAudio) MenuBar->Check(Menu_View_Video,true);
-		else if (showAudio && showVideo) MenuBar->Check(Menu_View_Standard,true);
-		else MenuBar->Check(Menu_View_Audio,true);
+		if (!showVideo && !showAudio) MenuBar->Check(cmd::id("app/display/subs"),true);
+		else if (showVideo && !showAudio) MenuBar->Check(cmd::id("app/display/video_subs"),true);
+		else if (showAudio && showVideo) MenuBar->Check(cmd::id("app/display/full"),true);
+		else MenuBar->Check(cmd::id("app/display/audio_subs"),true);
 
-		MenuBar->Check(OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt() + Menu_View_FullTags, true);
+		int sub_grid = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
+		if (sub_grid == 1) MenuBar->Check(cmd::id("grid/tags/show"), true);
+		if (sub_grid == 2) MenuBar->Check(cmd::id("grid/tags/simplify"), true);
+		if (sub_grid == 3) MenuBar->Check(cmd::id("grid/tags/hide"), true);
+
+
 	}
 
 	// Video menu
@@ -324,50 +214,50 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		bool attached = state && !detachedVideo;
 
 		// Set states
-		MenuBar->Enable(Menu_Video_JumpTo,state);
-		MenuBar->Enable(Menu_Subs_Snap_Video_To_Start,state);
-		MenuBar->Enable(Menu_Subs_Snap_Video_To_End,state);
-		MenuBar->Enable(Menu_View_Zoom,attached);
-		MenuBar->Enable(Menu_View_Zoom_50,attached);
-		MenuBar->Enable(Menu_View_Zoom_100,attached);
-		MenuBar->Enable(Menu_View_Zoom_200,attached);
-		MenuBar->Enable(Menu_File_Close_Video,state);
-		MenuBar->Enable(Menu_Video_AR,attached);
-		MenuBar->Enable(Menu_Video_AR_Default,attached);
-		MenuBar->Enable(Menu_Video_AR_Full,attached);
-		MenuBar->Enable(Menu_Video_AR_Wide,attached);
-		MenuBar->Enable(Menu_Video_AR_235,attached);
-		MenuBar->Enable(Menu_Video_AR_Custom,attached);
-		MenuBar->Enable(Menu_Video_Detach,state);
-		MenuBar->Enable(Menu_File_Save_VFR,VideoContext::Get()->TimecodesLoaded());
-		MenuBar->Enable(Menu_File_Close_VFR,VideoContext::Get()->OverTimecodesLoaded());
-		MenuBar->Enable(Menu_Video_Close_Keyframes,VideoContext::Get()->OverKeyFramesLoaded());
-		MenuBar->Enable(Menu_Video_Save_Keyframes,VideoContext::Get()->KeyFramesLoaded());
-		MenuBar->Enable(Menu_Video_Details,state);
-		MenuBar->Enable(Menu_Video_Overscan,state);
+		MenuBar->Enable(cmd::id("video/jump"),state);
+		MenuBar->Enable(cmd::id("video/jump/start"),state);
+		MenuBar->Enable(cmd::id("video/jump/end"),state);
+		MenuBar->Enable(ID_SM_VIDEO_ZOOM,attached);
+		MenuBar->Enable(cmd::id("video/zoom/50"),attached);
+		MenuBar->Enable(cmd::id("video/zoom/100"),attached);
+		MenuBar->Enable(cmd::id("video/zoom/200"),attached);
+		MenuBar->Enable(cmd::id("video/close"),state);
+		MenuBar->Enable(ID_SM_VIDEO_OVERRIDE_AR,attached);
+		MenuBar->Enable(cmd::id("video/aspect/default"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/full"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/wide"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/cinematic"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/custom"),attached);
+		MenuBar->Enable(cmd::id("video/detach"),state);
+		MenuBar->Enable(cmd::id("timecode/save"),VideoContext::Get()->TimecodesLoaded());
+		MenuBar->Enable(cmd::id("timecode/close"),VideoContext::Get()->OverTimecodesLoaded());
+		MenuBar->Enable(cmd::id("keyframe/close"),VideoContext::Get()->OverKeyFramesLoaded());
+		MenuBar->Enable(cmd::id("keyframe/save"),VideoContext::Get()->KeyFramesLoaded());
+		MenuBar->Enable(cmd::id("video/detach"),state);
+		MenuBar->Enable(cmd::id("video/show_overscan"),state);
 
 		// Set AR radio
 		int arType = VideoContext::Get()->GetAspectRatioType();
-		MenuBar->Check(Menu_Video_AR_Default,false);
-		MenuBar->Check(Menu_Video_AR_Full,false);
-		MenuBar->Check(Menu_Video_AR_Wide,false);
-		MenuBar->Check(Menu_Video_AR_235,false);
-		MenuBar->Check(Menu_Video_AR_Custom,false);
+		MenuBar->Check(cmd::id("video/aspect/default"),false);
+		MenuBar->Check(cmd::id("video/aspect/full"),false);
+		MenuBar->Check(cmd::id("video/aspect/wide"),false);
+		MenuBar->Check(cmd::id("video/aspect/cinematic"),false);
+		MenuBar->Check(cmd::id("video/aspect/custom"),false);
 		switch (arType) {
-			case 0: MenuBar->Check(Menu_Video_AR_Default,true); break;
-			case 1: MenuBar->Check(Menu_Video_AR_Full,true); break;
-			case 2: MenuBar->Check(Menu_Video_AR_Wide,true); break;
-			case 3: MenuBar->Check(Menu_Video_AR_235,true); break;
-			case 4: MenuBar->Check(Menu_Video_AR_Custom,true); break;
+			case 0: MenuBar->Check(cmd::id("video/aspect/default"),true); break;
+			case 1: MenuBar->Check(cmd::id("video/aspect/full"),true); break;
+			case 2: MenuBar->Check(cmd::id("video/aspect/wide"),true); break;
+			case 3: MenuBar->Check(cmd::id("video/aspect/cinematic"),true); break;
+			case 4: MenuBar->Check(cmd::id("video/aspect/custom"),true); break;
 		}
 
 		// Set overscan mask
-		MenuBar->Check(Menu_Video_Overscan,OPT_GET("Video/Overscan Mask")->GetBool());
+		MenuBar->Check(cmd::id("video/show_overscan"),OPT_GET("Video/Overscan Mask")->GetBool());
 
 		// Rebuild recent lists
-		RebuildRecentList(_T("Video"),RecentVids,Menu_Video_Recent);
-		RebuildRecentList(_T("Timecodes"),RecentTimecodes,Menu_Timecodes_Recent);
-		RebuildRecentList(_T("Keyframes"),RecentKeyframes,Menu_Keyframes_Recent);
+		RebuildRecentList(_T("Video"),RecentVids,ID_MENU_RECENT_VIDEO);
+		RebuildRecentList(_T("Timecodes"),RecentTimecodes,ID_MENU_RECENT_TIMECODES);
+		RebuildRecentList(_T("Keyframes"),RecentKeyframes,ID_MENU_RECENT_KEYFRAMES);
 	}
 
 	// Audio menu
@@ -375,15 +265,11 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		bool state = audioController->IsAudioOpen();
 		bool vidstate = VideoContext::Get()->IsLoaded();
 
-		MenuBar->Enable(Menu_Audio_Open_From_Video,vidstate);
-		MenuBar->Enable(Menu_Audio_Close,state);
-
-		bool spectrum_enabled = OPT_GET("Audio/Spectrum")->GetBool();
-		MenuBar->Check(Menu_Audio_Spectrum, spectrum_enabled);
-		MenuBar->Check(Menu_Audio_Waveform, !spectrum_enabled);
+		MenuBar->Enable(cmd::id("audio/open/video"),vidstate);
+		MenuBar->Enable(cmd::id("audio/close"),state);
 
 		// Rebuild recent
-		RebuildRecentList(_T("Audio"),RecentAuds,Menu_Audio_Recent);
+		RebuildRecentList(_T("Audio"),RecentAuds,ID_MENU_RECENT_AUDIO);
 	}
 
 	// Subtitles menu
@@ -396,27 +282,27 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 
 		// Entries
 		state = count > 0;
-		MenuBar->Enable(MENU_INSERT_BEFORE,state);
-		MenuBar->Enable(MENU_INSERT_AFTER,state);
-		MenuBar->Enable(MENU_SPLIT_BY_KARAOKE,state);
-		MenuBar->Enable(MENU_DELETE,state);
+		MenuBar->Enable(cmd::id("subtitle/insert/before"),state);
+		MenuBar->Enable(cmd::id("subtitle/insert/after"),state);
+		MenuBar->Enable(cmd::id("edit/line/split/by_karaoke"),state);
+		MenuBar->Enable(cmd::id("edit/line/delete"),state);
 		state2 = count > 0 && VideoContext::Get()->IsLoaded();
-		MenuBar->Enable(MENU_INSERT_BEFORE_VIDEO,state2);
-		MenuBar->Enable(MENU_INSERT_AFTER_VIDEO,state2);
-		MenuBar->Enable(Menu_Subtitles_Insert,state);
+		MenuBar->Enable(cmd::id("subtitle/insert/before/videotime"),state2);
+		MenuBar->Enable(cmd::id("subtitle/insert/after/videotime"),state2);
+		MenuBar->Enable(ID_SM_SUBTITLES_INSERT,state);
 		state = count > 0 && continuous;
-		MenuBar->Enable(MENU_DUPLICATE,state);
+		MenuBar->Enable(cmd::id("edit/line/duplicate"),state);
 		state = count > 0 && continuous && VideoContext::Get()->TimecodesLoaded();
-		MenuBar->Enable(MENU_DUPLICATE_NEXT_FRAME,state);
+		MenuBar->Enable(cmd::id("edit/line/duplicate/shift"),state);
 		state = count == 2;
-		MenuBar->Enable(MENU_SWAP,state);
+		MenuBar->Enable(cmd::id("edit/line/swap"),state);
 		state = count >= 2 && continuous;
-		MenuBar->Enable(MENU_JOIN_CONCAT,state);
-		MenuBar->Enable(MENU_JOIN_REPLACE,state);
-		MenuBar->Enable(MENU_JOIN_AS_KARAOKE,state);
-		MenuBar->Enable(Menu_Subtitles_Join,state);
+		MenuBar->Enable(cmd::id("edit/line/join/concatenate"),state);
+		MenuBar->Enable(cmd::id("edit/line/join/keep_first"),state);
+		MenuBar->Enable(cmd::id("edit/line/join/as_karaoke"),state);
+		MenuBar->Enable(ID_SM_SUBTITLES_JOIN,state);
 		state = (count == 2 || count == 3) && continuous;
-		MenuBar->Enable(MENU_RECOMBINE,state);
+		MenuBar->Enable(cmd::id("edit/line/recombine"),state);
 	}
 
 	// Timing menu
@@ -428,15 +314,15 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 
 		// Video related
 		bool state = VideoContext::Get()->IsLoaded();
-		MenuBar->Enable(Menu_Subs_Snap_Start_To_Video,state);
-		MenuBar->Enable(Menu_Subs_Snap_End_To_Video,state);
-		MenuBar->Enable(Menu_Video_Snap_To_Scene,state);
-		MenuBar->Enable(Menu_Video_Shift_To_Frame,state);
+		MenuBar->Enable(cmd::id("time/snap/start_video"),state);
+		MenuBar->Enable(cmd::id("time/snap/end_video"),state);
+		MenuBar->Enable(cmd::id("time/snap/scene"),state);
+		MenuBar->Enable(cmd::id("time/frame/current"),state);
 
 		// Other
 		state = count >= 2 && continuous;
-		MenuBar->Enable(MENU_ADJOIN,state);
-		MenuBar->Enable(MENU_ADJOIN2,state);
+		MenuBar->Enable(cmd::id("time/continous/start"),state);
+		MenuBar->Enable(cmd::id("time/continous/end"),state);
 	}
 
 	// Edit menu
@@ -444,13 +330,13 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		// Undo state
 		wxMenuItem *item;
 		wxString undo_text = _("&Undo") + wxString(_T(" ")) + ass->GetUndoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Undo"));
-		item = editMenu->FindItem(Menu_Edit_Undo);
+		item = editMenu->FindItem(cmd::id("edit/undo"));
 		item->SetItemLabel(undo_text);
 		item->Enable(!ass->IsUndoStackEmpty());
 
 		// Redo state
 		wxString redo_text = _("&Redo") + wxString(_T(" ")) + ass->GetRedoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Redo"));
-		item = editMenu->FindItem(Menu_Edit_Redo);
+		item = editMenu->FindItem(cmd::id("edit/redo"));
 		item->SetItemLabel(redo_text);
 		item->Enable(!ass->IsRedoStackEmpty());
 
@@ -464,10 +350,10 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 			wxTheClipboard->Close();
 		}
 
-		MenuBar->Enable(Menu_Edit_Cut,can_copy);
-		MenuBar->Enable(Menu_Edit_Copy,can_copy);
-		MenuBar->Enable(Menu_Edit_Paste,can_paste);
-		MenuBar->Enable(Menu_Edit_Paste_Over,can_copy&&can_paste);
+		MenuBar->Enable(cmd::id("edit/line/cut"),can_copy);
+		MenuBar->Enable(cmd::id("edit/line/copy"),can_copy);
+		MenuBar->Enable(cmd::id("edit/line/paste"),can_paste);
+		MenuBar->Enable(cmd::id("edit/line/paste/over"),can_copy&&can_paste);
 	}
 
 	// Automation menu
@@ -476,7 +362,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		// Remove old macro items
 		for (unsigned int i = 0; i < activeMacroItems.size(); i++) {
 			wxMenu *p = 0;
-			wxMenuItem *it = MenuBar->FindItem(Menu_Automation_Macro + i, &p);
+			wxMenuItem *it = MenuBar->FindItem(ID_MENU_AUTOMATION_MACRO + i, &p);
 			if (it)
 				p->Delete(it);
 		}
@@ -489,7 +375,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 
 		// If none were added, show a ghosted notice
 		if (added == 0) {
-			automationMenu->Append(Menu_Automation_Macro, _("No Automation macros loaded"))->Enable(false);
+			automationMenu->Append(ID_MENU_AUTOMATION_MACRO, _("No Automation macros loaded"))->Enable(false);
 			activeMacroItems.push_back(0);
 		}
 	}
@@ -510,7 +396,7 @@ int FrameMain::AddMacroMenuItems(wxMenu *menu, const std::vector<Automation4::Fe
 
 	int id = activeMacroItems.size();;
 	for (std::vector<Automation4::FeatureMacro*>::const_iterator i = macros.begin(); i != macros.end(); ++i) {
-		wxMenuItem * m = menu->Append(Menu_Automation_Macro + id, (*i)->GetName(), (*i)->GetDescription());
+		wxMenuItem * m = menu->Append(ID_MENU_AUTOMATION_MACRO + id, (*i)->GetName(), (*i)->GetDescription());
 		m->Enable((*i)->Validate(SubsGrid->ass, SubsGrid->GetAbsoluteSelection(), SubsGrid->GetFirstSelRow()));
 		activeMacroItems.push_back(*i);
 		id++;
@@ -525,34 +411,36 @@ int FrameMain::AddMacroMenuItems(wxMenu *menu, const std::vector<Automation4::Fe
 /// @brief Open recent subs menu entry 
 /// @param event 
 void FrameMain::OnOpenRecentSubs(wxCommandEvent &event) {
-	int number = event.GetId()-Menu_File_Recent;
+	int number = event.GetId()-ID_RECENT_FILE;
 	LoadSubtitles(lagi_wxString(config::mru->GetEntry("Subtitle", number)));
 }
 
 /// @brief Open recent video menu entry 
 /// @param event 
 void FrameMain::OnOpenRecentVideo(wxCommandEvent &event) {
-	int number = event.GetId()-Menu_Video_Recent;
+	int number = event.GetId()-ID_MENU_RECENT_VIDEO;
 	LoadVideo(lagi_wxString(config::mru->GetEntry("Video", number)));
 }
 
 /// @brief Open recent timecodes entry 
 /// @param event 
 void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
-	int number = event.GetId()-Menu_Timecodes_Recent;
+	int number = event.GetId()-ID_MENU_RECENT_TIMECODES;
 	LoadVFR(lagi_wxString(config::mru->GetEntry("Timecodes", number)));
 }
 
 /// @brief Open recent Keyframes entry 
 /// @param event 
 void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
-	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-Menu_Keyframes_Recent)));
+printf("THIS IS BROKEN\n");
+	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-ID_SM_VIDEO_ID_MENU_RECENT_KEYFRAMES)));
 }
 
 /// @brief Open recent audio menu entry 
 /// @param event 
 void FrameMain::OnOpenRecentAudio(wxCommandEvent &event) {
-	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-Menu_Audio_Recent)));
+printf("THIS IS BROKEN\n");
+	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-ID_SM_AUDIO_ID_MENU_RECENT_AUDIO)));
 }
 
 /// @brief Open new Window 
@@ -565,13 +453,6 @@ void FrameMain::OnExit(wxCommandEvent&) {
 	Close();
 }
 
-/// @brief Open about box 
-void FrameMain::OnAbout(wxCommandEvent &) {
-	AboutScreen About(this);
-	About.ShowModal();
-}
-
-
 /// @brief Open log window
 void FrameMain::OnLog(wxCommandEvent &) {
 	LogWindow *log = new LogWindow(this);
@@ -581,53 +462,6 @@ void FrameMain::OnLog(wxCommandEvent &) {
 /// @brief Open check updates
 void FrameMain::OnCheckUpdates(wxCommandEvent &) {
 	PerformVersionCheck(true);
-}
-
-/// @brief Open help topics 
-void FrameMain::OnContents(wxCommandEvent&) {
-	OpenHelp(_T(""));
-}
-
-/// @brief Open help files on OSX.
-/// @param event
-void FrameMain::OnFiles(wxCommandEvent&) {
-#ifdef __WXMAC__
-	char *shared_path = agi::util::OSX_GetBundleSharedSupportDirectory();
-	wxString help_path = wxString::Format(_T("%s/doc"), wxString(shared_path, wxConvUTF8).c_str());
-	agi::util::OSX_OpenLocation(help_path.c_str());
-	free(shared_path);
-#endif
-}
-
-/// @brief Open website 
-void FrameMain::OnWebsite(wxCommandEvent&) {
-	AegisubApp::OpenURL(_T("http://www.aegisub.org/"));
-}
-
-/// @brief Open forums 
-void FrameMain::OnForums(wxCommandEvent&) {
-	AegisubApp::OpenURL(_T("http://forum.aegisub.org/"));
-}
-
-/// @brief Open bugtracker 
-void FrameMain::OnBugTracker(wxCommandEvent&) {
-	if (wxGetMouseState().CmdDown()) {
-		if (wxGetMouseState().ShiftDown()) {
-			wxMessageBox(_T("Now crashing with an access violation..."));
-			for (char *foo = (char*)0;;) *foo++ = 42;
-		}
-		else {
-			wxMessageBox(_T("Now crashing with an unhandled exception..."));
-			throw this;
-		}
-	}
-
-	AegisubApp::OpenURL(_T("http://devel.aegisub.org/"));
-}
-
-/// @brief Open IRC channel 
-void FrameMain::OnIRCChannel(wxCommandEvent&) {
-	AegisubApp::OpenURL(_T("irc://irc.rizon.net/aegisub"));
 }
 
 /// @brief Play video 
@@ -680,7 +514,7 @@ void FrameMain::OnCloseAudio (wxCommandEvent&) {
 /// @brief Event handler for audio display renderer selection menu options
 /// @param event wxWidgets event object
 void FrameMain::OnAudioDisplayMode (wxCommandEvent &event) {
-	OPT_SET("Audio/Spectrum")->SetBool(event.GetId() == Menu_Audio_Spectrum);
+	OPT_SET("Audio/Spectrum")->SetBool(event.GetId() == cmd::id("audio/view/spectrum"));
 }
 
 #ifdef _DEBUG
@@ -964,20 +798,6 @@ void FrameMain::OnOpenSpellCheck (wxCommandEvent &) {
 	new DialogSpellChecker(this);
 }
 
-/// @brief Open Fonts Collector 
-void FrameMain::OnOpenFontsCollector (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	DialogFontsCollector Collector(this, ass);
-	Collector.ShowModal();
-}
-
-/// @brief Open Resolution Resampler 
-void FrameMain::OnOpenResample (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	DialogResample diag(this, SubsGrid);
-	diag.ShowModal();
-}
-
 /// @brief Open Timing post-processor dialog 
 void FrameMain::OnOpenTimingProcessor (wxCommandEvent &) {
 	DialogTimingProcessor timing(this,SubsGrid);
@@ -999,11 +819,6 @@ void FrameMain::OnOpenPreferences (wxCommandEvent &) {
 	} catch (agi::Exception& e) {
 		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
 	}
-}
-
-/// @brief Launch ASSDraw 
-void FrameMain::OnOpenASSDraw (wxCommandEvent &) {
-	wxExecute(_T("\"") + StandardPaths::DecodePath(_T("?data/ASSDraw3.exe")) + _T("\""));
 }
 
 /// @brief Open Automation 
@@ -1052,7 +867,7 @@ void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
 	std::vector<int> selected_lines = SubsGrid->GetAbsoluteSelection();
 	int first_sel = SubsGrid->GetFirstSelRow();
 	// Run the macro...
-	activeMacroItems[event.GetId()-Menu_Automation_Macro]->Process(SubsGrid->ass, selected_lines, first_sel, this);
+	activeMacroItems[event.GetId()-ID_MENU_AUTOMATION_MACRO]->Process(SubsGrid->ass, selected_lines, first_sel, this);
 	SubsGrid->SetSelectionFromAbsolute(selected_lines);
 	SubsGrid->EndBatch();
 #endif
@@ -1320,13 +1135,6 @@ void FrameMain::OnSelectVisible (wxCommandEvent &) {
 	SubsGrid->SelectVisible();
 }
 
-/// @brief Open select dialog 
-void FrameMain::OnSelect (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	DialogSelection select(this, SubsGrid);
-	select.ShowModal();
-}
-
 /// @brief Sort subtitles by start time
 void FrameMain::OnSortStart (wxCommandEvent &) {
 	ass->Sort();
@@ -1449,8 +1257,9 @@ void FrameMain::OnToggleTags(wxCommandEvent &) {
 	SubsGrid->Refresh(false);
 }
 void FrameMain::OnSetTags(wxCommandEvent &event) {
-	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(event.GetId() - Menu_View_FullTags);
-	SubsGrid->Refresh(false);
+printf("THIS IS BROKEN FIXME\n");
+//	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(event.GetId() - cmd::id("subtitle/tags/show"));
+//	SubsGrid->Refresh(false);
 }
 
 /// @brief Choose a different language 
