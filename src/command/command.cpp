@@ -34,7 +34,7 @@ int id(std::string name) {
 //  XXX: the above does not work, wtf?
 	for (index = cmd_map.begin(); index != cmd_map.end(); index++) {
 		if (index->first == name) {
-			int id = std::distance(cmd_map.begin(), index) + 10000;
+			int id = std::distance(cmd_map.begin(), index);
 //			printf("cmd::id %d (%s)\n", id, index->first);
 			return id;
 		}
@@ -50,11 +50,15 @@ void call(agi::Context *c, const int id) {
 	std::advance(index, id);
 
 	if (index != cmd::cmd_map.end()) {
+		LOG_D("event/command") << index->first << " " << "(Id: " << id << ")";
 		(index->second)(c);
-		LOG_D("event/command") << index->first << " " << "(" << id << ")";
 	} else {
 		LOG_W("event/command/not_found") << "EVENT ID NOT FOUND: " << id;
 	}
+}
+
+int count() {
+	return cmd_map.size();
 }
 
 } // namespace cmd

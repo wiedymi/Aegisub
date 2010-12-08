@@ -103,9 +103,10 @@ FrameMain::FrameMain (wxArrayString args)
 	temp_context.parent = this;
 
 	// Bind all commands.
-    cmd::cmdMap::iterator index;
-    for (index = cmd::cmd_map.begin(); index != cmd::cmd_map.end(); index++) {
-		Bind(wxEVT_COMMAND_MENU_SELECTED, &FrameMain::cmd_call, this, cmd::id(index->first));
+	// XXX: This is a hack for now, it will need to be dealt with when other frames are involved.
+	int count = cmd::count();
+	for (int i = 0; i < count; i++) {
+		Bind(wxEVT_COMMAND_MENU_SELECTED, &FrameMain::cmd_call, this, i);
     }
 
 #ifdef __WXMAC__
@@ -241,7 +242,9 @@ FrameMain::~FrameMain () {
 
 
 void FrameMain::cmd_call(wxCommandEvent& event) {
-	cmd::call(&temp_context, event.GetId() - 10000);
+	int id = event.GetId();
+	LOG_D("event/select") << "Id: " << id;
+	cmd::call(&temp_context, id);
 }
 
 

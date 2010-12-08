@@ -30,5 +30,5 @@ namespace cmd {
 	void command_init();
 	int id(std::string name);
 	void call(agi::Context *c, const int id);
-
+	int count();
 } // namespace cmd
