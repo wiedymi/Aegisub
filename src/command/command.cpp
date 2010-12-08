@@ -19,6 +19,7 @@
 /// @ingroup command
 
 #include "command.h"
+#include <libaegisub/log.h>
 
 namespace cmd {
 
@@ -41,8 +42,21 @@ int id(std::string name) {
 
 	printf("cmd::id NOT FOUND (%s)\n", name.c_str());
 	return 60003;
-
 }
+
+
+void call(agi::Context *c, const int id) {
+	cmdMap::iterator index(cmd::cmd_map.begin());
+	std::advance(index, id);
+
+	if (index != cmd::cmd_map.end()) {
+		(index->second)(c);
+		LOG_D("event/command") << index->first << " " << "(" << id << ")";
+	} else {
+		LOG_W("event/command/not_found") << "EVENT ID NOT FOUND: " << id;
+	}
+}
+
 
 
 void command_init() {

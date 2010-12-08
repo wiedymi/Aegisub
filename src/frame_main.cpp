@@ -241,21 +241,8 @@ FrameMain::~FrameMain () {
 
 
 void FrameMain::cmd_call(wxCommandEvent& event) {
-	cmd::cmdMap::iterator index(cmd::cmd_map.begin());
-	int id = event.GetId() - 10000;
-
-	std::advance(index, id);
-
-	if (index != cmd::cmd_map.end()) {
-		(index->second)(&temp_context);
-		LOG_D("event/command") << index->first << " " << "(" << id << ")";
-    } else {
-		LOG_W("event/command/not_found") << "EVENT ID NOT FOUND: " << id;
-	}
-
+	cmd::call(&temp_context, event.GetId() - 10000);
 }
-
-
 
 
 

@@ -29,6 +29,7 @@ extern cmdMap cmd_map;
 
 void command_init();
 int id(std::string name);
+void call(agi::Context *c, const int id);
 
 void am_manager(agi::Context *c);
 void app_about(agi::Context *c);
