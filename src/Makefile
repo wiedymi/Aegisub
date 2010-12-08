@@ -5,14 +5,14 @@ PROGRAM_INSTALL = yes
 
 PRECOMPILED_HEADER_NAME=agi_pre.h
 
-SUBDIRS = libresrc
+SUBDIRS = command libresrc
 
-CXXFLAGS += -DAEGISUB -I. -I..  -Iinclude -I../libaegisub/include $(CPPFLAGS_WX)
+CXXFLAGS += -DAEGISUB -I. -I..  -Iinclude -I../libaegisub/include $(CFLAGS_PTHREAD) $(CPPFLAGS_WX)
 
 LDFLAGS += -L../libaegisub -laegisub-3.0
 LDFLAGS += $(CFLAGS_DEBUG) $(CFLAGS_PROFILE) $(LDFLAGS_CCMALLOC) $(LDFLAGS_EFENCE)
 LDFLAGS += $(LDFLAGS_GL) $(LDFLAGS_PTHREAD) $(LDFLAGS_WX) $(LDFLAGS_FREETYPE) $(LDFLAGS_FONTCONFIG)
-LDFLAGS_POST += libresrc/libresrc.a $(LDFLAGS_UCHARDET)
+LDFLAGS_POST += libresrc/libresrc.a $(LDFLAGS_UCHARDET) command/aegisub_command.a
 
 ifdef BUILD_DARWIN
 LDFLAGS += -lz
