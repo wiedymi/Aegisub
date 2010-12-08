@@ -76,6 +76,9 @@
 #include <libaegisub/access.h>
 #include <libaegisub/log.h>
 
+#include "command/command.h"
+
+
 namespace config {
 	agi::Options *opt;
 	agi::MRUManager *mru;
@@ -157,6 +160,9 @@ bool AegisubApp::OnInit() {
 	emit_stdout = new agi::log::EmitSTDOUT();
 	emit_stdout->Enable();
 #endif
+
+	// Init commands.
+	cmd::command_init();
 
 	// Install assertion handler
 //	wxSetAssertHandler(wxAssertHandler);
