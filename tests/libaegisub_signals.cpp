@@ -12,7 +12,7 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
-// $Id$
+// $Id: libaegisub_signals.cpp 155 2010-12-08 14:46:10Z verm $
 
 /// @file libaegisub_signals.cpp
 /// @brief agi::signals tests

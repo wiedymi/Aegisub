@@ -12,7 +12,7 @@
 // ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 //
-// $Id$
+// $Id: signals.h 153 2010-12-08 14:45:38Z verm $
 
 /// @file signals.h
 /// @brief 
@@ -260,9 +260,12 @@ class Signal<void> : public detail::SignalBaseImpl<std::tr1::function<void ()> >
 	using super::slots;
 public:
 	Signal() { }
-// Work around compilters that can't tell this is a template context due to it
-// being fully specified, making typename invalid here.
+
+#if defined(_WIN32) || defined(__FreeBSD__)
+// MSVC incorrectly considers this not a template context due to it being fully
+// specified, making typename invalid here
 #define typename
+#endif
 
 	/// @brief Trigger this signal
 	///
