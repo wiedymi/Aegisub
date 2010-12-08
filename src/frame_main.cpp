@@ -60,7 +60,6 @@
 #include "command/command.h"
 #include "dialog_detached_video.h"
 #include "dialog_search_replace.h"
-#include "dialog_styling_assistant.h"
 #include "dialog_version_check.h"
 #include "drop.h"
 #include "frame_main.h"
@@ -181,6 +180,7 @@ FrameMain::FrameMain (wxArrayString args)
 	showAudio = true;
 	detachedVideo = NULL;
 	stylingAssistant = NULL;
+	temp_context.stylingAssistant = stylingAssistant;
 	StartupLog(_T("Initialize inner main window controls"));
 	InitContents();
 

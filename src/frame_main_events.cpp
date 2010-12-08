@@ -74,7 +74,6 @@
 #include "dialog_shift_times.h"
 #include "dialog_spellchecker.h"
 #include "dialog_style_manager.h"
-#include "dialog_styling_assistant.h"
 #include "dialog_timing_processor.h"
 #include "dialog_translation.h"
 #include "dialog_version_check.h"
@@ -769,13 +768,6 @@ void FrameMain::OnOpenProperties (wxCommandEvent &) {
 	Properties.ShowModal();
 }
 
-/// @brief Open styles manager 
-void FrameMain::OnOpenStylesManager(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	DialogStyleManager StyleManager(this,SubsGrid);
-	StyleManager.ShowModal();
-}
-
 /// @brief Open attachments 
 void FrameMain::OnOpenAttachments(wxCommandEvent&) {
 	VideoContext::Get()->Stop();
@@ -783,31 +775,10 @@ void FrameMain::OnOpenAttachments(wxCommandEvent&) {
 	attachments.ShowModal();
 }
 
-/// @brief Open translation assistant 
-void FrameMain::OnOpenTranslation(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	int start = SubsGrid->GetFirstSelRow();
-	if (start == -1) start = 0;
-	DialogTranslation Trans(this,ass,SubsGrid,start,true);
-	Trans.ShowModal();
-}
-
 /// @brief Open Spell Checker 
 void FrameMain::OnOpenSpellCheck (wxCommandEvent &) {
 	VideoContext::Get()->Stop();
 	new DialogSpellChecker(this);
-}
-
-/// @brief Open Timing post-processor dialog 
-void FrameMain::OnOpenTimingProcessor (wxCommandEvent &) {
-	DialogTimingProcessor timing(this,SubsGrid);
-	timing.ShowModal();
-}
-
-/// @brief Open Kanji Timer dialog 
-void FrameMain::OnOpenKanjiTimer (wxCommandEvent &) {
-	DialogKanjiTimer kanjitimer(this,SubsGrid);
-	kanjitimer.ShowModal();
 }
 
 /// @brief Open Options dialog 
@@ -1151,12 +1122,6 @@ void FrameMain::OnSortStyle (wxCommandEvent &) {
 	ass->Commit(_("sort"));
 }
 
-/// @brief Open styling assistant 
-void FrameMain::OnOpenStylingAssistant (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	if (!stylingAssistant) stylingAssistant = new DialogStyling(this,SubsGrid);
-	stylingAssistant->Show(true);
-}
 
 /// @brief Autosave the currently open file, if any
 void FrameMain::OnAutoSave(wxTimerEvent &) {

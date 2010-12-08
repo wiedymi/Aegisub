@@ -8,11 +8,15 @@
 #include "video_box.h"
 #include "dialog_detached_video.h"
 #include "auto4_base.h"
+#include "dialog_styling_assistant.h"
 
 namespace agi {
 
 struct Context {
+	// Frames
 	wxWindow *parent;
+
+	DialogStyling *stylingAssistant;
 
 	AudioBox *audioBox;
 	DialogDetachedVideo *detachedVideo;

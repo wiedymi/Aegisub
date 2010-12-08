@@ -50,6 +50,10 @@
 #include "video_context.h" // tool_font_collector
 #include "dialog_resample.h"
 #include "dialog_selection.h"
+#include "dialog_style_manager.h"
+#include "dialog_timing_processor.h"
+#include "dialog_translation.h"
+#include "dialog_kara_timing_copy.h"
 
 namespace cmd {
 
@@ -80,32 +84,44 @@ void tool_line_select(agi::Context *c) {
 
 
 void tool_resampleres(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	DialogResample diag(c->parent, c->SubsGrid);
+	diag.ShowModal();
 }
 
 
 void tool_style_assistant(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	if (!c->stylingAssistant) c->stylingAssistant = new DialogStyling(c->parent, c->SubsGrid);
+	c->stylingAssistant->Show(true);
 }
 
 
 void tool_style_manager(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	DialogStyleManager StyleManager(c->parent, c->SubsGrid);
+	StyleManager.ShowModal();
 }
 
 
 void tool_time_kanji(agi::Context *c) {
-
+	DialogKanjiTimer kanjitimer(c->parent, c->SubsGrid);
+	kanjitimer.ShowModal();
 }
 
 
 void tool_time_postprocess(agi::Context *c) {
-
+	DialogTimingProcessor timing(c->parent, c->SubsGrid);
+	timing.ShowModal();
 }
 
 
 void tool_translation_assistant(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	int start = c->SubsGrid->GetFirstSelRow();
+	if (start == -1) start = 0;
+	DialogTranslation Trans(c->parent, c->ass, c->SubsGrid, start, true);
+	Trans.ShowModal();
 }
 
 
