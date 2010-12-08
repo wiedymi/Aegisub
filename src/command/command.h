@@ -22,11 +22,6 @@
 
 namespace cmd {
 
-	typedef std::map<const char*, void(*)(agi::Context*)> cmdMap;
-	typedef std::pair<const char*, void(*)(agi::Context*)> cmdPair;
-
-	extern cmdMap cmd_map;
-
 	void command_init();
 	int id(std::string name);
 	void call(agi::Context *c, const int id);

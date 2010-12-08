@@ -22,6 +22,9 @@
 
 namespace cmd {
 
+typedef std::map<const char*, void(*)(agi::Context*)> cmdMap;
+typedef std::pair<const char*, void(*)(agi::Context*)> cmdPair;
+
 void am_manager(agi::Context *c);
 void app_about(agi::Context *c);
 void app_display_audio_subs(agi::Context *c);
