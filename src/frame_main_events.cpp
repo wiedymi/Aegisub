@@ -761,18 +761,6 @@ void FrameMain::OnShiftToFrame (wxCommandEvent &) {
 	SubsGrid->ass->Commit(_("shift to frame"), AssFile::COMMIT_TIMES);
 }
 
-/// @brief Undo 
-void FrameMain::OnUndo(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	ass->Undo();
-}
-
-/// @brief Redo 
-void FrameMain::OnRedo(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	ass->Redo();
-}
-
 /// @brief Find 
 void FrameMain::OnFind(wxCommandEvent &) {
 	VideoContext::Get()->Stop();
@@ -783,12 +771,6 @@ void FrameMain::OnFind(wxCommandEvent &) {
 void FrameMain::OnFindNext(wxCommandEvent &) {
 	VideoContext::Get()->Stop();
 	Search.FindNext();
-}
-
-/// @brief Find & replace 
-void FrameMain::OnReplace(wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	Search.OpenDialog(true);
 }
 
 /// @brief Change aspect ratio to default 
@@ -889,39 +871,8 @@ void FrameMain::OnCloseWindow (wxCloseEvent &event) {
 	else Destroy();
 }
 
-/// @brief Cut/copy/paste 
-void FrameMain::OnCut (wxCommandEvent &) {
-	if (FindFocus() == EditBox->TextEdit) {
-		EditBox->TextEdit->Cut();
-		return;
-	}
-	SubsGrid->CutLines(SubsGrid->GetSelection());
-}
 
 
-/// @brief DOCME
-void FrameMain::OnCopy (wxCommandEvent &) {
-	if (FindFocus() == EditBox->TextEdit) {
-		EditBox->TextEdit->Copy();
-		return;
-	}
-	SubsGrid->CopyLines(SubsGrid->GetSelection());
-}
-
-
-/// @brief DOCME
-void FrameMain::OnPaste (wxCommandEvent &) {
-	if (FindFocus() == EditBox->TextEdit) {
-		EditBox->TextEdit->Paste();
-		return;
-	}
-	SubsGrid->PasteLines(SubsGrid->GetFirstSelRow());
-}
-
-/// @brief Paste over 
-void FrameMain::OnPasteOver (wxCommandEvent &) {
-	SubsGrid->PasteLines(SubsGrid->GetFirstSelRow(),true);
-}
 
 /// @brief Select visible lines 
 void FrameMain::OnSelectVisible (wxCommandEvent &) {

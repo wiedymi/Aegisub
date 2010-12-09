@@ -43,86 +43,106 @@
 #endif
 
 #include "aegisub/context.h"
+#include "aegisub/context.h"
+#include "subs_edit_box.h"
+#include "subs_edit_ctrl.h"
+#include "dialog_search_replace.h"
+#include "video_context.h"
 
 namespace cmd {
 
 void edit_line_copy(agi::Context *c) {
-
+	if (c->parent->FindFocus() == c->EditBox->TextEdit) {
+	c->EditBox->TextEdit->Copy();
+		return;
+	}
+	c->SubsGrid->CopyLines(c->SubsGrid->GetSelection());
 }
 
 
 void edit_line_cut(agi::Context *c) {
-
+	if (c->parent->FindFocus() == c->EditBox->TextEdit) {
+		c->EditBox->TextEdit->Cut();
+		return;
+	}
+	c->SubsGrid->CutLines(c->SubsGrid->GetSelection());
 }
 
 
 void edit_line_delete(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_line_duplicate(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_line_duplicate_shift(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_line_join_as_karaoke(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_line_join_concatenate(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_line_join_keep_first(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_line_paste(agi::Context *c) {
-
+	if (c->parent->FindFocus() == c->EditBox->TextEdit) {
+		c->EditBox->TextEdit->Paste();
+		return;
+	}
+	c->SubsGrid->PasteLines(c->SubsGrid->GetFirstSelRow());
 }
 
 
 void edit_line_paste_over(agi::Context *c) {
-
+	c->SubsGrid->PasteLines(c->SubsGrid->GetFirstSelRow(),true);
 }
 
 
 void edit_line_recombine(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_line_split_by_karaoke(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_line_swap(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void edit_redo(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	c->ass->Redo();
 }
 
 
 void edit_search_replace(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	Search.OpenDialog(true);
 }
 
 
 void edit_undo(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	c->ass->Undo();
 }
 
 
