@@ -38,18 +38,49 @@
 
 #include "config.h"
 
-#include <wx/app.h>
 #ifndef AGI_PRE
 #include <wx/window.h>
 #endif
 
+#include "main.h"
 #include "aegisub/context.h"
-
+#include "dialog_automation.h"
 #include "auto4_base.h"
+#include "video_context.h"
+#include "frame_main.h"
+
 namespace cmd {
 
 void am_manager(agi::Context *c) {
+#ifdef WITH_AUTOMATION
+#ifdef __APPLE__
+	if (wxGetMouseState().CmdDown()) {
+#else
+		if (wxGetMouseState().ControlDown()) {
+#endif
+			wxGetApp().global_scripts->Reload();
+			if (wxGetMouseState().ShiftDown()) {
+				const std::vector<Automation4::Script*> scripts = c->local_scripts->GetScripts();
+				for (size_t i = 0; i < scripts.size(); ++i) {
+				try {
+					scripts[i]->Reload();
+				} catch (const wchar_t *e) {
+					wxLogError(e);
+				} catch (...) {
+					wxLogError(_T("An unknown error occurred reloading Automation script '%s'."), scripts[i]->GetName().c_str());
+				}
+			}
 
+			wxGetApp().frame->StatusTimeout(_("Reloaded all Automation scripts"));
+		} else {
+			wxGetApp().frame->StatusTimeout(_("Reloaded autoload Automation scripts"));
+		}
+	} else {
+		VideoContext::Get()->Stop();
+		DialogAutomation dlg(c->parent, c->local_scripts);
+		dlg.ShowModal();
+	}
+#endif
 }
 
 

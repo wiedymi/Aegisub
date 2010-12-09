@@ -102,6 +102,8 @@ class FrameMain: public wxFrame {
 	friend class SubtitlesGrid;
 
 	void LoadVFR(wxString filename);
+public:
+	void StatusTimeout(wxString text,int ms=10000);
 
 private:
 
@@ -407,7 +409,6 @@ public:
 	bool LoadList(wxArrayString list);
 	static void OpenHelp(wxString page=_T(""));
 	void UpdateTitle();
-	void StatusTimeout(wxString text,int ms=10000);
 	void DetachVideo(bool detach=true);
 
 	void SetAccelerators();

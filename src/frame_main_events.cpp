@@ -727,42 +727,6 @@ void FrameMain::OnOpenPreferences (wxCommandEvent &) {
 	}
 }
 
-/// @brief Open Automation 
-void FrameMain::OnOpenAutomation (wxCommandEvent &) {
-#ifdef WITH_AUTOMATION
-#ifdef __APPLE__
-	if (wxGetMouseState().CmdDown()) {
-#else
-	if (wxGetMouseState().ControlDown()) {
-#endif
-		wxGetApp().global_scripts->Reload();
-		if (wxGetMouseState().ShiftDown()) {
-			const std::vector<Automation4::Script*> scripts = local_scripts->GetScripts();
-			for (size_t i = 0; i < scripts.size(); ++i) {
-				try {
-					scripts[i]->Reload();
-				}
-				catch (const wchar_t *e) {
-					wxLogError(e);
-				}
-				catch (...) {
-					wxLogError(_T("An unknown error occurred reloading Automation script '%s'."), scripts[i]->GetName().c_str());
-				}
-			}
-
-			StatusTimeout(_("Reloaded all Automation scripts"));
-		}
-		else {
-			StatusTimeout(_("Reloaded autoload Automation scripts"));
-		}
-	}
-	else {
-		VideoContext::Get()->Stop();
-		DialogAutomation dlg(this, local_scripts);
-		dlg.ShowModal();
-	}
-#endif
-}
 
 /// @brief General handler for all Automation-generated menu items
 /// @param event 
