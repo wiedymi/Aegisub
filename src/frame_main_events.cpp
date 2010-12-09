@@ -578,12 +578,6 @@ void FrameMain::OnJumpTo(wxCommandEvent&) {
 	}
 }
 
-/// @brief Open shift dialog 
-void FrameMain::OnShift(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	DialogShiftTimes Shift(this,SubsGrid);
-	Shift.ShowModal();
-}
 
 /// @brief General handler for all Automation-generated menu items
 /// @param event 
@@ -600,98 +594,10 @@ void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
 #endif
 }
 
-/// @brief Snap subs to video 
-void FrameMain::OnSnapSubsStartToVid (wxCommandEvent &) {
-	SubsGrid->SetSubsToVideo(true);
-}
-
-/// @brief DOCME
-void FrameMain::OnSnapSubsEndToVid (wxCommandEvent &) {
-	SubsGrid->SetSubsToVideo(false);
-}
-
-/// @brief Jump video to subs 
-void FrameMain::OnSnapVidToSubsStart (wxCommandEvent &) {
-	SubsGrid->SetVideoToSubs(true);
-}
-
 
 /// @brief DOCME
 void FrameMain::OnSnapVidToSubsEnd (wxCommandEvent &) {
 	SubsGrid->SetVideoToSubs(false);
-}
-
-/// @brief Snap to scene 
-void FrameMain::OnSnapToScene (wxCommandEvent &) {
-	VideoContext *con = VideoContext::Get();
-	if (!con->IsLoaded() || !con->KeyFramesLoaded()) return;
-
-	// Get frames
-	wxArrayInt sel = SubsGrid->GetSelection();
-	int curFrame = con->GetFrameN();
-	int prev = 0;
-	int next = 0;
-
-	const std::vector<int> &keyframes = con->GetKeyFrames();
-	if (curFrame < keyframes.front()) {
-		next = keyframes.front();
-	}
-	else if (curFrame >= keyframes.back()) {
-		prev = keyframes.back();
-		next = con->GetLength();
-	}
-	else {
-		std::vector<int>::const_iterator kf = std::lower_bound(keyframes.begin(), keyframes.end(), curFrame);
-		if (*kf == curFrame) {
-			prev = *kf;
-			next = *(kf + 1);
-		}
-		else {
-			prev = *(kf - 1);
-			next = *kf;
-		}
-	}
-
-	// Get times
-	int start_ms = con->TimeAtFrame(prev,agi::vfr::START);
-	int end_ms = con->TimeAtFrame(next-1,agi::vfr::END);
-	AssDialogue *cur;
-
-	// Update rows
-	for (size_t i=0;i<sel.Count();i++) {
-		cur = SubsGrid->GetDialogue(sel[i]);
-		cur->Start.SetMS(start_ms);
-		cur->End.SetMS(end_ms);
-	}
-
-	// Commit
-	SubsGrid->ass->Commit(_("snap to scene"), AssFile::COMMIT_TIMES);
-}
-
-/// @brief Shift to frame 
-void FrameMain::OnShiftToFrame (wxCommandEvent &) {
-	if (!VideoContext::Get()->IsLoaded()) return;
-
-	wxArrayInt sels = SubsGrid->GetSelection();
-	size_t n=sels.Count();
-	if (n == 0) return;
-
-	// Get shifting in ms
-	AssDialogue *cur = SubsGrid->GetDialogue(sels[0]);
-	if (!cur) return;
-	int shiftBy = VideoContext::Get()->TimeAtFrame(VideoContext::Get()->GetFrameN(),agi::vfr::START) - cur->Start.GetMS();
-
-	// Update
-	for (size_t i=0;i<n;i++) {
-		cur = SubsGrid->GetDialogue(sels[i]);
-		if (cur) {
-			cur->Start.SetMS(cur->Start.GetMS()+shiftBy);
-			cur->End.SetMS(cur->End.GetMS()+shiftBy);
-		}
-	}
-
-	// Commit
-	SubsGrid->ass->Commit(_("shift to frame"), AssFile::COMMIT_TIMES);
 }
 
 /// @brief Change aspect ratio to default 
@@ -791,23 +697,6 @@ void FrameMain::OnCloseWindow (wxCloseEvent &event) {
 	}
 	else Destroy();
 }
-
-/// @brief Sort subtitles by start time
-void FrameMain::OnSortStart (wxCommandEvent &) {
-	ass->Sort();
-	ass->Commit(_("sort"));
-}
-/// @brief Sort subtitles by end time
-void FrameMain::OnSortEnd (wxCommandEvent &) {
-	ass->Sort(AssFile::CompEnd);
-	ass->Commit(_("sort"));
-}
-/// @brief Sort subtitles by style name
-void FrameMain::OnSortStyle (wxCommandEvent &) {
-	ass->Sort(AssFile::CompStyle);
-	ass->Commit(_("sort"));
-}
-
 
 /// @brief Autosave the currently open file, if any
 void FrameMain::OnAutoSave(wxTimerEvent &) {
