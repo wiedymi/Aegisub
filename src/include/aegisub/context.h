@@ -9,6 +9,7 @@
 #include "dialog_detached_video.h"
 #include "auto4_base.h"
 #include "dialog_styling_assistant.h"
+#include "audio_controller.h"
 
 namespace agi {
 
@@ -19,6 +20,7 @@ struct Context {
 	DialogStyling *stylingAssistant;
 
 	AudioBox *audioBox;
+	AudioController *audioController;
 	DialogDetachedVideo *detachedVideo;
 	AssFile *ass;
 	Automation4::ScriptManager *local_scripts;
