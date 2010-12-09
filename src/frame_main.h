@@ -101,9 +101,9 @@ class FrameMain: public wxFrame {
 	friend class AegisubApp;
 	friend class SubtitlesGrid;
 
-	void LoadVFR(wxString filename);
 public:
 	void StatusTimeout(wxString text,int ms=10000);
+	void SetDisplayMode(int showVid,int showAudio);
 
 private:
 
@@ -350,6 +350,7 @@ private:
 	void OnMedusaNext(wxCommandEvent &event);
 	void OnMedusaPrev(wxCommandEvent &event);
 
+	void LoadVFR(wxString filename);
 	void LoadVideo(wxString filename,bool autoload=false);
 	void LoadSubtitles(wxString filename,wxString charset=_T(""));
 	bool SaveSubtitles(bool saveas=false,bool withCharset=false);
@@ -414,7 +415,6 @@ public:
 	void SetAccelerators();
 	void InitMenu();
 	void UpdateToolbar();
-	void SetDisplayMode(int showVid,int showAudio);
 	
 	void SetUndoRedoDesc();
 	bool HasASSDraw();

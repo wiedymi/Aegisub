@@ -442,27 +442,6 @@ printf("THIS IS BROKEN\n");
 	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-ID_SM_AUDIO_ID_MENU_RECENT_AUDIO)));
 }
 
-/// @brief Open new Window 
-void FrameMain::OnNewWindow(wxCommandEvent&) {
-	RestartAegisub();
-}
-
-/// @brief Exit 
-void FrameMain::OnExit(wxCommandEvent&) {
-	Close();
-}
-
-/// @brief Open log window
-void FrameMain::OnLog(wxCommandEvent &) {
-	LogWindow *log = new LogWindow(this);
-	log->Show(1);
-}
-
-/// @brief Open check updates
-void FrameMain::OnCheckUpdates(wxCommandEvent &) {
-	PerformVersionCheck(true);
-}
-
 /// @brief Play video 
 void FrameMain::OnVideoPlay(wxCommandEvent &) {
 	VideoContext::Get()->Play();
@@ -714,17 +693,6 @@ void FrameMain::OnOpenAttachments(wxCommandEvent&) {
 void FrameMain::OnOpenSpellCheck (wxCommandEvent &) {
 	VideoContext::Get()->Stop();
 	new DialogSpellChecker(this);
-}
-
-/// @brief Open Options dialog 
-void FrameMain::OnOpenPreferences (wxCommandEvent &) {
-	try {
-		Preferences pref(this);
-		pref.ShowModal();
-
-	} catch (agi::Exception& e) {
-		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
-	}
 }
 
 
@@ -1124,56 +1092,6 @@ void FrameMain::OnSetTags(wxCommandEvent &event) {
 printf("THIS IS BROKEN FIXME\n");
 //	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(event.GetId() - cmd::id("subtitle/tags/show"));
 //	SubsGrid->Refresh(false);
-}
-
-/// @brief Choose a different language 
-void FrameMain::OnChooseLanguage (wxCommandEvent &) {
-	// Get language
-	AegisubApp *app = (AegisubApp*) wxTheApp;
-	int old = app->locale.curCode;
-	int newCode = app->locale.PickLanguage();
-
-	// Is OK?
-	if (newCode != -1) {
-		// Set code
-		OPT_SET("App/Locale")->SetInt(newCode);
-
-		// Language actually changed?
-		if (newCode != old) {
-			// Ask to restart program
-			int result = wxMessageBox(_T("Aegisub needs to be restarted so that the new language can be applied. Restart now?"),_T("Restart Aegisub?"),wxICON_QUESTION | wxYES_NO);
-			if (result == wxYES) {
-				// Restart Aegisub
-				if (Close()) {
-					RestartAegisub();
-					//wxStandardPaths stand;
-					//wxExecute(_T("\"") + stand.GetExecutablePath() + _T("\""));
-				}
-			}
-		}
-	}
-}
-
-/// @brief View standard 
-void FrameMain::OnViewStandard (wxCommandEvent &) {
-	if (!audioController->IsAudioOpen() || !VideoContext::Get()->IsLoaded()) return;
-	SetDisplayMode(1,1);
-}
-
-/// @brief View video 
-void FrameMain::OnViewVideo (wxCommandEvent &) {
-	SetDisplayMode(1,0);
-}
-
-/// @brief View audio 
-void FrameMain::OnViewAudio (wxCommandEvent &) {
-	if (!audioController->IsAudioOpen()) return;
-	SetDisplayMode(0,1);
-}
-
-/// @brief View subs 
-void FrameMain::OnViewSubs (wxCommandEvent &) {
-	SetDisplayMode(0,0);
 }
 
 /// @brief Medusa shortcuts 
