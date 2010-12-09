@@ -442,28 +442,6 @@ printf("THIS IS BROKEN\n");
 	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-ID_SM_AUDIO_ID_MENU_RECENT_AUDIO)));
 }
 
-/// @brief Play video 
-void FrameMain::OnVideoPlay(wxCommandEvent &) {
-	VideoContext::Get()->Play();
-}
-
-
-/// @brief Open video 
-void FrameMain::OnOpenVideo(wxCommandEvent&) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Video")->GetString());
-	wxString str = wxString(_("Video Formats")) + _T(" (*.avi,*.mkv,*.mp4,*.avs,*.d2v,*.ogm,*.mpeg,*.mpg,*.vob,*.mov)|*.avi;*.avs;*.d2v;*.mkv;*.ogm;*.mp4;*.mpeg;*.mpg;*.vob;*.mov|")
-				 + _("All Files") + _T(" (*.*)|*.*");
-	wxString filename = wxFileSelector(_("Open video file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		LoadVideo(filename);
-		OPT_SET("Path/Last/Video")->SetString(STD_STR(filename));
-	}
-}
-
-/// @brief Close video 
-void FrameMain::OnCloseVideo(wxCommandEvent&) {
-	LoadVideo(_T(""));
-}
 
 
 /// @brief Save subtitles with specific charset 
@@ -501,84 +479,6 @@ void FrameMain::OnExportSubtitles(wxCommandEvent &) {
 	exporter.ShowModal();
 }
 
-/// @brief Zoom levels 
-void FrameMain::OnSetZoom50(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	videoBox->videoDisplay->SetZoom(.5);
-}
-
-
-/// @brief DOCME
-void FrameMain::OnSetZoom100(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	videoBox->videoDisplay->SetZoom(1.);
-}
-
-
-/// @brief DOCME
-void FrameMain::OnSetZoom200(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	videoBox->videoDisplay->SetZoom(2.);
-}
-
-
-/// @brief DOCME
-void FrameMain::OnZoomIn (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	videoBox->videoDisplay->SetZoom(videoBox->videoDisplay->GetZoom() + .125);
-}
-
-
-/// @brief DOCME
-void FrameMain::OnZoomOut (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	videoBox->videoDisplay->SetZoom(videoBox->videoDisplay->GetZoom() - .125);
-}
-
-
-/// @brief DOCME
-void FrameMain::OnSetZoom(wxCommandEvent &) {
-	videoBox->videoDisplay->SetZoomFromBox();
-}
-
-/// @brief Detach video 
-void FrameMain::OnDetachVideo(wxCommandEvent &) {
-	DetachVideo(!detachedVideo);
-}
-
-/// @brief Use dummy video 
-void FrameMain::OnDummyVideo (wxCommandEvent &) {
-	wxString fn;
-	if (DialogDummyVideo::CreateDummyVideo(this, fn)) {
-		LoadVideo(fn);
-	}
-}
-
-/// @brief Overscan toggle 
-void FrameMain::OnOverscan (wxCommandEvent &event) {
-	OPT_SET("Video/Overscan Mask")->SetBool(event.IsChecked());
-	VideoContext::Get()->Stop();
-	videoBox->videoDisplay->Render();
-}
-
-/// @brief Show video details 
-void FrameMain::OnOpenVideoDetails (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	DialogVideoDetails videodetails(this);
-	videodetails.ShowModal();
-}
-
-/// @brief Open jump to dialog 
-void FrameMain::OnJumpTo(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	if (VideoContext::Get()->IsLoaded()) {
-		DialogJumpTo JumpTo(this);
-		JumpTo.ShowModal();
-		videoBox->videoSlider->SetFocus();
-	}
-}
-
-
 /// @brief General handler for all Automation-generated menu items
 /// @param event 
 void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
@@ -594,87 +494,6 @@ void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
 #endif
 }
 
-
-/// @brief DOCME
-void FrameMain::OnSnapVidToSubsEnd (wxCommandEvent &) {
-	SubsGrid->SetVideoToSubs(false);
-}
-
-/// @brief Change aspect ratio to default 
-void FrameMain::OnSetARDefault (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	VideoContext::Get()->SetAspectRatio(0);
-	SetDisplayMode(1,-1);
-}
-
-/// @brief Change aspect ratio to fullscreen 
-void FrameMain::OnSetARFull (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	VideoContext::Get()->SetAspectRatio(1);
-	SetDisplayMode(1,-1);
-}
-
-/// @brief Change aspect ratio to widescreen 
-void FrameMain::OnSetARWide (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	VideoContext::Get()->SetAspectRatio(2);
-	SetDisplayMode(1,-1);
-}
-
-/// @brief Change aspect ratio to 2:35 
-void FrameMain::OnSetAR235 (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	VideoContext::Get()->SetAspectRatio(3);
-	SetDisplayMode(1,-1);
-}
-
-/// @brief Change aspect ratio to a custom value 
-void FrameMain::OnSetARCustom (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-
-	wxString value = wxGetTextFromUser(_("Enter aspect ratio in either:\n  decimal (e.g. 2.35)\n  fractional (e.g. 16:9)\n  specific resolution (e.g. 853x480)"),_("Enter aspect ratio"),AegiFloatToString(VideoContext::Get()->GetAspectRatioValue()));
-	if (value.IsEmpty()) return;
-
-	value.MakeLower();
-
-	// Process text
-	double numval;
-	if (value.ToDouble(&numval)) {
-		//Nothing to see here, move along
-	}
-	else {
-		double a,b;
-		int pos=0;
-		bool scale=false;
-
-		//Why bloat using Contains when we can just check the output of Find?
-		pos = value.Find(':');
-		if (pos==wxNOT_FOUND) pos = value.Find('/');
-		if (pos==wxNOT_FOUND&&value.Contains(_T('x'))) {
-			pos = value.Find('x');
-			scale=true;
-		}
-
-		if (pos>0) {
-			wxString num = value.Left(pos);
-			wxString denum = value.Mid(pos+1);
-			if (num.ToDouble(&a) && denum.ToDouble(&b) && b!=0) {
-				numval = a/b;
-				if (scale) videoBox->videoDisplay->SetZoom(b / VideoContext::Get()->GetHeight());
-			}
-		}
-		else numval = 0.0;
-	}
-
-	// Sanity check
-	if (numval < 0.5 || numval > 5.0) wxMessageBox(_("Invalid value! Aspect ratio must be between 0.5 and 5.0."),_("Invalid Aspect Ratio"),wxICON_ERROR|wxOK);
-
-	// Set value
-	else {
-		VideoContext::Get()->SetAspectRatio(4,numval);
-		SetDisplayMode(1,-1);
-	}
-}
 
 /// @brief Window is attempted to be closed
 /// @param event
@@ -743,29 +562,6 @@ void FrameMain::OnAutoSave(wxTimerEvent &) {
 void FrameMain::OnStatusClear(wxTimerEvent &) {
 	SetStatusText(_T(""),1);
 }
-
-/// @brief Next frame hotkey 
-void FrameMain::OnNextFrame(wxCommandEvent &) {
-	videoBox->videoSlider->NextFrame();
-}
-
-/// @brief Previous frame hotkey 
-void FrameMain::OnPrevFrame(wxCommandEvent &) {
-	videoBox->videoSlider->PrevFrame();
-}
-
-/// @brief Toggle focus between seek bar and whatever else 
-void FrameMain::OnFocusSeek(wxCommandEvent &) {
-	wxWindow *curFocus = wxWindow::FindFocus();
-	if (curFocus == videoBox->videoSlider) {
-		if (PreviousFocus) PreviousFocus->SetFocus();
-	}
-	else {
-		PreviousFocus = curFocus;
-		videoBox->videoSlider->SetFocus();
-	}
-}
-
 
 void FrameMain::OnAudioBoxResize(wxSashEvent &event)
 {

@@ -106,6 +106,8 @@ public:
 	void SetDisplayMode(int showVid,int showAudio);
 	void LoadSubtitles(wxString filename,wxString charset=_T(""));
 	bool SaveSubtitles(bool saveas=false,bool withCharset=false);
+	void LoadVideo(wxString filename,bool autoload=false);
+	void DetachVideo(bool detach=true);
 
 private:
 
@@ -353,7 +355,6 @@ private:
 	void OnMedusaPrev(wxCommandEvent &event);
 
 	void LoadVFR(wxString filename);
-	void LoadVideo(wxString filename,bool autoload=false);
 	int TryToCloseSubs(bool enableCancel=true);
 
 	void RebuildRecentList(wxString listName,wxMenu *menu,int startID);
@@ -410,7 +411,6 @@ public:
 	bool LoadList(wxArrayString list);
 	static void OpenHelp(wxString page=_T(""));
 	void UpdateTitle();
-	void DetachVideo(bool detach=true);
 
 	void SetAccelerators();
 	void InitMenu();

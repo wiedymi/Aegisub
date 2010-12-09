@@ -197,6 +197,7 @@ FrameMain::FrameMain (wxArrayString args)
 	// Set accelerator keys
 	StartupLog(_T("Install hotkeys"));
 	PreviousFocus = NULL;
+	temp_context.PreviousFocus = PreviousFocus;
 	SetAccelerators();
 
 	// Set drop target

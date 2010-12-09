@@ -24,6 +24,7 @@ struct Context {
 	DialogDetachedVideo *detachedVideo;
 	AssFile *ass;
 	Automation4::ScriptManager *local_scripts;
+	wxWindow *PreviousFocus;
 	SubsEditBox *EditBox;
 	SubtitlesGrid *SubsGrid;
 	VideoBox *videoBox;
