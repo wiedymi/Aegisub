@@ -612,36 +612,6 @@ void FrameMain::OnExportSubtitles(wxCommandEvent &) {
 	exporter.ShowModal();
 }
 
-/// @brief Open VFR tags 
-void FrameMain::OnOpenVFR(wxCommandEvent &) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Timecodes")->GetString());
-	wxString str = wxString(_("All Supported Types")) + _T("(*.txt)|*.txt|")
-		           + _("All Files") + _T(" (*.*)|*.*");
-	wxString filename = wxFileSelector(_("Open timecodes file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		LoadVFR(filename);
-		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
-	}
-}
-
-/// @brief Save VFR tags 
-void FrameMain::OnSaveVFR(wxCommandEvent &) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Timecodes")->GetString());
-	wxString str = wxString(_("All Supported Types")) + _T("(*.txt)|*.txt|")
-		           + _("All Files") + _T(" (*.*)|*.*");
-	wxString filename = wxFileSelector(_("Save timecodes file"),path,_T(""),_T(""),str,wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	if (!filename.empty()) {
-		VideoContext::Get()->SaveTimecodes(filename);
-		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
-	}
-}
-
-
-/// @brief Close VFR tags 
-void FrameMain::OnCloseVFR(wxCommandEvent &) {
-	LoadVFR("");
-}
-
 /// @brief Open keyframes 
 void FrameMain::OnOpenKeyframes (wxCommandEvent &) {
 	// Pick file

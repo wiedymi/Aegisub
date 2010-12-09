@@ -39,25 +39,46 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <wx/filedlg.h>
 #include <wx/window.h>
 #endif
 
+
 #include "aegisub/context.h"
+//#include "frame_main.h"
+#include "video_context.h"
+#include "main.h"
+#include "compat.h"
+#include "subs_edit_box.h"
 
 namespace cmd {
 
 void timecode_close(agi::Context *c) {
-
+	VideoContext::Get()->CloseTimecodes();
+	c->EditBox->UpdateFrameTiming();
 }
 
 
 void timecode_open(agi::Context *c) {
-
+	wxString path = lagi_wxString(OPT_GET("Path/Last/Timecodes")->GetString());
+	wxString str = wxString(_("All Supported Types")) + _T("(*.txt)|*.txt|") + _("All Files") + _T(" (*.*)|*.*");
+    wxString filename = wxFileSelector(_("Open timecodes file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (!filename.empty()) {
+		VideoContext::Get()->LoadTimecodes(filename);
+		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
+	}
+	c->EditBox->UpdateFrameTiming();
 }
 
 
 void timecode_save(agi::Context *c) {
-
+	wxString path = lagi_wxString(OPT_GET("Path/Last/Timecodes")->GetString());
+	wxString str = wxString(_("All Supported Types")) + _T("(*.txt)|*.txt|") + _("All Files") + _T(" (*.*)|*.*");
+	wxString filename = wxFileSelector(_("Save timecodes file"),path,_T(""),_T(""),str,wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	if (!filename.empty()) {
+		VideoContext::Get()->SaveTimecodes(filename);
+		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
+	}
 }
 
 

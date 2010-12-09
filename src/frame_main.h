@@ -101,6 +101,8 @@ class FrameMain: public wxFrame {
 	friend class AegisubApp;
 	friend class SubtitlesGrid;
 
+	void LoadVFR(wxString filename);
+
 private:
 
 	agi::Context temp_context;
@@ -347,7 +349,6 @@ private:
 	void OnMedusaPrev(wxCommandEvent &event);
 
 	void LoadVideo(wxString filename,bool autoload=false);
-	void LoadVFR(wxString filename);
 	void LoadSubtitles(wxString filename,wxString charset=_T(""));
 	bool SaveSubtitles(bool saveas=false,bool withCharset=false);
 	int TryToCloseSubs(bool enableCancel=true);
