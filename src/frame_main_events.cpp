@@ -465,50 +465,6 @@ void FrameMain::OnCloseVideo(wxCommandEvent&) {
 	LoadVideo(_T(""));
 }
 
-/// @brief Open Audio 
-void FrameMain::OnOpenAudio (wxCommandEvent&) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Audio")->GetString());
-	wxString str = wxString(_("Audio Formats")) + _T(" (*.wav,*.mp3,*.ogg,*.flac,*.mp4,*.ac3,*.aac,*.mka,*.m4a,*.w64)|*.wav;*.mp3;*.ogg;*.flac;*.mp4;*.ac3;*.aac;*.mka;*.m4a;*.w64|")
-		         + _("Video Formats") + _T(" (*.avi,*.mkv,*.ogm,*.mpg,*.mpeg)|*.avi;*.mkv;*.ogm;*.mp4;*.mpeg;*.mpg|")
-				 + _("All files") + _T(" (*.*)|*.*");
-	wxString filename = wxFileSelector(_("Open audio file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		audioController->OpenAudio(filename);
-		OPT_SET("Path/Last/Audio")->SetString(STD_STR(filename));
-	}
-}
-
-/// @brief DOCME
-void FrameMain::OnOpenAudioFromVideo (wxCommandEvent&) {
-	audioController->OpenAudio(_T("audio-video:cache"));
-}
-
-/// @brief DOCME
-void FrameMain::OnCloseAudio (wxCommandEvent&) {
-	audioController->CloseAudio();
-}
-
-
-/// @brief Event handler for audio display renderer selection menu options
-/// @param event wxWidgets event object
-void FrameMain::OnAudioDisplayMode (wxCommandEvent &event) {
-	OPT_SET("Audio/Spectrum")->SetBool(event.GetId() == cmd::id("audio/view/spectrum"));
-}
-
-#ifdef _DEBUG
-
-/// @brief DOCME
-void FrameMain::OnOpenDummyAudio (wxCommandEvent&) {
-	audioController->OpenAudio(_T("dummy-audio:silence?sr=44100&bd=16&ch=1&ln=396900000"));
-}
-
-/// @brief DOCME
-void FrameMain::OnOpenDummyNoiseAudio (wxCommandEvent&) {
-	audioController->OpenAudio(_T("dummy-audio:noise?sr=44100&bd=16&ch=1&ln=396900000"));
-}
-#endif
-
-
 
 /// @brief Open subtitles 
 void FrameMain::OnOpenSubtitles(wxCommandEvent&) {

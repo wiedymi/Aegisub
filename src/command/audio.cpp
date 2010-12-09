@@ -40,42 +40,52 @@
 
 #ifndef AGI_PRE
 #include <wx/window.h>
+#include <wx/filedlg.h>
 #endif
 
 #include "aegisub/context.h"
-
+#include "compat.h"
+#include "main.h"
 
 namespace cmd {
 
 void audio_close(agi::Context *c) {
-
+	c->audioController->CloseAudio();
 }
 
 void audio_open(agi::Context *c) {
-
+	wxString path = lagi_wxString(OPT_GET("Path/Last/Audio")->GetString());  
+	wxString str = wxString(_("Audio Formats")) + _T(" (*.wav,*.mp3,*.ogg,*.flac,*.mp4,*.ac3,*.aac,*.mka,*.m4a,*.w64)|*.wav;*.mp3;*.ogg;*.flac;*.mp4;*.ac3;*.aac;*.mka;*.m4a;*.w64|")
+				+ _("Video Formats") + _T(" (*.avi,*.mkv,*.ogm,*.mpg,*.mpeg)|*.avi;*.mkv;*.ogm;*.mp4;*.mpeg;*.mpg|")
+				+ _("All files") + _T(" (*.*)|*.*");
+	wxString filename = wxFileSelector(_("Open audio file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (!filename.empty()) {
+		c->audioController->OpenAudio(filename);
+		OPT_SET("Path/Last/Audio")->SetString(STD_STR(filename));
+	}
 }
 
 
 void audio_open_blank(agi::Context *c) {
-
+	c->audioController->OpenAudio(_T("dummy-audio:silence?sr=44100&bd=16&ch=1&ln=396900000"));
 }
 
 
 void audio_open_noise(agi::Context *c) {
-
+	c->audioController->OpenAudio(_T("dummy-audio:noise?sr=44100&bd=16&ch=1&ln=396900000"));
 }
 
 
 void audio_open_video(agi::Context *c) {
-
+	c->audioController->OpenAudio(_T("audio-video:cache"));
 }
 
 void audio_view_spectrum(agi::Context *c) {
-
+	printf("XXX: fixme\n");
 }
 
 void audio_view_waveform(agi::Context *c) {
-
+	printf("XXX: fixme\n");
 }
 
 

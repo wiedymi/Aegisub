@@ -150,6 +150,7 @@ FrameMain::FrameMain (wxArrayString args)
 
 	// Contexts and controllers
 	audioController = new AudioController;
+	temp_context.audioController = audioController;
 	audioController->AddAudioOpenListener(&FrameMain::OnAudioOpen, this);
 	audioController->AddAudioCloseListener(&FrameMain::OnAudioClose, this);
 
