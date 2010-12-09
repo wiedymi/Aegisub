@@ -43,21 +43,41 @@
 #endif
 
 #include "aegisub/context.h"
+#include "main.h"
+#include "compat.h"
+#include "video_context.h"
 
 namespace cmd {
 
 void keyframe_close(agi::Context *c) {
-
+    VideoContext::Get()->CloseKeyframes();
 }
 
 
 void keyframe_open(agi::Context *c) {
+	wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
+	wxString filename = wxFileSelector(
+		_T("Select the keyframes file to open"),
+		path,
+		_T("")
+		,_T(".txt"),
+		_T("All supported formats (*.txt, *.pass, *.stats, *.log)|*.txt;*.pass;*.stats;*.log|All files (*.*)|*.*"),
+		wxFD_FILE_MUST_EXIST | wxFD_OPEN);
 
+	if (filename.empty()) return;
+	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
+
+	// Load
+	VideoContext::Get()->LoadKeyframes(filename);
 }
 
 
 void keyframe_save(agi::Context *c) {
-
+	wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
+	wxString filename = wxFileSelector(_T("Select the Keyframes file to open"),path,_T(""),_T("*.key.txt"),_T("Text files (*.txt)|*.txt"),wxFD_OVERWRITE_PROMPT | wxFD_SAVE);
+	if (filename.IsEmpty()) return;
+	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
+	VideoContext::Get()->SaveKeyframes(filename);
 }
 
 

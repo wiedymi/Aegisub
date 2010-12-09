@@ -612,41 +612,6 @@ void FrameMain::OnExportSubtitles(wxCommandEvent &) {
 	exporter.ShowModal();
 }
 
-/// @brief Open keyframes 
-void FrameMain::OnOpenKeyframes (wxCommandEvent &) {
-	// Pick file
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
-	wxString filename = wxFileSelector(
-		_T("Select the keyframes file to open"),
-		path,
-		_T("")
-		,_T(".txt"),
-		_T("All supported formats (*.txt, *.pass, *.stats, *.log)|*.txt;*.pass;*.stats;*.log|All files (*.*)|*.*"),
-		wxFD_FILE_MUST_EXIST | wxFD_OPEN);
-
-	if (filename.empty()) return;
-	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
-
-	// Load
-	VideoContext::Get()->LoadKeyframes(filename);
-}
-
-/// @brief Close keyframes 
-void FrameMain::OnCloseKeyframes (wxCommandEvent &) {
-	VideoContext::Get()->CloseKeyframes();
-}
-
-/// @brief Save keyframes 
-void FrameMain::OnSaveKeyframes (wxCommandEvent &) {
-	// Pick file
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
-	wxString filename = wxFileSelector(_T("Select the Keyframes file to open"),path,_T(""),_T("*.key.txt"),_T("Text files (*.txt)|*.txt"),wxFD_OVERWRITE_PROMPT | wxFD_SAVE);
-	if (filename.IsEmpty()) return;
-	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
-
-	VideoContext::Get()->SaveKeyframes(filename);
-}
-
 /// @brief Zoom levels 
 void FrameMain::OnSetZoom50(wxCommandEvent&) {
 	VideoContext::Get()->Stop();
