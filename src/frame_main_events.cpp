@@ -466,57 +466,11 @@ void FrameMain::OnCloseVideo(wxCommandEvent&) {
 }
 
 
-/// @brief Open subtitles 
-void FrameMain::OnOpenSubtitles(wxCommandEvent&) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString());	
-	wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		LoadSubtitles(filename);
-		wxFileName filepath(filename);
-		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
-	}
-}
-
-/// @brief Open subtitles with specific charset 
-void FrameMain::OnOpenSubtitlesCharset(wxCommandEvent&) {
-	// Initialize charsets
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString());
-
-	// Get options and load
-	wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		wxString charset = wxGetSingleChoice(_("Choose charset code:"), _("Charset"),agi::charset::GetEncodingsList<wxArrayString>(),this,-1, -1,true,250,200);
-		if (!charset.empty()) {
-			LoadSubtitles(filename,charset);
-		}
-		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filename));
-	}
-}
-
-/// @brief Open subtitles from the currently open video file
-void FrameMain::OnOpenSubtitlesVideo(wxCommandEvent&) {
-	LoadSubtitles(VideoContext::Get()->videoName, "binary");
-}
-
-/// @brief Save subtitles as 
-void FrameMain::OnSaveSubtitlesAs(wxCommandEvent&) {
-	SaveSubtitles(true);
-}
-
-/// @brief Save subtitles 
-void FrameMain::OnSaveSubtitles(wxCommandEvent&) {
-	SaveSubtitles(false);
-}
-
 /// @brief Save subtitles with specific charset 
 void FrameMain::OnSaveSubtitlesCharset(wxCommandEvent&) {
 	SaveSubtitles(true,true);
 }
 
-/// @brief Close subtitles 
-void FrameMain::OnNewSubtitles(wxCommandEvent&) {
-	LoadSubtitles(_T(""));
-}
 
 /// @brief Export subtitles 
 void FrameMain::OnExportSubtitles(wxCommandEvent &) {
@@ -631,27 +585,6 @@ void FrameMain::OnShift(wxCommandEvent&) {
 	Shift.ShowModal();
 }
 
-/// @brief Open properties 
-void FrameMain::OnOpenProperties (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	DialogProperties Properties(this, ass);
-	Properties.ShowModal();
-}
-
-/// @brief Open attachments 
-void FrameMain::OnOpenAttachments(wxCommandEvent&) {
-	VideoContext::Get()->Stop();
-	DialogAttachments attachments(this, ass);
-	attachments.ShowModal();
-}
-
-/// @brief Open Spell Checker 
-void FrameMain::OnOpenSpellCheck (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	new DialogSpellChecker(this);
-}
-
-
 /// @brief General handler for all Automation-generated menu items
 /// @param event 
 void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
@@ -761,18 +694,6 @@ void FrameMain::OnShiftToFrame (wxCommandEvent &) {
 	SubsGrid->ass->Commit(_("shift to frame"), AssFile::COMMIT_TIMES);
 }
 
-/// @brief Find 
-void FrameMain::OnFind(wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	Search.OpenDialog(false);
-}
-
-/// @brief Find next 
-void FrameMain::OnFindNext(wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	Search.FindNext();
-}
-
 /// @brief Change aspect ratio to default 
 void FrameMain::OnSetARDefault (wxCommandEvent &) {
 	VideoContext::Get()->Stop();
@@ -869,15 +790,6 @@ void FrameMain::OnCloseWindow (wxCloseEvent &event) {
 		else Destroy();
 	}
 	else Destroy();
-}
-
-
-
-
-/// @brief Select visible lines 
-void FrameMain::OnSelectVisible (wxCommandEvent &) {
-	VideoContext::Get()->Stop();
-	SubsGrid->SelectVisible();
 }
 
 /// @brief Sort subtitles by start time

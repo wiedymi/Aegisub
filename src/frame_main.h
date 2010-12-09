@@ -104,6 +104,8 @@ class FrameMain: public wxFrame {
 public:
 	void StatusTimeout(wxString text,int ms=10000);
 	void SetDisplayMode(int showVid,int showAudio);
+	void LoadSubtitles(wxString filename,wxString charset=_T(""));
+	bool SaveSubtitles(bool saveas=false,bool withCharset=false);
 
 private:
 
@@ -352,8 +354,6 @@ private:
 
 	void LoadVFR(wxString filename);
 	void LoadVideo(wxString filename,bool autoload=false);
-	void LoadSubtitles(wxString filename,wxString charset=_T(""));
-	bool SaveSubtitles(bool saveas=false,bool withCharset=false);
 	int TryToCloseSubs(bool enableCancel=true);
 
 	void RebuildRecentList(wxString listName,wxMenu *menu,int startID);

@@ -39,94 +39,133 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <wx/filedlg.h>
+#include <wx/choicdlg.h>
 #endif
 
+#include <libaegisub/charset_conv.h>
+
 #include "aegisub/context.h"
+#include "dialog_search_replace.h"
+#include "dialog_attachments.h"
+#include "video_context.h"
+#include "main.h"
+#include "frame_main.h"
+#include "compat.h"
+#include "dialog_properties.h"
+#include "dialog_spellchecker.h"
+
 
 namespace cmd {
 
 void subtitle_attachment(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	DialogAttachments attachments(c->parent, c->ass);
+	attachments.ShowModal();
 }
 
 
 void subtitle_find(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	Search.OpenDialog(false);
 }
 
 
 void subtitle_find_next(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	Search.FindNext();
 }
 
 
 void subtitle_insert_after(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void subtitle_insert_after_videotime(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void subtitle_insert_before(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void subtitle_insert_before_videotime(agi::Context *c) {
-
+//XXX: subs_grid.cpp
 }
 
 
 void subtitle_new(agi::Context *c) {
-
+	wxGetApp().frame->LoadSubtitles(_T(""));
 }
 
 
 void subtitle_open(agi::Context *c) {
-
+	wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString()); 
+	wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (!filename.empty()) {
+		wxGetApp().frame->LoadSubtitles(filename);
+		wxFileName filepath(filename);
+		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
+	}
 }
 
 
 void subtitle_open_charset(agi::Context *c) {
+	// Initialize charsets
+	wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString());
 
+	// Get options and load
+	wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+	if (!filename.empty()) {
+		wxString charset = wxGetSingleChoice(_("Choose charset code:"), _("Charset"), agi::charset::GetEncodingsList<wxArrayString>(), c->parent, -1, -1, true, 250, 200);
+		if (!charset.empty()) {
+			wxGetApp().frame->LoadSubtitles(filename,charset);
+		}
+		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filename));
+	}
 }
 
 
 void subtitle_open_video(agi::Context *c) {
-
+	wxGetApp().frame->LoadSubtitles(VideoContext::Get()->videoName, "binary");
 }
 
 
 void subtitle_properties(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	DialogProperties Properties(c->parent, c->ass);
+	Properties.ShowModal();
 }
 
 
 void subtitle_save(agi::Context *c) {
-
+	wxGetApp().frame->SaveSubtitles(false);
 }
 
 
 void subtitle_save_as(agi::Context *c) {
-
+	wxGetApp().frame->SaveSubtitles(true);
 }
 
 
 void subtitle_select_visible(agi::Context *c) {
-
+	VideoContext::Get()->Stop();
+	c->SubsGrid->SelectVisible();
 }
 
 
 void subtitle_spellcheck(agi::Context *c) {
-
+//XXX: This is obscene, requires refactoring the spellchecker.
+//	VideoContext::Get()->Stop();
+//	new DialogSpellChecker;
 }
 
 
 void subtitle_tags_show(agi::Context *c) {
-
+//XXX: see grid.cpp:grid_tags_hide()
 }
 
 
