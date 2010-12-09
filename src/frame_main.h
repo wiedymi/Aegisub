@@ -218,12 +218,9 @@ private:
 	void InitContents();
 	void DeInitContents();
 
-	void OnAutoSave(wxTimerEvent &event);
-	void OnStatusClear(wxTimerEvent &event);
 
-	void OnVideoPlay(wxCommandEvent &event);
-
-	void OnAudioBoxResize(wxSashEvent &event);
+	void OnGridEvent (wxCommandEvent &event);
+	void OnMenuOpen (wxMenuEvent &event);
 
 	void OnOpenRecentSubs (wxCommandEvent &event);
 	void OnOpenRecentVideo (wxCommandEvent &event);
@@ -231,128 +228,11 @@ private:
 	void OnOpenRecentTimecodes (wxCommandEvent &event);
 	void OnOpenRecentKeyframes (wxCommandEvent &event);
 
-	void OnNewWindow (wxCommandEvent &event);
+	void OnAudioBoxResize(wxSashEvent &event);
+	void OnAutoSave(wxTimerEvent &event);
+	void OnStatusClear(wxTimerEvent &event);
 	void OnCloseWindow (wxCloseEvent &event);
-	void OnMenuOpen (wxMenuEvent &event);
-	void OnExit(wxCommandEvent &WXUNUSED(event));
-	void OnAbout (wxCommandEvent &event);
-	void OnLog (wxCommandEvent &event);
-	void OnCheckUpdates (wxCommandEvent &event);
-	void OnContents (wxCommandEvent &event);
-	void OnFiles (wxCommandEvent &event);
-	void OnWebsite (wxCommandEvent &event);
-	void OnForums (wxCommandEvent &event);
-	void OnBugTracker (wxCommandEvent &event);
-	void OnIRCChannel (wxCommandEvent &event);
-
-	void OnNewSubtitles (wxCommandEvent &event);
-	void OnOpenSubtitles (wxCommandEvent &event);
-	void OnOpenSubtitlesCharset (wxCommandEvent &event);
-	void OnOpenSubtitlesVideo (wxCommandEvent &event);
-	void OnSaveSubtitles (wxCommandEvent &event);
-	void OnSaveSubtitlesAs (wxCommandEvent &event);
-	void OnSaveSubtitlesCharset (wxCommandEvent &event);
-	void OnExportSubtitles (wxCommandEvent &event);
-	void OnOpenVideo (wxCommandEvent &event);
-	void OnCloseVideo (wxCommandEvent &event);
-	void OnOpenVFR (wxCommandEvent &event);
-	void OnSaveVFR (wxCommandEvent &event);
-	void OnCloseVFR (wxCommandEvent &event);
-	void OnOpenKeyframes (wxCommandEvent &event);
-	void OnCloseKeyframes (wxCommandEvent &event);
-	void OnSaveKeyframes (wxCommandEvent &event);
-
-	void OnZoomIn (wxCommandEvent &event);
-	void OnZoomOut (wxCommandEvent &event);
-	void OnSetZoom50 (wxCommandEvent &event);
-	void OnSetZoom100 (wxCommandEvent &event);
-	void OnSetZoom200 (wxCommandEvent &event);
-	void OnSetZoom (wxCommandEvent &event);
-	void OnSetARDefault (wxCommandEvent &event);
-	void OnSetARWide (wxCommandEvent &event);
-	void OnSetARFull (wxCommandEvent &event);
-	void OnSetAR235 (wxCommandEvent &event);
-	void OnSetARCustom (wxCommandEvent &event);
-	void OnDetachVideo (wxCommandEvent &event);
-	void OnDummyVideo (wxCommandEvent &event);
-	void OnOverscan (wxCommandEvent &event);
-
-	void OnOpenAudio (wxCommandEvent &event);
-	void OnOpenAudioFromVideo (wxCommandEvent &event);
-	void OnCloseAudio (wxCommandEvent &event);
-	void OnAudioDisplayMode (wxCommandEvent &event);
-#ifdef _DEBUG
-	void OnOpenDummyAudio(wxCommandEvent &event);
-	void OnOpenDummyNoiseAudio(wxCommandEvent &event);
-#endif
-
-	void OnChooseLanguage (wxCommandEvent &event);
-	void OnViewStandard (wxCommandEvent &event);
-	void OnViewVideo (wxCommandEvent &event);
-	void OnViewAudio (wxCommandEvent &event);
-	void OnViewSubs (wxCommandEvent &event);
-	void OnSetTags (wxCommandEvent &event);
-
-	void OnUndo (wxCommandEvent &event);
-	void OnRedo (wxCommandEvent &event);
-	void OnCut (wxCommandEvent &event);
-	void OnCopy (wxCommandEvent &event);
-	void OnPaste (wxCommandEvent &event);
-	void OnPasteOver (wxCommandEvent &event);
-	void OnDelete (wxCommandEvent &event);
-	void OnFind (wxCommandEvent &event);
-	void OnFindNext (wxCommandEvent &event);
-	void OnReplace (wxCommandEvent &event);
-	void OnJumpTo (wxCommandEvent &event);
-	void OnShift (wxCommandEvent &event);
-	void OnSortStart (wxCommandEvent &event);
-	void OnSortEnd (wxCommandEvent &event);
-	void OnSortStyle (wxCommandEvent &event);
-	void OnOpenProperties (wxCommandEvent &event);
-	void OnOpenStylesManager (wxCommandEvent &event);
-	void OnOpenAttachments (wxCommandEvent &event);
-	void OnOpenTranslation (wxCommandEvent &event);
-	void OnOpenSpellCheck (wxCommandEvent &event);
-	void OnOpenFontsCollector (wxCommandEvent &event);
-	void OnSnapSubsStartToVid (wxCommandEvent &event);
-	void OnSnapSubsEndToVid (wxCommandEvent &event);
-	void OnSnapVidToSubsStart (wxCommandEvent &event);
-	void OnSnapVidToSubsEnd (wxCommandEvent &event);
-	void OnSnapToScene (wxCommandEvent &event);
-	void OnShiftToFrame (wxCommandEvent &event);
-	void OnSelectVisible (wxCommandEvent &event);
-	void OnSelect (wxCommandEvent &event);
-	void OnOpenStylingAssistant (wxCommandEvent &event);
-	void OnOpenResample (wxCommandEvent &event);
-	void OnOpenTimingProcessor (wxCommandEvent &event);
-	void OnOpenKanjiTimer (wxCommandEvent &event);
-	void OnOpenVideoDetails (wxCommandEvent &event);
-	void OnOpenASSDraw (wxCommandEvent &event);
-
-	void OnOpenPreferences (wxCommandEvent &event);
-	void OnGridEvent (wxCommandEvent &event);
-
-	void OnOpenAutomation (wxCommandEvent &event);
 	void OnAutomationMacro(wxCommandEvent &event);
-
-	void OnNextFrame(wxCommandEvent &event);
-	void OnPrevFrame(wxCommandEvent &event);
-	void OnFocusSeek(wxCommandEvent &event);
-	void OnNextLine(wxCommandEvent &event);
-	void OnPrevLine(wxCommandEvent &event);
-	void OnToggleTags(wxCommandEvent &event);
-
-	void OnMedusaPlay(wxCommandEvent &event);
-	void OnMedusaStop(wxCommandEvent &event);
-	void OnMedusaShiftStartForward(wxCommandEvent &event);
-	void OnMedusaShiftStartBack(wxCommandEvent &event);
-	void OnMedusaShiftEndForward(wxCommandEvent &event);
-	void OnMedusaShiftEndBack(wxCommandEvent &event);
-	void OnMedusaPlayBefore(wxCommandEvent &event);
-	void OnMedusaPlayAfter(wxCommandEvent &event);
-	void OnMedusaEnter(wxCommandEvent &event);
-	void OnMedusaNext(wxCommandEvent &event);
-	void OnMedusaPrev(wxCommandEvent &event);
 
 	void LoadVFR(wxString filename);
 	int TryToCloseSubs(bool enableCancel=true);

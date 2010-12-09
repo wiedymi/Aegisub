@@ -442,43 +442,6 @@ printf("THIS IS BROKEN\n");
 	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-ID_SM_AUDIO_ID_MENU_RECENT_AUDIO)));
 }
 
-
-
-/// @brief Save subtitles with specific charset 
-void FrameMain::OnSaveSubtitlesCharset(wxCommandEvent&) {
-	SaveSubtitles(true,true);
-}
-
-
-/// @brief Export subtitles 
-void FrameMain::OnExportSubtitles(wxCommandEvent &) {
-#ifdef WITH_AUTOMATION
-	int autoreload = OPT_GET("Automation/Autoreload Mode")->GetInt();
-	if (autoreload & 1) {
-		// Local scripts
-		const std::vector<Automation4::Script*> scripts = local_scripts->GetScripts();
-		for (size_t i = 0; i < scripts.size(); ++i) {
-			try {
-				scripts[i]->Reload();
-			}
-			catch (const wchar_t *e) {
-				wxLogError(_T("Error while reloading Automation scripts before export: %s"), e);
-			}
-			catch (...) {
-				wxLogError(_T("An unknown error occurred reloading Automation script '%s'."), scripts[i]->GetName().c_str());
-			}
-		}
-	}
-	if (autoreload & 2) {
-		// Global scripts
-		wxGetApp().global_scripts->Reload();
-	}
-#endif
-
-	DialogExport exporter(this, ass);
-	exporter.ShowModal();
-}
-
 /// @brief General handler for all Automation-generated menu items
 /// @param event 
 void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
