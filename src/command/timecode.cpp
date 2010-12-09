@@ -31,8 +31,8 @@
 //
 // $Id$
 
-/// @file 
-/// @brief 
+/// @file timecode.cpp
+/// @brief timecode/ commands.
 /// @ingroup command
 ///
 
@@ -40,7 +40,6 @@
 
 #ifndef AGI_PRE
 #include <wx/filedlg.h>
-#include <wx/window.h>
 #endif
 
 

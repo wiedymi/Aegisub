@@ -31,15 +31,14 @@
 //
 // $Id$
 
-/// @file 
-/// @brief 
+/// @file audio.cpp
+/// @brief audio/ commands.
 /// @ingroup command
 ///
 
 #include "config.h"
 
 #ifndef AGI_PRE
-#include <wx/window.h>
 #include <wx/filedlg.h>
 #endif
 

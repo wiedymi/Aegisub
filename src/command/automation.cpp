@@ -31,15 +31,14 @@
 //
 // $Id$
 
-/// @file 
-/// @brief 
+/// @file automation.cpp
+/// @brief am/ (automation) commands
 /// @ingroup command
 ///
 
 #include "config.h"
 
 #ifndef AGI_PRE
-#include <wx/window.h>
 #endif
 
 #include "main.h"

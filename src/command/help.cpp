@@ -32,14 +32,13 @@
 // $Id$
 
 /// @file help.cpp
-/// @brief help commands
+/// @brief help/ commands
 /// @ingroup command
 ///
 
 #include "config.h"
 
 #ifndef AGI_PRE
-#include <wx/window.h>
 #endif
 
 #include "aegisub/context.h"

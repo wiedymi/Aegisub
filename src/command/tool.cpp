@@ -31,8 +31,8 @@
 //
 // $Id$
 
-/// @file 
-/// @brief 
+/// @file tool.cpp
+/// @brief tool/ commands.
 /// @ingroup command
 ///
 
@@ -40,7 +40,6 @@
 
 #ifndef AGI_PRE
 #include <wx/utils.h>
-#include <wx/window.h>
 #endif
 
 #include "aegisub/context.h"

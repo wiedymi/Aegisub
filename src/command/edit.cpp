@@ -31,15 +31,14 @@
 //
 // $Id$
 
-/// @file 
-/// @brief 
+/// @file edit.cpp
+/// @brief edit/ commands.
 /// @ingroup command
 ///
 
 #include "config.h"
 
 #ifndef AGI_PRE
-#include <wx/window.h>
 #endif
 
 #include "aegisub/context.h"
