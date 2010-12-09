@@ -42,36 +42,57 @@
 #endif
 
 #include "aegisub/context.h"
+#include "subs_grid.h"
+#include "main.h"
+#include "frame_main.h"
 
 namespace cmd {
 
 void grid_line_next(agi::Context *c) {
-
+	c->SubsGrid->NextLine();
 }
 
 
 void grid_line_prev(agi::Context *c) {
-
+	c->SubsGrid->PrevLine();
 }
 
 
 void grid_tag_cycle_hiding(agi::Context *c) {
+	int tagMode = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
 
+	// Cycle to next
+	tagMode = (tagMode+1)%3;
+
+	// Show on status bar
+	wxString message = _("ASS Override Tag mode set to ");
+	if (tagMode == 0) message += _("show full tags.");
+	if (tagMode == 1) message += _("simplify tags.");
+	if (tagMode == 2) message += _("hide tags.");
+	wxGetApp().frame->StatusTimeout(message,10000);
+
+	// Set option
+	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(tagMode);
+
+	// Refresh grid
+	c->SubsGrid->Refresh(false);
 }
 
 
 void grid_tags_hide(agi::Context *c) {
-
+//	XXX: Needs fixing.
+//	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(event.GetId() - cmd::id("subtitle/tags/show"));
+//	SubsGrid->Refresh(false);
 }
 
 
 void grid_tags_show(agi::Context *c) {
-
+//XXX: see grid_tags_hide
 }
 
 
 void grid_tags_simplify(agi::Context *c) {
-
+//XXX: see grid_tags_hide
 }
 
 

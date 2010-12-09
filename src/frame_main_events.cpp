@@ -965,42 +965,6 @@ void FrameMain::OnFocusSeek(wxCommandEvent &) {
 	}
 }
 
-/// @brief Previous line hotkey 
-void FrameMain::OnPrevLine(wxCommandEvent &) {
-	SubsGrid->PrevLine();
-}
-
-/// @brief Next line hotkey 
-void FrameMain::OnNextLine(wxCommandEvent &) {
-	SubsGrid->NextLine();
-}
-
-/// @brief Cycle through tag hiding modes 
-void FrameMain::OnToggleTags(wxCommandEvent &) {
-	int tagMode = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
-
-	// Cycle to next
-	tagMode = (tagMode+1)%3;
-
-	// Show on status bar
-	wxString message = _("ASS Override Tag mode set to ");
-	if (tagMode == 0) message += _("show full tags.");
-	if (tagMode == 1) message += _("simplify tags.");
-	if (tagMode == 2) message += _("hide tags.");
-	StatusTimeout(message,10000);
-
-	// Set option
-	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(tagMode);
-
-	// Refresh grid
-	SubsGrid->Refresh(false);
-}
-void FrameMain::OnSetTags(wxCommandEvent &event) {
-printf("THIS IS BROKEN FIXME\n");
-//	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(event.GetId() - cmd::id("subtitle/tags/show"));
-//	SubsGrid->Refresh(false);
-}
-
 
 void FrameMain::OnAudioBoxResize(wxSashEvent &event)
 {
