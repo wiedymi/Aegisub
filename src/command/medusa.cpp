@@ -43,61 +43,100 @@
 #endif
 
 #include "aegisub/context.h"
+#include "audio_timing.h"
 
 namespace cmd {
 
 void medusa_enter(agi::Context *c) {
-
+	 /// @todo Figure out how to handle this in the audio controller
+	//audioBox->audioDisplay->Prev(false);
 }
 
 
 void medusa_next(agi::Context *c) {
-
+	/// @todo Figure out how to handle this in the audio controller
+	//audioBox->audioDisplay->Next(false);
 }
 
 
 void medusa_play(agi::Context *c) {
-
+	c->audioController->PlayPrimaryRange();
 }
 
 
 void medusa_play_after(agi::Context *c) {
-
+	SampleRange sel(c->audioController->GetPrimaryPlaybackRange());
+		c->audioController->PlayRange(SampleRange(
+			sel.end(),
+			sel.end() + c->audioController->SamplesFromMilliseconds(500)));;
 }
 
 
 void medusa_play_before(agi::Context *c) {
-
+	SampleRange sel(c->audioController->GetPrimaryPlaybackRange());
+		c->audioController->PlayRange(SampleRange(
+			sel.begin() - c->audioController->SamplesFromMilliseconds(500),
+			sel.begin()));;
 }
 
 
 void medusa_previous(agi::Context *c) {
-
+	/// @todo Figure out how to handle this in the audio controller
+	//audioBox->audioDisplay->Prev(false);
 }
 
 
 void medusa_shift_end_back(agi::Context *c) {
-
+	SampleRange newsel(
+		c->audioController->GetPrimaryPlaybackRange(),
+		0,
+		-c->audioController->SamplesFromMilliseconds(10));
+	/// @todo Make this use the timing controller instead
+	//audioController->SetSelection(newsel);
 }
 
 
 void medusa_shift_end_forward(agi::Context *c) {
-
+	SampleRange newsel(
+		c->audioController->GetPrimaryPlaybackRange(),
+		0,
+		c->audioController->SamplesFromMilliseconds(10));
+	/// @todo Make this use the timing controller instead
+	//audioController->SetSelection(newsel);
 }
 
 
 void medusa_shift_start_back(agi::Context *c) {
-
+	SampleRange newsel(
+		c->audioController->GetPrimaryPlaybackRange(),
+		-c->audioController->SamplesFromMilliseconds(10),
+		0);
+	/// @todo Make this use the timing controller instead
+	//audioController->SetSelection(newsel);
 }
 
 
 void medusa_shift_start_forward(agi::Context *c) {
-
+	SampleRange newsel(
+		c->audioController->GetPrimaryPlaybackRange(),
+		c->audioController->SamplesFromMilliseconds(10),
+		0);
+	/// @todo Make this use the timing controller instead
+	//audioController->SetSelection(newsel);
 }
 
 
 void medusa_stop(agi::Context *c) {
-
+	// Playing, stop
+	if (c->audioController->IsPlaying()) {
+		c->audioController->Stop();
+	} else {
+		// Otherwise, play the last 500 ms
+		SampleRange sel(c->audioController->GetPrimaryPlaybackRange());
+			c->audioController->PlayRange(SampleRange(
+				sel.end() - c->audioController->SamplesFromMilliseconds(500),
+				sel.end()));;
+	}
 }
 
 
