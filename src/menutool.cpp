@@ -32,6 +32,7 @@
 #include <libaegisub/log.h>
 
 #include "aegisub/menutool.h"
+#include "command/command.h"
 #include "libresrc/libresrc.h"
 #include "main.h"
 
@@ -110,18 +111,18 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 
 		switch (type) {
 			case MenuTool::Option: {
-				wxMenuItem *menu_item = new wxMenuItem(menu, 0, wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL);
+				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL);
 				menu->Append(menu_item);
 			}
 			break;
 
 			case MenuTool::Check: {
-				menu->AppendCheckItem(0, wxString(display.Value()), wxString(descr.Value()));
+				menu->AppendCheckItem(cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()));
 			}
 			break;
 
 			case MenuTool::Radio: {
-				menu->AppendRadioItem(0, wxString(display.Value()), wxString(descr.Value()));
+				menu->AppendRadioItem(cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()));
 			}
 			break;
 
@@ -139,6 +140,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 				map.insert(MTPair(n, menu_new));
 
 				if (submenu) {
+					// XXX: Is 0 OK for an ID? we never need to access submenus by ID, I think..
 					wxMenuItem *menu_item = new wxMenuItem(menu, 0, wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL, menu_new);
 					menu->Append(menu_item);
 				} else {
