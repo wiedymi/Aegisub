@@ -1131,3 +1131,424 @@ static void autosave_timer_changed(wxTimer *timer, const agi::OptionValue &opt) 
 		timer->Start(freq * 1000);
 	}
 }
+BEGIN_EVENT_TABLE(FrameMain, wxFrame)
+	EVT_TIMER(ID_APP_TIMER_AUTOSAVE, FrameMain::OnAutoSave)
+	EVT_TIMER(ID_APP_TIMER_STATUSCLEAR, FrameMain::OnStatusClear)
+
+	EVT_CLOSE(FrameMain::OnCloseWindow)
+
+	EVT_SASH_DRAGGED(ID_SASH_MAIN_AUDIO, FrameMain::OnAudioBoxResize)
+
+	EVT_MENU_OPEN(FrameMain::OnMenuOpen)
+
+//	EVT_MENU(cmd::id("subtitle/new"), FrameMain::cmd_call)
+//	EVT_MENU(cmd::id("subtitle/open"), FrameMain::cmd_call)
+//	EVT_MENU(cmd::id("subtitle/save"), FrameMain::cmd_call)
+
+//	EVT_MENU_RANGE(MENU_GRID_START+1,MENU_GRID_END-1,FrameMain::OnGridEvent)
+//	EVT_COMBOBOX(Toolbar_Zoom_Dropdown, FrameMain::OnSetZoom)
+//	EVT_TEXT_ENTER(Toolbar_Zoom_Dropdown, FrameMain::OnSetZoom)
+
+#ifdef __WXMAC__
+   EVT_MENU(wxID_ABOUT, FrameMain::OnAbout)
+   EVT_MENU(wxID_EXIT, FrameMain::OnExit)
+#endif
+END_EVENT_TABLE()
+
+
+/// @brief Redirect grid events to grid 
+/// @param event 
+void FrameMain::OnGridEvent (wxCommandEvent &event) {
+	SubsGrid->GetEventHandler()->ProcessEvent(event);
+}
+
+/// @brief Rebuild recent list 
+/// @param listName 
+/// @param menu     
+/// @param startID  
+void FrameMain::RebuildRecentList(wxString listName,wxMenu *menu,int startID) {
+	// Wipe previous list
+	int count = (int)menu->GetMenuItemCount();
+	for (int i=count;--i>=0;) {
+		menu->Destroy(menu->FindItemByPosition(i));
+	}
+
+	// Rebuild
+	int added = 0;
+	wxString n;
+	wxArrayString entries = lagi_MRU_wxAS(listName);
+	for (size_t i=0;i<entries.Count();i++) {
+		n = wxString::Format(_T("%ld"),i+1);
+		if (i < 9) n = _T("&") + n;
+		wxFileName shortname(entries[i]);
+		wxString filename = shortname.GetFullName();
+		menu->Append(startID+i,n + _T(" ") + filename);
+		added++;
+	}
+
+	// Nothing added, add an empty placeholder
+	if (added == 0) menu->Append(startID,_("Empty"))->Enable(false);
+}
+
+/// @brief Menu is being opened 
+/// @param event 
+void FrameMain::OnMenuOpen (wxMenuEvent &event) {
+	// Get menu
+	wxMenuBar *MenuBar = menu::menutool->GetMainMenu();
+
+	MenuBar->Freeze();
+	wxMenu *curMenu = event.GetMenu();
+
+	// File menu
+	if (curMenu == menu::menutool->GetMenu("main/file")) {
+		// Rebuild recent
+		RebuildRecentList(_T("Subtitle"),menu::menutool->GetMenu("recent/subtitle"), cmd::id("recent/subtitle"));
+
+		MenuBar->Enable(cmd::id("subtitle/open/video"),VideoContext::Get()->HasSubtitles());
+	}
+
+	// View menu
+	else if (curMenu == menu::menutool->GetMenu("main/view")) {
+		// Flags
+		bool aud = audioController->IsAudioOpen();
+		bool vid = VideoContext::Get()->IsLoaded() && !detachedVideo;
+
+		// Set states
+		MenuBar->Enable(cmd::id("app/display/audio_subs"),aud);
+		MenuBar->Enable(cmd::id("app/display/video_subs"),vid);
+		MenuBar->Enable(cmd::id("app/display/full"),aud && vid);
+
+		// Select option
+		if (!showVideo && !showAudio) MenuBar->Check(cmd::id("app/display/subs"),true);
+		else if (showVideo && !showAudio) MenuBar->Check(cmd::id("app/display/video_subs"),true);
+		else if (showAudio && showVideo) MenuBar->Check(cmd::id("app/display/full"),true);
+		else MenuBar->Check(cmd::id("app/display/audio_subs"),true);
+
+		int sub_grid = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
+		if (sub_grid == 1) MenuBar->Check(cmd::id("grid/tags/show"), true);
+		if (sub_grid == 2) MenuBar->Check(cmd::id("grid/tags/simplify"), true);
+		if (sub_grid == 3) MenuBar->Check(cmd::id("grid/tags/hide"), true);
+
+
+	}
+
+	// Video menu
+	else if (curMenu == menu::menutool->GetMenu("main/video")) {
+		bool state = VideoContext::Get()->IsLoaded();
+		bool attached = state && !detachedVideo;
+
+		// Set states
+		MenuBar->Enable(cmd::id("video/jump"),state);
+		MenuBar->Enable(cmd::id("video/jump/start"),state);
+		MenuBar->Enable(cmd::id("video/jump/end"),state);
+		MenuBar->Enable(cmd::id("main/video/set zoom"), attached);
+		MenuBar->Enable(cmd::id("video/zoom/50"),attached);
+		MenuBar->Enable(cmd::id("video/zoom/100"),attached);
+		MenuBar->Enable(cmd::id("video/zoom/200"),attached);
+		MenuBar->Enable(cmd::id("video/close"),state);
+		MenuBar->Enable(cmd::id("main/video/override ar"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/default"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/full"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/wide"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/cinematic"),attached);
+		MenuBar->Enable(cmd::id("video/aspect/custom"),attached);
+		MenuBar->Enable(cmd::id("video/detach"),state);
+		MenuBar->Enable(cmd::id("timecode/save"),VideoContext::Get()->TimecodesLoaded());
+		MenuBar->Enable(cmd::id("timecode/close"),VideoContext::Get()->OverTimecodesLoaded());
+		MenuBar->Enable(cmd::id("keyframe/close"),VideoContext::Get()->OverKeyFramesLoaded());
+		MenuBar->Enable(cmd::id("keyframe/save"),VideoContext::Get()->KeyFramesLoaded());
+		MenuBar->Enable(cmd::id("video/detach"),state);
+		MenuBar->Enable(cmd::id("video/show_overscan"),state);
+
+		// Set AR radio
+		int arType = VideoContext::Get()->GetAspectRatioType();
+		MenuBar->Check(cmd::id("video/aspect/default"),false);
+		MenuBar->Check(cmd::id("video/aspect/full"),false);
+		MenuBar->Check(cmd::id("video/aspect/wide"),false);
+		MenuBar->Check(cmd::id("video/aspect/cinematic"),false);
+		MenuBar->Check(cmd::id("video/aspect/custom"),false);
+		switch (arType) {
+			case 0: MenuBar->Check(cmd::id("video/aspect/default"),true); break;
+			case 1: MenuBar->Check(cmd::id("video/aspect/full"),true); break;
+			case 2: MenuBar->Check(cmd::id("video/aspect/wide"),true); break;
+			case 3: MenuBar->Check(cmd::id("video/aspect/cinematic"),true); break;
+			case 4: MenuBar->Check(cmd::id("video/aspect/custom"),true); break;
+		}
+
+		// Set overscan mask
+		MenuBar->Check(cmd::id("video/show_overscan"),OPT_GET("Video/Overscan Mask")->GetBool());
+
+		// Rebuild recent lists
+		RebuildRecentList(_T("Video"),menu::menutool->GetMenu("recent/video"), cmd::id("recent/video"));
+		RebuildRecentList(_T("Timecodes"),menu::menutool->GetMenu("recent/timecode"), cmd::id("recent/timecode"));
+		RebuildRecentList(_T("Keyframes"),menu::menutool->GetMenu("recent/keyframe"), cmd::id("recent/keyframe"));
+	}
+
+	// Audio menu
+	else if (curMenu == menu::menutool->GetMenu("main/audio")) {
+		bool state = audioController->IsAudioOpen();
+		bool vidstate = VideoContext::Get()->IsLoaded();
+
+		MenuBar->Enable(cmd::id("audio/open/video"),vidstate);
+		MenuBar->Enable(cmd::id("audio/close"),state);
+
+		// Rebuild recent
+		RebuildRecentList(_T("Audio"),menu::menutool->GetMenu("recent/audio"), cmd::id("recent/audio"));
+	}
+
+	// Subtitles menu
+	else if (curMenu == menu::menutool->GetMenu("main/subtitle")) {
+		// Variables
+		bool continuous;
+		wxArrayInt sels = SubsGrid->GetSelection(&continuous);
+		int count = sels.Count();
+		bool state,state2;
+
+		// Entries
+		state = count > 0;
+		MenuBar->Enable(cmd::id("subtitle/insert/before"),state);
+		MenuBar->Enable(cmd::id("subtitle/insert/after"),state);
+		MenuBar->Enable(cmd::id("edit/line/split/by_karaoke"),state);
+		MenuBar->Enable(cmd::id("edit/line/delete"),state);
+		state2 = count > 0 && VideoContext::Get()->IsLoaded();
+		MenuBar->Enable(cmd::id("subtitle/insert/before/videotime"),state2);
+		MenuBar->Enable(cmd::id("subtitle/insert/after/videotime"),state2);
+		MenuBar->Enable(cmd::id("main/subtitle/insert lines"),state);
+		state = count > 0 && continuous;
+		MenuBar->Enable(cmd::id("edit/line/duplicate"),state);
+		state = count > 0 && continuous && VideoContext::Get()->TimecodesLoaded();
+		MenuBar->Enable(cmd::id("edit/line/duplicate/shift"),state);
+		state = count == 2;
+		MenuBar->Enable(cmd::id("edit/line/swap"),state);
+		state = count >= 2 && continuous;
+		MenuBar->Enable(cmd::id("edit/line/join/concatenate"),state);
+		MenuBar->Enable(cmd::id("edit/line/join/keep_first"),state);
+		MenuBar->Enable(cmd::id("edit/line/join/as_karaoke"),state);
+		MenuBar->Enable(cmd::id("main/subtitle/join lines"),state);
+		state = (count == 2 || count == 3) && continuous;
+		MenuBar->Enable(cmd::id("edit/line/recombine"),state);
+	}
+
+	// Timing menu
+	else if (curMenu == menu::menutool->GetMenu("main/timing")) {
+		// Variables
+		bool continuous;
+		wxArrayInt sels = SubsGrid->GetSelection(&continuous);
+		int count = sels.Count();
+
+		// Video related
+		bool state = VideoContext::Get()->IsLoaded();
+		MenuBar->Enable(cmd::id("time/snap/start_video"),state);
+		MenuBar->Enable(cmd::id("time/snap/end_video"),state);
+		MenuBar->Enable(cmd::id("time/snap/scene"),state);
+		MenuBar->Enable(cmd::id("time/frame/current"),state);
+
+		// Other
+		state = count >= 2 && continuous;
+		MenuBar->Enable(cmd::id("time/continous/start"),state);
+		MenuBar->Enable(cmd::id("time/continous/end"),state);
+	}
+
+	// Edit menu
+	else if (curMenu == menu::menutool->GetMenu("main/edit")) {
+		wxMenu *editMenu = menu::menutool->GetMenu("main/edit");
+
+		// Undo state
+		wxMenuItem *item;
+		wxString undo_text = _("&Undo") + wxString(_T(" ")) + ass->GetUndoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Undo"));
+		item = editMenu->FindItem(cmd::id("edit/undo"));
+		item->SetItemLabel(undo_text);
+		item->Enable(!ass->IsUndoStackEmpty());
+
+		// Redo state
+		wxString redo_text = _("&Redo") + wxString(_T(" ")) + ass->GetRedoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Redo"));
+		item = editMenu->FindItem(cmd::id("edit/redo"));
+		item->SetItemLabel(redo_text);
+		item->Enable(!ass->IsRedoStackEmpty());
+
+		// Copy/cut/paste
+		wxArrayInt sels = SubsGrid->GetSelection();
+		bool can_copy = (sels.Count() > 0);
+
+		bool can_paste = true;
+		if (wxTheClipboard->Open()) {
+			can_paste = wxTheClipboard->IsSupported(wxDF_TEXT);
+			wxTheClipboard->Close();
+		}
+
+		MenuBar->Enable(cmd::id("edit/line/cut"),can_copy);
+		MenuBar->Enable(cmd::id("edit/line/copy"),can_copy);
+		MenuBar->Enable(cmd::id("edit/line/paste"),can_paste);
+		MenuBar->Enable(cmd::id("edit/line/paste/over"),can_copy&&can_paste);
+	}
+
+	// Automation menu
+#ifdef WITH_AUTOMATION
+	else if (curMenu == menu::menutool->GetMenu("main/automation")) {
+		wxMenu *automationMenu = menu::menutool->GetMenu("main/automation");
+
+		// Remove old macro items
+		for (unsigned int i = 0; i < activeMacroItems.size(); i++) {
+			wxMenu *p = 0;
+			wxMenuItem *it = MenuBar->FindItem(ID_MENU_AUTOMATION_MACRO + i, &p);
+			if (it)
+				p->Delete(it);
+		}
+		activeMacroItems.clear();
+
+		// Add new ones
+		int added = 0;
+		added += AddMacroMenuItems(automationMenu, wxGetApp().global_scripts->GetMacros());
+		added += AddMacroMenuItems(automationMenu, local_scripts->GetMacros());
+
+		// If none were added, show a ghosted notice
+		if (added == 0) {
+			automationMenu->Append(ID_MENU_AUTOMATION_MACRO, _("No Automation macros loaded"))->Enable(false);
+			activeMacroItems.push_back(0);
+		}
+	}
+#endif
+
+	MenuBar->Thaw();
+}
+
+/// @brief Macro menu creation helper 
+/// @param menu   
+/// @param macros 
+/// @return 
+int FrameMain::AddMacroMenuItems(wxMenu *menu, const std::vector<Automation4::FeatureMacro*> &macros) {
+#ifdef WITH_AUTOMATION
+	if (macros.empty()) {
+		return 0;
+	}
+
+	int id = activeMacroItems.size();;
+	for (std::vector<Automation4::FeatureMacro*>::const_iterator i = macros.begin(); i != macros.end(); ++i) {
+		wxMenuItem * m = menu->Append(ID_MENU_AUTOMATION_MACRO + id, (*i)->GetName(), (*i)->GetDescription());
+		m->Enable((*i)->Validate(SubsGrid->ass, SubsGrid->GetAbsoluteSelection(), SubsGrid->GetFirstSelRow()));
+		activeMacroItems.push_back(*i);
+		id++;
+	}
+
+	return macros.size();
+#else
+	return 0;
+#endif
+}
+
+/// @brief General handler for all Automation-generated menu items
+/// @param event 
+void FrameMain::OnAutomationMacro (wxCommandEvent &event) {
+#ifdef WITH_AUTOMATION
+	SubsGrid->BeginBatch();
+	// First get selection data
+	std::vector<int> selected_lines = SubsGrid->GetAbsoluteSelection();
+	int first_sel = SubsGrid->GetFirstSelRow();
+	// Run the macro...
+	activeMacroItems[event.GetId()-ID_MENU_AUTOMATION_MACRO]->Process(SubsGrid->ass, selected_lines, first_sel, this);
+	SubsGrid->SetSelectionFromAbsolute(selected_lines);
+	SubsGrid->EndBatch();
+#endif
+}
+
+
+/// @brief Window is attempted to be closed
+/// @param event
+void FrameMain::OnCloseWindow (wxCloseEvent &event) {
+	// Stop audio and video
+	VideoContext::Get()->Stop();
+	audioController->Stop();
+
+	// Ask user if he wants to save first
+	bool canVeto = event.CanVeto();
+	int result = TryToCloseSubs(canVeto);
+
+	// Store maximization state
+	OPT_SET("App/Maximized")->SetBool(IsMaximized());
+
+	// Abort/destroy
+	if (canVeto) {
+		if (result == wxCANCEL) event.Veto();
+		else Destroy();
+	}
+	else Destroy();
+}
+
+/// @brief Autosave the currently open file, if any
+void FrameMain::OnAutoSave(wxTimerEvent &) {
+	try {
+		if (ass->loaded && ass->IsModified()) {
+			// Set path
+			wxFileName origfile(ass->filename);
+			wxString path = lagi_wxString(OPT_GET("Path/Auto/Save")->GetString());
+			if (path.IsEmpty()) path = origfile.GetPath();
+			wxFileName dstpath(path);
+			if (!dstpath.IsAbsolute()) path = StandardPaths::DecodePathMaybeRelative(path, _T("?user/"));
+			dstpath.AssignDir(path);
+			if (!dstpath.DirExists()) wxMkdir(path);
+
+			wxString name = origfile.GetName();
+			if (name.IsEmpty()) {
+				dstpath.SetFullName("Untitled.AUTOSAVE.ass");
+			}
+			else {
+				dstpath.SetFullName(name + L".AUTOSAVE.ass");
+			}
+
+			ass->Save(dstpath.GetFullPath(),false,false);
+
+			// Set status bar
+			StatusTimeout(_("File backup saved as \"") + dstpath.GetFullPath() + _T("\"."));
+		}
+	}
+	catch (const agi::Exception& err) {
+		StatusTimeout(lagi_wxString("Exception when attempting to autosave file: " + err.GetMessage()));
+	}
+	catch (wxString err) {
+		StatusTimeout(_T("Exception when attempting to autosave file: ") + err);
+	}
+	catch (const wchar_t *err) {
+		StatusTimeout(_T("Exception when attempting to autosave file: ") + wxString(err));
+	}
+	catch (...) {
+		StatusTimeout(_T("Unhandled exception when attempting to autosave file."));
+	}
+}
+
+/// @brief Clear statusbar 
+void FrameMain::OnStatusClear(wxTimerEvent &) {
+	SetStatusText(_T(""),1);
+}
+
+void FrameMain::OnAudioBoxResize(wxSashEvent &event)
+{
+	if (event.GetDragStatus() == wxSASH_STATUS_OUT_OF_RANGE)
+		return;
+
+	wxRect rect = event.GetDragRect();
+
+	if (rect.GetHeight() < audioSash->GetMinimumSizeY())
+		rect.SetHeight(audioSash->GetMinimumSizeY());
+
+	audioBox->SetMinSize(wxSize(-1, rect.GetHeight()));
+	Panel->Layout();
+	Refresh();
+}
+
+void FrameMain::OnAudioOpen(AudioProvider *provider)
+{
+	SetDisplayMode(-1, 1);
+}
+
+void FrameMain::OnAudioClose()
+{
+	SetDisplayMode(-1, 0);
+}
+
+void FrameMain::OnSubtitlesFileChanged() {
+	if (OPT_GET("App/Auto/Save on Every Change")->GetBool()) {
+		if (ass->IsModified() && !ass->filename.empty()) SaveSubtitles(false);
+	}
+
+	UpdateTitle();
+}

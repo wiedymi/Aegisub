@@ -188,7 +188,6 @@ SRC += \
 	font_file_lister.cpp \
 	font_file_lister_fontconfig.cpp \
 	frame_main.cpp \
-	frame_main_events.cpp \
 	gl_text.cpp \
 	gl_wrap.cpp \
 	help_button.cpp \
