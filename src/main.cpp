@@ -50,6 +50,9 @@
 #include <wx/utils.h>
 #endif
 
+#include "aegisub/menutool.h"
+#include "command/command.h"
+
 #include "ass_dialogue.h"
 #include "ass_export_filter.h"
 #include "ass_file.h"
@@ -76,7 +79,6 @@
 #include <libaegisub/access.h>
 #include <libaegisub/log.h>
 
-#include "command/command.h"
 
 
 namespace config {
@@ -163,6 +165,10 @@ bool AegisubApp::OnInit() {
 
 	// Init commands.
 	cmd::command_init();
+
+	// Genrate menus and toolbars.
+	menu::menutool = new menu::MenuTool();
+
 
 	// Install assertion handler
 //	wxSetAssertHandler(wxAssertHandler);

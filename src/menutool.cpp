@@ -29,8 +29,11 @@
 #endif
 
 #include <libaegisub/io.h>
+#include <libaegisub/log.h>
 
 #include "aegisub/menutool.h"
+#include "libresrc/libresrc.h"
+#include "main.h"
 
 namespace menu {
 
@@ -41,12 +44,12 @@ MenuTool::MenuTool() {
 	main_menu = new wxMenuBar();
 
 	json::UnknownElement menu_root;
-	std::auto_ptr<std::istream> stream;
+	std::istringstream stream(GET_DEFAULT_CONFIG(default_menu));
 
-	stream.reset(agi::io::Open("./default_menu.json"));
+	LOG_D("menu") << "Generating Menus";
 
 	try {
-		json::Reader::Read(menu_root, *stream);
+		json::Reader::Read(menu_root, stream);
 	} catch (json::Reader::ParseException& e) {
 		std::cout << "json::ParseException: " << e.what() << ", Line/offset: " << e.m_locTokenBegin.m_nLine + 1 << '/' << e.m_locTokenBegin.m_nLineOffset + 1 << std::endl << std::endl;
 	} catch (json::Exception& e) {
