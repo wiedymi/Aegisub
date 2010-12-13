@@ -113,6 +113,22 @@ void command_init() {
 	cmd_map.insert(cmdPair("keyframe/close", &keyframe_close));
 	cmd_map.insert(cmdPair("keyframe/open", &keyframe_open));
 	cmd_map.insert(cmdPair("keyframe/save", &keyframe_save));
+	cmd_map.insert(cmdPair("main/audio", &main_audio));
+	cmd_map.insert(cmdPair("main/automation", &main_automation));
+	cmd_map.insert(cmdPair("main/edit", &main_edit));
+	cmd_map.insert(cmdPair("main/edit/sort lines", &main_edit_sort_lines));
+	cmd_map.insert(cmdPair("main/file", &main_file));
+	cmd_map.insert(cmdPair("main/help", &main_help));
+	cmd_map.insert(cmdPair("main/subtitle", &main_subtitle));
+	cmd_map.insert(cmdPair("main/subtitle/insert lines", &main_subtitle_insert_lines));
+	cmd_map.insert(cmdPair("main/subtitle/sort lines", &main_subtitle_sort_lines));
+	cmd_map.insert(cmdPair("main/subtitle/join lines", &main_subtitle_join_lines));
+	cmd_map.insert(cmdPair("main/timing", &main_timing));
+	cmd_map.insert(cmdPair("main/timing/make times continous", &main_timing_make_times_continous));
+	cmd_map.insert(cmdPair("main/video", &main_video));
+	cmd_map.insert(cmdPair("main/video/override ar", &main_video_override_ar));
+	cmd_map.insert(cmdPair("main/video/set zoom", &main_video_set_zoom));
+	cmd_map.insert(cmdPair("main/view", &main_view));
 	cmd_map.insert(cmdPair("medusa/enter", &medusa_enter));
 	cmd_map.insert(cmdPair("medusa/next", &medusa_next));
 	cmd_map.insert(cmdPair("medusa/play", &medusa_play));
@@ -188,6 +204,8 @@ void command_init() {
 	cmd_map.insert(cmdPair("video/zoom/50", &video_zoom_50));
 	cmd_map.insert(cmdPair("video/zoom/in", &video_zoom_in));
 	cmd_map.insert(cmdPair("video/zoom/out", &video_zoom_out));
+
+
 }
 
 } // namespace cmd

@@ -220,12 +220,12 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Enable(cmd::id("video/jump"),state);
 		MenuBar->Enable(cmd::id("video/jump/start"),state);
 		MenuBar->Enable(cmd::id("video/jump/end"),state);
-		MenuBar->Enable(ID_SM_VIDEO_ZOOM,attached);
+		MenuBar->Enable(cmd::id("main/video/set zoom"), attached);
 		MenuBar->Enable(cmd::id("video/zoom/50"),attached);
 		MenuBar->Enable(cmd::id("video/zoom/100"),attached);
 		MenuBar->Enable(cmd::id("video/zoom/200"),attached);
 		MenuBar->Enable(cmd::id("video/close"),state);
-		MenuBar->Enable(ID_SM_VIDEO_OVERRIDE_AR,attached);
+		MenuBar->Enable(cmd::id("main/video/override ar"),attached);
 		MenuBar->Enable(cmd::id("video/aspect/default"),attached);
 		MenuBar->Enable(cmd::id("video/aspect/full"),attached);
 		MenuBar->Enable(cmd::id("video/aspect/wide"),attached);
@@ -292,7 +292,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		state2 = count > 0 && VideoContext::Get()->IsLoaded();
 		MenuBar->Enable(cmd::id("subtitle/insert/before/videotime"),state2);
 		MenuBar->Enable(cmd::id("subtitle/insert/after/videotime"),state2);
-		MenuBar->Enable(ID_SM_SUBTITLES_INSERT,state);
+		MenuBar->Enable(cmd::id("main/subtitle/insert lines"),state);
 		state = count > 0 && continuous;
 		MenuBar->Enable(cmd::id("edit/line/duplicate"),state);
 		state = count > 0 && continuous && VideoContext::Get()->TimecodesLoaded();
@@ -303,7 +303,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Enable(cmd::id("edit/line/join/concatenate"),state);
 		MenuBar->Enable(cmd::id("edit/line/join/keep_first"),state);
 		MenuBar->Enable(cmd::id("edit/line/join/as_karaoke"),state);
-		MenuBar->Enable(ID_SM_SUBTITLES_JOIN,state);
+		MenuBar->Enable(cmd::id("main/subtitle/join lines"),state);
 		state = (count == 2 || count == 3) && continuous;
 		MenuBar->Enable(cmd::id("edit/line/recombine"),state);
 	}
@@ -439,15 +439,15 @@ void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
 /// @brief Open recent Keyframes entry 
 /// @param event 
 void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
-printf("THIS IS BROKEN\n");
-	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-ID_SM_VIDEO_ID_MENU_RECENT_KEYFRAMES)));
+printf("XXX: THIS IS BROKEN\n");
+//	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-ID_SM_VIDEO_ID_MENU_RECENT_KEYFRAMES)));
 }
 
 /// @brief Open recent audio menu entry 
 /// @param event 
 void FrameMain::OnOpenRecentAudio(wxCommandEvent &event) {
-printf("THIS IS BROKEN\n");
-	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-ID_SM_AUDIO_ID_MENU_RECENT_AUDIO)));
+printf("XXX: THIS IS BROKEN\n");
+//	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-ID_SM_AUDIO_ID_MENU_RECENT_AUDIO)));
 }
 
 /// @brief General handler for all Automation-generated menu items

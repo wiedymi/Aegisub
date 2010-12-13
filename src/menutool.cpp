@@ -141,8 +141,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 				map.insert(MTPair(n, menu_new));
 
 				if (submenu) {
-					// XXX: Is 0 OK for an ID? we never need to access submenus by ID, I think..
-					wxMenuItem *menu_item = new wxMenuItem(menu, 0, wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL, menu_new);
+					wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(name_sub), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL, menu_new);
 					menu->Append(menu_item);
 				} else {
 					main_menu->Append(menu_new, wxString(display.Value()));
