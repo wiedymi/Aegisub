@@ -196,6 +196,7 @@ SRC += \
 	kana_table.cpp \
 	keyframe.cpp \
 	main.cpp \
+	menutool.cpp \
 	md5.c \
 	mkv_wrap.cpp \
 	mythes.cxx \
