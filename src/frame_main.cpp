@@ -46,6 +46,8 @@
 
 #include <libaegisub/log.h>
 
+#include "aegisub/menutool.h"
+
 #include "ass_file.h"
 #include "selection_controller.h"
 #include "audio_controller.h"
@@ -352,6 +354,7 @@ void FrameMain::InitMenu() {
 	// Generate menubar
 	MenuBar = new wxMenuBar();
 
+
 	// Create recent subs submenus
 	RecentSubs = new wxMenu();
 	RecentVids = new wxMenu();
@@ -621,7 +624,7 @@ void FrameMain::InitMenu() {
 	MenuBar->Append(helpMenu, _("&Help"));
 
 	// Set the bar as this frame's
-	SetMenuBar(MenuBar);
+	SetMenuBar(menu::menutool->GetMainMenu());
 
 	// Set menu created flag
 	menuCreated = true;
