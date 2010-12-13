@@ -61,6 +61,8 @@ int count() {
 }
 
 void command_init() {
+	LOG_D("command/init") << "Populating command map";
+
 	cmd_map.insert(cmdPair("am/manager", &am_manager));
 	cmd_map.insert(cmdPair("app/about", &app_about));
 	cmd_map.insert(cmdPair("app/display/audio_subs", &app_display_audio_subs));

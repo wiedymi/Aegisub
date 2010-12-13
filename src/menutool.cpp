@@ -46,7 +46,7 @@ MenuTool::MenuTool() {
 	json::UnknownElement menu_root;
 	std::istringstream stream(GET_DEFAULT_CONFIG(default_menu));
 
-	LOG_D("menu") << "Generating Menus";
+	LOG_D("menu/init") << "Generating Menus";
 
 	try {
 		json::Reader::Read(menu_root, stream);
