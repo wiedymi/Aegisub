@@ -57,10 +57,12 @@ wxBitmap* getimage(const unsigned char *buff, size_t size) {
 
 
 void icon_init() {
-// Seems that WX doesn't install the handlers early enough for our use.
-wxImage::AddHandler(new wxPNGHandler);
+	// Seems that WX doesn't install the handlers early enough for our use.
+	wxPNGHandler *handler = new wxPNGHandler();
+	wxImage::AddHandler(handler);
+	wxString handler_name(handler->GetName());
 
-LOG_D("icon/init") << "Generating 24x24, 16x16 icons";
+	LOG_D("icon/init") << "Generating 24x24, 16x16 icons";
 
 INSERT_ICON("am/manager", automation_toolbutton)
 INSERT_ICON("app/about", about_menu)
@@ -150,5 +152,9 @@ INSERT_ICON("video/open/dummy", use_dummy_video_menu)
 INSERT_ICON("video/zoom/in", zoom_in_button)
 INSERT_ICON("video/zoom/out", zoom_out_button)
 
+
+	// Remove the handler to aboid "Duplicate handler" warnings from WX since
+	// it will attempt to install all the handlers later on.
+	wxImage::RemoveHandler(handler_name);
 }
 } // namespace icon
