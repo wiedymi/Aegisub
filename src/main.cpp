@@ -52,6 +52,7 @@
 
 #include "aegisub/menutool.h"
 #include "command/command.h"
+#include "command/icon.h"
 
 #include "ass_dialogue.h"
 #include "ass_export_filter.h"
@@ -165,6 +166,9 @@ bool AegisubApp::OnInit() {
 
 	// Init commands.
 	cmd::command_init();
+
+	// Init icons.
+	icon::icon_init();
 
 	// Genrate menus and toolbars.
 	menu::menutool = new menu::MenuTool();
