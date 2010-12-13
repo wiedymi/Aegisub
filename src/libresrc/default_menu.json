@@ -26,6 +26,12 @@
 				},
 				{
 					"type" : 1,
+					"display" : "Open Subtitles from &Video",
+					"description" : "Opens the subtitles from the current video file.",
+					"command" : "subtitle/open/video"
+				},
+				{
+					"type" : 1,
 					"display" : "&Save Subtitles",
 					"description" : "Saves subtitles.",
 					"command" : "subtitle/save"
