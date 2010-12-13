@@ -92,6 +92,7 @@ public:
 	bool SaveSubtitles(bool saveas=false,bool withCharset=false);
 	void LoadVideo(wxString filename,bool autoload=false);
 	void DetachVideo(bool detach=true);
+	void LoadVFR(wxString filename);
 
 private:
 
@@ -155,19 +156,12 @@ private:
 	void OnGridEvent (wxCommandEvent &event);
 	void OnMenuOpen (wxMenuEvent &event);
 
-	void OnOpenRecentSubs (wxCommandEvent &event);
-	void OnOpenRecentVideo (wxCommandEvent &event);
-	void OnOpenRecentAudio (wxCommandEvent &event);
-	void OnOpenRecentTimecodes (wxCommandEvent &event);
-	void OnOpenRecentKeyframes (wxCommandEvent &event);
-
 	void OnAudioBoxResize(wxSashEvent &event);
 	void OnAutoSave(wxTimerEvent &event);
 	void OnStatusClear(wxTimerEvent &event);
 	void OnCloseWindow (wxCloseEvent &event);
 	void OnAutomationMacro(wxCommandEvent &event);
 
-	void LoadVFR(wxString filename);
 	int TryToCloseSubs(bool enableCancel=true);
 
 	void RebuildRecentList(wxString listName,wxMenu *menu,int startID);

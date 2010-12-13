@@ -37,25 +37,39 @@
 #include "config.h"
 
 #ifndef AGI_PRE
+#include <wx/event.h>
 #endif
 
 #include "aegisub/context.h"
+#include "command.h"
+#include "main.h"
+#include "frame_main.h"
+#include "compat.h"
+#include "video_context.h"
 
 namespace cmd {
 
 void recent_audio(agi::Context *c) {
+	c->audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-cmd::id("recent/audio"))));
 }
 
 void recent_keyframe(agi::Context *c) {
+	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-cmd::id("recent/keyframe"))));
 }
 
 void recent_subtitle(agi::Context *c) {
+	int number = event.GetId()-cmd::id("recent/subtitle");
+	wxGetApp().frame->LoadSubtitles(lagi_wxString(config::mru->GetEntry("Subtitle", number)));
 }
 
 void recent_timecode(agi::Context *c) {
+	int number = event.GetId()-cmd::id("recent/timecode");
+	wxGetApp().frame->LoadVFR(lagi_wxString(config::mru->GetEntry("Timecodes", number)));
 }
 
 void recent_video(agi::Context *c) {
+	int number = event.GetId()-cmd::id("recent/video");
+	wxGetApp().frame->LoadVideo(lagi_wxString(config::mru->GetEntry("Video", number)));
 }
 
 

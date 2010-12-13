@@ -117,13 +117,6 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 //	EVT_MENU(cmd::id("subtitle/open"), FrameMain::cmd_call)
 //	EVT_MENU(cmd::id("subtitle/save"), FrameMain::cmd_call)
 
-//	EVT_MENU_RANGE(Menu_File_Recent,Menu_File_Recent+99, FrameMain::OnOpenRecentSubs)
-//	EVT_MENU_RANGE(Menu_Video_Recent,Menu_Video_Recent+99, FrameMain::OnOpenRecentVideo)
-//	EVT_MENU_RANGE(Menu_Audio_Recent,Menu_Audio_Recent+99, FrameMain::OnOpenRecentAudio)
-//	EVT_MENU_RANGE(Menu_Timecodes_Recent,Menu_Timecodes_Recent+99, FrameMain::OnOpenRecentTimecodes)
-//	EVT_MENU_RANGE(Menu_Keyframes_Recent,Menu_Keyframes_Recent+99, FrameMain::OnOpenRecentKeyframes)
-//	EVT_MENU_RANGE(Menu_Automation_Macro,Menu_Automation_Macro+99, FrameMain::OnAutomationMacro)
-
 //	EVT_MENU_RANGE(MENU_GRID_START+1,MENU_GRID_END-1,FrameMain::OnGridEvent)
 //	EVT_COMBOBOX(Toolbar_Zoom_Dropdown, FrameMain::OnSetZoom)
 //	EVT_TEXT_ENTER(Toolbar_Zoom_Dropdown, FrameMain::OnSetZoom)
@@ -413,39 +406,6 @@ int FrameMain::AddMacroMenuItems(wxMenu *menu, const std::vector<Automation4::Fe
 #else
 	return 0;
 #endif
-}
-
-/// @brief Open recent subs menu entry 
-/// @param event 
-void FrameMain::OnOpenRecentSubs(wxCommandEvent &event) {
-	int number = event.GetId()-cmd::id("recent/subtitle");
-	LoadSubtitles(lagi_wxString(config::mru->GetEntry("Subtitle", number)));
-}
-
-/// @brief Open recent video menu entry 
-/// @param event 
-void FrameMain::OnOpenRecentVideo(wxCommandEvent &event) {
-	int number = event.GetId()-cmd::id("recent/video");
-	LoadVideo(lagi_wxString(config::mru->GetEntry("Video", number)));
-}
-
-/// @brief Open recent timecodes entry 
-/// @param event 
-void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
-	int number = event.GetId()-cmd::id("recent/timecode");
-	LoadVFR(lagi_wxString(config::mru->GetEntry("Timecodes", number)));
-}
-
-/// @brief Open recent Keyframes entry 
-/// @param event 
-void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
-	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-cmd::id("recent/keyframe"))));
-}
-
-/// @brief Open recent audio menu entry 
-/// @param event 
-void FrameMain::OnOpenRecentAudio(wxCommandEvent &event) {
-	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-cmd::id("recent/audio"))));
 }
 
 /// @brief General handler for all Automation-generated menu items
