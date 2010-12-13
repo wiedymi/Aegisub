@@ -572,7 +572,7 @@
 							"command" : "video/aspect/cinematic"
 						},
 						{
-							"type" : 1,
+							"type" : 2,
 							"display" : "Custom..",
 							"description" : "Forces video to a custom aspect ratio.",
 							"command" : "video/aspect/custom"
