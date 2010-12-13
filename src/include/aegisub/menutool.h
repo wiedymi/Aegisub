@@ -46,6 +46,7 @@ public:
 	MenuTool();
 	~MenuTool();
 	wxMenuBar* GetMainMenu() { return main_menu; }
+	wxMenu* GetMenu(std::string name);
 
 private:
 
@@ -65,7 +66,6 @@ private:
 	MTMap map;
 
 	wxMenu* BuildMenu(std::string name, const json::Array& array, int submenu=0);
-	wxMenu* GetMenu(std::string name);
 
 };
 
