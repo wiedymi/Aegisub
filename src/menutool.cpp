@@ -64,8 +64,6 @@ MenuTool::MenuTool() {
 		const json::Object::Member& member = *index;
 //		const json::UnknownElement& element = member.element;
 
-		std::cout << "PRIMARY: "<< member.name << "\n" << std::endl;
-
 		const json::Array& array = member.element;
 		BuildMenu(member.name, array);
 
@@ -151,8 +149,6 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 				} else {
 					main_menu->Append(menu_new, wxString(display.Value()));
 				}
-
-				std::cout << "Generating Menu: " << name_submenu << " " << menu_new << std::endl;
 			}
 			break;
 		}
