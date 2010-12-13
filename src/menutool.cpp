@@ -83,6 +83,7 @@ wxMenu* MenuTool::GetMenu(std::string name) {
 		return index->second;
 	}
 
+	LOG_E("menu/invalid") << "Invalid index name: " << name;
 	throw MenuInvalidName("Unknown index");
 }
 
