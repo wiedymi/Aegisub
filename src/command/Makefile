@@ -18,6 +18,7 @@ SRC = \
 	keyframe.cpp \
 	menu.cpp \
 	medusa.cpp \
+	recent.cpp \
 	subtitle.cpp \
 	time.cpp \
 	timecode.cpp \

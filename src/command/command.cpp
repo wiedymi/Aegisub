@@ -140,6 +140,11 @@ void command_init() {
 	cmd_map.insert(cmdPair("medusa/shift/start/back", &medusa_shift_start_back));
 	cmd_map.insert(cmdPair("medusa/shift/start/forward", &medusa_shift_start_forward));
 	cmd_map.insert(cmdPair("medusa/stop", &medusa_stop));
+	cmd_map.insert(cmdPair("recent/audio", &recent_audio));
+	cmd_map.insert(cmdPair("recent/keyframe", &recent_keyframe));
+	cmd_map.insert(cmdPair("recent/subtitle", &recent_subtitle));
+	cmd_map.insert(cmdPair("recent/timecode", &recent_timecode));
+	cmd_map.insert(cmdPair("recent/video", &recent_video));
 	cmd_map.insert(cmdPair("subtitle/attachment", &subtitle_attachment));
 	cmd_map.insert(cmdPair("subtitle/find", &subtitle_find));
 	cmd_map.insert(cmdPair("subtitle/find/next", &subtitle_find_next));

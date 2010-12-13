@@ -109,6 +109,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 		const json::String& display = obj["display"];
 		const json::String& descr = obj["description"];
 		const json::String& command = obj["command"];
+		std::string name_submenu = name_sub + "/" + command.Value();
 
 		switch (type) {
 			case MenuTool::Option: {
@@ -128,6 +129,11 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 			break;
 
 			case MenuTool::Recent: {
+	 			wxMenu *menu_new = new wxMenu();
+				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL, menu_new);
+				menu->Append(menu_item);
+				map.insert(MTPair(name_submenu, menu_new));
+
 			}
 			break;
 
@@ -135,10 +141,8 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 
 				const json::Array& arr = obj["contents"];
 
-				std::string n = name_sub + "/" + command.Value();
-
 	 			wxMenu *menu_new = BuildMenu(name_sub.append("/").append(command), arr, 1);
-				map.insert(MTPair(n, menu_new));
+				map.insert(MTPair(name_submenu, menu_new));
 
 				if (submenu) {
 					wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(name_sub), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL, menu_new);
@@ -147,7 +151,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 					main_menu->Append(menu_new, wxString(display.Value()));
 				}
 
-				std::cout << "Generating Menu: " << n << " " << menu_new << std::endl;
+				std::cout << "Generating Menu: " << name_submenu << " " << menu_new << std::endl;
 			}
 			break;
 		}
