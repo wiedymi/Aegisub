@@ -181,7 +181,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	// File menu
 	if (curMenu == menu::menutool->GetMenu("main/file")) {
 		// Rebuild recent
-		RebuildRecentList(_T("Subtitle"),RecentSubs,ID_RECENT_FILE);
+		RebuildRecentList(_T("Subtitle"),menu::menutool->GetMenu("recent/subtitle"), cmd::id("recent/subtitle"));
 
 		MenuBar->Enable(cmd::id("subtitle/open/video"),VideoContext::Get()->HasSubtitles());
 	}
@@ -258,9 +258,9 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Check(cmd::id("video/show_overscan"),OPT_GET("Video/Overscan Mask")->GetBool());
 
 		// Rebuild recent lists
-		RebuildRecentList(_T("Video"),RecentVids,ID_MENU_RECENT_VIDEO);
-		RebuildRecentList(_T("Timecodes"),RecentTimecodes,ID_MENU_RECENT_TIMECODES);
-		RebuildRecentList(_T("Keyframes"),RecentKeyframes,ID_MENU_RECENT_KEYFRAMES);
+		RebuildRecentList(_T("Video"),menu::menutool->GetMenu("recent/video"), cmd::id("recent/video"));
+		RebuildRecentList(_T("Timecodes"),menu::menutool->GetMenu("recent/timecode"), cmd::id("recent/timecode"));
+		RebuildRecentList(_T("Keyframes"),menu::menutool->GetMenu("recent/keyframe"), cmd::id("recent/keyframe"));
 	}
 
 	// Audio menu
@@ -272,7 +272,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Enable(cmd::id("audio/close"),state);
 
 		// Rebuild recent
-		RebuildRecentList(_T("Audio"),RecentAuds,ID_MENU_RECENT_AUDIO);
+		RebuildRecentList(_T("Audio"),menu::menutool->GetMenu("recent/audio"), cmd::id("recent/audio"));
 	}
 
 	// Subtitles menu
@@ -418,36 +418,34 @@ int FrameMain::AddMacroMenuItems(wxMenu *menu, const std::vector<Automation4::Fe
 /// @brief Open recent subs menu entry 
 /// @param event 
 void FrameMain::OnOpenRecentSubs(wxCommandEvent &event) {
-	int number = event.GetId()-ID_RECENT_FILE;
+	int number = event.GetId()-cmd::id("recent/subtitle");
 	LoadSubtitles(lagi_wxString(config::mru->GetEntry("Subtitle", number)));
 }
 
 /// @brief Open recent video menu entry 
 /// @param event 
 void FrameMain::OnOpenRecentVideo(wxCommandEvent &event) {
-	int number = event.GetId()-ID_MENU_RECENT_VIDEO;
+	int number = event.GetId()-cmd::id("recent/video");
 	LoadVideo(lagi_wxString(config::mru->GetEntry("Video", number)));
 }
 
 /// @brief Open recent timecodes entry 
 /// @param event 
 void FrameMain::OnOpenRecentTimecodes(wxCommandEvent &event) {
-	int number = event.GetId()-ID_MENU_RECENT_TIMECODES;
+	int number = event.GetId()-cmd::id("recent/timecode");
 	LoadVFR(lagi_wxString(config::mru->GetEntry("Timecodes", number)));
 }
 
 /// @brief Open recent Keyframes entry 
 /// @param event 
 void FrameMain::OnOpenRecentKeyframes(wxCommandEvent &event) {
-printf("XXX: THIS IS BROKEN\n");
-//	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-ID_SM_VIDEO_ID_MENU_RECENT_KEYFRAMES)));
+	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-cmd::id("recent/keyframe"))));
 }
 
 /// @brief Open recent audio menu entry 
 /// @param event 
 void FrameMain::OnOpenRecentAudio(wxCommandEvent &event) {
-printf("XXX: THIS IS BROKEN\n");
-//	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-ID_SM_AUDIO_ID_MENU_RECENT_AUDIO)));
+	audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-cmd::id("recent/audio"))));
 }
 
 /// @brief General handler for all Automation-generated menu items

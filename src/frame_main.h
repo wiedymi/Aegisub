@@ -68,19 +68,9 @@ namespace Automation4 { class FeatureMacro; class ScriptManager; }
 
 
 enum SubMenuID {
-	ID_SM_FILE_RECENT_SUBS					= 10007,
-	ID_SM_VIDEO_ID_MENU_RECENT_VIDEO		= 10008,
-	ID_SM_AUDIO_ID_MENU_RECENT_AUDIO		= 10009,
-	ID_SM_VIDEO_ID_MENU_RECENT_TIMECODES	= 10010,
-	ID_SM_VIDEO_ID_MENU_RECENT_KEYFRAMES	= 10011,
 	ID_TOOLBAR_ZOOM_DROPDOWN				= 11001,
 	ID_APP_TIMER_AUTOSAVE					= 12001,
 	ID_APP_TIMER_STATUSCLEAR				= 12002,
-	ID_RECENT_FILE							= 13001,
-	ID_MENU_RECENT_VIDEO					= 13002,
-	ID_MENU_RECENT_AUDIO					= 13003,
-	ID_MENU_RECENT_TIMECODES				= 13004,
-	ID_MENU_RECENT_KEYFRAMES				= 13005,
 	ID_MENU_AUTOMATION_MACRO				= 13006,
 	ID_SASH_MAIN_AUDIO						= 14001
 };
@@ -135,22 +125,6 @@ private:
 
 	/// DOCME
 	wxPanel *Panel;
-
-	/// DOCME
-	wxMenu *RecentSubs;
-
-	/// DOCME
-	wxMenu *RecentVids;
-
-	/// DOCME
-	wxMenu *RecentAuds;
-
-	/// DOCME
-	wxMenu *RecentTimecodes;
-
-	/// DOCME
-	wxMenu *RecentKeyframes;
-
 
 	/// DOCME
 	wxToolBar *Toolbar;

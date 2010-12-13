@@ -337,12 +337,6 @@ wxString MakeHotkeyText(const wxString &item_text, const wxString &hotkey_name) 
 
 /// @brief Initialize menu bar 
 void FrameMain::InitMenu() {
-	RecentSubs = new wxMenu();
-	RecentVids = new wxMenu();
-	RecentAuds = new wxMenu();
-	RecentTimecodes = new wxMenu();
-	RecentKeyframes = new wxMenu();
-
 
 #ifdef __WXMAC__
 	// Make sure special menu items are placed correctly on Mac

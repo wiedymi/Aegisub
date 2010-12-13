@@ -111,6 +111,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 		const json::String& command = obj["command"];
 		std::string name_submenu = name_sub + "/" + command.Value();
 
+
 		switch (type) {
 			case MenuTool::Option: {
 				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL);
@@ -132,7 +133,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 	 			wxMenu *menu_new = new wxMenu();
 				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL, menu_new);
 				menu->Append(menu_item);
-				map.insert(MTPair(name_submenu, menu_new));
+				map.insert(MTPair(command.Value(), menu_new));
 
 			}
 			break;
