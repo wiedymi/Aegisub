@@ -495,7 +495,7 @@
 					"command" : "keyframe/close"
 				},
 				{
-					"type" : 1,
+					"type" : 5,
 					"display" : "Recent",
 					"description" : "Recent keyframes.",
 					"command" : "recent/keyframe"
