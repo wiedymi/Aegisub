@@ -142,41 +142,6 @@ private:
 	/// DOCME
 	wxPanel *Panel;
 
-
-	/// DOCME
-	wxMenuBar *MenuBar;
-
-	/// DOCME
-	wxMenu *fileMenu;
-
-	/// DOCME
-	wxMenu *editMenu;
-
-	/// DOCME
-	wxMenu *videoMenu;
-
-	/// DOCME
-	wxMenu *timingMenu;
-
-	/// DOCME
-	wxMenu *subtitlesMenu;
-
-	/// DOCME
-	wxMenu *helpMenu;
-
-	/// DOCME
-	wxMenu *audioMenu;
-
-	/// DOCME
-	wxMenu *viewMenu;
-
-	/// DOCME
-	wxMenu *automationMenu;
-
-	/// DOCME
-	wxMenu *kanjiTimingMenu;
-
-
 	/// DOCME
 	wxMenu *RecentSubs;
 

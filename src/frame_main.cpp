@@ -337,12 +337,13 @@ wxString MakeHotkeyText(const wxString &item_text, const wxString &hotkey_name) 
 
 /// @brief Initialize menu bar 
 void FrameMain::InitMenu() {
-	// Deinit menu if needed
-	if (menuCreated) {
-		SetMenuBar(NULL);
-		MenuBar->Destroy();
-	}
-	
+	RecentSubs = new wxMenu();
+	RecentVids = new wxMenu();
+	RecentAuds = new wxMenu();
+	RecentTimecodes = new wxMenu();
+	RecentKeyframes = new wxMenu();
+
+
 #ifdef __WXMAC__
 	// Make sure special menu items are placed correctly on Mac
 	wxApp::s_macAboutMenuItemId = Menu_Help_About;
@@ -351,284 +352,9 @@ void FrameMain::InitMenu() {
 	wxApp::s_macHelpMenuTitleName = _("&Help");
 #endif
 
-	// Generate menubar
-	MenuBar = new wxMenuBar();
-
-
-	// Create recent subs submenus
-	RecentSubs = new wxMenu();
-	RecentVids = new wxMenu();
-	RecentAuds = new wxMenu();
-	RecentTimecodes = new wxMenu();
-	RecentKeyframes = new wxMenu();
-
-
-
-// ###########
-// # FILE MENU
-// ###########
-	fileMenu = new wxMenu();
-	AppendBitmapMenuItem(fileMenu,	cmd::id("subtitle/new"),			MakeHotkeyText(_("&New Subtitles"), _T("New Subtitles")), _("New subtitles"),GETIMAGE(new_toolbutton_16));
-	AppendBitmapMenuItem(fileMenu,	cmd::id("subtitle/open"), 			MakeHotkeyText(_("&Open Subtitles..."), _T("Open Subtitles")), _("Opens a subtitles file"),GETIMAGE(open_toolbutton_16));
-	AppendBitmapMenuItem(fileMenu,	cmd::id("subtitle/open/charset"),	_("&Open Subtitles with Charset..."), _("Opens a subtitles file with a specific charset"),GETIMAGE(open_with_toolbutton_16));
-	fileMenu->Append(				cmd::id("subtitle/open/video"),		_("Open Subtitles from &Video"), _("Opens the subtitles from the current video file"));
-	AppendBitmapMenuItem(fileMenu,	cmd::id("subtitle/save"),			MakeHotkeyText(_("&Save Subtitles"), _T("Save Subtitles")), _("Saves subtitles"),GETIMAGE(save_toolbutton_16));
-	AppendBitmapMenuItem(fileMenu,	cmd::id("subtitle/save/as"),		_("Save Subtitles as..."), _("Saves subtitles with another name"), GETIMAGE(save_as_toolbutton_16));
-	AppendBitmapMenuItem(fileMenu,	cmd::id("tool/export"),				_("Export Subtitles..."), _("Saves a copy of subtitles with processing applied to it."), GETIMAGE(export_menu_16));
-	wxMenuItem *RecentParent = new wxMenuItem(fileMenu, ID_SM_FILE_RECENT_SUBS, _("Recent"), _T(""), wxITEM_NORMAL, RecentSubs);
-#ifndef __APPLE__
-	RecentParent->SetBitmap(GETIMAGE(blank_button_16));
-#endif
-	fileMenu->Append(RecentParent);
-	fileMenu->AppendSeparator();
-	AppendBitmapMenuItem (fileMenu,	cmd::id("subtitle/properties"),		_("&Properties..."), _("Open script properties window"),GETIMAGE(properties_toolbutton_16));
-	AppendBitmapMenuItem (fileMenu,	cmd::id("subtitle/attachment"),		_("&Attachments..."), _("Open the attachment list"), GETIMAGE(attach_button_16));
-	AppendBitmapMenuItem (fileMenu,	cmd::id("tool/font_collector"),		_("&Fonts Collector..."),_("Open fonts collector"), GETIMAGE(font_collector_button_16));
-	fileMenu->AppendSeparator();
-#ifndef __APPLE__
-	// Doesn't work on Mac, only one instance is ever allowed there from OS side
-	AppendBitmapMenuItem(fileMenu,cmd::id("app/new_window"), _("New Window"), _("Open a new application window"),GETIMAGE(new_window_menu_16));
-#endif
-	AppendBitmapMenuItem(fileMenu,cmd::id("app/exit"), MakeHotkeyText(_("E&xit"), _T("Exit")), _("Exit the application"),GETIMAGE(exit_button_16));
-	MenuBar->Append(fileMenu, _("&File"));
-
-
-
-// ###########
-// # EDIT MENU
-// ###########
-	// NOTE: Undo and Redo are actually controlled in frame_main_events, OnMenuOpen(). They will always be the first two items.
-	editMenu = new wxMenu();
-	AppendBitmapMenuItem(editMenu,cmd::id("edit/undo"),				MakeHotkeyText(_("&Undo"), _T("Undo")), _("Undoes last action"),GETIMAGE(undo_button_16));
-	AppendBitmapMenuItem(editMenu,cmd::id("edit/redo"),				MakeHotkeyText(_("&Redo"), _T("Redo")), _("Redoes last action"),GETIMAGE(redo_button_16));
-	editMenu->AppendSeparator();
-	AppendBitmapMenuItem(editMenu,cmd::id("edit/line/cut"),			MakeHotkeyText(_("Cut Lines"), _T("Cut")), _("Cut subtitles"), GETIMAGE(cut_button_16));
-	AppendBitmapMenuItem(editMenu,cmd::id("edit/line/copy"),		MakeHotkeyText(_("Copy Lines"), _T("Copy")), _("Copy subtitles"), GETIMAGE(copy_button_16));
-	AppendBitmapMenuItem(editMenu,cmd::id("edit/line/paste"),		MakeHotkeyText(_("Paste Lines"), _T("Paste")), _("Paste subtitles"), GETIMAGE(paste_button_16));
-	AppendBitmapMenuItem(editMenu,cmd::id("edit/line/paste/over"),	MakeHotkeyText(_("Paste Lines Over..."), _T("Paste Over")) , _("Paste subtitles over others"),GETIMAGE(paste_over_button_16));
-	editMenu->AppendSeparator();
-	AppendBitmapMenuItem(editMenu,cmd::id("subtitle/find"),			MakeHotkeyText(_("&Find..."), _T("Find")), _("Find words in subtitles"),GETIMAGE(find_button_16));
-	AppendBitmapMenuItem(editMenu,cmd::id("subtitle/find/next"),	MakeHotkeyText(_("Find Next"), _T("Find Next")), _("Find next match of last word"),GETIMAGE(find_next_menu_16));
-	AppendBitmapMenuItem(editMenu,cmd::id("edit/search_replace"),	MakeHotkeyText(_("Search and &Replace..."), _T("Replace")) , _("Find and replace words in subtitles"),GETIMAGE(find_replace_menu_16));
-	MenuBar->Append(editMenu, _("&Edit"));
-
-
-
-// ################
-// # SUBTITLES MENU
-// ################
-	subtitlesMenu = new wxMenu();
-	AppendBitmapMenuItem (subtitlesMenu,	cmd::id("tool/style/manager"),			_("&Styles Manager..."), _("Open styles manager"), GETIMAGE(style_toolbutton_16));
-	AppendBitmapMenuItem (subtitlesMenu,	cmd::id("tool/style/assistant"),		_("St&yling Assistant..."), _("Open styling assistant"), GETIMAGE(styling_toolbutton_16));
-	AppendBitmapMenuItem (subtitlesMenu,	cmd::id("tool/translation_assistant"),	_("&Translation Assistant..."),_("Open translation assistant"), GETIMAGE(translation_toolbutton_16));
-	AppendBitmapMenuItem (subtitlesMenu,	cmd::id("tool/resampleres"),			_("Resample Resolution..."), _("Changes resolution and modifies subtitles to conform to change"), GETIMAGE(resample_toolbutton_16));
-	AppendBitmapMenuItem (subtitlesMenu,	cmd::id("subtitle/spellcheck"),			_("Spe&ll Checker..."),_("Open spell checker"), GETIMAGE(spellcheck_toolbutton_16));
-	if (HasASSDraw()) {
-		subtitlesMenu->AppendSeparator();
-		AppendBitmapMenuItem (subtitlesMenu,cmd::id("tool/assdraw"),				_T("ASSDraw3..."),_("Launches ai-chan's \"ASSDraw3\" tool for vector drawing."), GETIMAGE(assdraw_16));
-	}
-	subtitlesMenu->AppendSeparator();
-	wxMenu *InsertMenu = new wxMenu;
-	wxMenuItem *InsertParent = new wxMenuItem(subtitlesMenu,ID_SM_SUBTITLES_INSERT,_("&Insert Lines"),_T(""),wxITEM_NORMAL,InsertMenu);
-#ifndef __APPLE__
-	InsertParent->SetBitmap(GETIMAGE(blank_button_16));
-#endif
-	AppendBitmapMenuItem(InsertMenu,		cmd::id("subtitle/insert/before"),			_("&Before Current"),_("Inserts a line before current"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(InsertMenu,		cmd::id("subtitle/insert/after"),			_("&After Current"),_("Inserts a line after current"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(InsertMenu,		cmd::id("subtitle/insert/before/videotime"),_("Before Current, at Video Time"),_("Inserts a line before current, starting at video time"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(InsertMenu,		cmd::id("subtitle/insert/after/videotime"),	_("After Current, at Video Time"),_("Inserts a line after current, starting at video time"),GETIMAGE(blank_button_16));
-	subtitlesMenu->Append(InsertParent);
-	AppendBitmapMenuItem(subtitlesMenu,		cmd::id("edit/line/duplicate"),				MakeHotkeyText(_("&Duplicate Lines"), _T("Grid duplicate rows")),_("Duplicate the selected lines"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(subtitlesMenu,		cmd::id("edit/line/duplicate/shift"),		MakeHotkeyText(_("&Duplicate and Shift by 1 Frame"), _T("Grid duplicate and shift one frame")),_("Duplicate lines and shift by one frame"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(subtitlesMenu,		cmd::id("edit/line/delete"),				MakeHotkeyText(_("Delete Lines"), _T("Grid delete rows")),_("Delete currently selected lines"),GETIMAGE(delete_button_16));
-	subtitlesMenu->AppendSeparator();
-	wxMenu *JoinMenu = new wxMenu;
-	wxMenuItem *JoinParent = new wxMenuItem(subtitlesMenu,ID_SM_SUBTITLES_JOIN,	_("Join Lines"),_T(""),wxITEM_NORMAL,JoinMenu);
-#ifndef __APPLE__
-	JoinParent->SetBitmap(GETIMAGE(blank_button_16));
-#endif
-	AppendBitmapMenuItem(JoinMenu,			cmd::id("edit/line/join/concatenate"),	_("&Concatenate"),_("Joins selected lines in a single one, concatenating text together"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(JoinMenu,			cmd::id("edit/line/join/keep_first"),	_("Keep &First"),_("Joins selected lines in a single one, keeping text of first and discarding remaining"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(JoinMenu,			cmd::id("edit/line/join/as_karaoke"),	_("As &Karaoke"),_("Joins selected lines in a single one, as karaoke"),GETIMAGE(blank_button_16));
-	subtitlesMenu->Append(JoinParent);
-	AppendBitmapMenuItem(subtitlesMenu,		cmd::id("edit/line/recombine"),			_("Recombine Lines"),_("Recombine subtitles when they have been split and merged"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(subtitlesMenu,		cmd::id("edit/line/split/by_karaoke"),	_("Split Lines (by karaoke)"),_("Uses karaoke timing to split line into multiple smaller lines"),GETIMAGE(blank_button_16));
-	subtitlesMenu->AppendSeparator();
-	wxMenu *SortMenu = new wxMenu;
-	wxMenuItem *SortParent = new wxMenuItem(subtitlesMenu,ID_SM_SUBTITLES_SORT,_("Sort Lines"),_T(""),wxITEM_NORMAL,SortMenu);
-#ifndef __APPLE__
-	SortParent->SetBitmap(GETIMAGE(sort_times_button_16));
-#endif
-	AppendBitmapMenuItem(SortMenu,			cmd::id("time/sort/start"),				_("&Start Time"),_("Sort all subtitles by their start times"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(SortMenu,			cmd::id("time/sort/end"),				_("&End Time"),_("Sort all subtitles by their end times"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(SortMenu,			cmd::id("time/sort/style"),				_("St&yle Name"),_("Sort all subtitles by their style names"),GETIMAGE(blank_button_16));
-	subtitlesMenu->Append(SortParent);
-	AppendBitmapMenuItem(subtitlesMenu,		cmd::id("edit/line/swap"),				_("Swap Lines"),_("Swaps the two selected lines"),GETIMAGE(arrow_sort_16));
-	AppendBitmapMenuItem (subtitlesMenu,	cmd::id("tool/line/select"),			MakeHotkeyText(_("Select Lines..."), _T("Select lines")), _("Selects lines based on defined criterea"),GETIMAGE(select_lines_button_16));
-	MenuBar->Append(subtitlesMenu, _("&Subtitles"));
-
-
-
-// #############
-// # TIMING MENU
-// #############
-	timingMenu = new wxMenu();
-	AppendBitmapMenuItem(timingMenu,		cmd::id("time/shift"),	MakeHotkeyText(_("S&hift Times..."), _T("Shift times")), _("Shift subtitles by time or frames"),GETIMAGE(shift_times_toolbutton_16));
-	AppendBitmapMenuItem(timingMenu,		cmd::id("tool/time/postprocess"),	_("Timing Post-Processor..."), _("Runs a post-processor for timing to deal with lead-ins, lead-outs, scene timing and etc."), GETIMAGE(timing_processor_toolbutton_16));
-	AppendBitmapMenuItem (timingMenu,		cmd::id("tool/time/kanji"),	_("Kanji Timer..."),_("Open Kanji timer"),GETIMAGE(kara_timing_copier_16));
-	timingMenu->AppendSeparator();
-	AppendBitmapMenuItem(timingMenu,		cmd::id("time/snap/start_video"),	MakeHotkeyText(_("Snap Start to Video"), _T("Set Start To Video")), _("Set start of selected subtitles to current video frame"), GETIMAGE(substart_to_video_16));
-	AppendBitmapMenuItem(timingMenu,		cmd::id("time/snap/end_video"),	MakeHotkeyText(_("Snap End to Video"), _T("Set End to Video")), _("Set end of selected subtitles to current video frame"), GETIMAGE(subend_to_video_16));
-	AppendBitmapMenuItem(timingMenu,		cmd::id("time/snap/scene"),	MakeHotkeyText(_("Snap to Scene"), _T("Snap to Scene")), _("Set start and end of subtitles to the keyframes around current video frame"), GETIMAGE(snap_subs_to_scene_16));
-	AppendBitmapMenuItem(timingMenu,		cmd::id("time/frame/current"),	MakeHotkeyText(_("Shift to Current Frame"), _T("Shift by Current Time")), _("Shift selection so first selected line starts at current frame"), GETIMAGE(shift_to_frame_16));
-	timingMenu->AppendSeparator();
-	wxMenu *ContinuousMenu = new wxMenu;
-	wxMenuItem *ContinuousParent = new wxMenuItem(subtitlesMenu,ID_SM_TIMING_CONTINOUS,_("Make Times Continuous"),_T(""),wxITEM_NORMAL,ContinuousMenu);
-#ifndef __APPLE__
-	ContinuousParent->SetBitmap(GETIMAGE(blank_button_16));
-#endif
-	AppendBitmapMenuItem(ContinuousMenu,	cmd::id("time/continous/start"),	_("Change &Start"),_("Changes times of subs so start times begin on previous's end time"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(ContinuousMenu,	cmd::id("time/continous/end"),	_("Change &End"),_("Changes times of subs so end times begin on next's start time"),GETIMAGE(blank_button_16));
-	timingMenu->Append(ContinuousParent);
-	MenuBar->Append(timingMenu, _("&Timing"));
-
-
-
-// ############
-// # VIDEO MENU
-// ############
-	videoMenu = new wxMenu();
-	AppendBitmapMenuItem(videoMenu,		cmd::id("video/open"),		_("&Open Video..."), _("Opens a video file"), GETIMAGE(open_video_menu_16));
-	AppendBitmapMenuItem(videoMenu,		cmd::id("video/close"),		_("&Close Video"), _("Closes the currently open video file"), GETIMAGE(close_video_menu_16));
-	wxMenuItem *RecentVidParent = new wxMenuItem(videoMenu, ID_SM_VIDEO_ID_MENU_RECENT_VIDEO, _("Recent"), _T(""), wxITEM_NORMAL, RecentVids);
-	videoMenu->Append(RecentVidParent);
-	AppendBitmapMenuItem(videoMenu,		cmd::id("video/open/dummy"),	_("Use Dummy Video..."), _("Opens a video clip with solid colour"), GETIMAGE(use_dummy_video_menu_16));
-	AppendBitmapMenuItem(videoMenu,		cmd::id("video/details"),	_("Show Video Details..."), _("Shows video details"), GETIMAGE(show_video_details_menu_16));
-	videoMenu->AppendSeparator();
-	AppendBitmapMenuItem(videoMenu,		cmd::id("timecode/open"),	_("Open Timecodes File..."), _("Opens a VFR timecodes v1 or v2 file"), GETIMAGE(open_timecodes_menu_16));
-	AppendBitmapMenuItem(videoMenu,		cmd::id("timecode/save"),	_("Save Timecodes File..."), _("Saves a VFR timecodes v2 file"), GETIMAGE(save_timecodes_menu_16));
-	AppendBitmapMenuItem(videoMenu,		cmd::id("timecode/close"),	_("Close Timecodes File"), _("Closes the currently open timecodes file"), GETIMAGE(close_timecodes_menu_16))->Enable(false);
-	wxMenuItem *RecentTimesParent = new wxMenuItem(videoMenu, ID_SM_VIDEO_ID_MENU_RECENT_TIMECODES, _("Recent"), _T(""), wxITEM_NORMAL, RecentTimecodes);
-	videoMenu->Append(RecentTimesParent);
-	videoMenu->AppendSeparator();
-	AppendBitmapMenuItem(videoMenu,		cmd::id("keyframe/open"),	_("Open Keyframes..."), _("Opens a keyframe list file"), GETIMAGE(open_keyframes_menu_16));
-	AppendBitmapMenuItem(videoMenu,		cmd::id("keyframe/save"),	_("Save Keyframes..."), _("Saves the current keyframe list"), GETIMAGE(save_keyframes_menu_16))->Enable(false);
-	AppendBitmapMenuItem(videoMenu,		cmd::id("keyframe/close"),	_("Close Keyframes"), _("Closes the currently open keyframes list"), GETIMAGE(close_keyframes_menu_16))->Enable(false);
-	wxMenuItem *RecentKeyframesParent = new wxMenuItem(videoMenu, ID_SM_VIDEO_ID_MENU_RECENT_KEYFRAMES, _("Recent"), _T(""), wxITEM_NORMAL, RecentKeyframes);
-	videoMenu->Append(RecentKeyframesParent);
-	videoMenu->AppendSeparator();
-	AppendBitmapMenuItem(videoMenu,		cmd::id("video/detach"),	_("Detach Video"), _("Detach video, displaying it in a separate Window."), GETIMAGE(detach_video_menu_16));
-
-	wxMenu *ZoomMenu = new wxMenu;
-	wxMenuItem *ZoomParent = new wxMenuItem(subtitlesMenu,ID_SM_VIDEO_ZOOM,_("Set Zoom"),_T(""),wxITEM_NORMAL,ZoomMenu);
-#ifndef __APPLE__
-	ZoomParent->SetBitmap(GETIMAGE(set_zoom_menu_16));
-#endif
-	ZoomMenu->Append(					cmd::id("video/zoom/50"),	MakeHotkeyText(_T("&50%"), _T("Zoom 50%")), _("Set zoom to 50%"));
-	ZoomMenu->Append(					cmd::id("video/zoom/100"),	MakeHotkeyText(_T("&100%"), _T("Zoom 100%")), _("Set zoom to 100%"));
-	ZoomMenu->Append(					cmd::id("video/zoom/200"),	MakeHotkeyText(_T("&200%"), _T("Zoom 200%")), _("Set zoom to 200%"));
-	videoMenu->Append(ZoomParent);
-	wxMenu *AspectMenu = new wxMenu;
-	wxMenuItem *AspectParent = new wxMenuItem(subtitlesMenu,ID_SM_VIDEO_OVERRIDE_AR,_("Override Aspect Ratio"),_T(""),wxITEM_NORMAL,AspectMenu);
-#ifndef __APPLE__
-	AspectParent->SetBitmap(GETIMAGE(override_aspect_menu_16));
-#endif
-	AspectMenu->AppendCheckItem(		cmd::id("video/aspect/default"),	_("&Default"), _("Leave video on original aspect ratio"));
-	AspectMenu->AppendCheckItem(		cmd::id("video/aspect/full"),		_("&Fullscreen (4:3)"), _("Forces video to 4:3 aspect ratio"));
-	AspectMenu->AppendCheckItem(		cmd::id("video/aspect/wide"),		_("&Widescreen (16:9)"), _("Forces video to 16:9 aspect ratio"));
-	AspectMenu->AppendCheckItem(		cmd::id("video/aspect/cinematic"),	_("&Cinematic (2.35)"), _("Forces video to 2.35 aspect ratio"));
-	AspectMenu->AppendCheckItem(		cmd::id("video/aspect/custom"),		_("Custom..."), _("Forces video to a custom aspect ratio"));
-	videoMenu->Append(AspectParent);
-	videoMenu->AppendCheckItem(			cmd::id("video/show_overscan"),	_("Show Overscan Mask"), _("Show a mask over the video, indicating areas that might get cropped off by overscan on televisions."));
-//  This is broken as you can't use Check() on a menu item that has a bitmap.
-//	AppendBitmapMenuItem(videoMenu, Menu_Video_Overscan, _("Show Overscan Mask"), _("Show a mask over the video, indicating areas that might get cropped off by overscan on televisions."), GETIMAGE(show_overscan_menu_checked_16));
-	videoMenu->AppendSeparator();
-	AppendBitmapMenuItem(videoMenu,		cmd::id("video/jump"),	MakeHotkeyText(_("&Jump to..."), _T("Video Jump")), _("Jump to frame or time"), GETIMAGE(jumpto_button_16));
-	AppendBitmapMenuItem(videoMenu,		cmd::id("video/jump/start"),	MakeHotkeyText(_("Jump Video to Start"), _T("Jump Video To Start")), _("Jumps the video to the start frame of current subtitle"), GETIMAGE(video_to_substart_16));
-	AppendBitmapMenuItem(videoMenu,		cmd::id("video/jump/end"),	MakeHotkeyText(_("Jump Video to End"), _T("Jump Video To End")), _("Jumps the video to the end frame of current subtitle"), GETIMAGE(video_to_subend_16));
-	MenuBar->Append(videoMenu, _("&Video"));
-
-
-
-// ##########
-// AUDIO MENU
-// ##########
-	audioMenu = new wxMenu();
-	AppendBitmapMenuItem(audioMenu,		cmd::id("audio/open"),	_("&Open Audio File..."), _("Opens an audio file"), GETIMAGE(open_audio_menu_16));
-	AppendBitmapMenuItem(audioMenu,		cmd::id("audio/open/video"),	_("Open Audio from &Video"), _("Opens the audio from the current video file"), GETIMAGE(open_audio_from_video_menu_16));
-	AppendBitmapMenuItem(audioMenu,		cmd::id("audio/close"),	_("&Close Audio"), _("Closes the currently open audio file"), GETIMAGE(close_audio_menu_16));
-	wxMenuItem *RecentAudParent = new wxMenuItem(audioMenu, ID_SM_AUDIO_ID_MENU_RECENT_AUDIO, _("Recent"), _T(""), wxITEM_NORMAL, RecentAuds);
-	audioMenu->Append(RecentAudParent);
-	audioMenu->AppendSeparator();
-	audioMenu->Append(cmd::id("audio/view/spectrum"), _("Spectrum display"), _("Display audio as a frequency-power spectrogrph"), wxITEM_RADIO);
-	audioMenu->Append(cmd::id("audio/view/waveform"), _("Waveform display"), _("Display audio as a linear amplitude graph"), wxITEM_RADIO);
-#ifdef _DEBUG
-	audioMenu->AppendSeparator();
-	audioMenu->Append(					cmd::id("audio/open/blank"),	_T("Open 2h30 Blank Audio"), _T("Open a 150 minutes blank audio clip, for debugging"));
-	audioMenu->Append(					cmd::id("audio/open/noise"),	_T("Open 2h30 Noise Audio"), _T("Open a 150 minutes noise-filled audio clip, for debugging"));
-#endif
-	MenuBar->Append(audioMenu, _("&Audio"));
-
-
-
-// ###############
-// AUTOMATION MENU
-// ###############
-#ifdef WITH_AUTOMATION
-	automationMenu = new wxMenu();
-	AppendBitmapMenuItem (automationMenu,	cmd::id("am/manager"), _("&Automation..."),_("Open automation manager"), GETIMAGE(automation_toolbutton_16));
-	automationMenu->AppendSeparator();
-	MenuBar->Append(automationMenu, _("&Automation"));
-#endif
-
-
-
-// #########
-// VIEW MENU
-// #########
-	viewMenu = new wxMenu();
-	AppendBitmapMenuItem(viewMenu,	cmd::id("app/language"),			_T("&Language..."), _("Select Aegisub interface language"), GETIMAGE(languages_menu_16));
-	AppendBitmapMenuItem(viewMenu,	cmd::id("app/options"),				MakeHotkeyText(_("&Options..."), _T("Options")), _("Configure Aegisub"), GETIMAGE(options_button_16));
-	viewMenu->AppendSeparator();
-	viewMenu->AppendRadioItem(		cmd::id("app/display/subs"),		_("Subs Only View"), _("Display subtitles only"));
-	viewMenu->AppendRadioItem(		cmd::id("app/display/video_subs"),	_("Video+Subs View"), _("Display video and subtitles only"));
-	viewMenu->AppendRadioItem(		cmd::id("app/display/audio_subs"),	_("Audio+Subs View"), _("Display audio and subtitles only"));
-	viewMenu->AppendRadioItem(		cmd::id("app/display/full"),		_("Full view"), _("Display audio, video and subtitles"));
-	viewMenu->AppendSeparator();
-	viewMenu->AppendRadioItem(		cmd::id("grid/tags/show"),		_("Show Tags"), _("Show full override tags in the subtitle grid"));
-	viewMenu->AppendRadioItem(		cmd::id("grid/tags/simplify"),	_("Simplify Tags"), _("Replace override tags in the subtitle grid with a simplified placeholder"));
-	viewMenu->AppendRadioItem(		cmd::id("grid/tags/hide"),		_("Hide Tags"), _("Hide override tags in the subtitle grid"));
-	MenuBar->Append(viewMenu, _("Vie&w"));
-
-
-
-// #########
-// HELP MENU
-// #########
-	helpMenu = new wxMenu();
-	AppendBitmapMenuItem (helpMenu,		cmd::id("help/contents"), MakeHotkeyText(_("&Contents..."), _T("Help")), _("Help topics"), GETIMAGE(contents_button_16));
-#ifdef __WXMAC__
-	AppendBitmapMenuItem (helpMenu,		cmd::id("help/files"), MakeHotkeyText(_("&All Files") + _T("..."), _T("Help")), _("Help topics"), GETIMAGE(contents_button_16));
-#endif
-	helpMenu->AppendSeparator();
-	AppendBitmapMenuItem(helpMenu,		cmd::id("help/website"), _("&Website..."), _("Visit Aegisub's official website"),GETIMAGE(website_button_16));
-	AppendBitmapMenuItem(helpMenu,		cmd::id("help/forums"), _("&Forums..."), _("Visit Aegisub's forums"),GETIMAGE(forums_button_16));
-	AppendBitmapMenuItem(helpMenu,		cmd::id("help/bugs"), _("&Bug Tracker..."), _("Visit Aegisub's bug tracker to report bugs and request new features"),GETIMAGE(bugtracker_button_16));
-	AppendBitmapMenuItem (helpMenu,		cmd::id("help/irc"), _("&IRC Channel..."), _("Visit Aegisub's official IRC channel"), GETIMAGE(irc_button_16));
-#ifndef __WXMAC__
-	helpMenu->AppendSeparator();
-#endif
-	AppendBitmapMenuItem(helpMenu,		cmd::id("app/updates"), _("&Check for Updates..."), _("Check to see if there is a new version of Aegisub available"),GETIMAGE(blank_button_16));
-	AppendBitmapMenuItem(helpMenu,		cmd::id("app/about"), _("&About..."), _("About Aegisub"),GETIMAGE(about_menu_16));
-	AppendBitmapMenuItem(helpMenu,		cmd::id("app/log"), _("&Log window..."), _("Aegisub event log"),GETIMAGE(about_menu_16));
-	MenuBar->Append(helpMenu, _("&Help"));
-
-	// Set the bar as this frame's
 	SetMenuBar(menu::menutool->GetMainMenu());
-
-	// Set menu created flag
-	menuCreated = true;
 }
+
 
 /// @brief Initialize contents 
 void FrameMain::InitContents() {
@@ -1387,6 +1113,7 @@ bool FrameMain::LoadList(wxArrayString list) {
 
 /// @brief Sets the descriptions for undo/redo 
 void FrameMain::SetUndoRedoDesc() {
+	wxMenu *editMenu = menu::menutool->GetMenu("main/edit");
 	editMenu->SetHelpString(0,_T("Undo ")+ass->GetUndoDescription());
 	editMenu->SetHelpString(1,_T("Redo ")+ass->GetRedoDescription());
 }

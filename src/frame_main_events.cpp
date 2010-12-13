@@ -46,6 +46,8 @@
 #include <wx/tglbtn.h>
 #endif
 
+#include "aegisub/menutool.h"
+
 #include "ass_dialogue.h"
 #include "ass_file.h"
 #include "selection_controller.h"
@@ -171,11 +173,13 @@ void FrameMain::RebuildRecentList(wxString listName,wxMenu *menu,int startID) {
 /// @param event 
 void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	// Get menu
+	wxMenuBar *MenuBar = menu::menutool->GetMainMenu();
+
 	MenuBar->Freeze();
 	wxMenu *curMenu = event.GetMenu();
 
 	// File menu
-	if (curMenu == fileMenu) {
+	if (curMenu == menu::menutool->GetMenu("main/file")) {
 		// Rebuild recent
 		RebuildRecentList(_T("Subtitle"),RecentSubs,ID_RECENT_FILE);
 
@@ -183,7 +187,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// View menu
-	else if (curMenu == viewMenu) {
+	else if (curMenu == menu::menutool->GetMenu("main/view")) {
 		// Flags
 		bool aud = audioController->IsAudioOpen();
 		bool vid = VideoContext::Get()->IsLoaded() && !detachedVideo;
@@ -208,7 +212,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// Video menu
-	else if (curMenu == videoMenu) {
+	else if (curMenu == menu::menutool->GetMenu("main/video")) {
 		bool state = VideoContext::Get()->IsLoaded();
 		bool attached = state && !detachedVideo;
 
@@ -260,7 +264,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// Audio menu
-	else if (curMenu == audioMenu) {
+	else if (curMenu == menu::menutool->GetMenu("main/audio")) {
 		bool state = audioController->IsAudioOpen();
 		bool vidstate = VideoContext::Get()->IsLoaded();
 
@@ -272,7 +276,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// Subtitles menu
-	else if (curMenu == subtitlesMenu) {
+	else if (curMenu == menu::menutool->GetMenu("main/subtitle")) {
 		// Variables
 		bool continuous;
 		wxArrayInt sels = SubsGrid->GetSelection(&continuous);
@@ -305,7 +309,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// Timing menu
-	else if (curMenu == timingMenu) {
+	else if (curMenu == menu::menutool->GetMenu("main/timing")) {
 		// Variables
 		bool continuous;
 		wxArrayInt sels = SubsGrid->GetSelection(&continuous);
@@ -325,7 +329,9 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// Edit menu
-	else if (curMenu == editMenu) {
+	else if (curMenu == menu::menutool->GetMenu("main/edit")) {
+		wxMenu *editMenu = menu::menutool->GetMenu("main/edit");
+
 		// Undo state
 		wxMenuItem *item;
 		wxString undo_text = _("&Undo") + wxString(_T(" ")) + ass->GetUndoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Undo"));
@@ -357,7 +363,9 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 
 	// Automation menu
 #ifdef WITH_AUTOMATION
-	else if (curMenu == automationMenu) {
+	else if (curMenu == menu::menutool->GetMenu("main/automation")) {
+		wxMenu *automationMenu = menu::menutool->GetMenu("main/automation");
+
 		// Remove old macro items
 		for (unsigned int i = 0; i < activeMacroItems.size(); i++) {
 			wxMenu *p = 0;
