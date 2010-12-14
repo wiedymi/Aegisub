@@ -42,6 +42,8 @@
 #include <wx/utils.h>
 #endif
 
+#include "command.h"
+
 #include "aegisub/context.h"
 
 #include "dialog_fonts_collector.h"
@@ -56,72 +58,151 @@
 
 namespace cmd {
 
-void tool_assdraw(agi::Context *c) {
-	wxExecute(_T("\"") + StandardPaths::DecodePath(_T("?data/ASSDraw3.exe")) + _T("\""));
-}
+class tool_assdraw: public Command {
+public:
+	CMD_NAME("tool/assdraw")
+	STR_MENU("ASSDraw3...")
+	STR_DISP("ASSDraw3")
+	STR_HELP("Launch ASSDraw3 tool for vector drawing.")
+
+	void operator()(agi::Context *c) {
+		wxExecute(_T("\"") + StandardPaths::DecodePath(_T("?data/ASSDraw3.exe")) + _T("\""));
+	}
+};
+
+class tool_export: public Command {
+public:
+	CMD_NAME("tool/export")
+	STR_MENU("Export Subtitles..")
+	STR_DISP("Export Subtitles")
+	STR_HELP("Saves a copy of subtitles with processing applied to it.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		DialogResample diag(c->parent, c->SubsGrid);
+		diag.ShowModal();
+	}
+};
 
 
-void tool_export(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	DialogResample diag(c->parent, c->SubsGrid);
-	diag.ShowModal();
-}
+class tool_font_collector: public Command {
+public:
+	CMD_NAME("tool/font_collector")
+	STR_MENU("&Fonts Collector..")
+	STR_DISP("Fonts Collector")
+	STR_HELP("Open fonts collector.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		DialogFontsCollector Collector(c->parent, c->ass);
+		Collector.ShowModal();
+	}
+};
 
 
-void tool_font_collector(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	DialogFontsCollector Collector(c->parent, c->ass);
-	Collector.ShowModal();
-}
+class tool_line_select: public Command {
+public:
+	CMD_NAME("tool/line/select")
+	STR_MENU("Select Lines..")
+	STR_DISP("Select Lines")
+	STR_HELP("Selects lines based on defined criterea.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		DialogSelection select(c->parent, c->SubsGrid);
+		select.ShowModal();
+	}
+};
 
 
-void tool_line_select(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	DialogSelection select(c->parent, c->SubsGrid);
-	select.ShowModal();
-}
+class tool_resampleres: public Command {
+public:
+	CMD_NAME("tool/resampleres")
+	STR_MENU("Resample Resolution..")
+	STR_DISP("Resample Resolution")
+	STR_HELP("Changes resolution and modifies subtitles to conform to change.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		DialogResample diag(c->parent, c->SubsGrid);
+		diag.ShowModal();
+	}
+};
 
 
-void tool_resampleres(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	DialogResample diag(c->parent, c->SubsGrid);
-	diag.ShowModal();
-}
+class tool_style_assistant: public Command {
+public:
+	CMD_NAME("tool/style/assistant")
+	STR_MENU("St&yling Assistant..")
+	STR_DISP("Styling Assistant")
+	STR_HELP("Open styling assistant.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		if (!c->stylingAssistant) c->stylingAssistant = new DialogStyling(c->parent, c->SubsGrid);
+		c->stylingAssistant->Show(true);
+	}
+};
 
 
-void tool_style_assistant(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	if (!c->stylingAssistant) c->stylingAssistant = new DialogStyling(c->parent, c->SubsGrid);
-	c->stylingAssistant->Show(true);
-}
+class tool_style_manager: public Command {
+public:
+	CMD_NAME("tool/style/manager")
+	STR_MENU("&Styles Manager..")
+	STR_DISP("Styles Manager")
+	STR_HELP("Open styles manager.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		DialogStyleManager StyleManager(c->parent, c->SubsGrid);
+		StyleManager.ShowModal();
+	}
+};
 
 
-void tool_style_manager(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	DialogStyleManager StyleManager(c->parent, c->SubsGrid);
-	StyleManager.ShowModal();
-}
+class tool_time_kanji: public Command {
+public:
+	CMD_NAME("tool/time/kanji")
+	STR_MENU("Kanji Timer..")
+	STR_DISP("Kanji Timer")
+	STR_HELP("Open Kanji timer.")
+
+	void operator()(agi::Context *c) {
+		DialogKanjiTimer kanjitimer(c->parent, c->SubsGrid);
+		kanjitimer.ShowModal();
+	}
+};
 
 
-void tool_time_kanji(agi::Context *c) {
-	DialogKanjiTimer kanjitimer(c->parent, c->SubsGrid);
-	kanjitimer.ShowModal();
-}
+class tool_time_postprocess: public Command {
+public:
+	CMD_NAME("tool/time/postprocess")
+	STR_MENU("Timing Post-Processor..")
+	STR_DISP("Timing Post-Processor")
+	STR_HELP("Runs a post-processor for timing to deal with lead-ins, lead-outs, scene timing and etc.")
+
+	void operator()(agi::Context *c) {
+		DialogTimingProcessor timing(c->parent, c->SubsGrid);
+		timing.ShowModal();
+	}
+};
 
 
-void tool_time_postprocess(agi::Context *c) {
-	DialogTimingProcessor timing(c->parent, c->SubsGrid);
-	timing.ShowModal();
-}
+class tool_translation_assistant: public Command {
+public:
+	CMD_NAME("tool/translation_assistant")
+	STR_MENU("&Translation Assistant..")
+	STR_DISP("Translation Assistant")
+	STR_HELP("Open translation assistant.")
 
-
-void tool_translation_assistant(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	int start = c->SubsGrid->GetFirstSelRow();
-	if (start == -1) start = 0;
-	DialogTranslation Trans(c->parent, c->ass, c->SubsGrid, start, true);
-	Trans.ShowModal();
-}
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		int start = c->SubsGrid->GetFirstSelRow();
+		if (start == -1) start = 0;
+		DialogTranslation Trans(c->parent, c->ass, c->SubsGrid, start, true);
+		Trans.ShowModal();
+	}
+};
 
 
 } // namespace cmd

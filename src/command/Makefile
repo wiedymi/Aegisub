@@ -9,10 +9,7 @@ PRECOMPILED_HEADER_NAME=../agi_pre.h
 LIB = aegisub_command.a
 
 SRC_OLD = \
-	icon.cpp \
-	menu.cpp \
 	medusa.cpp \
-	tool.cpp \
 	video.cpp
 
 SRC = \
@@ -26,9 +23,12 @@ SRC = \
 	subtitle.cpp \
 	time.cpp \
 	timecode.cpp \
+	menu.cpp \
+	tool.cpp \
 	help.cpp
 
 SRC += \
+	icon.cpp \
 	command.cpp
 
 HEADER = *.h
