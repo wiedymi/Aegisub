@@ -41,6 +41,8 @@
 #ifndef AGI_PRE
 #endif
 
+#include "command.h"
+
 #include "aegisub/context.h"
 #include "aegisub/context.h"
 #include "subs_edit_box.h"
@@ -50,99 +52,227 @@
 
 namespace cmd {
 
-void edit_line_copy(agi::Context *c) {
-	if (c->parent->FindFocus() == c->EditBox->TextEdit) {
-	c->EditBox->TextEdit->Copy();
-		return;
+class edit_line_copy: public Command {
+public:
+	CMD_NAME("edit/line/copy")
+	STR_MENU("Copy Lines")
+	STR_DISP("Copy Lines")
+	STR_HELP("Copy subtitles.")
+
+	void operator()(agi::Context *c) {
+		if (c->parent->FindFocus() == c->EditBox->TextEdit) {
+			c->EditBox->TextEdit->Copy();
+			return;
+		}
+		c->SubsGrid->CopyLines(c->SubsGrid->GetSelection());
 	}
-	c->SubsGrid->CopyLines(c->SubsGrid->GetSelection());
-}
+};
 
 
-void edit_line_cut(agi::Context *c) {
-	if (c->parent->FindFocus() == c->EditBox->TextEdit) {
-		c->EditBox->TextEdit->Cut();
-		return;
+class edit_line_cut: public Command {
+public:
+	CMD_NAME("edit/line/cut")
+	STR_MENU("Cut Lines")
+	STR_DISP("Cut Lines")
+	STR_HELP("Cut subtitles.")
+
+	void operator()(agi::Context *c) {
+		if (c->parent->FindFocus() == c->EditBox->TextEdit) {
+			c->EditBox->TextEdit->Cut();
+			return;
+		}
+		c->SubsGrid->CutLines(c->SubsGrid->GetSelection());
 	}
-	c->SubsGrid->CutLines(c->SubsGrid->GetSelection());
-}
+};
 
 
-void edit_line_delete(agi::Context *c) {
+class edit_line_delete: public Command {
+public:
+	CMD_NAME("edit/line/delete")
+	STR_MENU("Delete Lines")
+	STR_DISP("Delete Lines")
+	STR_HELP("Delete currently selected lines.")
+
+	void operator()(agi::Context *c) {
 //XXX: subs_grid.cpp
-}
-
-
-void edit_line_duplicate(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
-
-
-void edit_line_duplicate_shift(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
-
-
-void edit_line_join_as_karaoke(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
-
-
-void edit_line_join_concatenate(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
-
-
-void edit_line_join_keep_first(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
-
-
-void edit_line_paste(agi::Context *c) {
-	if (c->parent->FindFocus() == c->EditBox->TextEdit) {
-		c->EditBox->TextEdit->Paste();
-		return;
 	}
-	c->SubsGrid->PasteLines(c->SubsGrid->GetFirstSelRow());
-}
+};
 
 
-void edit_line_paste_over(agi::Context *c) {
-	c->SubsGrid->PasteLines(c->SubsGrid->GetFirstSelRow(),true);
-}
+class edit_line_duplicate: public Command {
+public:
+	CMD_NAME("edit/line/duplicate")
+	STR_MENU("&Duplicate Lines")
+	STR_DISP("Duplicate Lines")
+	STR_HELP("Duplicate the selected lines.")
 
-
-void edit_line_recombine(agi::Context *c) {
+	void operator()(agi::Context *c) {
 //XXX: subs_grid.cpp
-}
+	}
+};
 
 
-void edit_line_split_by_karaoke(agi::Context *c) {
+class edit_line_duplicate_shift: public Command {
+public:
+	CMD_NAME("edit/line/duplicate/shift")
+	STR_MENU("&Duplicate and Shift by 1 Frame")
+	STR_DISP("Duplicate and Shift by 1 Frame")
+	STR_HELP("Duplicate lines and shift by one frame.")
+
+	void operator()(agi::Context *c) {
 //XXX: subs_grid.cpp
-}
+	}
+};
 
 
-void edit_line_swap(agi::Context *c) {
+class edit_line_join_as_karaoke: public Command {
+public:
+	CMD_NAME("edit/line/join/as_karaoke")
+	STR_MENU("As &Karaoke")
+	STR_DISP("As Karaoke")
+	STR_HELP("Joins selected lines in a single one, as karaoke.")
+
+	void operator()(agi::Context *c) {
 //XXX: subs_grid.cpp
-}
+	}
+};
 
 
-void edit_redo(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	c->ass->Redo();
-}
+class edit_line_join_concatenate: public Command {
+public:
+	CMD_NAME("edit/line/join/concatenate")
+	STR_MENU("&Concatenate")
+	STR_DISP("Concatenate")
+	STR_HELP("Joins selected lines in a single one, concatenating text together.")
+
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
 
 
-void edit_search_replace(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	Search.OpenDialog(true);
-}
+class edit_line_join_keep_first: public Command {
+public:
+	CMD_NAME("edit/line/join/keep_first")
+	STR_MENU("Keep &First")
+	STR_DISP("Keep First")
+	STR_HELP("Joins selected lines in a single one, keeping text of first and discarding remaining.")
+
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
 
 
-void edit_undo(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	c->ass->Undo();
-}
+class edit_line_paste: public Command {
+public:
+	CMD_NAME("edit/line/paste")
+	STR_MENU("Paste Lines")
+	STR_DISP("Paste Lines")
+	STR_HELP("Paste subtitles.")
+
+	void operator()(agi::Context *c) {
+		if (c->parent->FindFocus() == c->EditBox->TextEdit) {
+			c->EditBox->TextEdit->Paste();
+			return;
+		}
+		c->SubsGrid->PasteLines(c->SubsGrid->GetFirstSelRow());
+	}
+};
+
+
+class edit_line_paste_over: public Command {
+public:
+	CMD_NAME("edit/line/paste/over")
+	STR_MENU("Paste Lines Over..")
+	STR_DISP("Paste Lines Over")
+	STR_HELP("Paste subtitles over others.")
+
+	void operator()(agi::Context *c) {
+		c->SubsGrid->PasteLines(c->SubsGrid->GetFirstSelRow(),true);
+	}
+};
+
+
+class edit_line_recombine: public Command {
+public:
+	CMD_NAME("edit/line/recombine")
+	STR_MENU("Recombine Lines")
+	STR_DISP("Recombine Lines")
+	STR_HELP("Recombine subtitles when they have been split and merged.")
+
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
+
+
+class edit_line_split_by_karaoke: public Command {
+public:
+	CMD_NAME("edit/line/split/by_karaoke")
+	STR_MENU("Split Lines (by karaoke)")
+	STR_DISP("Split Lines (by karaoke)")
+	STR_HELP("Uses karaoke timing to split line into multiple smaller lines.")
+
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
+
+
+class edit_line_swap: public Command {
+public:
+	CMD_NAME("edit/line/swap")
+	STR_MENU("Swap Lines")
+	STR_DISP("Swap Lines")
+	STR_HELP("Swaps the two selected lines.")
+
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
+
+
+class edit_redo: public Command {
+public:
+	CMD_NAME("edit/redo")
+	STR_MENU("&Redo")
+	STR_DISP("Redo")
+	STR_HELP("Redoes last action.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		c->ass->Redo();
+	}
+};
+
+
+class edit_search_replace: public Command {
+public:
+	CMD_NAME("edit/search_replace")
+	STR_MENU("Search and &Replace..")
+	STR_DISP("Search and Replace")
+	STR_HELP("Find and replace words in subtitles.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		Search.OpenDialog(true);
+	}
+};
+
+
+class edit_undo: public Command {
+public:
+	CMD_NAME("edit/undo")
+	STR_MENU("&Undo")
+	STR_DISP("Undo")
+	STR_HELP("Undoes last action.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		c->ass->Undo();
+	}
+};
 
 
 } // namespace cmd

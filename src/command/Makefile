@@ -27,7 +27,9 @@ SRC_OLD = \
 
 SRC = \
 	automation.cpp \
-	app.cpp
+	app.cpp \
+	audio.cpp \
+	edit.cpp
 
 SRC += \
 	command.cpp
