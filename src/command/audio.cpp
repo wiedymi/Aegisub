@@ -48,44 +48,104 @@
 
 namespace cmd {
 
-void audio_close(agi::Context *c) {
-	c->audioController->CloseAudio();
-}
 
-void audio_open(agi::Context *c) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Audio")->GetString());  
-	wxString str = wxString(_("Audio Formats")) + _T(" (*.wav,*.mp3,*.ogg,*.flac,*.mp4,*.ac3,*.aac,*.mka,*.m4a,*.w64)|*.wav;*.mp3;*.ogg;*.flac;*.mp4;*.ac3;*.aac;*.mka;*.m4a;*.w64|")
-				+ _("Video Formats") + _T(" (*.avi,*.mkv,*.ogm,*.mpg,*.mpeg)|*.avi;*.mkv;*.ogm;*.mp4;*.mpeg;*.mpg|")
-				+ _("All files") + _T(" (*.*)|*.*");
-	wxString filename = wxFileSelector(_("Open audio file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		c->audioController->OpenAudio(filename);
-		OPT_SET("Path/Last/Audio")->SetString(STD_STR(filename));
+class audio_close: public Command {
+public:
+	CMD_NAME("audio/close")
+	STR_MENU("&Close Audio")
+	STR_DISP("Close Audio")
+	STR_HELP("Closes the currently open audio file.")
+
+	void operator()(agi::Context *c) {
+		c->audioController->CloseAudio();
 	}
-}
+};
 
 
-void audio_open_blank(agi::Context *c) {
-	c->audioController->OpenAudio(_T("dummy-audio:silence?sr=44100&bd=16&ch=1&ln=396900000"));
-}
+class audio_open: public Command {
+public:
+	CMD_NAME("audio/open")
+	STR_MENU("&Open Audio File..")
+	STR_DISP("Open Audio File")
+	STR_HELP("Opens an audio file.")
+
+	void operator()(agi::Context *c) {
+		wxString path = lagi_wxString(OPT_GET("Path/Last/Audio")->GetString());  
+		wxString str = wxString(_("Audio Formats")) + _T(" (*.wav,*.mp3,*.ogg,*.flac,*.mp4,*.ac3,*.aac,*.mka,*.m4a,*.w64)|*.wav;*.mp3;*.ogg;*.flac;*.mp4;*.ac3;*.aac;*.mka;*.m4a;*.w64|")
+					+ _("Video Formats") + _T(" (*.avi,*.mkv,*.ogm,*.mpg,*.mpeg)|*.avi;*.mkv;*.ogm;*.mp4;*.mpeg;*.mpg|")
+					+ _("All files") + _T(" (*.*)|*.*");
+		wxString filename = wxFileSelector(_("Open audio file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		if (!filename.empty()) {
+			c->audioController->OpenAudio(filename);
+			OPT_SET("Path/Last/Audio")->SetString(STD_STR(filename));
+		}
+	}
+};
 
 
-void audio_open_noise(agi::Context *c) {
-	c->audioController->OpenAudio(_T("dummy-audio:noise?sr=44100&bd=16&ch=1&ln=396900000"));
-}
+class audio_open_blank: public Command {
+public:
+	CMD_NAME("audio/open/blank")
+	STR_MENU("Open 2h30 Blank Audio")
+	STR_DISP("Open 2h30 Blank Audio")
+	STR_HELP("Open a 150 minutes blank audio clip, for debugging.")
+
+	void operator()(agi::Context *c) {
+		c->audioController->OpenAudio(_T("dummy-audio:silence?sr=44100&bd=16&ch=1&ln=396900000"));
+	}
+};
 
 
-void audio_open_video(agi::Context *c) {
-	c->audioController->OpenAudio(_T("audio-video:cache"));
-}
+class audio_open_noise: public Command {
+public:
+	CMD_NAME("audio/open/noise")
+	STR_MENU("Open 2h30 Noise Audio")
+	STR_DISP("Open 2h30 Noise Audio")
+	STR_HELP("Open a 150 minutes noise-filled audio clip, for debugging.")
 
-void audio_view_spectrum(agi::Context *c) {
-	printf("XXX: fixme\n");
-}
+	void operator()(agi::Context *c) {
+		c->audioController->OpenAudio(_T("dummy-audio:noise?sr=44100&bd=16&ch=1&ln=396900000"));
+	}
+};
 
-void audio_view_waveform(agi::Context *c) {
-	printf("XXX: fixme\n");
-}
+
+class audio_open_video: public Command {
+public:
+	CMD_NAME("audio/open/video")
+	STR_MENU("Open Audio from &Video")
+	STR_DISP("Open Audio from Video")
+	STR_HELP("Opens the audio from the current video file.")
+
+	void operator()(agi::Context *c) {
+		c->audioController->OpenAudio(_T("audio-video:cache"));
+	}
+};
+
+
+class audio_view_spectrum: public Command {
+public:
+	CMD_NAME("audio/view/spectrum")
+	STR_MENU("Spectrum Display")
+	STR_DISP("Spectrum Display")
+	STR_HELP("Display audio as a frequency-power spectrograph.")
+
+	void operator()(agi::Context *c) {
+		printf("XXX: fixme\n");
+	}
+};
+
+
+class audio_view_waveform: public Command {
+public:
+	CMD_NAME("audio/view/waveform")
+	STR_MENU("Waveform Display")
+	STR_DISP("Waveform Display")
+	STR_HELP("Display audio as a linear amplitude graph")
+
+	void operator()(agi::Context *c) {
+		printf("XXX: fixme\n");
+	}
+};
 
 
 } // namespace cmd
