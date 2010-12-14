@@ -46,7 +46,7 @@
 namespace cmd {
 
 
-class audio: public Command {
+class main_audio: public Command {
 public:
 	CMD_NAME("main/audio")
 	STR_MENU("Audio")
@@ -57,7 +57,7 @@ public:
 	}
 };
 
-class automation: public Command {
+class main_automation: public Command {
 public:
 	CMD_NAME("main/automation")
 	STR_MENU("Automation")
@@ -71,7 +71,7 @@ public:
 
 
 
-class edit: public Command {
+class main_edit: public Command {
 public:
 	CMD_NAME("main/edit")
 	STR_MENU("&Edit")
@@ -95,7 +95,7 @@ public:
 };
 
 
-class file: public Command {
+class main_file: public Command {
 public:
 	CMD_NAME("main/file")
 	STR_MENU("&File")
@@ -107,7 +107,7 @@ public:
 };
 
 
-class help: public Command {
+class main_help: public Command {
 public:
 	CMD_NAME("main/help")
 	STR_MENU("Help")
@@ -119,9 +119,9 @@ public:
 };
 
 
-class main_subtitle: public Command {
+class main_main_subtitle: public Command {
 public:
-	CMD_NAME("subtitle")
+	CMD_NAME("main/subtitle")
 	STR_MENU("&Subtitle")
 	STR_DISP("Subtitle")
 	STR_HELP("Subtitle manipulation.")
@@ -166,9 +166,9 @@ public:
 };
 
 
-class timing: public Command {
+class main_timing: public Command {
 public:
-	CMD_NAME("timing")
+	CMD_NAME("main/timing")
 	STR_MENU("&Timing")
 	STR_DISP("Timing")
 	STR_HELP("Time manipulation.")
@@ -190,9 +190,9 @@ public:
 };
 
 
-class video: public Command {
+class main_video: public Command {
 public:
-	CMD_NAME("video")
+	CMD_NAME("main/video")
 	STR_MENU("&Video")
 	STR_DISP("Video")
 	STR_HELP("Video operations.")
@@ -226,9 +226,9 @@ public:
 };
 
 
-class view: public Command {
+class main_view: public Command {
 public:
-	CMD_NAME("view")
+	CMD_NAME("main/view")
 	STR_MENU("View")
 	STR_DISP("View")
 	STR_HELP("View options.")
