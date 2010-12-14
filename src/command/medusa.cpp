@@ -41,102 +41,191 @@
 #ifndef AGI_PRE
 #endif
 
+#include "command.h"
+
 #include "aegisub/context.h"
 #include "audio_timing.h"
 
 namespace cmd {
 
-void medusa_enter(agi::Context *c) {
+class medusa_enter: public Command {
+public:
+	CMD_NAME("medusa/enter")
+	STR_MENU("Medusa Enter")
+	STR_DISP("Medusa Enter")
+	STR_HELP("")
+
+	void operator()(agi::Context *c) {
 	 /// @todo Figure out how to handle this in the audio controller
 	//audioBox->audioDisplay->Prev(false);
-}
+	}
+};
 
+class medusa_next: public Command {
+public:
+	CMD_NAME("medusa/next")
+	STR_MENU("Medusa Next")
+	STR_DISP("Medusa Next")
+	STR_HELP("")
 
-void medusa_next(agi::Context *c) {
+	void operator()(agi::Context *c) {
 	/// @todo Figure out how to handle this in the audio controller
 	//audioBox->audioDisplay->Next(false);
-}
+	}
+};
 
 
-void medusa_play(agi::Context *c) {
-	c->audioController->PlayPrimaryRange();
-}
+class medusa_play: public Command {
+public:
+	CMD_NAME("medusa/play")
+	STR_MENU("Medusa Play")
+	STR_DISP("Medusa Play")
+	STR_HELP("Medusa play hotkey.")
+
+	void operator()(agi::Context *c) {
+		c->audioController->PlayPrimaryRange();
+	}
+};
 
 
-void medusa_play_after(agi::Context *c) {
-	SampleRange sel(c->audioController->GetPrimaryPlaybackRange());
-		c->audioController->PlayRange(SampleRange(
-			sel.end(),
-			sel.end() + c->audioController->SamplesFromMilliseconds(500)));;
-}
+class medusa_play_after: public Command {
+public:
+	CMD_NAME("medusa/play/after")
+	STR_MENU("Medusa Play After")
+	STR_DISP("Medusa Play After")
+	STR_HELP("Medusa play after hotkey.")
 
-
-void medusa_play_before(agi::Context *c) {
-	SampleRange sel(c->audioController->GetPrimaryPlaybackRange());
-		c->audioController->PlayRange(SampleRange(
-			sel.begin() - c->audioController->SamplesFromMilliseconds(500),
-			sel.begin()));;
-}
-
-
-void medusa_previous(agi::Context *c) {
-	/// @todo Figure out how to handle this in the audio controller
-	//audioBox->audioDisplay->Prev(false);
-}
-
-
-void medusa_shift_end_back(agi::Context *c) {
-	SampleRange newsel(
-		c->audioController->GetPrimaryPlaybackRange(),
-		0,
-		-c->audioController->SamplesFromMilliseconds(10));
-	/// @todo Make this use the timing controller instead
-	//audioController->SetSelection(newsel);
-}
-
-
-void medusa_shift_end_forward(agi::Context *c) {
-	SampleRange newsel(
-		c->audioController->GetPrimaryPlaybackRange(),
-		0,
-		c->audioController->SamplesFromMilliseconds(10));
-	/// @todo Make this use the timing controller instead
-	//audioController->SetSelection(newsel);
-}
-
-
-void medusa_shift_start_back(agi::Context *c) {
-	SampleRange newsel(
-		c->audioController->GetPrimaryPlaybackRange(),
-		-c->audioController->SamplesFromMilliseconds(10),
-		0);
-	/// @todo Make this use the timing controller instead
-	//audioController->SetSelection(newsel);
-}
-
-
-void medusa_shift_start_forward(agi::Context *c) {
-	SampleRange newsel(
-		c->audioController->GetPrimaryPlaybackRange(),
-		c->audioController->SamplesFromMilliseconds(10),
-		0);
-	/// @todo Make this use the timing controller instead
-	//audioController->SetSelection(newsel);
-}
-
-
-void medusa_stop(agi::Context *c) {
-	// Playing, stop
-	if (c->audioController->IsPlaying()) {
-		c->audioController->Stop();
-	} else {
-		// Otherwise, play the last 500 ms
+	void operator()(agi::Context *c) {
 		SampleRange sel(c->audioController->GetPrimaryPlaybackRange());
 			c->audioController->PlayRange(SampleRange(
-				sel.end() - c->audioController->SamplesFromMilliseconds(500),
-				sel.end()));;
+				sel.end(),
+				sel.end() + c->audioController->SamplesFromMilliseconds(500)));;
 	}
-}
+};
+
+
+class medusa_play_before: public Command {
+public:
+	CMD_NAME("medusa/play/before")
+	STR_MENU("Medusa Play Before")
+	STR_DISP("Medusa Play Before")
+	STR_HELP("Medusa play before hotkey.")
+
+	void operator()(agi::Context *c) {
+		SampleRange sel(c->audioController->GetPrimaryPlaybackRange());
+			c->audioController->PlayRange(SampleRange(
+				sel.begin() - c->audioController->SamplesFromMilliseconds(500),
+				sel.begin()));;
+	}
+};
+
+
+class medusa_previous: public Command {
+public:
+	CMD_NAME("medusa/previous")
+	STR_MENU("Medusa Previous")
+	STR_DISP("Medusa Previous")
+	STR_HELP("Medusa previous hotkey.")
+
+	void operator()(agi::Context *c) {
+		/// @todo Figure out how to handle this in the audio controller
+		//audioBox->audioDisplay->Prev(false);
+	}
+};
+
+
+class medusa_shift_end_back: public Command {
+public:
+	CMD_NAME("medusa/shift/end/back")
+	STR_MENU("Medusa Shift End Back")
+	STR_DISP("Medusa Shift End Back")
+	STR_HELP("Medusa shift end back hotkey.")
+
+	void operator()(agi::Context *c) {
+		SampleRange newsel(
+			c->audioController->GetPrimaryPlaybackRange(),
+			0,
+			-c->audioController->SamplesFromMilliseconds(10));
+		/// @todo Make this use the timing controller instead
+		//audioController->SetSelection(newsel);
+	}
+};
+
+
+class medusa_shift_end_forward: public Command {
+public:
+	CMD_NAME("medusa/shift/end/forward")
+	STR_MENU("Medusa Shift End Forward")
+	STR_DISP("Medusa Shift End Forward")
+	STR_HELP("Medusa shift end forward hotkey.")
+
+	void operator()(agi::Context *c) {
+		SampleRange newsel(
+			c->audioController->GetPrimaryPlaybackRange(),
+			0,
+			c->audioController->SamplesFromMilliseconds(10));
+		/// @todo Make this use the timing controller instead
+		//audioController->SetSelection(newsel);
+	}
+};
+
+
+class medusa_shift_start_back: public Command {
+public:
+	CMD_NAME("medusa/shift/start/back")
+	STR_MENU("Medusa Shift Start Back")
+	STR_DISP("Medusa Shift Start Back")
+	STR_HELP("Medusa shift start back hotkey.")
+
+	void operator()(agi::Context *c) {
+		SampleRange newsel(
+			c->audioController->GetPrimaryPlaybackRange(),
+			-c->audioController->SamplesFromMilliseconds(10),
+			0);
+		/// @todo Make this use the timing controller instead
+		//audioController->SetSelection(newsel);
+	}
+};
+
+
+class medusa_shift_start_forward: public Command {
+public:
+	CMD_NAME("medusa/shift/start/forward")
+	STR_MENU("Medusa Shift Start Forward")
+	STR_DISP("Medusa Shift Start Forward")
+	STR_HELP("Medusa shift start forward hotkey.")
+
+	void operator()(agi::Context *c) {
+		SampleRange newsel(
+			c->audioController->GetPrimaryPlaybackRange(),
+			c->audioController->SamplesFromMilliseconds(10),
+			0);
+		/// @todo Make this use the timing controller instead
+		//audioController->SetSelection(newsel);
+	}
+};
+
+
+class medusa_stop: public Command {
+public:
+	CMD_NAME("medusa/stop")
+	STR_MENU("Medusa Stop")
+	STR_DISP("Medusa Stop")
+	STR_HELP("Medusa stop hotkey.")
+
+	void operator()(agi::Context *c) {
+		// Playing, stop
+		if (c->audioController->IsPlaying()) {
+			c->audioController->Stop();
+		} else {
+			// Otherwise, play the last 500 ms
+			SampleRange sel(c->audioController->GetPrimaryPlaybackRange());
+				c->audioController->PlayRange(SampleRange(
+					sel.end() - c->audioController->SamplesFromMilliseconds(500),
+					sel.end()));;
+		}
+	}
+};
 
 
 } // namespace cmd
