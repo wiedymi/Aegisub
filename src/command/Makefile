@@ -8,23 +8,21 @@ PRECOMPILED_HEADER_NAME=../agi_pre.h
 
 LIB = aegisub_command.a
 
-SRC_OLD = \
-	medusa.cpp \
-
 SRC = \
-	automation.cpp \
 	app.cpp \
 	audio.cpp \
+	automation.cpp \
 	edit.cpp \
 	grid.cpp \
-	recent.cpp \
+	help.cpp \
 	keyframe.cpp \
+	medusa.cpp \
+	menu.cpp \
+	recent.cpp \
 	subtitle.cpp \
 	time.cpp \
 	timecode.cpp \
-	menu.cpp \
 	tool.cpp \
-	help.cpp \
 	video.cpp
 
 SRC += \
@@ -34,7 +32,3 @@ SRC += \
 HEADER = *.h
 
 include ../../Makefile.target
-
-
-
-
