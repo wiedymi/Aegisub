@@ -42,6 +42,8 @@
 #include <wx/filedlg.h>
 #endif
 
+#include "command.h"
+
 #include "aegisub/context.h"
 #include "compat.h"
 #include "main.h"
