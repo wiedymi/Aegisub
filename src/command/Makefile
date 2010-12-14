@@ -9,7 +9,6 @@ PRECOMPILED_HEADER_NAME=../agi_pre.h
 LIB = aegisub_command.a
 
 SRC_OLD = \
-	help.cpp \
 	icon.cpp \
 	keyframe.cpp \
 	menu.cpp \
@@ -26,7 +25,8 @@ SRC = \
 	app.cpp \
 	audio.cpp \
 	edit.cpp \
-	grid.cpp
+	grid.cpp \
+	help.cpp
 
 SRC += \
 	command.cpp

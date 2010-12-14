@@ -41,12 +41,25 @@
 #ifndef AGI_PRE
 #endif
 
+#include "command.h"
 #include "aegisub/context.h"
 
 #include "help_button.h" // help_contents
 #include "main.h"
 
 namespace cmd {
+
+
+class help_bugs: public Command {
+public:
+	CMD_NAME("help/bugs")
+	STR_MENU("&Bug Tracker..")
+	STR_DISP("Bug Tracker")
+	STR_HELP("Visit Aegisub's bug tracker to report bugs and request new features.")
+
+	void operator()(agi::Context *c) {
+	}
+};
 
 void help_bugs(agi::Context *c) {
 	if (wxGetMouseState().CmdDown()) {
@@ -63,34 +76,75 @@ void help_bugs(agi::Context *c) {
 }
 
 
-void help_contents(agi::Context *c) {
-	HelpButton::OpenPage(_T("Main"));
-}
+
+class help_contents: public Command {
+public:
+	CMD_NAME("help/contents")
+	STR_MENU("&Contents..")
+	STR_DISP("Contents")
+	STR_HELP("Help topics.")
+
+	void operator()(agi::Context *c) {
+		HelpButton::OpenPage(_T("Main"));
+	}
+};
 
 
-void help_files(agi::Context *c) {
+class help_files: public Command {
+public:
+	CMD_NAME("help/files")
+	STR_MENU("&All Files")
+	STR_DISP("All Files")
+	STR_HELP("Resource files.")
+
+	void operator()(agi::Context *c) {
 #ifdef __WXMAC__
-	char *shared_path = agi::util::OSX_GetBundleSharedSupportDirectory();
-	wxString help_path = wxString::Format(_T("%s/doc"), wxString(shared_path, wxConvUTF8).c_str());
-	agi::util::OSX_OpenLocation(help_path.c_str());
-	free(shared_path);
+		char *shared_path = agi::util::OSX_GetBundleSharedSupportDirectory();
+		wxString help_path = wxString::Format(_T("%s/doc"), wxString(shared_path, wxConvUTF8).c_str());
+		agi::util::OSX_OpenLocation(help_path.c_str());
+		free(shared_path);
 #endif
-}
+	}
+};
 
 
-void help_forums(agi::Context *c) {
-	AegisubApp::OpenURL(_T("http://forum.aegisub.org/"));
-}
+class help_forums: public Command {
+public:
+	CMD_NAME("help/forums")
+	STR_MENU("&Forums..")
+	STR_DISP("Forums")
+	STR_HELP("Visit Aegisub's forums.")
+
+	void operator()(agi::Context *c) {
+		AegisubApp::OpenURL(_T("http://forum.aegisub.org/"));
+	}
+};
 
 
-void help_irc(agi::Context *c) {
-	AegisubApp::OpenURL(_T("irc://irc.rizon.net/aegisub"));
-}
+class help_irc: public Command {
+public:
+	CMD_NAME("help/irc")
+	STR_MENU("&IRC Channel..")
+	STR_DISP("IRC Channel")
+	STR_HELP("Visit Aegisub's official IRC channel.")
+
+	void operator()(agi::Context *c) {
+		AegisubApp::OpenURL(_T("irc://irc.rizon.net/aegisub"));
+	}
+};
 
 
-void help_website(agi::Context *c) {
-	AegisubApp::OpenURL(_T("http://www.aegisub.org/"));
-}
+class help_website: public Command {
+public:
+	CMD_NAME("help/website")
+	STR_MENU("&Website..")
+	STR_DISP("Website")
+	STR_HELP("Visit Aegisub's official website.")
+
+	void operator()(agi::Context *c) {
+		AegisubApp::OpenURL(_T("http://www.aegisub.org/"));
+	}
+};
 
 
 } // namespace cmd
