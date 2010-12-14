@@ -12,7 +12,6 @@ SRC_OLD = \
 	icon.cpp \
 	menu.cpp \
 	medusa.cpp \
-	subtitle.cpp \
 	time.cpp \
 	timecode.cpp \
 	tool.cpp \
@@ -26,6 +25,7 @@ SRC = \
 	grid.cpp \
 	recent.cpp \
 	keyframe.cpp \
+	subtitle.cpp \
 	help.cpp
 
 SRC += \

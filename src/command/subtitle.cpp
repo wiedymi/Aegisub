@@ -45,6 +45,8 @@
 
 #include <libaegisub/charset_conv.h>
 
+#include "command.h"
+
 #include "aegisub/context.h"
 #include "dialog_search_replace.h"
 #include "dialog_attachments.h"
@@ -58,6 +60,19 @@
 
 namespace cmd {
 
+
+class subtitle_attachment: public Command {
+public:
+	CMD_NAME("subtitle/attachment")
+	STR_MENU("&Attachments..")
+	STR_DISP("Attachments")
+	STR_HELP("Open the attachment list.")
+
+	void operator()(agi::Context *c) {
+	}
+};
+
+
 void subtitle_attachment(agi::Context *c) {
 	VideoContext::Get()->Stop();
 	DialogAttachments attachments(c->parent, c->ass);
@@ -65,108 +80,242 @@ void subtitle_attachment(agi::Context *c) {
 }
 
 
+
+class subtitle_find: public Command {
+public:
+	CMD_NAME("subtitle/find")
+	STR_MENU("&Find..")
+	STR_DISP("Find")
+	STR_HELP("Find words in subtitles.")
+
+	void operator()(agi::Context *c) {
+	}
+};
+
 void subtitle_find(agi::Context *c) {
 	VideoContext::Get()->Stop();
 	Search.OpenDialog(false);
 }
 
 
-void subtitle_find_next(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	Search.FindNext();
-}
 
 
-void subtitle_insert_after(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
+class subtitle_find_next: public Command {
+public:
+	CMD_NAME("subtitle/find/next")
+	STR_MENU("Find Next")
+	STR_DISP("Find Next")
+	STR_HELP("Find next match of last word.")
 
-
-void subtitle_insert_after_videotime(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
-
-
-void subtitle_insert_before(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
-
-
-void subtitle_insert_before_videotime(agi::Context *c) {
-//XXX: subs_grid.cpp
-}
-
-
-void subtitle_new(agi::Context *c) {
-	wxGetApp().frame->LoadSubtitles(_T(""));
-}
-
-
-void subtitle_open(agi::Context *c) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString()); 
-	wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		wxGetApp().frame->LoadSubtitles(filename);
-		wxFileName filepath(filename);
-		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		Search.FindNext();
 	}
-}
+};
 
 
-void subtitle_open_charset(agi::Context *c) {
-	// Initialize charsets
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString());
+class subtitle_insert_after: public Command {
+public:
+	CMD_NAME("subtitle/insert/after")
+	STR_MENU("&After Current")
+	STR_DISP("After Current")
+	STR_HELP("Inserts a line after current.")
 
-	// Get options and load
-	wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		wxString charset = wxGetSingleChoice(_("Choose charset code:"), _("Charset"), agi::charset::GetEncodingsList<wxArrayString>(), c->parent, -1, -1, true, 250, 200);
-		if (!charset.empty()) {
-			wxGetApp().frame->LoadSubtitles(filename,charset);
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
+
+
+class subtitle_insert_after_videotime: public Command {
+public:
+	CMD_NAME("subtitle/insert/after/videotime")
+	STR_MENU("After Current, at Video Time")
+	STR_DISP("After Current, at Video Time")
+	STR_HELP("Inserts a line after current, starting at video time.")
+
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
+
+
+class subtitle_insert_before: public Command {
+public:
+	CMD_NAME("subtitle/insert/before")
+	STR_MENU("&Before Current")
+	STR_DISP("Before Current")
+	STR_HELP("Inserts a line before current.")
+
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
+
+
+class subtitle_insert_before_videotime: public Command {
+public:
+	CMD_NAME("subtitle/insert/before/videotime")
+	STR_MENU("Before Current, at Video Time")
+	STR_DISP("Before Current, at Video Time")
+	STR_HELP("Inserts a line before current, starting at video time.")
+
+	void operator()(agi::Context *c) {
+//XXX: subs_grid.cpp
+	}
+};
+
+
+class subtitle_new: public Command {
+public:
+	CMD_NAME("subtitle/new")
+	STR_MENU("&New Subtitles")
+	STR_DISP("New Subtitles")
+	STR_HELP("New subtitles.")
+
+	void operator()(agi::Context *c) {
+		wxGetApp().frame->LoadSubtitles(_T(""));
+	}
+};
+
+
+class subtitle_open: public Command {
+public:
+	CMD_NAME("subtitle/open")
+	STR_MENU("&Open Subtitles..")
+	STR_DISP("Open Subtitles")
+	STR_HELP("Opens a subtitles file.")
+
+	void operator()(agi::Context *c) {
+		wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString()); 
+		wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		if (!filename.empty()) {
+			wxGetApp().frame->LoadSubtitles(filename);
+			wxFileName filepath(filename);
+			OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filepath.GetPath()));
 		}
-		OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filename));
 	}
-}
+};
 
 
-void subtitle_open_video(agi::Context *c) {
-	wxGetApp().frame->LoadSubtitles(VideoContext::Get()->videoName, "binary");
-}
+class subtitle_open_charset: public Command {
+public:
+	CMD_NAME("subtitle/open/charset")
+	STR_MENU("&Open Subtitles with Charset..")
+	STR_DISP("Open Subtitles with Charset")
+	STR_HELP("Opens a subtitles file with a specific charset.")
+
+	void operator()(agi::Context *c) {
+		// Initialize charsets
+		wxString path = lagi_wxString(OPT_GET("Path/Last/Subtitles")->GetString());
+
+		// Get options and load
+		wxString filename = wxFileSelector(_("Open subtitles file"),path,_T(""),_T(""),AssFile::GetWildcardList(0),wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		if (!filename.empty()) {
+			wxString charset = wxGetSingleChoice(_("Choose charset code:"), _("Charset"), agi::charset::GetEncodingsList<wxArrayString>(), c->parent, -1, -1, true, 250, 200);
+			if (!charset.empty()) {
+				wxGetApp().frame->LoadSubtitles(filename,charset);
+			}
+			OPT_SET("Path/Last/Subtitles")->SetString(STD_STR(filename));
+		}
+	}
+};
 
 
-void subtitle_properties(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	DialogProperties Properties(c->parent, c->ass);
-	Properties.ShowModal();
-}
+class subtitle_open_video: public Command {
+public:
+	CMD_NAME("subtitle/open/video")
+	STR_MENU("Open Subtitles from &Video")
+	STR_DISP("Open Subtitles from Video")
+	STR_HELP("Opens the subtitles from the current video file.")
+
+	void operator()(agi::Context *c) {
+		wxGetApp().frame->LoadSubtitles(VideoContext::Get()->videoName, "binary");
+	}
+};
 
 
-void subtitle_save(agi::Context *c) {
-	wxGetApp().frame->SaveSubtitles(false);
-}
+class subtitle_properties: public Command {
+public:
+	CMD_NAME("subtitle/properties")
+	STR_MENU("&Properties..")
+	STR_DISP("Properties")
+	STR_HELP("Open script properties window.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		DialogProperties Properties(c->parent, c->ass);
+		Properties.ShowModal();
+	}
+};
 
 
-void subtitle_save_as(agi::Context *c) {
-	wxGetApp().frame->SaveSubtitles(true);
-}
+
+class subtitle_save: public Command {
+public:
+	CMD_NAME("subtitle/save")
+	STR_MENU("&Save Subtitles")
+	STR_DISP("Save Subtitles")
+	STR_HELP("Saves subtitles.")
+
+	void operator()(agi::Context *c) {
+		wxGetApp().frame->SaveSubtitles(false);
+	}
+};
 
 
-void subtitle_select_visible(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	c->SubsGrid->SelectVisible();
-}
+class subtitle_save_as: public Command {
+public:
+	CMD_NAME("subtitle/save/as")
+	STR_MENU("Save Subtitles as..")
+	STR_DISP("Save Subtitles as")
+	STR_HELP("Saves subtitles with another name.")
+
+	void operator()(agi::Context *c) {
+		wxGetApp().frame->SaveSubtitles(true);
+	}
+};
 
 
-void subtitle_spellcheck(agi::Context *c) {
+class subtitle_select_visiblek: public Command {
+public:
+	CMD_NAME("subtitle/select/visible")
+	STR_MENU("Select Visible")
+	STR_DISP("Select Visible")
+	STR_HELP("Selects all lines that are currently visible on video frame.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		c->SubsGrid->SelectVisible();
+	}
+};
+
+
+class subtitle_spellcheck: public Command {
+public:
+	CMD_NAME("subtitle/spellcheck")
+	STR_MENU("Spe&ll Checker..")
+	STR_DISP("Spell Checker")
+	STR_HELP("Open spell checker.")
+
+	void operator()(agi::Context *c) {
 //XXX: This is obscene, requires refactoring the spellchecker.
 //	VideoContext::Get()->Stop();
 //	new DialogSpellChecker;
-}
+	}
+};
 
+class subtitle_tags_show: public Command {
+public:
+	CMD_NAME("subtitle/tags/show")
+	STR_MENU("XXX: No idea")
+	STR_DISP("XXX: No idea")
+	STR_HELP("XXX: No idea")
 
-void subtitle_tags_show(agi::Context *c) {
+	void operator()(agi::Context *c) {
 //XXX: see grid.cpp:grid_tags_hide()
-}
+	}
+};
 
 
 } // namespace cmd
