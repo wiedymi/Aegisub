@@ -10,7 +10,6 @@ LIB = aegisub_command.a
 
 SRC_OLD = \
 	medusa.cpp \
-	video.cpp
 
 SRC = \
 	automation.cpp \
@@ -25,7 +24,8 @@ SRC = \
 	timecode.cpp \
 	menu.cpp \
 	tool.cpp \
-	help.cpp
+	help.cpp \
+	video.cpp
 
 SRC += \
 	icon.cpp \
