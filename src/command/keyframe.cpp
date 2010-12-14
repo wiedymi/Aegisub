@@ -41,6 +41,8 @@
 #ifndef AGI_PRE
 #endif
 
+#include "command.h"
+
 #include "aegisub/context.h"
 #include "main.h"
 #include "compat.h"
@@ -48,36 +50,63 @@
 
 namespace cmd {
 
-void keyframe_close(agi::Context *c) {
-    VideoContext::Get()->CloseKeyframes();
-}
 
 
-void keyframe_open(agi::Context *c) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
-	wxString filename = wxFileSelector(
-		_T("Select the keyframes file to open"),
-		path,
-		_T("")
-		,_T(".txt"),
-		_T("All supported formats (*.txt, *.pass, *.stats, *.log)|*.txt;*.pass;*.stats;*.log|All files (*.*)|*.*"),
-		wxFD_FILE_MUST_EXIST | wxFD_OPEN);
+class keyframe_close: public Command {
+public:
+	CMD_NAME("keyframe/close")
+	STR_MENU("Close Keyframes")
+	STR_DISP("Close Keyframes")
+	STR_HELP("Closes the currently open keyframes list.")
 
-	if (filename.empty()) return;
-	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
-
-	// Load
-	VideoContext::Get()->LoadKeyframes(filename);
-}
+	void operator()(agi::Context *c) {
+	    VideoContext::Get()->CloseKeyframes();
+	}
+};
 
 
-void keyframe_save(agi::Context *c) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
-	wxString filename = wxFileSelector(_T("Select the Keyframes file to open"),path,_T(""),_T("*.key.txt"),_T("Text files (*.txt)|*.txt"),wxFD_OVERWRITE_PROMPT | wxFD_SAVE);
-	if (filename.IsEmpty()) return;
-	OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
-	VideoContext::Get()->SaveKeyframes(filename);
-}
+class keyframe_open: public Command {
+public:
+	CMD_NAME("keyframe/open")
+	STR_MENU("Open Keyframes..")
+	STR_DISP("Open Keyframes")
+	STR_HELP("Opens a keyframe list file.")
+
+	void operator()(agi::Context *c) {
+		wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
+		wxString filename = wxFileSelector(
+			_T("Select the keyframes file to open"),
+			path,
+			_T("")
+			,_T(".txt"),
+			_T("All supported formats (*.txt, *.pass, *.stats, *.log)|*.txt;*.pass;*.stats;*.log|All files (*.*)|*.*"),
+			wxFD_FILE_MUST_EXIST | wxFD_OPEN);
+
+		if (filename.empty()) return;
+		OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
+
+		// Load
+		VideoContext::Get()->LoadKeyframes(filename);
+		}
+};
+
+
+class keyframe_save: public Command {
+public:
+	CMD_NAME("keyframe/save")
+	STR_MENU("Save Keyframes..")
+	STR_DISP("Save Keyframes")
+	STR_HELP("Saves the current keyframe list.")
+
+	void operator()(agi::Context *c) {
+		wxString path = lagi_wxString(OPT_GET("Path/Last/Keyframes")->GetString());
+		wxString filename = wxFileSelector(_T("Select the Keyframes file to open"),path,_T(""),_T("*.key.txt"),_T("Text files (*.txt)|*.txt"),wxFD_OVERWRITE_PROMPT | wxFD_SAVE);
+		if (filename.IsEmpty()) return;
+		OPT_SET("Path/Last/Keyframes")->SetString(STD_STR(filename));
+		VideoContext::Get()->SaveKeyframes(filename);
+	}
+};
+
 
 
 } // namespace cmd

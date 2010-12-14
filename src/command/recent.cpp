@@ -40,8 +40,9 @@
 #include <wx/event.h>
 #endif
 
-#include "aegisub/context.h"
 #include "command.h"
+
+#include "aegisub/context.h"
 #include "main.h"
 #include "frame_main.h"
 #include "compat.h"
@@ -49,28 +50,73 @@
 
 namespace cmd {
 
-void recent_audio(agi::Context *c) {
-//	c->audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-cmd::id("recent/audio"))));
-}
 
-void recent_keyframe(agi::Context *c) {
-//	VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-cmd::id("recent/keyframe"))));
-}
+class recent_audio: public Command {
+public:
+	CMD_NAME("recent/audio")
+	STR_MENU("Recent")
+	STR_DISP("Recent")
+	STR_HELP("Open recent audio.")
 
-void recent_subtitle(agi::Context *c) {
-//	int number = event.GetId()-cmd::id("recent/subtitle");
-//	wxGetApp().frame->LoadSubtitles(lagi_wxString(config::mru->GetEntry("Subtitle", number)));
-}
+	void operator()(agi::Context *c) {
+//		c->audioController->OpenAudio(lagi_wxString(config::mru->GetEntry("Audio", event.GetId()-cmd::id("recent/audio"))));
+	}
+};
 
-void recent_timecode(agi::Context *c) {
-//	int number = event.GetId()-cmd::id("recent/timecode");
-//	wxGetApp().frame->LoadVFR(lagi_wxString(config::mru->GetEntry("Timecodes", number)));
-}
 
-void recent_video(agi::Context *c) {
-//	int number = event.GetId()-cmd::id("recent/video");
-//	wxGetApp().frame->LoadVideo(lagi_wxString(config::mru->GetEntry("Video", number)));
-}
+class recent_keyframe: public Command {
+public:
+	CMD_NAME("recent/keyframe")
+	STR_MENU("Recent")
+	STR_DISP("Recent")
+	STR_HELP("Recent keyframes.")
+
+	void operator()(agi::Context *c) {
+//		VideoContext::Get()->LoadKeyframes(lagi_wxString(config::mru->GetEntry("Keyframes", event.GetId()-cmd::id("recent/keyframe"))));
+	}
+};
+
+
+class recent_subtitle: public Command {
+public:
+	CMD_NAME("recent/subtitle")
+	STR_MENU("Recent")
+	STR_DISP("Recent")
+	STR_HELP("Recently opened subtitles.")
+
+	void operator()(agi::Context *c) {
+//		int number = event.GetId()-cmd::id("recent/subtitle");
+//		wxGetApp().frame->LoadSubtitles(lagi_wxString(config::mru->GetEntry("Subtitle", number)));
+	}
+};
+
+
+class recent_timecode: public Command {
+public:
+	CMD_NAME("recent/timecode")
+	STR_MENU("Recent")
+	STR_DISP("Recent")
+	STR_HELP("Recent timecodes.")
+
+	void operator()(agi::Context *c) {
+//		int number = event.GetId()-cmd::id("recent/timecode");
+//		wxGetApp().frame->LoadVFR(lagi_wxString(config::mru->GetEntry("Timecodes", number)));
+	}
+};
+
+
+class recent_video: public Command {
+public:
+	CMD_NAME("recent/video")
+	STR_MENU("Recent")
+	STR_DISP("Recent")
+	STR_HELP("Recently opened videos.")
+
+	void operator()(agi::Context *c) {
+//		int number = event.GetId()-cmd::id("recent/video");
+//		wxGetApp().frame->LoadVideo(lagi_wxString(config::mru->GetEntry("Video", number)));
+	}
+};
 
 
 } // namespace cmd

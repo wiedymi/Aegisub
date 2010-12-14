@@ -10,10 +10,8 @@ LIB = aegisub_command.a
 
 SRC_OLD = \
 	icon.cpp \
-	keyframe.cpp \
 	menu.cpp \
 	medusa.cpp \
-	recent.cpp \
 	subtitle.cpp \
 	time.cpp \
 	timecode.cpp \
@@ -26,6 +24,8 @@ SRC = \
 	audio.cpp \
 	edit.cpp \
 	grid.cpp \
+	recent.cpp \
+	keyframe.cpp \
 	help.cpp
 
 SRC += \
