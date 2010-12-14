@@ -219,32 +219,63 @@ public:
 };
 
 
-void video_focus_seek(agi::Context *c) {
-	wxWindow *curFocus = wxWindow::FindFocus();
-	if (curFocus == c->videoBox->videoSlider) {
-		if (c->PreviousFocus) c->PreviousFocus->SetFocus();
+class video_focus_seek: public Command {
+public:
+	CMD_NAME("video/focus_seek")
+	STR_MENU("XXX: no idea")
+	STR_DISP("XXX: no idea")
+	STR_HELP("XXX: no idea")
+
+	void operator()(agi::Context *c) {
+		wxWindow *curFocus = wxWindow::FindFocus();
+		if (curFocus == c->videoBox->videoSlider) {
+			if (c->PreviousFocus) c->PreviousFocus->SetFocus();
+		}
+		else {
+			c->PreviousFocus = curFocus;
+			c->videoBox->videoSlider->SetFocus();
+		}
 	}
-	else {
-		c->PreviousFocus = curFocus;
-		c->videoBox->videoSlider->SetFocus();
+};
+
+
+class video_frame_next: public Command {
+public:
+	CMD_NAME("video/frame/next")
+	STR_MENU("Next Frame")
+	STR_DISP("Next Frame")
+	STR_HELP("Seek to the next frame.")
+
+	void operator()(agi::Context *c) {
+		c->videoBox->videoSlider->NextFrame();
 	}
-}
+};
 
 
-void video_frame_next(agi::Context *c) {
-	c->videoBox->videoSlider->NextFrame();
-}
+class video_frame_play: public Command {
+public:
+	CMD_NAME("video/frame/play")
+	STR_MENU("Play")
+	STR_DISP("Play")
+	STR_HELP("Play video.")
+
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->Play();
+	}
+};
 
 
-void video_frame_play(agi::Context *c) {
-	VideoContext::Get()->Play();
-}
+class video_frame_prev: public Command {
+public:
+	CMD_NAME("video/frame/prev")
+	STR_MENU("Previous Frame")
+	STR_DISP("Previous Frame")
+	STR_HELP("Seek to the previous frame/")
 
-
-void video_frame_prev(agi::Context *c) {
-	c->videoBox->videoSlider->PrevFrame();
-}
-
+	void operator()(agi::Context *c) {
+		c->videoBox->videoSlider->PrevFrame();
+	}
+};
 
 
 class video_jump: public Command {
@@ -386,19 +417,30 @@ public:
 };
 
 
+class video_zoom_in: public Command {
+public:
+	CMD_NAME("video/zoom/in")
+	STR_MENU("Zoom In")
+	STR_DISP("Zoom In")
+	STR_HELP("Zoom video in.")
 
-void video_zoom_in(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	c->videoBox->videoDisplay->SetZoom(c->videoBox->videoDisplay->GetZoom() + .125);
+	void operator()(agi::Context *c) {
+		c->videoBox->videoDisplay->SetZoom(c->videoBox->videoDisplay->GetZoom() + .125);
+	}
+};
 
-}
 
+class video_zoom_out: public Command {
+public:
+	CMD_NAME("video/zoom/out")
+	STR_MENU("Zoom Out")
+	STR_DISP("Zoom Out")
+	STR_HELP("Zoom video out.")
 
-void video_zoom_out(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	c->videoBox->videoDisplay->SetZoom(c->videoBox->videoDisplay->GetZoom() - .125);
-
-}
+	void operator()(agi::Context *c) {
+		c->videoBox->videoDisplay->SetZoom(c->videoBox->videoDisplay->GetZoom() - .125);
+	}
+};
 
 
 } // namespace cmd
