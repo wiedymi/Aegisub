@@ -41,6 +41,8 @@
 #ifndef AGI_PRE
 #endif
 
+#include "command.h"
+
 #include "aegisub/context.h"
 #include "subs_grid.h"
 #include "main.h"
@@ -48,52 +50,101 @@
 
 namespace cmd {
 
-void grid_line_next(agi::Context *c) {
-	c->SubsGrid->NextLine();
-}
+
+class grid_line_next: public Command {
+public:
+	CMD_NAME("grid/line/next")
+	STR_MENU("Next Line")
+	STR_DISP("Next Line")
+	STR_HELP("Move to the next subtitle line.")
+
+	void operator()(agi::Context *c) {
+		c->SubsGrid->NextLine();
+	}
+};
 
 
-void grid_line_prev(agi::Context *c) {
-	c->SubsGrid->PrevLine();
-}
+class grid_line_prev: public Command {
+public:
+	CMD_NAME("grid/line/prev")
+	STR_MENU("Previous Line")
+	STR_DISP("Previous Line")
+	STR_HELP("Move to the previous line.")
+
+	void operator()(agi::Context *c) {
+		c->SubsGrid->PrevLine();
+	}
+};
 
 
-void grid_tag_cycle_hiding(agi::Context *c) {
-	int tagMode = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
+class grid_tag_cycle_hiding: public Command {
+public:
+	CMD_NAME("grid/tag/cycle_hiding")
+	STR_MENU("Cycle Tag Hiding")
+	STR_DISP("Cycle Tag Hiding")
+	STR_HELP("Cycle through tag hiding modes.")
 
-	// Cycle to next
-	tagMode = (tagMode+1)%3;
+	void operator()(agi::Context *c) {
+		int tagMode = OPT_GET("Subtitle/Grid/Hide Overrides")->GetInt();
 
-	// Show on status bar
-	wxString message = _("ASS Override Tag mode set to ");
-	if (tagMode == 0) message += _("show full tags.");
-	if (tagMode == 1) message += _("simplify tags.");
-	if (tagMode == 2) message += _("hide tags.");
-	wxGetApp().frame->StatusTimeout(message,10000);
+		// Cycle to next
+		tagMode = (tagMode+1)%3;
 
-	// Set option
-	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(tagMode);
+		// Show on status bar
+		wxString message = _("ASS Override Tag mode set to ");
+		if (tagMode == 0) message += _("show full tags.");
+		if (tagMode == 1) message += _("simplify tags.");
+		if (tagMode == 2) message += _("hide tags.");
+		wxGetApp().frame->StatusTimeout(message,10000);
 
-	// Refresh grid
-	c->SubsGrid->Refresh(false);
-}
+		// Set option
+		OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(tagMode);
+
+		// Refresh grid
+		c->SubsGrid->Refresh(false);
+	}
+};
 
 
-void grid_tags_hide(agi::Context *c) {
+class grid_tags_hide: public Command {
+public:
+	CMD_NAME("grid/tags/hide")
+	STR_MENU("Hide Tags")
+	STR_DISP("Hide Tags")
+	STR_HELP("Hide override tags in the subtitle grid.")
+
+	void operator()(agi::Context *c) {
 //	XXX: Needs fixing.
-//	OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(event.GetId() - cmd::id("subtitle/tags/show"));
-//	SubsGrid->Refresh(false);
-}
+//		OPT_SET("Subtitle/Grid/Hide Overrides")->SetInt(event.GetId() - cmd::id("subtitle/tags/show"));
+//		SubsGrid->Refresh(false);
+	}
+};
 
 
-void grid_tags_show(agi::Context *c) {
-//XXX: see grid_tags_hide
-}
+class grid_tags_show: public Command {
+public:
+	CMD_NAME("grid/tags/show")
+	STR_MENU("Show Tags")
+	STR_DISP("Show Tags")
+	STR_HELP("Show full override tags in the subtitle grid.")
+
+	void operator()(agi::Context *c) {
+		//XXX: see grid_tags_hide
+	}
+};
 
 
-void grid_tags_simplify(agi::Context *c) {
-//XXX: see grid_tags_hide
-}
+class grid_tags_simplify: public Command {
+public:
+	CMD_NAME("grid/tags/simplify")
+	STR_MENU("Simplify Tags")
+	STR_DISP("Simplify Tags")
+	STR_HELP("Replace override tags in the subtitle grid with a simplified placeholder.")
+
+	void operator()(agi::Context *c) {
+		//XXX: see grid_tags_hide
+	}
+};
 
 
 } // namespace cmd
