@@ -15,12 +15,23 @@
 // $Id$
 
 /// @file command.h
-/// @brief List of available commands.
+/// @brief Command base class and main header.
 /// @ingroup command
 
 #include "aegisub/context.h"
 
 namespace cmd {
+
+	class Command {
+	public:
+		virtual wxString StrMenu() const=0;
+		virtual wxString StrDisplay() const=0;
+			virtual wxString StrHelp() const=0;
+
+		virtual void operator()(agi::Context *c)=0;
+		virtual ~Command();
+	};
+
 
 	void command_init();
 	int id(std::string name);
