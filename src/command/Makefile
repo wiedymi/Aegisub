@@ -8,7 +8,7 @@ PRECOMPILED_HEADER_NAME=../agi_pre.h
 
 LIB = aegisub_command.a
 
-SRC = \
+SRC_OLD = \
 	app.cpp \
 	audio.cpp \
 	automation.cpp \
@@ -25,6 +25,9 @@ SRC = \
 	timecode.cpp \
 	tool.cpp \
 	video.cpp
+
+SRC = \
+	app.cpp
 
 SRC += \
 	command.cpp
