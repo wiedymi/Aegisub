@@ -60,11 +60,6 @@ int count() {
 	return map.size();
 }
 
-#define NAME(a) static const char* name() { return a; }
-#define STR_MENU(a) wxString StrMenu() const { return a; }
-#define STR_DISP(a) wxString StrDisplay() const { return a; }
-#define STR_HELP(a) wxString StrHelp() const { return a; }
-
 #define CMD_INSERT(a) \
 	Command *a##_obj = new a(); \
 	map.insert(cmdPair(a::name(), a##_obj));

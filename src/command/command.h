@@ -20,6 +20,11 @@
 
 #include "aegisub/context.h"
 
+#define NAME(a) static const char* name() { return a; }
+#define STR_MENU(a) wxString StrMenu() const { return a; }
+#define STR_DISP(a) wxString StrDisplay() const { return a; }
+#define STR_HELP(a) wxString StrHelp() const { return a; }
+
 namespace cmd {
 
 	class Command {
@@ -31,6 +36,7 @@ namespace cmd {
 		virtual void operator()(agi::Context *c)=0;
 		virtual ~Command();
 	};
+
 
 
 	void command_init();
