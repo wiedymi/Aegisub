@@ -41,6 +41,8 @@
 #ifndef AGI_PRE
 #endif
 
+#include "command.h"
+
 #include "main.h"
 #include "aegisub/context.h"
 #include "dialog_automation.h"
@@ -50,37 +52,44 @@
 
 namespace cmd {
 
-void am_manager(agi::Context *c) {
+class am_manager: public Command {
+public:
+	CMD_NAME("am/manager")
+	STR_MENU("&Automation..")
+	STR_DISP("Automation")
+	STR_HELP("Open automation manager.")
+
+	void operator()(agi::Context *c) {
 #ifdef WITH_AUTOMATION
 #ifdef __APPLE__
-	if (wxGetMouseState().CmdDown()) {
+		if (wxGetMouseState().CmdDown()) {
 #else
-		if (wxGetMouseState().ControlDown()) {
+			if (wxGetMouseState().ControlDown()) {
 #endif
-			wxGetApp().global_scripts->Reload();
-			if (wxGetMouseState().ShiftDown()) {
-				const std::vector<Automation4::Script*> scripts = c->local_scripts->GetScripts();
-				for (size_t i = 0; i < scripts.size(); ++i) {
-				try {
-					scripts[i]->Reload();
-				} catch (const wchar_t *e) {
-					wxLogError(e);
-				} catch (...) {
-					wxLogError(_T("An unknown error occurred reloading Automation script '%s'."), scripts[i]->GetName().c_str());
+				wxGetApp().global_scripts->Reload();
+				if (wxGetMouseState().ShiftDown()) {
+					const std::vector<Automation4::Script*> scripts = c->local_scripts->GetScripts();
+					for (size_t i = 0; i < scripts.size(); ++i) {
+					try {
+						scripts[i]->Reload();
+					} catch (const wchar_t *e) {
+						wxLogError(e);
+					} catch (...) {
+						wxLogError(_T("An unknown error occurred reloading Automation script '%s'."), scripts[i]->GetName().c_str());
+					}
 				}
+
+				wxGetApp().frame->StatusTimeout(_("Reloaded all Automation scripts"));
+			} else {
+				wxGetApp().frame->StatusTimeout(_("Reloaded autoload Automation scripts"));
 			}
-
-			wxGetApp().frame->StatusTimeout(_("Reloaded all Automation scripts"));
 		} else {
-			wxGetApp().frame->StatusTimeout(_("Reloaded autoload Automation scripts"));
+			VideoContext::Get()->Stop();
+			DialogAutomation dlg(c->parent, c->local_scripts);
+			dlg.ShowModal();
 		}
-	} else {
-		VideoContext::Get()->Stop();
-		DialogAutomation dlg(c->parent, c->local_scripts);
-		dlg.ShowModal();
-	}
 #endif
-}
-
+	}
+};
 
 } // namespace cmd

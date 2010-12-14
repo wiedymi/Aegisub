@@ -11,7 +11,6 @@ LIB = aegisub_command.a
 SRC_OLD = \
 	app.cpp \
 	audio.cpp \
-	automation.cpp \
 	edit.cpp \
 	grid.cpp \
 	help.cpp \
@@ -27,6 +26,7 @@ SRC_OLD = \
 	video.cpp
 
 SRC = \
+	automation.cpp \
 	app.cpp
 
 SRC += \

@@ -41,6 +41,8 @@
 #ifndef AGI_PRE
 #endif
 
+#include "command.h"
+
 #include "aegisub/context.h"
 #include "main.h"
 
@@ -56,90 +58,179 @@
 
 namespace cmd {
 
-void app_about(agi::Context *c) {
-	AboutScreen About(c->parent);
-	About.ShowModal();
-}
+class app_about: public Command {
+public:
+	CMD_NAME("app/about")
+	STR_MENU("&About..")
+	STR_DISP("About")
+	STR_HELP("About Aegisub.")
+
+	void operator()(agi::Context *c) {
+		AboutScreen About(c->parent);
+		About.ShowModal();
+	}
+};
 
 
-void app_display_audio_subs(agi::Context *c) {
-	if (!c->audioController->IsAudioOpen()) return;
-	wxGetApp().frame->SetDisplayMode(0,1);
+class app_display_audio_subs: public Command {
+public:
+	CMD_NAME("app/display/audio_subs")
+	STR_MENU("Audio+Subs View")
+	STR_DISP("Audio+Subs View")
+	STR_HELP("Display audio and subtitles only.")
 
-}
+	void operator()(agi::Context *c) {
+		if (!c->audioController->IsAudioOpen()) return;
+		wxGetApp().frame->SetDisplayMode(0,1);
+	}
+};
 
 
-void app_display_full(agi::Context *c) {
+
+class app_display_full: public Command {
+public:
+	CMD_NAME("app/display/full")
+	STR_MENU("Full view")
+	STR_DISP("Full view")
+	STR_HELP("Display audio, video and subtitles.")
+
+	void operator()(agi::Context *c) {
 	if (!c->audioController->IsAudioOpen() || !VideoContext::Get()->IsLoaded()) return;
-	wxGetApp().frame->SetDisplayMode(1,1);
-}
+		wxGetApp().frame->SetDisplayMode(1,1);
+	}
+};
 
 
-void app_display_subs(agi::Context *c) {
-	wxGetApp().frame->SetDisplayMode(0,0);
-}
+class app_display_subs: public Command {
+public:
+	CMD_NAME("app/display/subs")
+	STR_MENU("Subs Only View")
+	STR_DISP("Subs Only View")
+	STR_HELP("Display subtitles only.")
+
+	void operator()(agi::Context *c) {
+		wxGetApp().frame->SetDisplayMode(0,0);
+	}
+};
 
 
-void app_display_video_subs(agi::Context *c) {
-	wxGetApp().frame->SetDisplayMode(1,0);
-}
+class app_display_video_subs: public Command {
+public:
+	CMD_NAME("app/display/video_subs")
+	STR_MENU("Video+Subs View")
+	STR_DISP("Video+Subs View")
+	STR_HELP("Display video and subtitles only.")
+
+	void operator()(agi::Context *c) {
+		wxGetApp().frame->SetDisplayMode(1,0);
+	}
+};
 
 
-void app_exit(agi::Context *c) {
-	printf("XXX: not working yet\n");
-}
+class app_exit: public Command {
+public:
+	CMD_NAME("app/exit")
+	STR_MENU("E&xit")
+	STR_DISP("Exit")
+	STR_HELP("Exit the application.")
+
+	void operator()(agi::Context *c) {
+		printf("XXX: not working yet\n");
+	}
+};
 
 
-void app_language(agi::Context *c) {
-	// Get language
-	AegisubApp *app = (AegisubApp*) wxTheApp;
-	int old = app->locale.curCode;
-	int newCode = app->locale.PickLanguage();
-	// Is OK?
-	if (newCode != -1) {
-		// Set code
-		OPT_SET("App/Locale")->SetInt(newCode);
+class app_language: public Command {
+public:
+	CMD_NAME("app/language")
+	STR_MENU("&Language...")
+	STR_DISP("Language")
+	STR_HELP("Select Aegisub interface language")
 
-		// Language actually changed?
-		if (newCode != old) {
-			// Ask to restart program
-			int result = wxMessageBox(_T("Aegisub needs to be restarted so that the new language can be applied. Restart now?"),_T("Restart Aegisub?"),wxICON_QUESTION | wxYES_NO);
-			if (result == wxYES) {
-				// Restart Aegisub
-				if (wxGetApp().frame->Close()) {
-					RestartAegisub();
-					//wxStandardPaths stand;
-					//wxExecute(_T("\"") + stand.GetExecutablePath() + _T("\""));
+	void operator()(agi::Context *c) {
+		// Get language
+		AegisubApp *app = (AegisubApp*) wxTheApp;
+		int old = app->locale.curCode;
+		int newCode = app->locale.PickLanguage();
+		// Is OK?
+		if (newCode != -1) {
+			// Set code
+			OPT_SET("App/Locale")->SetInt(newCode);
+
+			// Language actually changed?
+			if (newCode != old) {
+				// Ask to restart program
+				int result = wxMessageBox(_T("Aegisub needs to be restarted so that the new language can be applied. Restart now?"),_T("Restart Aegisub?"),wxICON_QUESTION | wxYES_NO);
+				if (result == wxYES) {
+					// Restart Aegisub
+					if (wxGetApp().frame->Close()) {
+						RestartAegisub();
+						//wxStandardPaths stand;
+						//wxExecute(_T("\"") + stand.GetExecutablePath() + _T("\""));
+					}
 				}
 			}
 		}
 	}
-}
-
-void app_log(agi::Context *c) {
-	LogWindow *log = new LogWindow(c->parent);
-	log->Show(1);
-}
+};
 
 
-void app_new_window(agi::Context *c) {
-	RestartAegisub();
-}
+class app_log: public Command {
+public:
+	CMD_NAME("app/log")
+	STR_MENU("&Log window...")
+	STR_DISP("Log window")
+	STR_HELP("Event log.")
 
-
-void app_options(agi::Context *c) {
-	try {
-		Preferences pref(c->parent);
-		pref.ShowModal();
-	} catch (agi::Exception& e) {
-		wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
+	void operator()(agi::Context *c) {
+		LogWindow *log = new LogWindow(c->parent);
+		log->Show(1);
 	}
-}
+};
 
 
-void app_updates(agi::Context *c) {
-	PerformVersionCheck(true);
-}
+class app_new_window: public Command {
+public:
+	CMD_NAME("app/new_window")
+	STR_MENU("New Window")
+	STR_DISP("New Window")
+	STR_HELP("Open a new application window.")
+
+	void operator()(agi::Context *c) {
+		RestartAegisub();
+	}
+};
+
+
+class app_options: public Command {
+public:
+	CMD_NAME("app/options")
+	STR_MENU("&Options..")
+	STR_DISP("Options")
+	STR_HELP("Configure Aegisub.")
+
+	void operator()(agi::Context *c) {
+		try {
+			Preferences pref(c->parent);
+			pref.ShowModal();
+		} catch (agi::Exception& e) {
+			wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
+		}
+	}
+};
+
+
+class app_updates: public Command {
+public:
+	CMD_NAME("app/updates")
+	STR_MENU("&Check for Updates..")
+	STR_DISP("Check for Updates")
+	STR_HELP("Check to see if there is a new version of Aegisub available.")
+
+	void operator()(agi::Context *c) {
+		PerformVersionCheck(true);
+	}
+};
 
 
 } // namespace cmd
