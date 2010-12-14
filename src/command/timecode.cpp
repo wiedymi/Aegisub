@@ -42,9 +42,9 @@
 #include <wx/filedlg.h>
 #endif
 
+#include "command.h"
 
 #include "aegisub/context.h"
-//#include "frame_main.h"
 #include "video_context.h"
 #include "main.h"
 #include "compat.h"
@@ -52,33 +52,57 @@
 
 namespace cmd {
 
-void timecode_close(agi::Context *c) {
-	VideoContext::Get()->CloseTimecodes();
-	c->EditBox->UpdateFrameTiming();
-}
+class timecode_close: public Command {
+public:
+	CMD_NAME("timecode/close")
+	STR_MENU("Close Timecodes File")
+	STR_DISP("Close Timecodes File")
+	STR_HELP("Closes the currently open timecodes file.")
 
-
-void timecode_open(agi::Context *c) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Timecodes")->GetString());
-	wxString str = wxString(_("All Supported Types")) + _T("(*.txt)|*.txt|") + _("All Files") + _T(" (*.*)|*.*");
-    wxString filename = wxFileSelector(_("Open timecodes file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-	if (!filename.empty()) {
-		VideoContext::Get()->LoadTimecodes(filename);
-		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
+	void operator()(agi::Context *c) {
+		VideoContext::Get()->CloseTimecodes();
+		c->EditBox->UpdateFrameTiming();
 	}
-	c->EditBox->UpdateFrameTiming();
-}
+};
 
 
-void timecode_save(agi::Context *c) {
-	wxString path = lagi_wxString(OPT_GET("Path/Last/Timecodes")->GetString());
-	wxString str = wxString(_("All Supported Types")) + _T("(*.txt)|*.txt|") + _("All Files") + _T(" (*.*)|*.*");
-	wxString filename = wxFileSelector(_("Save timecodes file"),path,_T(""),_T(""),str,wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	if (!filename.empty()) {
-		VideoContext::Get()->SaveTimecodes(filename);
-		OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
+class timecode_open: public Command {
+public:
+	CMD_NAME("timecode/open")
+	STR_MENU("Open Timecodes File..")
+	STR_DISP("Open Timecodes File")
+	STR_HELP("Opens a VFR timecodes v1 or v2 file.")
+
+	void operator()(agi::Context *c) {
+		wxString path = lagi_wxString(OPT_GET("Path/Last/Timecodes")->GetString());
+		wxString str = wxString(_("All Supported Types")) + _T("(*.txt)|*.txt|") + _("All Files") + _T(" (*.*)|*.*");
+		wxString filename = wxFileSelector(_("Open timecodes file"),path,_T(""),_T(""),str,wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		if (!filename.empty()) {
+			VideoContext::Get()->LoadTimecodes(filename);
+			OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
+		}
+		c->EditBox->UpdateFrameTiming();
 	}
-}
+};
+
+
+class timecode_save: public Command {
+public:
+	CMD_NAME("timecode/save")
+	STR_MENU("Save Timecodes File..")
+	STR_DISP("Save Timecodes File")
+	STR_HELP("Saves a VFR timecodes v2 file.")
+
+	void operator()(agi::Context *c) {
+		wxString path = lagi_wxString(OPT_GET("Path/Last/Timecodes")->GetString());
+		wxString str = wxString(_("All Supported Types")) + _T("(*.txt)|*.txt|") + _("All Files") + _T(" (*.*)|*.*");
+		wxString filename = wxFileSelector(_("Save timecodes file"),path,_T(""),_T(""),str,wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+		if (!filename.empty()) {
+			VideoContext::Get()->SaveTimecodes(filename);
+			OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
+		}
+	}
+};
 
 
 } // namespace cmd
