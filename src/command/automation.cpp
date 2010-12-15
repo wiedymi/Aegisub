@@ -92,4 +92,9 @@ public:
 	}
 };
 
+void init_automation(CommandManager *cm) {
+	cm->reg(new am_manager());
+}
+
+
 } // namespace cmd

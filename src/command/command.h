@@ -20,15 +20,17 @@
 
 #include "aegisub/context.h"
 
-#define CMD_NAME(a) static const char* name() { return a; }
+#define CMD_NAME(a) const char* name() { return a; }
 #define STR_MENU(a) wxString StrMenu() const { return a; }
 #define STR_DISP(a) wxString StrDisplay() const { return a; }
 #define STR_HELP(a) wxString StrHelp() const { return a; }
 
 namespace cmd {
 
+
 	class Command {
 	public:
+		virtual const char* name()=0;
 		virtual wxString StrMenu() const=0;
 		virtual wxString StrDisplay() const=0;
 			virtual wxString StrHelp() const=0;
@@ -38,9 +40,22 @@ namespace cmd {
 	};
 
 
+	class CommandManager {
+		typedef std::map<std::string, Command*> cmdMap;
+		typedef std::pair<std::string, Command*> cmdPair;
+		cmdMap map;
+	public:
+		void reg(Command *cmd);
+		int id(std::string name);
+		void call(agi::Context *c, const int id);
+		int count() { return map.size(); }
+	};
 
-	void command_init();
+	extern CommandManager *cm;
+
 	int id(std::string name);
 	void call(agi::Context *c, const int id);
 	int count();
+
+	void init_command(CommandManager *cm);
 } // namespace cmd
