@@ -14,7 +14,7 @@
 //
 // $Id$
 
-/// @file menutool.cpp
+/// @file menu.cpp
 /// @brief Dynamic menu and toolbar generator.
 /// @ingroup menu
 
@@ -31,16 +31,16 @@
 #include <libaegisub/io.h>
 #include <libaegisub/log.h>
 
-#include "aegisub/menutool.h"
+#include "aegisub/menu.h"
 #include "command/command.h"
 #include "libresrc/libresrc.h"
 #include "main.h"
 
 namespace menu {
 
-menu::MenuTool *menutool;
+menu::Menu *menu;
 
-MenuTool::MenuTool() {
+Menu::Menu() {
 
 	main_menu = new wxMenuBar();
 
@@ -70,10 +70,10 @@ MenuTool::MenuTool() {
 	}
 }
 
-MenuTool::~MenuTool() {}
+Menu::~Menu() {}
 
 
-wxMenu* MenuTool::GetMenu(std::string name) {
+wxMenu* Menu::GetMenu(std::string name) {
 
 	MTMap::iterator index;
 
@@ -88,7 +88,7 @@ wxMenu* MenuTool::GetMenu(std::string name) {
 
 
 
-wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int submenu) {
+wxMenu* Menu::BuildMenu(std::string name, const json::Array& array, int submenu) {
 	wxMenu *menu = new wxMenu();
 
 
@@ -99,7 +99,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 		const json::Number& type_number = obj["type"];
 		int type = type_number.Value();
 
-		if (type == MenuTool::Spacer) {
+		if (type == Menu::Spacer) {
 			menu->AppendSeparator();
 			continue;
 		}
@@ -110,7 +110,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 
 
 		cmd::Command *cmd;
-		if (type == MenuTool::Menu) {
+		if (type == Menu::Submenu) {
 			cmd = cmd::get(name_submenu);
 		} else {
 			cmd = cmd::get(command.Value());
@@ -123,23 +123,23 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 
 
 		switch (type) {
-			case MenuTool::Option: {
+			case Menu::Option: {
 				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display), wxString(descr), wxITEM_NORMAL);
 				menu->Append(menu_item);
 			}
 			break;
 
-			case MenuTool::Check: {
+			case Menu::Check: {
 				menu->AppendCheckItem(cmd::id(command.Value()), wxString(display), wxString(descr));
 			}
 			break;
 
-			case MenuTool::Radio: {
+			case Menu::Radio: {
 				menu->AppendRadioItem(cmd::id(command.Value()), wxString(display), wxString(descr));
 			}
 			break;
 
-			case MenuTool::Recent: {
+			case Menu::Recent: {
 	 			wxMenu *menu_new = new wxMenu();
 				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display), wxString(descr), wxITEM_NORMAL, menu_new);
 				menu->Append(menu_item);
@@ -148,7 +148,7 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 			}
 			break;
 
-			case MenuTool::Menu: {
+			case Menu::Submenu: {
 
 				const json::Array& arr = obj["contents"];
 

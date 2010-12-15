@@ -14,9 +14,9 @@
 //
 // $Id$
 
-/// @file menutool.h
+/// @file menu.h
 /// @brief Dynamic menu and toolbar generator.
-/// @ingroup menu
+/// @ingroup menu toolbar
 
 #include "config.h"
 
@@ -38,13 +38,13 @@ DEFINE_SIMPLE_EXCEPTION_NOINNER(MenuJsonValueSingle, MenuError, "menu/value")
 DEFINE_SIMPLE_EXCEPTION_NOINNER(MenuJsonValueNull, MenuError, "menu/value")
 DEFINE_SIMPLE_EXCEPTION_NOINNER(MenuInvalidName, MenuError, "menu/invalid")
 
-class MenuTool;
-extern MenuTool *menutool;
+class Menu;
+extern Menu *menu;
 
-class MenuTool {
+class Menu {
 public:
-	MenuTool();
-	~MenuTool();
+	Menu();
+	~Menu();
 	wxMenuBar* GetMainMenu() { return main_menu; }
 	wxMenu* GetMenu(std::string name);
 
@@ -57,7 +57,7 @@ private:
 		Option = 1,
 		Check = 2,
 		Radio = 3,
-		Menu = 4,
+		Submenu = 4,
 		Recent = 5,
 		Spacer = 100
 	};

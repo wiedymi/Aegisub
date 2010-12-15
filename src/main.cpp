@@ -50,7 +50,7 @@
 #include <wx/utils.h>
 #endif
 
-#include "aegisub/menutool.h"
+#include "aegisub/menu.h"
 #include "command/command.h"
 #include "command/icon.h"
 #include "aegisub/toolbar.h"
@@ -175,7 +175,7 @@ bool AegisubApp::OnInit() {
 	icon::icon_init();
 
 	// Generate menus.
-	menu::menutool = new menu::MenuTool();
+	menu::menu = new menu::Menu();
 
 	// Generate toolbars.
 	toolbar::toolbar = new toolbar::Toolbar();

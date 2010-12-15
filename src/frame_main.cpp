@@ -46,7 +46,7 @@
 
 #include <libaegisub/log.h>
 
-#include "aegisub/menutool.h"
+#include "aegisub/menu.h"
 
 #include "ass_file.h"
 #include "selection_controller.h"
@@ -346,7 +346,7 @@ void FrameMain::InitMenu() {
 	wxApp::s_macHelpMenuTitleName = _("&Help");
 #endif
 
-	SetMenuBar(menu::menutool->GetMainMenu());
+	SetMenuBar(menu::menu->GetMainMenu());
 }
 
 
@@ -1107,7 +1107,7 @@ bool FrameMain::LoadList(wxArrayString list) {
 
 /// @brief Sets the descriptions for undo/redo 
 void FrameMain::SetUndoRedoDesc() {
-	wxMenu *editMenu = menu::menutool->GetMenu("main/edit");
+	wxMenu *editMenu = menu::menu->GetMenu("main/edit");
 	editMenu->SetHelpString(0,_T("Undo ")+ass->GetUndoDescription());
 	editMenu->SetHelpString(1,_T("Redo ")+ass->GetRedoDescription());
 }
@@ -1194,21 +1194,21 @@ void FrameMain::RebuildRecentList(wxString listName,wxMenu *menu,int startID) {
 /// @param event 
 void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	// Get menu
-	wxMenuBar *MenuBar = menu::menutool->GetMainMenu();
+	wxMenuBar *MenuBar = menu::menu->GetMainMenu();
 
 	MenuBar->Freeze();
 	wxMenu *curMenu = event.GetMenu();
 
 	// File menu
-	if (curMenu == menu::menutool->GetMenu("main/file")) {
+	if (curMenu == menu::menu->GetMenu("main/file")) {
 		// Rebuild recent
-		RebuildRecentList(_T("Subtitle"),menu::menutool->GetMenu("recent/subtitle"), cmd::id("recent/subtitle"));
+		RebuildRecentList(_T("Subtitle"),menu::menu->GetMenu("recent/subtitle"), cmd::id("recent/subtitle"));
 
 		MenuBar->Enable(cmd::id("subtitle/open/video"),VideoContext::Get()->HasSubtitles());
 	}
 
 	// View menu
-	else if (curMenu == menu::menutool->GetMenu("main/view")) {
+	else if (curMenu == menu::menu->GetMenu("main/view")) {
 		// Flags
 		bool aud = audioController->IsAudioOpen();
 		bool vid = VideoContext::Get()->IsLoaded() && !detachedVideo;
@@ -1233,7 +1233,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// Video menu
-	else if (curMenu == menu::menutool->GetMenu("main/video")) {
+	else if (curMenu == menu::menu->GetMenu("main/video")) {
 		bool state = VideoContext::Get()->IsLoaded();
 		bool attached = state && !detachedVideo;
 
@@ -1279,13 +1279,13 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Check(cmd::id("video/show_overscan"),OPT_GET("Video/Overscan Mask")->GetBool());
 
 		// Rebuild recent lists
-		RebuildRecentList(_T("Video"),menu::menutool->GetMenu("recent/video"), cmd::id("recent/video"));
-		RebuildRecentList(_T("Timecodes"),menu::menutool->GetMenu("recent/timecode"), cmd::id("recent/timecode"));
-		RebuildRecentList(_T("Keyframes"),menu::menutool->GetMenu("recent/keyframe"), cmd::id("recent/keyframe"));
+		RebuildRecentList(_T("Video"),menu::menu->GetMenu("recent/video"), cmd::id("recent/video"));
+		RebuildRecentList(_T("Timecodes"),menu::menu->GetMenu("recent/timecode"), cmd::id("recent/timecode"));
+		RebuildRecentList(_T("Keyframes"),menu::menu->GetMenu("recent/keyframe"), cmd::id("recent/keyframe"));
 	}
 
 	// Audio menu
-	else if (curMenu == menu::menutool->GetMenu("main/audio")) {
+	else if (curMenu == menu::menu->GetMenu("main/audio")) {
 		bool state = audioController->IsAudioOpen();
 		bool vidstate = VideoContext::Get()->IsLoaded();
 
@@ -1293,11 +1293,11 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 		MenuBar->Enable(cmd::id("audio/close"),state);
 
 		// Rebuild recent
-		RebuildRecentList(_T("Audio"),menu::menutool->GetMenu("recent/audio"), cmd::id("recent/audio"));
+		RebuildRecentList(_T("Audio"),menu::menu->GetMenu("recent/audio"), cmd::id("recent/audio"));
 	}
 
 	// Subtitles menu
-	else if (curMenu == menu::menutool->GetMenu("main/subtitle")) {
+	else if (curMenu == menu::menu->GetMenu("main/subtitle")) {
 		// Variables
 		bool continuous;
 		wxArrayInt sels = SubsGrid->GetSelection(&continuous);
@@ -1330,7 +1330,7 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// Timing menu
-	else if (curMenu == menu::menutool->GetMenu("main/timing")) {
+	else if (curMenu == menu::menu->GetMenu("main/timing")) {
 		// Variables
 		bool continuous;
 		wxArrayInt sels = SubsGrid->GetSelection(&continuous);
@@ -1350,8 +1350,8 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 	}
 
 	// Edit menu
-	else if (curMenu == menu::menutool->GetMenu("main/edit")) {
-		wxMenu *editMenu = menu::menutool->GetMenu("main/edit");
+	else if (curMenu == menu::menu->GetMenu("main/edit")) {
+		wxMenu *editMenu = menu::menu->GetMenu("main/edit");
 
 		// Undo state
 		wxMenuItem *item;
@@ -1384,8 +1384,8 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 
 	// Automation menu
 #ifdef WITH_AUTOMATION
-	else if (curMenu == menu::menutool->GetMenu("main/automation")) {
-		wxMenu *automationMenu = menu::menutool->GetMenu("main/automation");
+	else if (curMenu == menu::menu->GetMenu("main/automation")) {
+		wxMenu *automationMenu = menu::menu->GetMenu("main/automation");
 
 		// Remove old macro items
 		for (unsigned int i = 0; i < activeMacroItems.size(); i++) {
