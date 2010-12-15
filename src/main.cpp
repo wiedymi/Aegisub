@@ -164,8 +164,11 @@ bool AegisubApp::OnInit() {
 	emit_stdout->Enable();
 #endif
 
+	// Init command manager
+	cmd::cm = new cmd::CommandManager();
+
 	// Init commands.
-	cmd::command_init();
+	cmd::init_command(cmd::cm);
 
 	// Init icons.
 	icon::icon_init();
