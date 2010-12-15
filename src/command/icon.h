@@ -22,6 +22,11 @@
 #include <wx/bitmap.h>
 #endif
 
+#include <libaegisub/exception.h>
+
+DEFINE_BASE_EXCEPTION_NOINNER(IconError, agi::Exception)
+DEFINE_SIMPLE_EXCEPTION_NOINNER(IconInvalid, IconError, "icon/invalid")
+
 namespace icon {
 	void icon_init();
 	wxBitmap* get(std::string name, const int size);
