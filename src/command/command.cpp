@@ -23,6 +23,8 @@
 
 namespace cmd {
 
+CommandManager *cm;
+
 int id(std::string name) { return cm->id(name); }
 void call(agi::Context *c, const int id) { return cm->call(c, id); }
 int count() { return cm->count(); }
@@ -61,7 +63,7 @@ void CommandManager::reg(Command *cmd) {
 
 void init_automation(CommandManager *cm);
 
-void command_init(CommandManager *cm) {
+void init_command(CommandManager *cm) {
 	LOG_D("command/init") << "Populating command map";
 	init_automation(cm);
 }
