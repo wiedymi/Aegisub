@@ -31,6 +31,7 @@
 
 #include "aegisub/toolbar.h"
 #include "libresrc/libresrc.h"
+#include "command/command.h"
 
 
 namespace toolbar {
@@ -91,9 +92,15 @@ void Toolbar::BuildToolbar(std::string name, const json::Array& array) {
 
 		const json::String& command = obj["command"];
 
+		cmd::Command *cmd = cmd::get(command.Value());
+
+		// this is dumb.
+		wxBitmap *bitmap = cmd->Icon(24);
+		wxBitmap icon = bitmap->GetSubBitmap(wxRect(0, 0, bitmap->GetWidth(), bitmap->GetHeight()));
+
 		switch (type) {
 			case Toolbar::Standard: {
-//				toolbar->AddTool(1, command.Value(), wxNullBitmap, "somehelp", wxITEM_NORMAL);
+				toolbar->AddTool(cmd::id(command.Value()),  cmd->StrMenu(), icon, cmd->StrHelp(), wxITEM_NORMAL);
 			}
 			break;
 		}
@@ -104,3 +111,5 @@ void Toolbar::BuildToolbar(std::string name, const json::Array& array) {
 }
 
 } // namespace toolbar
+
+
