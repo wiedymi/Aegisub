@@ -231,6 +231,7 @@ SRC += \
 	timeedit_ctrl.cpp \
 	threaded_frame_source.cpp \
 	toggle_bitmap.cpp \
+	toolbar.cpp \
 	tooltip_manager.cpp \
 	utils.cpp \
 	validators.cpp \

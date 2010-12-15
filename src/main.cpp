@@ -53,6 +53,7 @@
 #include "aegisub/menutool.h"
 #include "command/command.h"
 #include "command/icon.h"
+#include "aegisub/toolbar.h"
 
 #include "ass_dialogue.h"
 #include "ass_export_filter.h"
@@ -173,9 +174,11 @@ bool AegisubApp::OnInit() {
 	// Init icons.
 	icon::icon_init();
 
-	// Genrate menus and toolbars.
+	// Generate menus.
 	menu::menutool = new menu::MenuTool();
 
+	// Generate toolbars.
+	toolbar::toolbar = new toolbar::Toolbar();
 
 	// Install assertion handler
 //	wxSetAssertHandler(wxAssertHandler);

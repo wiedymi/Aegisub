@@ -23,7 +23,8 @@ default_config.cpp: ../../tools/common-respack *.json
 		./default_config.json \
 		./default_menu.json \
 		./default_mru.json \
-		./default_path.json
+		./default_path.json \
+		./default_toolbar.json
 
 EXTRA_DIST = *.json
 
