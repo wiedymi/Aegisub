@@ -30,6 +30,17 @@ void call(agi::Context *c, const int id) { return cm->call(c, id); }
 int count() { return cm->count(); }
 
 
+wxBitmap* Command::Icon(int size) {
+	if (size == 16) {
+		return icon::get(name(), 16);
+	} else if (size == 24) {
+		return icon::get(name(), 24);
+	} else {
+		throw CommandIconInvalid("Valid icon sizes are 16 or 24.");
+	}
+}
+
+
 int CommandManager::id(std::string name) {
 
 	cmdMap::iterator index;
@@ -43,6 +54,7 @@ int CommandManager::id(std::string name) {
 	return 60003;
 }
 
+
 void CommandManager::call(agi::Context *c, const int id) {
 	cmdMap::iterator index(map.begin());
 	std::advance(index, id);
@@ -55,6 +67,7 @@ void CommandManager::call(agi::Context *c, const int id) {
 		// XXX: throw
 	}
 }
+
 
 void CommandManager::reg(Command *cmd) {
 	map.insert(cmdPair(cmd->name(), cmd));

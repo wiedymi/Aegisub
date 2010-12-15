@@ -19,6 +19,11 @@
 /// @ingroup command
 
 #include "aegisub/context.h"
+#include "icon.h"
+
+DEFINE_BASE_EXCEPTION_NOINNER(CommandError, agi::Exception)
+DEFINE_SIMPLE_EXCEPTION_NOINNER(CommandIconNone, CommandError, "command/icon")
+DEFINE_SIMPLE_EXCEPTION_NOINNER(CommandIconInvalid, CommandError, "command/icon/invalid")
 
 #define CMD_NAME(a) const char* name() { return a; }
 #define STR_MENU(a) wxString StrMenu() const { return a; }
@@ -32,8 +37,8 @@ namespace cmd {
 		virtual const char* name()=0;
 		virtual wxString StrMenu() const=0;
 		virtual wxString StrDisplay() const=0;
-			virtual wxString StrHelp() const=0;
-
+		virtual wxString StrHelp() const=0;
+		wxBitmap* Icon(int size);
 		virtual void operator()(agi::Context *c)=0;
 		virtual ~Command() {};
 	};
