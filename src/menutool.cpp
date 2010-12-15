@@ -104,32 +104,44 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 			continue;
 		}
 
-		const json::String& display = obj["display"];
-		const json::String& descr = obj["description"];
+
 		const json::String& command = obj["command"];
 		std::string name_submenu = name_sub + "/" + command.Value();
 
 
+		cmd::Command *cmd;
+		if (type == MenuTool::Menu) {
+			cmd = cmd::get(name_submenu);
+		} else {
+			cmd = cmd::get(command.Value());
+		}
+
+		wxString display = cmd->StrMenu();
+		wxString descr = cmd->StrHelp();
+
+
+
+
 		switch (type) {
 			case MenuTool::Option: {
-				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL);
+				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display), wxString(descr), wxITEM_NORMAL);
 				menu->Append(menu_item);
 			}
 			break;
 
 			case MenuTool::Check: {
-				menu->AppendCheckItem(cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()));
+				menu->AppendCheckItem(cmd::id(command.Value()), wxString(display), wxString(descr));
 			}
 			break;
 
 			case MenuTool::Radio: {
-				menu->AppendRadioItem(cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()));
+				menu->AppendRadioItem(cmd::id(command.Value()), wxString(display), wxString(descr));
 			}
 			break;
 
 			case MenuTool::Recent: {
 	 			wxMenu *menu_new = new wxMenu();
-				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL, menu_new);
+				wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(command.Value()), wxString(display), wxString(descr), wxITEM_NORMAL, menu_new);
 				menu->Append(menu_item);
 				map.insert(MTPair(command.Value(), menu_new));
 
@@ -144,10 +156,10 @@ wxMenu* MenuTool::BuildMenu(std::string name, const json::Array& array, int subm
 				map.insert(MTPair(name_submenu, menu_new));
 
 				if (submenu) {
-					wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(name_sub), wxString(display.Value()), wxString(descr.Value()), wxITEM_NORMAL, menu_new);
+					wxMenuItem *menu_item = new wxMenuItem(menu, cmd::id(name_sub), wxString(display), wxString(descr), wxITEM_NORMAL, menu_new);
 					menu->Append(menu_item);
 				} else {
-					main_menu->Append(menu_new, wxString(display.Value()));
+					main_menu->Append(menu_new, wxString(display));
 				}
 			}
 			break;
