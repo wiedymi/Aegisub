@@ -28,6 +28,7 @@ CommandManager *cm;
 int id(std::string name) { return cm->id(name); }
 void call(agi::Context *c, const int id) { return cm->call(c, id); }
 int count() { return cm->count(); }
+Command* get(std::string name) { return cm->get(name); }
 
 
 wxBitmap* Command::Icon(int size) {
@@ -53,6 +54,19 @@ int CommandManager::id(std::string name) {
 	printf("cmd::id NOT FOUND (%s)\n", name.c_str());
 	return 60003;
 }
+
+
+Command* CommandManager::get(std::string name) {
+	cmdMap::iterator index;
+
+	if ((index = map.find(name)) != map.end()) {
+		return index->second;
+	}
+	// XXX: throw
+	printf("cmd::id NOT FOUND (%s)\n", name.c_str());
+}
+
+
 
 
 void CommandManager::call(agi::Context *c, const int id) {

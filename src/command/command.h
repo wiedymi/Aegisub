@@ -53,6 +53,7 @@ namespace cmd {
 		int id(std::string name);
 		void call(agi::Context *c, const int id);
 		int count() { return map.size(); }
+		Command* get(std::string name);
 	};
 
 	extern CommandManager *cm;
@@ -60,6 +61,7 @@ namespace cmd {
 	int id(std::string name);
 	void call(agi::Context *c, const int id);
 	int count();
+	Command* get(std::string name);
 
 	void init_command(CommandManager *cm);
 
