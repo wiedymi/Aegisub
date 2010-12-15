@@ -233,4 +233,18 @@ public:
 };
 
 
+void init_app(CommandManager *cm) {
+	cm->reg(new app_about());
+	cm->reg(new app_display_audio_subs());
+	cm->reg(new app_display_full());
+	cm->reg(new app_display_subs());
+	cm->reg(new app_display_video_subs());
+	cm->reg(new app_exit());
+	cm->reg(new app_language());
+	cm->reg(new app_log());
+	cm->reg(new app_new_window());
+	cm->reg(new app_options());
+	cm->reg(new app_updates());
+}
+
 } // namespace cmd

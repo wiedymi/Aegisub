@@ -119,4 +119,12 @@ public:
 };
 
 
+void init_recent(CommandManager *cm) {
+	cm->reg(new recent_audio());
+	cm->reg(new recent_keyframe());
+	cm->reg(new recent_subtitle());
+	cm->reg(new recent_timecode());
+	cm->reg(new recent_video());
+}
+
 } // namespace cmd

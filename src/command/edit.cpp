@@ -275,4 +275,23 @@ public:
 };
 
 
+void init_edit(CommandManager *cm) {
+	cm->reg(new edit_line_copy());
+	cm->reg(new edit_line_cut());
+	cm->reg(new edit_line_delete());
+	cm->reg(new edit_line_duplicate());
+	cm->reg(new edit_line_duplicate_shift());
+	cm->reg(new edit_line_join_as_karaoke());
+	cm->reg(new edit_line_join_concatenate());
+	cm->reg(new edit_line_join_keep_first());
+	cm->reg(new edit_line_paste());
+	cm->reg(new edit_line_paste_over());
+	cm->reg(new edit_line_recombine());
+	cm->reg(new edit_line_split_by_karaoke());
+	cm->reg(new edit_line_swap());
+	cm->reg(new edit_redo());
+	cm->reg(new edit_search_replace());
+	cm->reg(new edit_undo());
+}
+
 } // namespace cmd

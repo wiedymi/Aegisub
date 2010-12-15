@@ -58,23 +58,18 @@ public:
 	STR_HELP("Visit Aegisub's bug tracker to report bugs and request new features.")
 
 	void operator()(agi::Context *c) {
+		if (wxGetMouseState().CmdDown()) {
+			if (wxGetMouseState().ShiftDown()) {
+				 wxMessageBox(_T("Now crashing with an access violation..."));
+				for (char *foo = (char*)0;;) *foo++ = 42;
+			} else {
+				wxMessageBox(_T("Now crashing with an unhandled exception..."));
+				throw c->parent;
+			}
+		}
+		AegisubApp::OpenURL(_T("http://devel.aegisub.org/"));
 	}
 };
-
-void help_bugs(agi::Context *c) {
-	if (wxGetMouseState().CmdDown()) {
-		if (wxGetMouseState().ShiftDown()) {
-			 wxMessageBox(_T("Now crashing with an access violation..."));
-			for (char *foo = (char*)0;;) *foo++ = 42;
-		} else {
-			wxMessageBox(_T("Now crashing with an unhandled exception..."));
-			throw c->parent;
-		}
-	}
-
-	AegisubApp::OpenURL(_T("http://devel.aegisub.org/"));
-}
-
 
 
 class help_contents: public Command {
@@ -146,5 +141,14 @@ public:
 	}
 };
 
+
+void init_help(CommandManager *cm) {
+	cm->reg(new help_bugs());
+	cm->reg(new help_contents());
+	cm->reg(new help_files());
+	cm->reg(new help_forums());
+	cm->reg(new help_irc());
+	cm->reg(new help_website());
+}
 
 } // namespace cmd

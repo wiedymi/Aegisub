@@ -205,4 +205,18 @@ public:
 };
 
 
+void init_tool(CommandManager *cm) {
+	cm->reg(new tool_assdraw());
+	cm->reg(new tool_export());
+	cm->reg(new tool_font_collector());
+	cm->reg(new tool_line_select());
+	cm->reg(new tool_resampleres());
+	cm->reg(new tool_style_assistant());
+	cm->reg(new tool_style_manager());
+	cm->reg(new tool_time_kanji());
+	cm->reg(new tool_time_postprocess());
+	cm->reg(new tool_translation_assistant());
+}
+
+
 } // namespace cmd

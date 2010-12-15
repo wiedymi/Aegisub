@@ -228,4 +228,18 @@ public:
 };
 
 
+void init_medusa(CommandManager *cm) {
+	cm->reg(new medusa_enter());
+	cm->reg(new medusa_next());
+	cm->reg(new medusa_play());
+	cm->reg(new medusa_play_after());
+	cm->reg(new medusa_play_before());
+	cm->reg(new medusa_previous());
+	cm->reg(new medusa_shift_end_back());
+	cm->reg(new medusa_shift_end_forward());
+	cm->reg(new medusa_shift_start_back());
+	cm->reg(new medusa_shift_start_forward());
+	cm->reg(new medusa_stop());
+}
+
 } // namespace cmd

@@ -61,11 +61,42 @@ void CommandManager::reg(Command *cmd) {
 }
 
 
+// These forward declarations exist here since we don't want to expose
+// them in a header, they're strictly internal-use.
+void init_app(CommandManager *cm);
+void init_audio(CommandManager *cm);
 void init_automation(CommandManager *cm);
+void init_command(CommandManager *cm);
+void init_edit(CommandManager *cm);
+void init_grid(CommandManager *cm);
+void init_help(CommandManager *cm);
+void init_keyframe(CommandManager *cm);
+void init_medusa(CommandManager *cm);
+void init_menu(CommandManager *cm);
+void init_recent(CommandManager *cm);
+void init_subtitle(CommandManager *cm);
+void init_time(CommandManager *cm);
+void init_timecode(CommandManager *cm);
+void init_tool(CommandManager *cm);
+void init_video(CommandManager *cm);
 
 void init_command(CommandManager *cm) {
 	LOG_D("command/init") << "Populating command map";
+	init_app(cm);
+	init_audio(cm);
 	init_automation(cm);
+	init_edit(cm);
+	init_grid(cm);
+	init_help(cm);
+	init_keyframe(cm);
+	init_medusa(cm);
+	init_menu(cm);
+	init_recent(cm);
+	init_subtitle(cm);
+	init_time(cm);
+	init_timecode(cm);
+	init_tool(cm);
+	init_video(cm);
 }
 
 } // namespace cmd

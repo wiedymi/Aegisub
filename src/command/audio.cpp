@@ -150,4 +150,14 @@ public:
 };
 
 
+void init_audio(CommandManager *cm) {
+	cm->reg(new audio_close());
+	cm->reg(new audio_open());
+	cm->reg(new audio_open_blank());
+	cm->reg(new audio_open_noise());
+	cm->reg(new audio_open_video());
+	cm->reg(new audio_view_spectrum());
+	cm->reg(new audio_view_waveform());
+}
+
 } // namespace cmd

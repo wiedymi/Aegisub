@@ -108,5 +108,10 @@ public:
 };
 
 
+void init_keyframe(CommandManager *cm) {
+	cm->reg(new keyframe_close());
+	cm->reg(new keyframe_open());
+	cm->reg(new keyframe_save());
+}
 
 } // namespace cmd

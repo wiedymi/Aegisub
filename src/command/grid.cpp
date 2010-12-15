@@ -147,4 +147,13 @@ public:
 };
 
 
+void init_grid(CommandManager *cm) {
+	cm->reg(new grid_line_next());
+	cm->reg(new grid_line_prev());
+	cm->reg(new grid_tag_cycle_hiding());
+	cm->reg(new grid_tags_hide());
+	cm->reg(new grid_tags_show());
+	cm->reg(new grid_tags_simplify());
+}
+
 } // namespace cmd

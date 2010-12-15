@@ -443,4 +443,30 @@ public:
 };
 
 
+void init_video(CommandManager *cm) {
+	cm->reg(new video_aspect_cinematic());
+	cm->reg(new video_aspect_custom());
+	cm->reg(new video_aspect_default());
+	cm->reg(new video_aspect_full());
+	cm->reg(new video_aspect_wide());
+	cm->reg(new video_close());
+	cm->reg(new video_detach());
+	cm->reg(new video_details());
+	cm->reg(new video_focus_seek());
+	cm->reg(new video_frame_next());
+	cm->reg(new video_frame_play());
+	cm->reg(new video_frame_prev());
+	cm->reg(new video_jump());
+	cm->reg(new video_jump_end());
+	cm->reg(new video_jump_start());
+	cm->reg(new video_open());
+	cm->reg(new video_open_dummy());
+	cm->reg(new video_show_overscan());
+	cm->reg(new video_zoom_100());
+	cm->reg(new video_zoom_200());
+	cm->reg(new video_zoom_50());
+	cm->reg(new video_zoom_in());
+	cm->reg(new video_zoom_out());
+}
+
 } // namespace cmd

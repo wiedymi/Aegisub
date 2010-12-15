@@ -105,4 +105,10 @@ public:
 };
 
 
+void init_timecode(CommandManager *cm) {
+	cm->reg(new timecode_close());
+	cm->reg(new timecode_open());
+	cm->reg(new timecode_save());
+}
+
 } // namespace cmd

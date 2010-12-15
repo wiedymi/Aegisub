@@ -69,16 +69,11 @@ public:
 	STR_HELP("Open the attachment list.")
 
 	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		DialogAttachments attachments(c->parent, c->ass);
+		attachments.ShowModal();
 	}
 };
-
-
-void subtitle_attachment(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	DialogAttachments attachments(c->parent, c->ass);
-	attachments.ShowModal();
-}
-
 
 
 class subtitle_find: public Command {
@@ -89,15 +84,10 @@ public:
 	STR_HELP("Find words in subtitles.")
 
 	void operator()(agi::Context *c) {
+		VideoContext::Get()->Stop();
+		Search.OpenDialog(false);
 	}
 };
-
-void subtitle_find(agi::Context *c) {
-	VideoContext::Get()->Stop();
-	Search.OpenDialog(false);
-}
-
-
 
 
 class subtitle_find_next: public Command {
@@ -316,6 +306,27 @@ public:
 //XXX: see grid.cpp:grid_tags_hide()
 	}
 };
+
+
+void init_subtitle(CommandManager *cm) {
+	cm->reg(new subtitle_attachment());
+	cm->reg(new subtitle_find());
+	cm->reg(new subtitle_find_next());
+	cm->reg(new subtitle_insert_after());
+	cm->reg(new subtitle_insert_after_videotime());
+	cm->reg(new subtitle_insert_before());
+	cm->reg(new subtitle_insert_before_videotime());
+	cm->reg(new subtitle_new());
+	cm->reg(new subtitle_open());
+	cm->reg(new subtitle_open_charset());
+	cm->reg(new subtitle_open_video());
+	cm->reg(new subtitle_properties());
+	cm->reg(new subtitle_save());
+	cm->reg(new subtitle_save_as());
+	cm->reg(new subtitle_select_visiblek());
+	cm->reg(new subtitle_spellcheck());
+	cm->reg(new subtitle_tags_show());
+}
 
 
 } // namespace cmd

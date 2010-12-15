@@ -265,4 +265,18 @@ public:
 };
 
 
+void init_time(CommandManager *cm) {
+	cm->reg(new time_continous_end());
+	cm->reg(new time_continous_start());
+	cm->reg(new time_frame_current());
+	cm->reg(new time_shift());
+	cm->reg(new time_snap_end_video());
+	cm->reg(new time_snap_frame());
+	cm->reg(new time_snap_scene());
+	cm->reg(new time_snap_start_video());
+	cm->reg(new time_sort_end());
+	cm->reg(new time_sort_start());
+	cm->reg(new time_sort_style());
+}
+
 } // namespace cmd
