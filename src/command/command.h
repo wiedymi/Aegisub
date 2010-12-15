@@ -27,7 +27,6 @@
 
 namespace cmd {
 
-
 	class Command {
 	public:
 		virtual const char* name()=0;
@@ -36,7 +35,7 @@ namespace cmd {
 			virtual wxString StrHelp() const=0;
 
 		virtual void operator()(agi::Context *c)=0;
-		virtual ~Command();
+		virtual ~Command() {};
 	};
 
 
@@ -58,4 +57,5 @@ namespace cmd {
 	int count();
 
 	void init_command(CommandManager *cm);
+
 } // namespace cmd
