@@ -38,12 +38,25 @@ namespace toolbar {
 
 Toolbar *toolbar;
 
-Toolbar::Toolbar() {
+Toolbar::Toolbar() {}
+
+Toolbar::~Toolbar() {}
+
+
+void Toolbar::GetToolbar(std::string name, wxToolBar *toolbar) {
+
+//	TbMap::iterator index;
+
+//	if ((index = map.find(name)) != map.end()) {
+//		return index->second;
+//	}
+
+//	throw ToolbarInvalidName("Unknown index");
+
+	LOG_D("toolbar/init") << "Generating " << name << " toolbar.";
 
 	json::UnknownElement toolbar_root;
 	std::istringstream stream(GET_DEFAULT_CONFIG(default_toolbar));
-
-	LOG_D("toolbar/init") << "Generating toolbars";
 
 	try {
 		json::Reader::Read(toolbar_root, stream);
@@ -54,44 +67,22 @@ Toolbar::Toolbar() {
 		std::cout << "json::Exception: " << e.what() << std::endl;
  	}
 
-	json::Object object = toolbar_root;
+	const json::Array& arr = toolbar_root[name];
 
-	for (json::Object::const_iterator index(object.Begin()); index != object.End(); index++) {
-		const json::Object::Member& member = *index;
-
-		const json::Array& array = member.element;
-		BuildToolbar(member.name, array);
-	}
+	BuildToolbar(toolbar, arr);
+//	map.insert(TbPair(name, toolbar));
 }
 
 
-Toolbar::~Toolbar() {}
-
-
-wxToolBar* Toolbar::GetToolbar(std::string name) {
-
-	TbMap::iterator index;
-
-	if ((index = map.find(name)) != map.end()) {
-		return index->second;
-	}
-
-	throw ToolbarInvalidName("Unknown index");
-}
-
-
-void Toolbar::BuildToolbar(std::string name, const json::Array& array) {
-	wxToolBar *toolbar = new wxToolBar();
+void Toolbar::BuildToolbar(wxToolBar *toolbar, const json::Array& array) {
 
 	for (json::Array::const_iterator index(array.Begin()); index != array.End(); index++) {
-		std::string name_sub = name;
 
 		const json::Object& obj = *index;
 		const json::Number& type_number = obj["type"];
 		int type = type_number.Value();
 
 		const json::String& command = obj["command"];
-
 		cmd::Command *cmd = cmd::get(command.Value());
 
 		// this is dumb.
@@ -107,7 +98,6 @@ void Toolbar::BuildToolbar(std::string name, const json::Array& array) {
 
 	} // for index
 
-	map.insert(TbPair(name, toolbar));
 }
 
 } // namespace toolbar

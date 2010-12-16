@@ -47,6 +47,7 @@
 #include <libaegisub/log.h>
 
 #include "aegisub/menu.h"
+#include "aegisub/toolbar.h"
 
 #include "ass_file.h"
 #include "selection_controller.h"
@@ -259,16 +260,8 @@ void FrameMain::InitToolbar () {
 	wxSystemOptions::SetOption(_T("msw.remap"), 0);
 	Toolbar = CreateToolBar(wxTB_FLAT | wxTB_HORIZONTAL,-1,_T("Toolbar"));
 
-	// Subtitle control buttons
-	Toolbar->AddTool(	cmd::id("subtitle/new"),		_("New"),GETIMAGE(new_toolbutton_24),_("New subtitles"));
-	Toolbar->AddTool(	cmd::id("subtitle/open"),		_("Open"),GETIMAGE(open_toolbutton_24),_("Open subtitles"));
-	Toolbar->AddTool(	cmd::id("subtitle/save"),		_("Save"),GETIMAGE(save_toolbutton_24),_("Save subtitles"));
-	Toolbar->AddSeparator();
+	toolbar::toolbar->GetToolbar("main", Toolbar);
 
-	// Video zoom controls
-	Toolbar->AddTool(	cmd::id("video/jump"),			_("Jump To..."),GETIMAGE(jumpto_button_24),wxNullBitmap,wxITEM_NORMAL,_("Jump video to time/frame"));
-	Toolbar->AddTool(	cmd::id("video/zoom/in"),		_("Zoom in"),GETIMAGE(zoom_in_button_24),wxNullBitmap,wxITEM_NORMAL,_("Zoom video in"));
-	Toolbar->AddTool(	cmd::id("video/zoom/out"),		_("Zoom out"),GETIMAGE(zoom_out_button_24),wxNullBitmap,wxITEM_NORMAL,_("Zoom video out"));
 	wxArrayString choices;
 	for (int i=1;i<=24;i++) {
 		wxString toAdd = wxString::Format(_T("%i"),int(i*12.5));
@@ -279,47 +272,6 @@ void FrameMain::InitToolbar () {
 	ZoomBox = new wxComboBox(Toolbar,ID_TOOLBAR_ZOOM_DROPDOWN,_T("75%"),wxDefaultPosition,wxDefaultSize,choices,wxCB_DROPDOWN);
 	Toolbar->AddControl(ZoomBox);
 	Toolbar->AddSeparator();
-
-	// More video buttons
-	Toolbar->AddTool(	cmd::id("video/jump/start"),		_("Jump video to start"),GETIMAGE(video_to_substart_24),_("Jumps the video to the start frame of current subtitle"));
-	Toolbar->AddTool(	cmd::id("video/jump/end"),			_("Jump video to end"),GETIMAGE(video_to_subend_24),_("Jumps the video to the end frame of current subtitle"));
-	Toolbar->AddTool(	cmd::id("time/snap/start_video"),	_("Snap start to video"),GETIMAGE(substart_to_video_24),_("Set start of selected subtitles to current video frame"));
-	Toolbar->AddTool(	cmd::id("time/snap/end_video"),		_("Snap end to video"),GETIMAGE(subend_to_video_24),_("Set end of selected subtitles to current video frame"));
-	Toolbar->AddTool(	cmd::id("subtitle/select/visible"),	_("Select visible"),GETIMAGE(select_visible_button_24),_("Selects all lines that are currently visible on video frame"));
-	Toolbar->AddTool(	cmd::id("time/snap/scene"),			_("Snap subtitles to scene"),GETIMAGE(snap_subs_to_scene_24),_("Snap selected subtitles so they match current scene start/end"));
-	Toolbar->AddTool(	cmd::id("time/snap/frame"),			_("Shift subtitles to frame"),GETIMAGE(shift_to_frame_24),_("Shift selected subtitles so first selected starts at this frame"));
-	Toolbar->AddSeparator();
-
-	// Property stuff
-	Toolbar->AddTool(	cmd::id("tool/style/manager"),	_("Styles Manager"),GETIMAGE(style_toolbutton_24),_("Open Styles Manager"));
-	Toolbar->AddTool(	cmd::id("subtitle/properties"),	_("Properties"),GETIMAGE(properties_toolbutton_24),_("Open Properties"));
-	Toolbar->AddTool(	cmd::id("subtitle/attachment"),	_("Attachments"),GETIMAGE(attach_button_24),_("Open Attachment List"));
-	Toolbar->AddTool(	cmd::id("tool/font_collector"),	_("Fonts Collector"),GETIMAGE(font_collector_button_24),_("Open Fonts Collector"));
-	Toolbar->AddSeparator();
-
-	// Automation
-#ifdef WITH_AUTOMATION
-	Toolbar->AddTool(	cmd::id("am/manager"),	_("Automation"),GETIMAGE(automation_toolbutton_24),_("Open Automation manager"));
-	Toolbar->AddSeparator();
-#endif
-
-	// Tools
-	if (HasASSDraw()) {
-		Toolbar->AddTool(cmd::id("tool/assdraw")	,_T("ASSDraw3"),GETIMAGE(assdraw_24),_("Launches ai-chan's \"ASSDraw3\" tool for vector drawing."));
-		Toolbar->AddSeparator();
-	}
-	Toolbar->AddTool(	cmd::id("time/shift"),	_("Shift Times"),GETIMAGE(shift_times_toolbutton_24),_("Open Shift Times Dialogue"));
-	Toolbar->AddTool(	cmd::id("tool/style/assistant"),	_("Styling Assistant"),GETIMAGE(styling_toolbutton_24),_("Open Styling Assistant"));
-	Toolbar->AddTool(	cmd::id("tool/translation_assistant"),	_("Translation Assistant"),GETIMAGE(translation_toolbutton_24),_("Open Translation Assistant"));
-	Toolbar->AddTool(	cmd::id("tool/resampleres"),	_("Resample"),GETIMAGE(resample_toolbutton_24),_("Resample Script Resolution"));
-	Toolbar->AddTool(	cmd::id("tool/time/postprocess"),	_("Timing Post-Processor"),GETIMAGE(timing_processor_toolbutton_24),_("Open Timing Post-processor dialog"));
-	Toolbar->AddTool(	cmd::id("tool/time/kanji"),	_("Kanji Timer"),GETIMAGE(kara_timing_copier_24),_("Open Kanji Timer dialog"));
-	Toolbar->AddTool(	cmd::id("tool/time/kanji"),	_("Spell Checker"),GETIMAGE(spellcheck_toolbutton_24),_("Open Spell checker"));
-	Toolbar->AddSeparator();
-
-	// Options
-	Toolbar->AddTool(	cmd::id("app/options"),	_("Options"),GETIMAGE(options_button_24),_("Configure Aegisub"));
-	Toolbar->AddTool(	cmd::id("grid/tag/cycle_hiding"),	_("Cycle Tag Hidding Mode"),GETIMAGE(toggle_tag_hiding_24),_("Cycle through tag-hiding modes"));
 
 	// Update
 	Toolbar->Realize();

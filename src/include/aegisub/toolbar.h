@@ -43,7 +43,7 @@ class Toolbar {
 public:
 	Toolbar();
 	~Toolbar();
-	wxToolBar* GetToolbar(std::string name);
+	void GetToolbar(std::string name, wxToolBar *toolbar);
 
 private:
 	typedef std::map<std::string, wxToolBar*> TbMap;
@@ -55,7 +55,7 @@ private:
 		Standard = 1,
 	};
 
-	void BuildToolbar(std::string name, const json::Array& array);
+	void BuildToolbar(wxToolBar *toolbar, const json::Array& array);
 
 };
 
