@@ -29,6 +29,7 @@
 #endif
 
 #include <libaegisub/io.h>
+#include <libaegisub/json.h>
 #include <libaegisub/log.h>
 
 #include "aegisub/menu.h"
@@ -44,20 +45,10 @@ Menu::Menu() {
 
 	main_menu = new wxMenuBar();
 
-	json::UnknownElement menu_root;
-	std::istringstream stream(GET_DEFAULT_CONFIG(default_menu));
+	std::istringstream *stream = new std::istringstream(GET_DEFAULT_CONFIG(default_menu));
+	json::UnknownElement menu_root = agi::json::parse(stream);
 
 	LOG_D("menu/init") << "Generating Menus";
-
-	try {
-		json::Reader::Read(menu_root, stream);
-	} catch (json::Reader::ParseException& e) {
-		std::cout << "json::ParseException: " << e.what() << ", Line/offset: " << e.m_locTokenBegin.m_nLine + 1 << '/' << e.m_locTokenBegin.m_nLineOffset + 1 << std::endl << std::endl;
-	} catch (json::Exception& e) {
-		/// @todo Do something better here, maybe print the exact error
-		std::cout << "json::Exception: " << e.what() << std::endl;
- 	}
-
 	json::Object object = menu_root;
 
 	for (json::Object::const_iterator index(object.Begin()); index != object.End(); index++) {

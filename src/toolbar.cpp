@@ -27,6 +27,7 @@
 #endif
 
 #include <libaegisub/io.h>
+#include <libaegisub/json.h>
 #include <libaegisub/log.h>
 
 #include "aegisub/toolbar.h"
@@ -55,17 +56,8 @@ void Toolbar::GetToolbar(std::string name, wxToolBar *toolbar) {
 
 	LOG_D("toolbar/init") << "Generating " << name << " toolbar.";
 
-	json::UnknownElement toolbar_root;
-	std::istringstream stream(GET_DEFAULT_CONFIG(default_toolbar));
-
-	try {
-		json::Reader::Read(toolbar_root, stream);
-	} catch (json::Reader::ParseException& e) {
-		std::cout << "json::ParseException: " << e.what() << ", Line/offset: " << e.m_locTokenBegin.m_nLine + 1 << '/' << e.m_locTokenBegin.m_nLineOffset + 1 << std::endl << std::endl;
-	} catch (json::Exception& e) {
-		/// @todo Do something better here, maybe print the exact error
-		std::cout << "json::Exception: " << e.what() << std::endl;
- 	}
+    std::istringstream *stream = new std::istringstream(GET_DEFAULT_CONFIG(default_toolbar));
+    json::UnknownElement toolbar_root = agi::json::parse(stream);
 
 	const json::Array& arr = toolbar_root[name];
 
