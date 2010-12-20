@@ -21,6 +21,7 @@ SRC = \
 	common/charset.cpp \
 	common/charset_conv.cpp \
 	common/charset_ucd.cpp \
+	common/json.cpp \
 	common/mru.cpp \
 	common/option.cpp \
 	common/option_visit.cpp \

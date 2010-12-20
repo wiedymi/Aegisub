@@ -57,7 +57,7 @@ class Options {
 
 	/// @brief Create option object.
 	/// @param path Path to store
-	json::Object CreateObject(std::string path);
+	::json::Object CreateObject(std::string path);
 
 	/// User config (file that will be written to disk)
 	const std::string config_file;
@@ -78,7 +78,7 @@ protected:
 	/// @param[out] obj  Parent object
 	/// @param[in] path  Path option should be stored in.
 	/// @param[in] value Value to write.
-	static bool PutOption(json::Object &obj, const std::string &path, const json::UnknownElement &value);
+	static bool PutOption(::json::Object &obj, const std::string &path, const ::json::UnknownElement &value);
 
 
 public:
