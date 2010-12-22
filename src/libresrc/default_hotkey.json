@@ -1,11 +1,5 @@
 {
 	"global" : {
-		"subtitle/new" : [
-			{
-				"modifiers" : [ "C" ],
-				"key" : "Q" 
-			} 
-		]
 		"app/exit" : [
 			{
 				"modifiers" : [ "C" ],
@@ -153,7 +147,7 @@
 		"edit/undo" : [
 			{
 				"modifiers" : [ "Ctrl" ],
-				"key" : Y""
+				"key" : "Y"
 			}
 		],
 		"grid/line/next" : [
