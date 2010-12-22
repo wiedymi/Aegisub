@@ -54,6 +54,7 @@
 #include "command/command.h"
 #include "command/icon.h"
 #include "aegisub/toolbar.h"
+#include "aegisub/hotkey.h"
 
 #include "ass_dialogue.h"
 #include "ass_export_filter.h"
@@ -170,6 +171,10 @@ bool AegisubApp::OnInit() {
 
 	// Init commands.
 	cmd::init_command(cmd::cm);
+
+	// Init hotkeys.
+	hotkey::hotkey = new hotkey::Hotkey();
+
 
 	// Init icons.
 	icon::icon_init();
