@@ -49,8 +49,13 @@ std::string Combo::Str() {
 	return str;
 }
 
-std::string Combo::StrMenu() { return ""; }
+std::string Combo::StrMenu() {
+	return Str();
+}
 
+void Hotkey::ComboInsert(Combo *combo) {
+    map.insert(HotkeyMapPair(combo->Str(), combo));
+}
 
 Hotkey::~Hotkey() {}
 
@@ -96,10 +101,17 @@ void Hotkey::BuildHotkey(std::string context, const json::Object& object) {
 			}
 			const json::String& key = obj["key"];
 			combo->KeyInsert(key.Value());
-
+			ComboInsert(combo);
 		std::cout << member.name << "  " << combo->Str() << std::endl;
 		} // for arr_index
 	} // for index
 }
+
+
+void Scan(std::string context, std::string str) {
+
+
+}
+
 
 } // namespace toolbar

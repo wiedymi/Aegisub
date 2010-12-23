@@ -51,6 +51,7 @@ private:
 	void KeyInsert(std::string key) { key_map.push_back(key); }
 };
 
+
 class Hotkey {
 public:
 	Hotkey();
@@ -58,7 +59,12 @@ public:
 
 private:
 	typedef std::multimap<std::string, Combo*> HotkeyMap;
+	typedef std::pair<std::string, Combo*> HotkeyMapPair;
+	HotkeyMap map;
+
 	void BuildHotkey(std::string context, const json::Object& object);
+	void ComboInsert(Combo *combo);
+	void Scan(std::string context);
 };
 
 } // namespace hotkey
