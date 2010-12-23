@@ -8,8 +8,8 @@
 		],
 		"app/options" : [
 			{
-				"modifiers" : [ "" ],
-				"key" : ""
+				"modifiers" : [ "Alt" ],
+				"key" : "O"
 			}
 		],
 		"audio play" : [
@@ -246,19 +246,19 @@
 		],
 		"timing add lead in" : [
 			{
-				"modifiers" : [ "" ],
+				"modifiers" : [],
 				"key" : "C"
 			}
 		],
 		"timing add lead out" : [
 			{
-				"modifiers" : [ "" ],
+				"modifiers" : [],
 				"key" : "V"
 			}
 		],
 		"timing karaoke decrease length" : [
 			{
-				"modifiers" : [ "" ],
+				"modifiers" : [],
 				"key" : "KP_Subtract"
 			}
 		],
@@ -270,7 +270,7 @@
 		],
 		"timing karaoke increase length" : [
 			{
-				"modifiers" : [ "" ],
+				"modifiers" : [],
 				"key" : "KP_Add"
 			}
 		],
@@ -282,13 +282,13 @@
 		],
 		"timing move to next item" : [
 			{
-				"modifiers" : [ "" ],
+				"modifiers" : [],
 				"key" : "X"
 			}
 		],
 		"timing move to prev item" : [
 			{
-				"modifiers" : [ "" ],
+				"modifiers" : [],
 				"key" : "Z"
 			}
 		],
@@ -306,8 +306,12 @@
 		],
 		"video/frame/next" : [
 			{
-				"modifiers" : [ "" ],
-				"key" : ""
+				"modifiers" : [],
+				"key" : "Right"
+			},
+			{
+				"modifiers" : [ "Ctrl" ],
+				"key" : "KP_6"
 			}
 		],
 		"video/frame/play" : [
@@ -318,7 +322,7 @@
 		],
 		"video/frame/prev" : [
 			{
-				"modifiers" : [ "" ],
+				"modifiers" : [],
 				"key" : "Left"
 			},
 			{
