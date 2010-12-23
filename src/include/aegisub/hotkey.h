@@ -34,15 +34,21 @@ extern Hotkey *hotkey;
 typedef std::vector<std::string> ComboMap;
 
 class Combo {
+friend class Hotkey;
+
 public:
 	std::string Str();
 	std::string StrMenu();
 	ComboMap Get();
 	std::string CmdName() { return cmd_name; }
-	Combo() {}
+	Combo(std::string ctx, std::string cmd): cmd_name(cmd), context(ctx) {}
 	~Combo() {}
 private:
+	ComboMap key_map;
 	std::string cmd_name;
+	std::string context;
+
+	void KeyInsert(std::string key) { key_map.push_back(key); }
 };
 
 class Hotkey {
@@ -52,7 +58,7 @@ public:
 
 private:
 	typedef std::multimap<std::string, Combo*> HotkeyMap;
-	void BuildHotkey(std::string context, const json::Array& array);
+	void BuildHotkey(std::string context, const json::Object& object);
 };
 
 } // namespace hotkey

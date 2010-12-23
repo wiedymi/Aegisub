@@ -39,10 +39,18 @@
 
 namespace hotkey {
 
-std::string Combo::Str() { return ""; }
+Hotkey *hotkey;
+
+std::string Combo::Str() {
+	std::string str(key_map[0]);
+	for (unsigned int i=1; i < key_map.size(); i++) {
+		str.append("-" + key_map[i]);
+	}
+	return str;
+}
+
 std::string Combo::StrMenu() { return ""; }
 
-Hotkey *hotkey;
 
 Hotkey::~Hotkey() {}
 
@@ -57,22 +65,41 @@ Hotkey::Hotkey() {
 
 	for (json::Object::const_iterator index(object.Begin()); index != object.End(); index++) {
 		const json::Object::Member& member = *index;
-		const json::Array& array = member.element;
-		BuildHotkey(member.name, array);
+		const json::Object& obj = member.element;
+		BuildHotkey(member.name, obj);
 
     }
 }
 
 
-void Hotkey::BuildHotkey(std::string context, const json::Array& array) {
+void Hotkey::BuildHotkey(std::string context, const json::Object& object) {
 
-	for (json::Array::const_iterator index(array.Begin()); index != array.End(); index++) {
+	for (json::Object::const_iterator index(object.Begin()); index != object.End(); index++) {
+		const json::Object::Member& member = *index;
 
-		const json::Object& obj = *index;
+
+		const json::Array& array = member.element;
+		for (json::Array::const_iterator arr_index(array.Begin()); arr_index != array.End(); arr_index++) {
+
+			Combo *combo = new Combo(context, member.name);
+
+	        const json::Object& obj = *arr_index;
+
+			const json::Array& arr_mod = obj["modifiers"];
+
+			if (arr_mod.Size() >  0) {
+				for (json::Array::const_iterator arr_mod_index(arr_mod.Begin()); arr_mod_index != arr_mod.End(); arr_mod_index++) {
+					const json::String& key_mod = *arr_mod_index;
+					combo->KeyInsert(key_mod.Value());
+				} // for arr_mod_index
+
+			}
+			const json::String& key = obj["key"];
+			combo->KeyInsert(key.Value());
+
+		std::cout << member.name << "  " << combo->Str() << std::endl;
+		} // for arr_index
 	} // for index
-
 }
 
 } // namespace toolbar
-
-
