@@ -46,7 +46,7 @@ Menu::Menu() {
 	main_menu = new wxMenuBar();
 
 	std::istringstream *stream = new std::istringstream(GET_DEFAULT_CONFIG(default_menu));
-	json::UnknownElement menu_root = agi::json::parse(stream);
+	json::UnknownElement menu_root = agi::json_util::parse(stream);
 
 	LOG_D("menu/init") << "Generating Menus";
 	json::Object object = menu_root;

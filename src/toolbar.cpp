@@ -57,7 +57,7 @@ void Toolbar::GetToolbar(std::string name, wxToolBar *toolbar) {
 	LOG_D("toolbar/init") << "Generating " << name << " toolbar.";
 
     std::istringstream *stream = new std::istringstream(GET_DEFAULT_CONFIG(default_toolbar));
-    json::UnknownElement toolbar_root = agi::json::parse(stream);
+    json::UnknownElement toolbar_root = agi::json_util::parse(stream);
 
 	const json::Array& arr = toolbar_root[name];
 

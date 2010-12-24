@@ -30,17 +30,16 @@
 
 
 namespace agi {
-	namespace json {
+	namespace json_util {
 
-
-::json::UnknownElement parse(std::istream *stream) {
-	::json::UnknownElement root;
+json::UnknownElement parse(std::istream *stream) {
+	json::UnknownElement root;
 
 	try {
-		::json::Reader::Read(root, *stream);
-	} catch (::json::Reader::ParseException& e) {
+		json::Reader::Read(root, *stream);
+	} catch (json::Reader::ParseException& e) {
 		std::cout << "json::ParseException: " << e.what() << ", Line/offset: " << e.m_locTokenBegin.m_nLine + 1 << '/' << e.m_locTokenBegin.m_nLineOffset + 1 << std::endl << std::endl;
-	} catch (::json::Exception& e) {
+	} catch (json::Exception& e) {
 		/// @todo Do something better here, maybe print the exact error
 		std::cout << "json::Exception: " << e.what() << std::endl;
 	}
@@ -50,12 +49,12 @@ namespace agi {
 }
 
 
-::json::UnknownElement file(const std::string file) {
+json::UnknownElement file(const std::string file) {
 	return parse(io::Open(file));
 }
 
 
-::json::UnknownElement file(const std::string file, const std::string &default_config) {
+json::UnknownElement file(const std::string file, const std::string &default_config) {
 
 	try {
 		return parse(io::Open(file));
@@ -70,5 +69,5 @@ namespace agi {
 }
 
 
-	} // namespace json
+	} // namespace json_util
 } // namespace agi
