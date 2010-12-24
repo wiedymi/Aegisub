@@ -360,5 +360,230 @@
 				"key" : "KP_Subtract"
 			}
 		]
+	},
+
+	"audio" : {
+		"timing move to next item" : [
+			{
+				"modifiers" : [],
+				"key" : "Right"
+			}
+		],
+		"timing move to prev item" : [
+			{
+				"modifiers" : [],
+				"key" : "Left"
+			}
+		]
+	},
+
+	"video" : {
+		"video/frame/next" : [
+			{
+				"modifiers" : [],
+				"key" : "Right"
+			}
+		],
+		"video/frame/prev" : [
+			{
+				"modifiers" : [],
+				"key" : "Left"
+			}
+		],
+		"visual typesetting set tool crosshair" : [
+			{
+				"modifiers" : [],
+				"key" : "A"
+			}
+		],
+		"visual typesetting set tool drag" : [
+			{
+				"modifiers" : [],
+				"key" : "S"
+			}
+		],
+		"visual typesetting set tool rectangle clip" : [
+			{
+				"modifiers" : [],
+				"key" : "H"
+			}
+		],
+		"visual typesetting set tool rotate xy" : [
+			{
+				"modifiers" : [],
+				"key" : "F"
+			}
+		],
+		"visual typesetting set tool rotate z" : [
+			{
+				"modifiers" : [],
+				"key" : "D"
+			}
+		],
+		"visual typesetting set tool scale" : [
+			{
+				"modifiers" : [],
+				"key" : "G"
+			}
+		],
+		"visual typesetting set tool vector clip" : [
+			{
+				"modifiers" : [],
+				"key" : "J"
+			}
+		]
+	},
+
+	"styling assistant" : {
+		"audio play" : [
+			{
+				"modifiers" : [],
+				"key" : "End"
+			}
+		],
+		"styling assistant commit" : [
+			{
+				"modifiers" : [],
+				"key" : "Enter"
+			}
+		],
+		"styling assistant next item" : [
+			{
+				"modifiers" : [],
+				"key" : "PageDown"
+			}
+		],
+		"styling assistant prev item" : [
+			{
+				"modifiers" : [],
+				"key" : "PageUp"
+			}
+		],
+		"styling assistant preview" : [
+			{
+				"modifiers" : [],
+				"key" : "F8"
+			}
+		],
+		"video play" : [
+			{
+				"modifiers" : [],
+				"key" : "Home"
+			}
+		]
+	},
+
+	"timing mode" : {
+		"audio play" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_5"
+			}
+		],
+		"audio play after selection end" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_3"
+			}
+		],
+		"audio play before selection begin" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_1"
+			}
+		],
+		"audio stop" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_8"
+			}
+		],
+		"timing commit" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_Enter"
+			}
+		],
+		"timing move to next item" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_2"
+			}
+		],
+		"timing move to prev item" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_0"
+			}
+		],
+		"timing shift end backward" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_7"
+			}
+		],
+		"timing shift end forward" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_9"
+			}
+		],
+		"timing shift start backward" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_4"
+			}
+		],
+		"timing shift start forward" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_6"
+			}
+		]
+	},
+
+	"translation assistant" : {
+		"audio play" : [
+			{
+				"modifiers" : [],
+				"key" : "End"
+			}
+		],
+		"translation assiatant prev item" : [
+			{
+				"modifiers" : [],
+				"key" : "PageUp"
+			}
+		],
+		"translation assistant commit" : [
+			{
+				"modifiers" : [],
+				"key" : "Enter"
+			}
+		],
+		"translation assistant insert original" : [
+			{
+				"modifiers" : [],
+				"key" : "Insert"
+			}
+		],
+		"translation assistant next item" : [
+			{
+				"modifiers" : [],
+				"key" : "PageDown"
+			}
+		],
+		"translation assistant preview" : [
+			{
+				"modifiers" : [],
+				"key" : "F8"
+			}
+		],
+		"video play" : [
+			{
+				"modifiers" : [],
+				"key" : "Home"
+			}
+		]
 	}
 }
