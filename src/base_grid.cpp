@@ -1152,34 +1152,6 @@ void BaseGrid::OnKeyPress(wxKeyEvent &event) {
 
 	hotkey::check("Subtitle Grid", event.GetKeyCode(), event.GetUnicodeKey(), event.GetModifiers());
 
-/*
-	int key_code = event.GetKeyCode();
-	wchar_t key_char = event.GetUnicodeKey();
-	int modifier = event.GetModifiers();
-
-	std::string combo;
-	if ((modifier != wxMOD_NONE)) {
-		if ((modifier & wxMOD_CMD) != 0) combo.append("Ctrl-");
-		if ((modifier & wxMOD_ALT) != 0) combo.append("Alt-");
-		if ((modifier & wxMOD_SHIFT) != 0) combo.append("Shift-");
-	}
-
-	if ((key_char != 0)
-		&& (key_code != WXK_BACK)
-		&& (key_code != WXK_RETURN)
-		&& (key_code != WXK_ESCAPE)
-		&& (key_code != WXK_SPACE)
-		&& (key_code != WXK_DELETE)) {
-		combo.append(wxString::Format("%c", key_char));
-	} else if (hotkey::keycode_name(key_code, combo) == 1) {
-		std::stringstream ss;
-		ss << key_code;
-		combo.append(ss.str());
-	}
-
-	std::cout << combo << std::endl;
-*/
-
 	// Get scan code
 	int key = event.GetKeyCode();
 #ifdef __APPLE__
