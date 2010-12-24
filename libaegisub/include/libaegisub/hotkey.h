@@ -20,7 +20,7 @@
 
 #include "config.h"
 
-#ifndef AGI_PRE
+#ifndef LAGI_PRE
 #include <math.h>
 
 #include <memory>
@@ -29,14 +29,48 @@
 #include <libaegisub/cajun/elements.h>
 
 
-namespace hotkey {
+namespace agi {
+	namespace hotkey {
+
+class Hotkey;
+extern Hotkey *hotkey;
+
+typedef std::vector<std::string> ComboMap;
+
+class Combo {
+friend class Hotkey;
+
+public:
+	std::string Str();
+	std::string StrMenu();
+	ComboMap Get();
+	std::string CmdName() { return cmd_name; }
+	Combo(std::string ctx, std::string cmd): cmd_name(cmd), context(ctx) {}
+	std::string Context() { return context; }
+	~Combo() {}
+private:
+	ComboMap key_map;
+	std::string cmd_name;
+	std::string context;
+
+	void KeyInsert(std::string key) { key_map.push_back(key); }
+};
 
 
-typedef std::map<int, const char *> KCNameMap;
+class Hotkey {
+public:
+	Hotkey(const std::string &default_config);
+	~Hotkey();
+	void Scan(std::string context, std::string str);
 
-extern KCNameMap kc_name_map;
-void keycode_name_map_init();
-bool keycode_name(const int &code, std::string &combo);
-void check(std::string context, int key_code, wchar_t key_char, int modifier);
+private:
+	typedef std::multimap<std::string, Combo*> HotkeyMap;
+	typedef std::pair<std::string, Combo*> HotkeyMapPair;
+	HotkeyMap map;
 
-} // namespace hotkey
+	void BuildHotkey(std::string context, const ::json::Object& object);
+	void ComboInsert(Combo *combo);
+};
+
+	} // namespace hotkey
+} // namespace agi

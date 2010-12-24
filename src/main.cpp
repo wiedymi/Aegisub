@@ -81,6 +81,7 @@
 #include <libaegisub/io.h>
 #include <libaegisub/access.h>
 #include <libaegisub/log.h>
+#include <libaegisub/hotkey.h>
 
 
 
@@ -176,7 +177,7 @@ bool AegisubApp::OnInit() {
 	hotkey::keycode_name_map_init();
 
 	// Init hotkeys.
-	hotkey::hotkey = new hotkey::Hotkey();
+	agi::hotkey::hotkey = new agi::hotkey::Hotkey(GET_DEFAULT_CONFIG(default_hotkey));
 
 	// Init icons.
 	icon::icon_init();
