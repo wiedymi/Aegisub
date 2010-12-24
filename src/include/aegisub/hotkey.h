@@ -26,7 +26,17 @@
 #include <memory>
 #endif
 
+#include <libaegisub/cajun/elements.h>
+
+
 namespace hotkey {
+
+typedef std::map<int, const char *> KCNameMap;
+
+extern KCNameMap kc_name_map;
+void keycode_name_map_init();
+bool keycode_name(const int &code, std::string &combo);
+void check(std::string context, int key_code, wchar_t key_char, int modifier);
 
 class Hotkey;
 extern Hotkey *hotkey;
@@ -42,6 +52,7 @@ public:
 	ComboMap Get();
 	std::string CmdName() { return cmd_name; }
 	Combo(std::string ctx, std::string cmd): cmd_name(cmd), context(ctx) {}
+	std::string Context() { return context; }
 	~Combo() {}
 private:
 	ComboMap key_map;
@@ -56,15 +67,15 @@ class Hotkey {
 public:
 	Hotkey();
 	~Hotkey();
+	void Scan(std::string context, std::string str);
 
 private:
 	typedef std::multimap<std::string, Combo*> HotkeyMap;
 	typedef std::pair<std::string, Combo*> HotkeyMapPair;
 	HotkeyMap map;
 
-	void BuildHotkey(std::string context, const json::Object& object);
+	void BuildHotkey(std::string context, const ::json::Object& object);
 	void ComboInsert(Combo *combo);
-	void Scan(std::string context);
 };
 
 } // namespace hotkey

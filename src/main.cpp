@@ -172,9 +172,11 @@ bool AegisubApp::OnInit() {
 	// Init commands.
 	cmd::init_command(cmd::cm);
 
+	// Init hotkey keycode->name map.
+	hotkey::keycode_name_map_init();
+
 	// Init hotkeys.
 	hotkey::hotkey = new hotkey::Hotkey();
-
 
 	// Init icons.
 	icon::icon_init();

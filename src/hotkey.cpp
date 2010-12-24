@@ -102,16 +102,48 @@ void Hotkey::BuildHotkey(std::string context, const json::Object& object) {
 			const json::String& key = obj["key"];
 			combo->KeyInsert(key.Value());
 			ComboInsert(combo);
-		std::cout << member.name << "  " << combo->Str() << std::endl;
 		} // for arr_index
 	} // for index
 }
 
 
-void Scan(std::string context, std::string str) {
+void Hotkey::Scan(std::string context, std::string str) {
+	HotkeyMap::iterator index;
+	std::pair<HotkeyMap::iterator, HotkeyMap::iterator> range;
 
+	range = map.equal_range(str);
+
+	for (index = range.first; index != range.second; ++index) {
+		std::cout << "Found: " << (*index).first << "  Context: "<< (*index).second->Context() << "  Command: " << (*index).second->CmdName() << std::endl;
+	}
 
 }
 
+void check(std::string context, int key_code, wchar_t key_char, int modifier) {
+	std::string combo;
+	if ((modifier != wxMOD_NONE)) {
+		if ((modifier & wxMOD_CMD) != 0) combo.append("Ctrl-");
+		if ((modifier & wxMOD_ALT) != 0) combo.append("Alt-");
+		if ((modifier & wxMOD_SHIFT) != 0) combo.append("Shift-");
+	}
+
+	if ((key_char != 0)
+		&& (key_code != WXK_BACK)
+		&& (key_code != WXK_RETURN)
+		&& (key_code != WXK_ESCAPE)
+		&& (key_code != WXK_SPACE)
+		&& (key_code != WXK_DELETE)) {
+		combo.append(wxString::Format("%c", key_char));
+	} else if (hotkey::keycode_name(key_code, combo) == 1) {
+		std::stringstream ss;
+		ss << key_code;
+		combo.append(ss.str());
+	}
+
+	std::cout << combo << std::endl;
+	hotkey::hotkey->Scan(context, combo);
+
+}
 
 } // namespace toolbar
+
