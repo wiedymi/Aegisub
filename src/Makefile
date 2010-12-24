@@ -192,7 +192,6 @@ SRC += \
 	gl_wrap.cpp \
 	help_button.cpp \
 	hotkey.cpp \
-	hotkey_map.cpp \
 	hotkeys.cpp \
 	kana_table.cpp \
 	keyframe.cpp \
