@@ -66,9 +66,7 @@ void check(std::string context, int key_code, wchar_t key_char, int modifier) {
 		combo.append(ss.str());
 	}
 
-	std::cout << combo << std::endl;
 	agi::hotkey::hotkey->Scan(context, combo);
-
 }
 
 
@@ -168,9 +166,6 @@ void keycode_name_map_init() {
 	kc_name_map.insert(KCNamePair(WXK_NUMPAD_SUBTRACT, "KP_Subtract"));
 	kc_name_map.insert(KCNamePair(WXK_NUMPAD_DECIMAL, "KP_Decimal"));
 	kc_name_map.insert(KCNamePair(WXK_NUMPAD_DIVIDE, "KP_Divide"));
-
-
-	KCNameMap::iterator index;
 
 }
 
