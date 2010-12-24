@@ -109,7 +109,7 @@ void Hotkey::Scan(std::string context, std::string str) {
 	range = map.equal_range(str);
 
 	for (index = range.first; index != range.second; ++index) {
-		LOG_D("hotkey/found") << "Found: " << (*index).first << "  Context: "<< (*index).second->Context() << "  Command: " << (*index).second->CmdName() << std::endl;
+		LOG_D("hotkey/found") << "Found: " << (*index).first << "  Context: "<< (*index).second->Context() << "  Command: " << (*index).second->CmdName();
 	}
 
 }
