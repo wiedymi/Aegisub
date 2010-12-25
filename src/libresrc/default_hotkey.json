@@ -1,5 +1,86 @@
 {
-	"global" : {
+	"always" : {
+		"audio play" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_5",
+				"enabled" : false
+			}
+		],
+		"audio stop" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_8",
+				"enabled" : false
+			}
+		],
+		"timing shift start backward" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_4",
+				"enabled" : false
+			}
+		],
+		"timing shift start forward" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_6",
+				"enabled" : false
+			}
+		],
+		"timing shift end backward" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_7",
+				"enabled" : false
+			}
+		],
+		"timing shift end forward" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_9",
+				"enabled" : false
+			}
+		],
+		"audio play before selection begin" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_1",
+				"enabled" : false
+			}
+		],
+		"audio play after selection end" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_3",
+				"enabled" : false
+			}
+		],
+		"timing move to prev item" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_0",
+				"enabled" : false
+			}
+		],
+		"timing move to next item" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_2",
+				"enabled" : false
+			}
+		],
+		"timing commit" : [
+			{
+				"modifiers" : [],
+				"key" : "KP_Enter",
+				"enabled" : false
+			}
+		]
+	},
+
+
+	"default" : {
 		"app/exit" : [
 			{
 				"modifiers" : [ "C" ],
