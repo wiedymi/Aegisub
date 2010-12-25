@@ -47,11 +47,13 @@ public:
 	std::string CmdName() { return cmd_name; }
 	Combo(std::string ctx, std::string cmd): cmd_name(cmd), context(ctx) {}
 	std::string Context() { return context; }
+	void Enable(bool e) { enable = e; }
 	~Combo() {}
 private:
 	ComboMap key_map;
 	std::string cmd_name;
 	std::string context;
+	bool enable;
 
 	void KeyInsert(std::string key) { key_map.push_back(key); }
 };
