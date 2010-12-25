@@ -1,5 +1,5 @@
 {
-	"always" : {
+	"Always" : {
 		"audio play" : [
 			{
 				"modifiers" : [],
@@ -80,7 +80,7 @@
 	},
 
 
-	"default" : {
+	"Default" : {
 		"app/exit" : [
 			{
 				"modifiers" : [ "C" ],
@@ -505,7 +505,7 @@
 		]
 	},
 
-	"audio" : {
+	"Audio" : {
 		"timing move to next item" : [
 			{
 				"modifiers" : [],
@@ -522,7 +522,7 @@
 		]
 	},
 
-	"video" : {
+	"Video" : {
 		"video/frame/next" : [
 			{
 				"modifiers" : [],
@@ -588,7 +588,7 @@
 		]
 	},
 
-	"styling assistant" : {
+	"Styling Assistant" : {
 		"audio play" : [
 			{
 				"modifiers" : [],
@@ -633,7 +633,7 @@
 		]
 	},
 
-	"timing mode" : {
+	"Timing Mode" : {
 		"audio play" : [
 			{
 				"modifiers" : [],
@@ -713,7 +713,7 @@
 		]
 	},
 
-	"translation assistant" : {
+	"Translation Assistant" : {
 		"audio play" : [
 			{
 				"modifiers" : [],
