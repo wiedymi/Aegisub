@@ -4,77 +4,77 @@
 			{
 				"modifiers" : [],
 				"key" : "KP_5",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"audio stop" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_8",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"timing shift start backward" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_4",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"timing shift start forward" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_6",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"timing shift end backward" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_7",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"timing shift end forward" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_9",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"audio play before selection begin" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_1",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"audio play after selection end" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_3",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"timing move to prev item" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_0",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"timing move to next item" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_2",
-				"enabled" : false
+				"enable" : false
 			}
 		],
 		"timing commit" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_Enter",
-				"enabled" : false
+				"enable" : false
 			}
 		]
 	},
@@ -85,422 +85,422 @@
 			{
 				"modifiers" : [ "C" ],
 				"key" : "Q",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"app/options" : [
 			{
 				"modifiers" : [ "Alt" ],
 				"key" : "O",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play" : [
 			{
 				"modifiers" : [],
 				"key" : "Space",
-				"enabled" : true
+				"enable" : true
 			},
 			{
 				"modifiers" : [],
 				"key" : "S",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play after selection end" : [
 			{
 				"modifiers" : [],
 				"key" : "W",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play before selection begin" : [
 			{
 				"modifiers" : [],
 				"key" : "Q",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play toggle" : [
 			{
 				"modifiers" : [],
 				"key" : "B",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play selection begin" : [
 			{
 				"modifiers" : [],
 				"key" : "E",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play selection end" : [
 			{
 				"modifiers" : [],
 				"key" : "D",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play to end" : [
 			{
 				"modifiers" : [],
 				"key" : "T",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio scroll left" : [
 			{
 				"modifiers" : [],
 				"key" : "A",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio scroll right" : [
 			{
 				"modifiers" : [],
 				"key" : "F",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio stop" : [
 			{
 				"modifiers" : [],
 				"key" : "H",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"commit" : [
 			{
 				"modifiers" : [],
 				"key" : "Enter",
-				"enabled" : true
+				"enable" : true
 			},
 			{
 				"modifiers" : [],
 				"key" : "G",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"commit and stay" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "Enter",
-				"enabled" : true
+				"enable" : true
 			},
 			{
 				"modifiers" : [],
 				"key" : "F8",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/copy" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "C",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/cut" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "X",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/find_replace" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "H",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/line/delete" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "Delete",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/line/duplicate/shift" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "D",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/paste" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "V",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/paste/over" : [
 			{
 				"modifiers" : [ "Ctrl", "Shift" ],
 				"key" : "V",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/redo" : [
 			{
 				"modifiers" : [ "Ctrl", "Shift" ],
 				"key" : "V",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"edit/undo" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "Y",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"grid/line/next" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "KP_8",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"grid/line/prev" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "KP_2",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"grid/swap/down" : [
 			{
 				"modifiers" : [ "Alt" ],
 				"key" : "Down",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"grid/swap/up" : [
 			{
 				"modifiers" : [ "Alt" ],
 				"key" : "Up",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"help/contents" : [
 			{
 				"modifiers" : [],
 				"key" : "F1",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"subtitle/find" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "F",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"subtitle/find/next" : [
 			{
 				"modifiers" : [],
 				"key" : "F3",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"subtitle/new" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "N",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"subtitle/open" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "O",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"subtitle/save" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "S",
-				"enabled" : true
+				"enable" : true
 			},
 			{
 				"modifiers" : [],
 				"key" : "F2",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"time/frame/current" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "6",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"time/shift" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "I",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"time/snap/end_video" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "4",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"time/snap/scene" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "5",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"time/snap/start_video" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "3",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing add lead in" : [
 			{
 				"modifiers" : [],
 				"key" : "C",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing add lead out" : [
 			{
 				"modifiers" : [],
 				"key" : "V",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing karaoke decrease length" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_Subtract",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing karaoke decrease length and shift following" : [
 			{
 				"modifiers" : [ "Shift" ],
 				"key" : "KP_Subtract",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing karaoke increase length" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_Add",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing karaoke increase length and shift following" : [
 			{
 				"modifiers" : [ "Shift" ],
 				"key" : "KP_Add",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing move to next item" : [
 			{
 				"modifiers" : [],
 				"key" : "X",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing move to prev item" : [
 			{
 				"modifiers" : [],
 				"key" : "Z",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"toggle global timing mode" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "KP_Multiply",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/focus_seek" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "Space",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/frame/next" : [
 			{
 				"modifiers" : [],
 				"key" : "Right",
-				"enabled" : true
+				"enable" : true
 			},
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "KP_6",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/frame/play" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "P",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/frame/prev" : [
 			{
 				"modifiers" : [],
 				"key" : "Left",
-				"enabled" : true
+				"enable" : true
 			},
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "KP_4",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/jump" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "J",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/jump/end" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "2",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/jump/start" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "1",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/zoom/in" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "KP_Add",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/zoom/out" : [
 			{
 				"modifiers" : [ "Ctrl" ],
 				"key" : "KP_Subtract",
-				"enabled" : true
+				"enable" : true
 			}
 		]
 	},
@@ -510,14 +510,14 @@
 			{
 				"modifiers" : [],
 				"key" : "Right",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing move to prev item" : [
 			{
 				"modifiers" : [],
 				"key" : "Left",
-				"enabled" : true
+				"enable" : true
 			}
 		]
 	},
@@ -527,63 +527,63 @@
 			{
 				"modifiers" : [],
 				"key" : "Right",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video/frame/prev" : [
 			{
 				"modifiers" : [],
 				"key" : "Left",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"visual typesetting set tool crosshair" : [
 			{
 				"modifiers" : [],
 				"key" : "A",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"visual typesetting set tool drag" : [
 			{
 				"modifiers" : [],
 				"key" : "S",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"visual typesetting set tool rectangle clip" : [
 			{
 				"modifiers" : [],
 				"key" : "H",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"visual typesetting set tool rotate xy" : [
 			{
 				"modifiers" : [],
 				"key" : "F",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"visual typesetting set tool rotate z" : [
 			{
 				"modifiers" : [],
 				"key" : "D",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"visual typesetting set tool scale" : [
 			{
 				"modifiers" : [],
 				"key" : "G",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"visual typesetting set tool vector clip" : [
 			{
 				"modifiers" : [],
 				"key" : "J",
-				"enabled" : true
+				"enable" : true
 			}
 		]
 	},
@@ -593,42 +593,42 @@
 			{
 				"modifiers" : [],
 				"key" : "End",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"styling assistant commit" : [
 			{
 				"modifiers" : [],
 				"key" : "Enter",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"styling assistant next item" : [
 			{
 				"modifiers" : [],
 				"key" : "PageDown",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"styling assistant prev item" : [
 			{
 				"modifiers" : [],
 				"key" : "PageUp",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"styling assistant preview" : [
 			{
 				"modifiers" : [],
 				"key" : "F8",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video play" : [
 			{
 				"modifiers" : [],
 				"key" : "Home",
-				"enabled" : true
+				"enable" : true
 			}
 		]
 	},
@@ -638,77 +638,77 @@
 			{
 				"modifiers" : [],
 				"key" : "KP_5",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play after selection end" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_3",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio play before selection begin" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_1",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"audio stop" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_8",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing commit" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_Enter",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing move to next item" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_2",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing move to prev item" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_0",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing shift end backward" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_7",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing shift end forward" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_9",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing shift start backward" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_4",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"timing shift start forward" : [
 			{
 				"modifiers" : [],
 				"key" : "KP_6",
-				"enabled" : true
+				"enable" : true
 			}
 		]
 	},
@@ -718,49 +718,49 @@
 			{
 				"modifiers" : [],
 				"key" : "End",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"translation assiatant prev item" : [
 			{
 				"modifiers" : [],
 				"key" : "PageUp",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"translation assistant commit" : [
 			{
 				"modifiers" : [],
 				"key" : "Enter",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"translation assistant insert original" : [
 			{
 				"modifiers" : [],
 				"key" : "Insert",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"translation assistant next item" : [
 			{
 				"modifiers" : [],
 				"key" : "PageDown",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"translation assistant preview" : [
 			{
 				"modifiers" : [],
 				"key" : "F8",
-				"enabled" : true
+				"enable" : true
 			}
 		],
 		"video play" : [
 			{
 				"modifiers" : [],
 				"key" : "Home",
-				"enabled" : true
+				"enable" : true
 			}
 		]
 	}
