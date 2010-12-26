@@ -142,5 +142,18 @@ bool Hotkey::Scan(const std::string context, const std::string str, std::string 
 		return 1;
 
 }
+
+void Hotkey::Save() {
+
+	HotkeyMap::iterator index;
+	for (index = map.begin(); index != map.end(); ++index) {
+
+	}
+
+}
+
+
+
+
 	} // namespace toolbar
 } // namespace agi
