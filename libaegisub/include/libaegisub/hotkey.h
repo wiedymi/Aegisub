@@ -44,15 +44,15 @@ public:
 	std::string Str();
 	std::string StrMenu();
 	ComboMap Get();
-	std::string CmdName() { return cmd_name; }
+	const std::string& CmdName() { return cmd_name; }
 	Combo(std::string ctx, std::string cmd): cmd_name(cmd), context(ctx) {}
-	std::string Context() { return context; }
+	const std::string& Context() { return context; }
 	void Enable(bool e) { enable = e; }
 	~Combo() {}
 private:
 	ComboMap key_map;
-	std::string cmd_name;
-	std::string context;
+	const std::string cmd_name;
+	const std::string context;
 	bool enable;
 
 	void KeyInsert(std::string key) { key_map.push_back(key); }
@@ -63,7 +63,7 @@ class Hotkey {
 public:
 	Hotkey(const std::string &default_config);
 	~Hotkey();
-	void Scan(std::string context, std::string str);
+	bool Scan(const std::string context, const std::string str, std::string &cmd);
 
 private:
 	typedef std::multimap<std::string, Combo*> HotkeyMap;

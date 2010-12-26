@@ -106,15 +106,38 @@ void Hotkey::BuildHotkey(std::string context, const json::Object& object) {
 }
 
 
-void Hotkey::Scan(std::string context, std::string str) {
+bool Hotkey::Scan(const std::string context, const std::string str, std::string &cmd) {
 	HotkeyMap::iterator index;
 	std::pair<HotkeyMap::iterator, HotkeyMap::iterator> range;
 
 	range = map.equal_range(str);
+	std::string local, dfault;
+
 
 	for (index = range.first; index != range.second; ++index) {
-		LOG_D("hotkey/found") << "Found: " << (*index).first << "  Context: "<< (*index).second->Context() << "  Command: " << (*index).second->CmdName();
+
+		std::string ctext = (*index).second->Context();
+
+		if (ctext == "always") {
+			cmd = (*index).second->CmdName();
+			return 0;
+		} else if (ctext == "default") {
+			dfault = (*index).second->CmdName();
+		} else if (ctext == context) {
+			local = (*index).second->CmdName();
+		}
+//		LOG_D("hotkey/found") << "Found: " << (*index).first << "  Context: "<< (*index).second->Context() << "  Command: " << (*index).second->CmdName();
 	}
+
+		if (!local.empty()) {
+			cmd = local;
+			return 0;
+		} else if (!dfault.empty()) {
+			cmd = dfault;
+			return 0;
+		}
+
+		return 1;
 
 }
 	} // namespace toolbar
