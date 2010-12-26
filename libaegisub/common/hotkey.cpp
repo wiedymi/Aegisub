@@ -118,22 +118,24 @@ bool Hotkey::Scan(const std::string context, const std::string str, std::string 
 
 		std::string ctext = (*index).second->Context();
 
-		if (ctext == "always") {
+		if (ctext == "Always") {
 			cmd = (*index).second->CmdName();
+			LOG_D("agi/hotkey/found") << "Found: " << (*index).first << "  Context (req/found): " << context << "/always   Command: " << (*index).second->CmdName();
 			return 0;
-		} else if (ctext == "default") {
+		} else if (ctext == "Default") {
 			dfault = (*index).second->CmdName();
 		} else if (ctext == context) {
 			local = (*index).second->CmdName();
 		}
-//		LOG_D("hotkey/found") << "Found: " << (*index).first << "  Context: "<< (*index).second->Context() << "  Command: " << (*index).second->CmdName();
 	}
 
 		if (!local.empty()) {
 			cmd = local;
+			LOG_D("agi/hotkey/found") << "Found: " << (*index).first << "  Context: " << context << "  Command: " << (*index).second->CmdName();
 			return 0;
 		} else if (!dfault.empty()) {
 			cmd = dfault;
+			LOG_D("agi/hotkey/found") << "Found: " << (*index).first << "  Context (req/found): " << context << "/default   Command: " << (*index).second->CmdName();
 			return 0;
 		}
 
