@@ -66,7 +66,10 @@ void check(std::string context, int key_code, wchar_t key_char, int modifier) {
 		combo.append(ss.str());
 	}
 
-	agi::hotkey::hotkey->Scan(context, combo);
+	std::string command;
+	if (agi::hotkey::hotkey->Scan(context, combo, command) == 0) {
+	}
+
 }
 
 
