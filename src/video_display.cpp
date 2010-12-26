@@ -94,7 +94,7 @@ enum {
 
 BEGIN_EVENT_TABLE(VideoDisplay, wxGLCanvas)
 	EVT_MOUSE_EVENTS(VideoDisplay::OnMouseEvent)
-	EVT_KEY_DOWN(VideoDisplay::OnKey)
+	EVT_KEY_DOWN(VideoDisplay::OnKeyDown)
 	EVT_PAINT(VideoDisplay::OnPaint)
 	EVT_SIZE(VideoDisplay::OnSizeEvent)
 	EVT_ERASE_BACKGROUND(VideoDisplay::OnEraseBackground)
@@ -499,7 +499,7 @@ void VideoDisplay::OnMouseEvent(wxMouseEvent& event) {
 	tool->OnMouseEvent(event);
 	ShowCursor(activeMode != Video_Mode_Standard);
 }
-void VideoDisplay::OnKey(wxKeyEvent &event) {
+void VideoDisplay::OnKeyDown(wxKeyEvent &event) {
 	int key = event.GetKeyCode();
 #ifdef __APPLE__
 	Hotkeys.SetPressed(key, event.m_metaDown, event.m_altDown, event.m_shiftDown);
