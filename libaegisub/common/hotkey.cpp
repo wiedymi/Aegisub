@@ -53,7 +53,9 @@ void Hotkey::ComboInsert(Combo *combo) {
     map.insert(HotkeyMapPair(combo->Str(), combo));
 }
 
-Hotkey::~Hotkey() {}
+Hotkey::~Hotkey() {
+	Flush();
+}
 
 Hotkey::Hotkey(const std::string &default_config) {
 
@@ -143,17 +145,35 @@ bool Hotkey::Scan(const std::string context, const std::string str, std::string 
 
 }
 
-void Hotkey::Save() {
+void Hotkey::Flush() {
+
+	json::Object root;
 
 	HotkeyMap::iterator index;
 	for (index = map.begin(); index != map.end(); ++index) {
 
+		Combo::ComboMap combo_map(index->second->Get());
+
+		json::Array modifiers;
+		for (int i = 0; i != combo_map.size()-1; i++) {
+			modifiers.Insert(json::String(combo_map[i]));
+		}
+
+		json::Object hotkey;
+		hotkey["modifiers"] = modifiers;
+		hotkey["key"] = json::String(combo_map.back());
+		hotkey["enable"] = json::Boolean(index->second->IsEnabled());
+
+		json::Object& context_obj = root[index->second->Context()];
+		json::Array& combo_array = context_obj[index->second->CmdName()];
+
+		combo_array.Insert(hotkey);
 	}
 
+	io::Save file("./hotkey.json");
+	json::Writer::Write(root, file.Get());
+
 }
-
-
-
 
 	} // namespace toolbar
 } // namespace agi
