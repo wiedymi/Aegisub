@@ -63,7 +63,7 @@ public:
 
 	/// Get the literal combo map.
 	/// @return ComboMap (std::vector) of linear key sequence.
-	const ComboMap Get();
+	const ComboMap& Get() { return key_map; }
 
 	/// Command name triggered by the combination.
 	/// @return Command name
@@ -76,6 +76,9 @@ public:
 	/// @param e Bool state.
 	void Enable(bool e) { enable = e; }
 
+	/// Check whether Combo is currently enabled or disabled.
+	/// @return State.
+	const bool& IsEnabled() { return enable; }
 
 private:
 	ComboMap key_map;				///< Map.
@@ -121,7 +124,7 @@ private:
 	void ComboInsert(Combo *combo);
 
 	/// Write active Hotkey configuration to disk.
-	void Save();
+	void Flush();
 };
 
 	} // namespace hotkey
