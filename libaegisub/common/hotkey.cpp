@@ -26,10 +26,10 @@
 #include <memory>
 #endif
 
+#include "libaegisub/access.h"
 #include "libaegisub/io.h"
 #include "libaegisub/json.h"
 #include "libaegisub/log.h"
-
 #include "libaegisub/hotkey.h"
 
 namespace agi {
@@ -57,14 +57,31 @@ Hotkey::~Hotkey() {
 	Flush();
 }
 
-Hotkey::Hotkey(const std::string &default_config) {
+Hotkey::Hotkey(const std::string &file, const std::string &default_config):
+				config_file(file), config_default(default_config) {
 
 	LOG_D("hotkey/init") << "Generating hotkeys.";
 
-	std::istringstream *stream = new std::istringstream(default_config);
-	json::UnknownElement hotkey_root = agi::json_util::parse(stream);
+	std::istream *stream;
+
+    try {
+		stream = agi::io::Open(config_file);
+	} catch (const acs::AcsNotFound&) {
+stream = new std::istringstream(config_default);
+    }
+
+
+	json::UnknownElement hotkey_root;
+    try {
+		hotkey_root = agi::json_util::parse(stream);
+	} catch (json::Reader::ParseException& e) {
+		// There's definatly a better way to do this.
+		std::istringstream *stream = new std::istringstream(config_default);
+		hotkey_root = agi::json_util::parse(stream);
+	}
 
 	json::Object object = hotkey_root;
+
 
 	for (json::Object::const_iterator index(object.Begin()); index != object.End(); index++) {
 		const json::Object::Member& member = *index;
@@ -170,7 +187,7 @@ void Hotkey::Flush() {
 		combo_array.Insert(hotkey);
 	}
 
-	io::Save file("./hotkey.json");
+	io::Save file(config_file);
 	json::Writer::Write(root, file.Get());
 
 }

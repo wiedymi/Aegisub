@@ -97,8 +97,9 @@ private:
 class Hotkey {
 public:
 	/// Constructor
+	/// @param file           Location of user config file.
 	/// @param default_config Default config.
-	Hotkey(const std::string &default_config);
+	Hotkey(const std::string &file, const std::string &default_config);
 
 	/// Destructor.
 	~Hotkey();
@@ -113,6 +114,8 @@ private:
 	typedef std::multimap<std::string, Combo*> HotkeyMap;	///< Map to hold Combo instances.
 	typedef std::pair<std::string, Combo*> HotkeyMapPair;	///< Pair for HotkeyMap.
 	HotkeyMap map;											///< HotkeyMap Instance.
+	const std::string config_file;							///< Default user config location.
+	const std::string config_default;						///< Default config.
 
 	/// Build hotkey map.
 	/// @param context Context being parsed.
