@@ -60,13 +60,14 @@ void check(std::string context, int key_code, wchar_t key_char, int modifier) {
 		&& (key_code != WXK_SPACE)
 		&& (key_code != WXK_DELETE)) {
 		combo.append(wxString::Format("%c", key_char));
-	} else if (hotkey::keycode_name(key_code, combo) == 1) {
+	} else if (keycode_name(key_code, combo) == 1) {
 		std::stringstream ss;
 		ss << key_code;
 		combo.append(ss.str());
 	}
 
 	std::string command;
+std::cout << context << ": " << combo << std::endl;
 	if (agi::hotkey::hotkey->Scan(context, combo, command) == 0) {
 	}
 
