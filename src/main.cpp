@@ -595,14 +595,14 @@ void AegisubApp::OnMouseWheel(wxMouseEvent &event) {
 
 
 
-/// @brief Key pressed 
-/// @param event 
-///
+/// @brief Key pressed
+/// @param event wxEvent
+/// Noone has any idea what this does anymore.
 void AegisubApp::OnKey(wxKeyEvent &event) {
 	//frame->audioBox->audioDisplay->AddPendingEvent(event);
-	if (!event.GetSkipped()) {
-		event.Skip();
-	}
+//	if (!event.GetSkipped()) {
+//		event.Skip();
+//	}
 }
 
 
