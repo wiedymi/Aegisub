@@ -56,12 +56,13 @@
 #include <GL/glu.h>
 #endif
 
+#include "aegisub/hotkey.h"
+
 #include "video_display.h"
 #include "selection_controller.h"
 
 #include "ass_dialogue.h"
 #include "ass_file.h"
-#include "hotkeys.h"
 #include "main.h"
 #include "subs_grid.h"
 #include "threaded_frame_source.h"
@@ -500,6 +501,10 @@ void VideoDisplay::OnMouseEvent(wxMouseEvent& event) {
 	ShowCursor(activeMode != Video_Mode_Standard);
 }
 void VideoDisplay::OnKeyDown(wxKeyEvent &event) {
+	hotkey::check("Video Display", event.GetKeyCode(), event.GetUnicodeKey(), event.GetModifiers());
+	event.StopPropagation();
+
+/*
 	int key = event.GetKeyCode();
 #ifdef __APPLE__
 	Hotkeys.SetPressed(key, event.m_metaDown, event.m_altDown, event.m_shiftDown);
@@ -515,7 +520,9 @@ void VideoDisplay::OnKeyDown(wxKeyEvent &event) {
 	else if (Hotkeys.IsPressed(L"Visual Tool Rectangular Clip")) SetMode(Video_Mode_Clip);
 	else if (Hotkeys.IsPressed(L"Visual Tool Vector Clip"))      SetMode(Video_Mode_Vector_Clip);
 	event.Skip();
+*/
 }
+
 
 void VideoDisplay::SetZoom(double value) {
 	zoomValue = std::max(value, .125);

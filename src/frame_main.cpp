@@ -48,6 +48,7 @@
 
 #include "aegisub/menu.h"
 #include "aegisub/toolbar.h"
+#include "aegisub/hotkey.h"
 
 #include "ass_file.h"
 #include "selection_controller.h"
@@ -67,7 +68,6 @@
 #include "drop.h"
 #include "frame_main.h"
 #include "help_button.h"
-#include "hotkeys.h"
 #include "keyframe.h"
 #include "libresrc/libresrc.h"
 #include "main.h"
@@ -197,11 +197,9 @@ FrameMain::FrameMain (wxArrayString args)
 	}
 	OPT_SUB("App/Auto/Save Every Seconds", autosave_timer_changed, &AutoSave, agi::signal::_1);
 
-	// Set accelerator keys
-	StartupLog(_T("Install hotkeys"));
-	PreviousFocus = NULL;
-	temp_context.PreviousFocus = PreviousFocus;
-	SetAccelerators();
+
+	PreviousFocus = NULL;						// Artifact from old hotkey removal not sure what it does.
+	temp_context.PreviousFocus = PreviousFocus;	// Artifact from old hotkey removal not sure what it does.
 
 	// Set drop target
 	StartupLog(_T("Set up drag/drop target"));
@@ -276,15 +274,6 @@ void FrameMain::InitToolbar () {
 	// Update
 	Toolbar->Realize();
 }
-
-
-/// @brief DOCME
-/// @param item_text   
-/// @param hotkey_name 
-/// @return 
-wxString MakeHotkeyText(const wxString &item_text, const wxString &hotkey_name) {
-	return item_text + wxString(_T("\t")) + Hotkeys.GetText(hotkey_name);
- }
 
 
 /// @brief Initialize menu bar 
@@ -935,42 +924,6 @@ void FrameMain::StatusTimeout(wxString text,int ms) {
 	StatusClear.Start(ms,true);
 }
 
-/// @brief Setup accelerator table 
-void FrameMain::SetAccelerators() {
-	std::vector<wxAcceleratorEntry> entry;
-	entry.reserve(32);
-
-	// Standard
-	entry.push_back(Hotkeys.GetAccelerator(_T("Video global prev frame"),cmd::id("video/frame/prev")));
-	entry.push_back(Hotkeys.GetAccelerator(_T("Video global next frame"),cmd::id("video/frame/next")));
-	entry.push_back(Hotkeys.GetAccelerator(_T("Video global focus seek"),cmd::id("video/focus_seek")));
-	entry.push_back(Hotkeys.GetAccelerator(_T("Grid global prev line"),cmd::id("grid/line/prev")));
-	entry.push_back(Hotkeys.GetAccelerator(_T("Grid global next line"),cmd::id("grid/line/next")));
-	entry.push_back(Hotkeys.GetAccelerator(_T("Save Subtitles Alt"),cmd::id("subtitle/save")));
-	entry.push_back(Hotkeys.GetAccelerator(_T("Video global zoom in"),cmd::id("video/zoom/in")));
-	entry.push_back(Hotkeys.GetAccelerator(_T("Video global zoom out"),cmd::id("video/zoom/out")));
-	entry.push_back(Hotkeys.GetAccelerator(_T("Video global play"),cmd::id("video/frame/play")));
-
-	// Medusa
-	bool medusaPlay = OPT_GET("Audio/Medusa Timing Hotkeys")->GetBool();
-	if (medusaPlay && audioController->IsAudioOpen()) {
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Play"),cmd::id("medusa/play")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Stop"),cmd::id("medusa/stop")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Play Before"),cmd::id("medusa/play/before")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Play After"),cmd::id("medusa/play/after")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Next"),cmd::id("medusa/next")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Previous"),cmd::id("medusa/previous")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Shift Start Forward"),cmd::id("medusa/shift/start/forward")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Shift Start Back"),cmd::id("medusa/shift/start/back")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Shift End Forward"),cmd::id("medusa/shift/end/forward")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Shift End Back"),cmd::id("medusa/shift/end/back")));
-		entry.push_back(Hotkeys.GetAccelerator(_T("Audio Medusa Enter"),cmd::id("medusa/enter")));
-	}
-
-	// Set table
-	wxAcceleratorTable table(entry.size(),&entry[0]);
-	SetAcceleratorTable(table);
-}
 
 /// @brief Load list of files 
 /// @param list 
@@ -1092,7 +1045,7 @@ BEGIN_EVENT_TABLE(FrameMain, wxFrame)
 	EVT_SASH_DRAGGED(ID_SASH_MAIN_AUDIO, FrameMain::OnAudioBoxResize)
 
 	EVT_MENU_OPEN(FrameMain::OnMenuOpen)
-
+	EVT_KEY_DOWN(FrameMain::OnKeyDown)
 //	EVT_MENU(cmd::id("subtitle/new"), FrameMain::cmd_call)
 //	EVT_MENU(cmd::id("subtitle/open"), FrameMain::cmd_call)
 //	EVT_MENU(cmd::id("subtitle/save"), FrameMain::cmd_call)
@@ -1307,13 +1260,17 @@ void FrameMain::OnMenuOpen (wxMenuEvent &event) {
 
 		// Undo state
 		wxMenuItem *item;
-		wxString undo_text = _("&Undo") + wxString(_T(" ")) + ass->GetUndoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Undo"));
+//H		wxString undo_text = _("&Undo") + wxString(_T(" ")) + ass->GetUndoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Undo"));
+// The bottom line needs to be fixed for the new hotkey system
+		wxString undo_text = _("&Undo") + wxString(_T(" ")) + ass->GetUndoDescription() + wxString(_T("\t")) + _T("Undo");
 		item = editMenu->FindItem(cmd::id("edit/undo"));
 		item->SetItemLabel(undo_text);
 		item->Enable(!ass->IsUndoStackEmpty());
 
 		// Redo state
-		wxString redo_text = _("&Redo") + wxString(_T(" ")) + ass->GetRedoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Redo"));
+//H		wxString redo_text = _("&Redo") + wxString(_T(" ")) + ass->GetRedoDescription() + wxString(_T("\t")) + Hotkeys.GetText(_T("Redo"));
+// Same as above.
+		wxString redo_text = _("&Redo") + wxString(_T(" ")) + ass->GetRedoDescription() + wxString(_T("\t")) + _T("Redo");
 		item = editMenu->FindItem(cmd::id("edit/redo"));
 		item->SetItemLabel(redo_text);
 		item->Enable(!ass->IsRedoStackEmpty());
@@ -1504,3 +1461,8 @@ void FrameMain::OnSubtitlesFileChanged() {
 
 	UpdateTitle();
 }
+
+void FrameMain::OnKeyDown(wxKeyEvent &event) {
+	hotkey::check("Main Frame", event.GetKeyCode(), event.GetUnicodeKey(), event.GetModifiers());
+}
+

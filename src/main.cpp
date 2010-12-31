@@ -69,7 +69,6 @@
 #include "compat.h"
 #include "export_framerate.h"
 #include "frame_main.h"
-#include "hotkeys.h"
 #include "main.h"
 #include "libresrc/libresrc.h"
 #include "plugin_manager.h"
@@ -261,11 +260,6 @@ bool AegisubApp::OnInit() {
 		StartupLog(_T("Store options back"));
 		OPT_SET("Version/Last Version")->SetInt(GetSVNRevision());
 		AssTime::UseMSPrecision = OPT_GET("App/Nonstandard Milisecond Times")->GetBool();
-
-		// Set hotkeys file
-		StartupLog(_T("Load hotkeys"));
-		Hotkeys.SetFile(StandardPaths::DecodePath(_T("?user/hotkeys.dat")));
-		Hotkeys.Load();
 
 		StartupLog(_T("Initialize final locale"));
 

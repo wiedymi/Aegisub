@@ -1151,6 +1151,8 @@ void BaseGrid::OnKeyDown(wxKeyEvent &event) {
 	GetClientSize(&w,&h);
 
 	hotkey::check("Subtitle Grid", event.GetKeyCode(), event.GetUnicodeKey(), event.GetModifiers());
+	event.StopPropagation();
+
 
 	// Get scan code
 	int key = event.GetKeyCode();

@@ -153,6 +153,7 @@ private:
 	void DeInitContents();
 
 
+	void OnKeyDown(wxKeyEvent &event);
 	void OnGridEvent (wxCommandEvent &event);
 	void OnMenuOpen (wxMenuEvent &event);
 
@@ -219,10 +220,9 @@ public:
 	static void OpenHelp(wxString page=_T(""));
 	void UpdateTitle();
 
-	void SetAccelerators();
 	void InitMenu();
 	void UpdateToolbar();
-	
+
 	void SetUndoRedoDesc();
 	bool HasASSDraw();
 
