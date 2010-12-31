@@ -161,6 +161,13 @@ static void wxAssertHandler(const wxString &file, int line, const wxString &func
 /// @brief Gets called when application starts.
 /// @return bool
 bool AegisubApp::OnInit() {
+
+	// logging.
+	const std::string path_log(StandardPaths::DecodePath(_T("?user/log/")));
+	wxFileName::Mkdir(path_log, 0777, wxPATH_MKDIR_FULL);
+	agi::log::log = new agi::log::LogSink(path_log);
+
+
 #ifdef _DEBUG
 	emit_stdout = new agi::log::EmitSTDOUT();
 	emit_stdout->Enable();
@@ -335,6 +342,10 @@ int AegisubApp::OnExit() {
 #ifdef _DEBUG
 	delete emit_stdout;
 #endif
+
+	// Keep this last!
+	delete agi::log::log;
+
 	return wxApp::OnExit();
 }
 
