@@ -23,6 +23,7 @@
 #include <libaegisub/cajun/elements.h>
 
 namespace agi {
+	/// JSON reading and writing utilities.
     namespace json_util {
 
 /// Parse a JSON stream.

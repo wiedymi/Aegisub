@@ -24,6 +24,7 @@
 #include <libaegisub/exception.h>
 
 namespace agi {
+	/// File access and permission utilities.
 	namespace acs {
 
 DEFINE_BASE_EXCEPTION_NOINNER(AcsError, Exception)

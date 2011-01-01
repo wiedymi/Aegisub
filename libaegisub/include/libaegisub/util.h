@@ -30,6 +30,7 @@
 #include <libaegisub/types.h>
 
 namespace agi {
+	/// General utilities.
 	namespace util {
 
 	const std::string DirName(const std::string& path);

@@ -50,9 +50,10 @@
 #define LOG_I_IF(cond, section) if (cond) LOG_SINK(section, agi::log::Info)
 #define LOG_D_IF(cond, section) if (cond) LOG_SINK(section, agi::log::Debug)
 
+/// libaegisub classes and globals.
 namespace agi {
+	/// Logging classes and utilities.
 	namespace log {
-class LogSink;
 
 /// Severity levels
 enum Severity {
@@ -67,6 +68,7 @@ enum Severity {
 /// Set in common/log.cpp, keep this ordered the same as Severity.
 extern const char *Severity_ID;
 
+class LogSink;
 /// Global log sink.
 extern LogSink *log;
 

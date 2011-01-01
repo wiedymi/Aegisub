@@ -30,8 +30,8 @@
 
 
 namespace agi {
+	/// Generic hotkey handler.
 	namespace hotkey {
-
 
 class Hotkey;
 /// Hotkey instance.

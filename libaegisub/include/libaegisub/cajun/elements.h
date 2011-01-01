@@ -22,6 +22,7 @@ TODO:
 
 */
 
+/// JSON handling from Cajun http://sourceforge.net/projects/cajun-jsonapi/
 namespace json
 {
 

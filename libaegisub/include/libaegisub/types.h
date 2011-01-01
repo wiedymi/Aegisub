@@ -34,8 +34,10 @@
 #pragma once
 
 namespace agi {
+	/// Cross-platform type handling.
 	namespace type {
 
+		/// Windows specific types
 		namespace win {
 typedef struct timeval {
 	long tv_sec;	///< seconds
@@ -62,9 +64,11 @@ typedef struct tm {
 
 
 		// u_nix beacuse some compilers set "unix" to 1 if it's unix. -> ARGH.
+		/// Unix specific types.
 		namespace u_nix {
 		} // namespace unix
 
+		/// OS X specific types.
 		namespace osx {
 		} // namespace osx
 

@@ -33,6 +33,7 @@
 #endif
 
 namespace agi {
+	/// Event signal handling.
 	namespace signal {
 
 using namespace std::tr1::placeholders;

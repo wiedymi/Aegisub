@@ -26,6 +26,7 @@
 #include <libaegisub/exception.h>
 
 namespace agi {
+	/// File I/O.
 	namespace io {
 
 DEFINE_BASE_EXCEPTION_NOINNER(IOError, Exception)
