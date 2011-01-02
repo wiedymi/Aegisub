@@ -61,7 +61,7 @@ namespace cmd {
 /// @{
 
 /// Launch about dialogue.
-class  app_about: public Command {
+class app_about: public Command {
 public:
 	CMD_NAME("app/about")
 	STR_MENU("&About..")
@@ -76,7 +76,7 @@ public:
 
 
 /// Display audio and subtitles.
-class  app_display_audio_subs: public Command {
+class app_display_audio_subs: public Command {
 public:
 	CMD_NAME("app/display/audio_subs")
 	STR_MENU("Audio+Subs View")
@@ -91,7 +91,7 @@ public:
 
 
 /// Display audio, video and subtitles.
-class  app_display_full: public Command {
+class app_display_full: public Command {
 public:
 	CMD_NAME("app/display/full")
 	STR_MENU("Full view")
@@ -106,7 +106,7 @@ public:
 
 
 /// Display subtitles only.
-class  app_display_subs: public Command {
+class app_display_subs: public Command {
 public:
 	CMD_NAME("app/display/subs")
 	STR_MENU("Subs Only View")
@@ -120,7 +120,7 @@ public:
 
 
 /// Display video and subtitles only.
-class  app_display_video_subs: public Command {
+class app_display_video_subs: public Command {
 public:
 	CMD_NAME("app/display/video_subs")
 	STR_MENU("Video+Subs View")
@@ -134,7 +134,7 @@ public:
 
 
 /// Exit the application.
-class  app_exit: public Command {
+class app_exit: public Command {
 public:
 	CMD_NAME("app/exit")
 	STR_MENU("E&xit")
@@ -148,7 +148,7 @@ public:
 
 
 /// Select Aegisub interface language
-class  app_language: public Command {
+class app_language: public Command {
 public:
 	CMD_NAME("app/language")
 	STR_MENU("&Language...")
@@ -184,7 +184,7 @@ public:
 
 
 /// Event log.
-class  app_log: public Command {
+class app_log: public Command {
 public:
 	CMD_NAME("app/log")
 	STR_MENU("&Log window...")
@@ -199,7 +199,7 @@ public:
 
 
 /// Open a new application window.
-class  app_new_window: public Command {
+class app_new_window: public Command {
 public:
 	CMD_NAME("app/new_window")
 	STR_MENU("New Window")
@@ -213,7 +213,7 @@ public:
 
 
 /// Configure Aegisub.
-class  app_options: public Command {
+class app_options: public Command {
 public:
 	CMD_NAME("app/options")
 	STR_MENU("&Options..")
@@ -232,7 +232,7 @@ public:
 
 
 /// Check to see if there is a new version of Aegisub available.
-class  app_updates: public Command {
+class app_updates: public Command {
 public:
 	CMD_NAME("app/updates")
 	STR_MENU("&Check for Updates..")
