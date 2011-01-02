@@ -55,7 +55,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Changes times of subs so end times begin on next's start time.
 class time_continous_end: public Command {
 public:
 	CMD_NAME("time/continous/end")
@@ -69,7 +69,7 @@ public:
 };
 
 
-/// 
+/// Changes times of subs so start times begin on previous's end time.
 class time_continous_start: public Command {
 public:
 	CMD_NAME("time/continous/start")
@@ -84,7 +84,7 @@ public:
 };
 
 
-/// 
+/// Shift selection so first selected line starts at current frame.
 class time_frame_current: public Command {
 public:
 	CMD_NAME("time/frame/current")
@@ -119,7 +119,7 @@ public:
 };
 
 
-/// 
+/// Shift subtitles by time or frames.
 class time_shift: public Command {
 public:
 	CMD_NAME("time/shift")
@@ -136,7 +136,7 @@ public:
 
 
 
-/// 
+/// Set end of selected subtitles to current video frame.
 class time_snap_end_video: public Command {
 public:
 	CMD_NAME("time/snap/end_video")
@@ -150,7 +150,7 @@ public:
 };
 
 
-/// 
+/// Shift selected subtitles so first selected starts at this frame.
 class time_snap_frame: public Command {
 public:
 	CMD_NAME("time/snap/frame")
@@ -164,7 +164,7 @@ public:
 };
 
 
-/// 
+/// Set start and end of subtitles to the keyframes around current video frame.
 class time_snap_scene: public Command {
 public:
 	CMD_NAME("time/snap/scene")
@@ -220,7 +220,7 @@ public:
 };
 
 
-/// 
+/// Set start of selected subtitles to current video frame.
 class time_snap_start_video: public Command {
 public:
 	CMD_NAME("time/snap/start_video")
@@ -234,7 +234,7 @@ public:
 };
 
 
-/// 
+/// Sort all subtitles by their end times.
 class time_sort_end: public Command {
 public:
 	CMD_NAME("time/sort/end")
@@ -249,7 +249,7 @@ public:
 };
 
 
-/// 
+/// Sort all subtitles by their start times.
 class time_sort_start: public Command {
 public:
 	CMD_NAME("time/sort/start")
@@ -264,7 +264,7 @@ public:
 };
 
 
-/// 
+/// Sort all subtitles by their style names.
 class time_sort_style: public Command {
 public:
 	CMD_NAME("time/sort/style")

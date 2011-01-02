@@ -53,7 +53,7 @@ namespace cmd {
 
 
 
-/// 
+/// Visit Aegisub's bug tracker.
 class help_bugs: public Command {
 public:
 	CMD_NAME("help/bugs")
@@ -76,7 +76,7 @@ public:
 };
 
 
-/// 
+/// Help topics.
 class help_contents: public Command {
 public:
 	CMD_NAME("help/contents")
@@ -90,7 +90,7 @@ public:
 };
 
 
-/// 
+/// Resource files.
 class help_files: public Command {
 public:
 	CMD_NAME("help/files")
@@ -109,7 +109,7 @@ public:
 };
 
 
-/// 
+/// Visit Aegisub's forums.
 class help_forums: public Command {
 public:
 	CMD_NAME("help/forums")
@@ -123,7 +123,7 @@ public:
 };
 
 
-/// 
+/// Visit Aegisub's official IRC channel.
 class help_irc: public Command {
 public:
 	CMD_NAME("help/irc")
@@ -137,7 +137,7 @@ public:
 };
 
 
-/// 
+/// Visit Aegisub's official website.
 class help_website: public Command {
 public:
 	CMD_NAME("help/website")

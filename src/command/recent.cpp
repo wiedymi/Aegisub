@@ -53,7 +53,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Open recent audio.
 class recent_audio: public Command {
 public:
 	CMD_NAME("recent/audio")
@@ -67,7 +67,7 @@ public:
 };
 
 
-/// 
+/// Recent keyframes.
 class recent_keyframe: public Command {
 public:
 	CMD_NAME("recent/keyframe")
@@ -81,7 +81,7 @@ public:
 };
 
 
-/// 
+/// Recently opened subtitles.
 class recent_subtitle: public Command {
 public:
 	CMD_NAME("recent/subtitle")
@@ -96,7 +96,7 @@ public:
 };
 
 
-/// 
+/// Recent timecodes.
 class recent_timecode: public Command {
 public:
 	CMD_NAME("recent/timecode")
@@ -111,7 +111,7 @@ public:
 };
 
 
-/// 
+/// Recently opened videos.
 class recent_video: public Command {
 public:
 	CMD_NAME("recent/video")

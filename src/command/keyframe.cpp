@@ -53,7 +53,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Closes the currently open keyframes list.
 class keyframe_close: public Command {
 public:
 	CMD_NAME("keyframe/close")
@@ -67,7 +67,7 @@ public:
 };
 
 
-/// 
+/// Opens a keyframe list file.
 class keyframe_open: public Command {
 public:
 	CMD_NAME("keyframe/open")
@@ -94,7 +94,7 @@ public:
 };
 
 
-/// 
+/// Saves the current keyframe list.
 class keyframe_save: public Command {
 public:
 	CMD_NAME("keyframe/save")

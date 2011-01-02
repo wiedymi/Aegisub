@@ -55,7 +55,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Copy subtitles.
 class edit_line_copy: public Command {
 public:
 	CMD_NAME("edit/line/copy")
@@ -73,7 +73,7 @@ public:
 };
 
 
-/// 
+/// Cut subtitles.
 class edit_line_cut: public Command {
 public:
 	CMD_NAME("edit/line/cut")
@@ -91,7 +91,7 @@ public:
 };
 
 
-/// 
+/// Delete currently selected lines.
 class edit_line_delete: public Command {
 public:
 	CMD_NAME("edit/line/delete")
@@ -105,7 +105,7 @@ public:
 };
 
 
-/// 
+/// Duplicate the selected lines.
 class edit_line_duplicate: public Command {
 public:
 	CMD_NAME("edit/line/duplicate")
@@ -119,7 +119,7 @@ public:
 };
 
 
-/// 
+/// Duplicate lines and shift by one frame.
 class edit_line_duplicate_shift: public Command {
 public:
 	CMD_NAME("edit/line/duplicate/shift")
@@ -133,7 +133,7 @@ public:
 };
 
 
-/// 
+/// Joins selected lines in a single one, as karaoke.
 class edit_line_join_as_karaoke: public Command {
 public:
 	CMD_NAME("edit/line/join/as_karaoke")
@@ -147,7 +147,7 @@ public:
 };
 
 
-/// 
+/// Joins selected lines in a single one, concatenating text together.
 class edit_line_join_concatenate: public Command {
 public:
 	CMD_NAME("edit/line/join/concatenate")
@@ -161,7 +161,7 @@ public:
 };
 
 
-/// 
+/// Joins selected lines in a single one, keeping text of first and discarding remaining.
 class edit_line_join_keep_first: public Command {
 public:
 	CMD_NAME("edit/line/join/keep_first")
@@ -175,7 +175,7 @@ public:
 };
 
 
-/// 
+/// Paste subtitles.
 class edit_line_paste: public Command {
 public:
 	CMD_NAME("edit/line/paste")
@@ -193,7 +193,7 @@ public:
 };
 
 
-/// 
+/// Paste subtitles over others.
 class edit_line_paste_over: public Command {
 public:
 	CMD_NAME("edit/line/paste/over")
@@ -207,7 +207,7 @@ public:
 };
 
 
-/// 
+/// Recombine subtitles when they have been split and merged.
 class edit_line_recombine: public Command {
 public:
 	CMD_NAME("edit/line/recombine")
@@ -221,7 +221,7 @@ public:
 };
 
 
-/// 
+/// Uses karaoke timing to split line into multiple smaller lines.
 class edit_line_split_by_karaoke: public Command {
 public:
 	CMD_NAME("edit/line/split/by_karaoke")
@@ -235,7 +235,7 @@ public:
 };
 
 
-/// 
+/// Swaps the two selected lines.
 class edit_line_swap: public Command {
 public:
 	CMD_NAME("edit/line/swap")
@@ -249,7 +249,7 @@ public:
 };
 
 
-/// 
+/// Redoes last action.
 class edit_redo: public Command {
 public:
 	CMD_NAME("edit/redo")
@@ -264,7 +264,7 @@ public:
 };
 
 
-/// 
+/// Find and replace words in subtitles.
 class edit_search_replace: public Command {
 public:
 	CMD_NAME("edit/search_replace")
@@ -279,7 +279,7 @@ public:
 };
 
 
-/// 
+/// Undoes last action.
 class edit_undo: public Command {
 public:
 	CMD_NAME("edit/undo")

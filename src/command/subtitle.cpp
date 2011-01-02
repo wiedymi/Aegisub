@@ -63,7 +63,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Open the attachment list.
 class subtitle_attachment: public Command {
 public:
 	CMD_NAME("subtitle/attachment")
@@ -79,7 +79,7 @@ public:
 };
 
 
-/// 
+/// Find words in subtitles.
 class subtitle_find: public Command {
 public:
 	CMD_NAME("subtitle/find")
@@ -94,7 +94,7 @@ public:
 };
 
 
-/// 
+/// Find next match of last word.
 class subtitle_find_next: public Command {
 public:
 	CMD_NAME("subtitle/find/next")
@@ -109,7 +109,7 @@ public:
 };
 
 
-/// 
+/// Inserts a line after current.
 class subtitle_insert_after: public Command {
 public:
 	CMD_NAME("subtitle/insert/after")
@@ -123,7 +123,7 @@ public:
 };
 
 
-/// 
+/// Inserts a line after current, starting at video time.
 class subtitle_insert_after_videotime: public Command {
 public:
 	CMD_NAME("subtitle/insert/after/videotime")
@@ -137,7 +137,7 @@ public:
 };
 
 
-/// 
+/// Inserts a line before current.
 class subtitle_insert_before: public Command {
 public:
 	CMD_NAME("subtitle/insert/before")
@@ -151,7 +151,7 @@ public:
 };
 
 
-/// 
+/// Inserts a line before current, starting at video time.
 class subtitle_insert_before_videotime: public Command {
 public:
 	CMD_NAME("subtitle/insert/before/videotime")
@@ -165,7 +165,7 @@ public:
 };
 
 
-/// 
+/// New subtitles.
 class subtitle_new: public Command {
 public:
 	CMD_NAME("subtitle/new")
@@ -179,7 +179,7 @@ public:
 };
 
 
-/// 
+/// Opens a subtitles file.
 class subtitle_open: public Command {
 public:
 	CMD_NAME("subtitle/open")
@@ -199,7 +199,7 @@ public:
 };
 
 
-/// 
+/// Opens a subtitles file with a specific charset.
 class subtitle_open_charset: public Command {
 public:
 	CMD_NAME("subtitle/open/charset")
@@ -224,7 +224,7 @@ public:
 };
 
 
-/// 
+/// Opens the subtitles from the current video file.
 class subtitle_open_video: public Command {
 public:
 	CMD_NAME("subtitle/open/video")
@@ -238,7 +238,7 @@ public:
 };
 
 
-/// 
+/// Open script properties window.
 class subtitle_properties: public Command {
 public:
 	CMD_NAME("subtitle/properties")
@@ -255,7 +255,7 @@ public:
 
 
 
-/// 
+/// Saves subtitles.
 class subtitle_save: public Command {
 public:
 	CMD_NAME("subtitle/save")
@@ -269,7 +269,7 @@ public:
 };
 
 
-/// 
+/// Saves subtitles with another name.
 class subtitle_save_as: public Command {
 public:
 	CMD_NAME("subtitle/save/as")
@@ -283,7 +283,7 @@ public:
 };
 
 
-/// 
+/// Selects all lines that are currently visible on video frame.
 class subtitle_select_visiblek: public Command {
 public:
 	CMD_NAME("subtitle/select/visible")
@@ -298,7 +298,7 @@ public:
 };
 
 
-/// 
+/// Open spell checker.
 class subtitle_spellcheck: public Command {
 public:
 	CMD_NAME("subtitle/spellcheck")
@@ -312,6 +312,7 @@ public:
 //	new DialogSpellChecker;
 	}
 };
+
 
 /// 
 class subtitle_tags_show: public Command {

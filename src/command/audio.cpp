@@ -53,7 +53,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Closes the currently open audio file.
 class audio_close: public Command {
 public:
 	CMD_NAME("audio/close")
@@ -67,7 +67,7 @@ public:
 };
 
 
-/// 
+/// Opens an audio file.
 class audio_open: public Command {
 public:
 	CMD_NAME("audio/open")
@@ -89,7 +89,7 @@ public:
 };
 
 
-/// 
+/// Open a 150 minutes blank audio clip, for debugging.
 class audio_open_blank: public Command {
 public:
 	CMD_NAME("audio/open/blank")
@@ -103,7 +103,7 @@ public:
 };
 
 
-/// 
+/// Open a 150 minutes noise-filled audio clip, for debugging.
 class audio_open_noise: public Command {
 public:
 	CMD_NAME("audio/open/noise")
@@ -117,7 +117,7 @@ public:
 };
 
 
-/// 
+/// Opens the audio from the current video file.
 class audio_open_video: public Command {
 public:
 	CMD_NAME("audio/open/video")
@@ -131,7 +131,7 @@ public:
 };
 
 
-/// 
+/// Display audio as a frequency-power spectrograph.
 class audio_view_spectrum: public Command {
 public:
 	CMD_NAME("audio/view/spectrum")
@@ -145,13 +145,13 @@ public:
 };
 
 
-/// 
+/// Display audio as a linear amplitude graph.
 class audio_view_waveform: public Command {
 public:
 	CMD_NAME("audio/view/waveform")
 	STR_MENU("Waveform Display")
 	STR_DISP("Waveform Display")
-	STR_HELP("Display audio as a linear amplitude graph")
+	STR_HELP("Display audio as a linear amplitude graph.")
 
 	void operator()(agi::Context *c) {
 		printf("XXX: fixme\n");

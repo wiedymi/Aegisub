@@ -61,7 +61,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Forces video to 2.35 aspect ratio.
 class video_aspect_cinematic: public Command {
 public:
 	CMD_NAME("video/aspect/cinematic")
@@ -77,7 +77,7 @@ public:
 };
 
 
-/// 
+/// Forces video to a custom aspect ratio.
 class video_aspect_custom: public Command {
 public:
 	CMD_NAME("video/aspect/custom")
@@ -135,7 +135,7 @@ public:
 
 
 
-/// 
+/// Leave video on original aspect ratio.
 class video_aspect_default: public Command {
 public:
 	CMD_NAME("video/aspect/default")
@@ -152,7 +152,7 @@ public:
 
 
 
-/// 
+/// Forces video to 4:3 aspect ratio.
 class video_aspect_full: public Command {
 public:
 	CMD_NAME("video/aspect/full")
@@ -168,7 +168,7 @@ public:
 };
 
 
-/// 
+/// Forces video to 16:9 aspect ratio.
 class video_aspect_wide: public Command {
 public:
 	CMD_NAME("video/aspect/wide")
@@ -184,7 +184,7 @@ public:
 };
 
 
-/// 
+/// Closes the currently open video file.
 class video_close: public Command {
 public:
 	CMD_NAME("video/close")
@@ -199,7 +199,7 @@ public:
 
 
 
-/// 
+/// Detach video, displaying it in a separate Window.
 class video_detach: public Command {
 public:
 	CMD_NAME("video/detach")
@@ -213,7 +213,7 @@ public:
 };
 
 
-/// 
+/// Shows video details.
 class video_details: public Command {
 public:
 	CMD_NAME("video/details")
@@ -250,7 +250,7 @@ public:
 };
 
 
-/// 
+/// Seek to the next frame.
 class video_frame_next: public Command {
 public:
 	CMD_NAME("video/frame/next")
@@ -264,7 +264,7 @@ public:
 };
 
 
-/// 
+/// Play video.
 class video_frame_play: public Command {
 public:
 	CMD_NAME("video/frame/play")
@@ -278,13 +278,13 @@ public:
 };
 
 
-/// 
+/// Seek to the previous frame.
 class video_frame_prev: public Command {
 public:
 	CMD_NAME("video/frame/prev")
 	STR_MENU("Previous Frame")
 	STR_DISP("Previous Frame")
-	STR_HELP("Seek to the previous frame/")
+	STR_HELP("Seek to the previous frame.")
 
 	void operator()(agi::Context *c) {
 		c->videoBox->videoSlider->PrevFrame();
@@ -292,7 +292,7 @@ public:
 };
 
 
-/// 
+/// Jump to frame or time.
 class video_jump: public Command {
 public:
 	CMD_NAME("video/jump")
@@ -311,7 +311,7 @@ public:
 };
 
 
-/// 
+/// Jumps the video to the end frame of current subtitle.
 class video_jump_end: public Command {
 public:
 	CMD_NAME("video/jump/end")
@@ -325,7 +325,7 @@ public:
 };
 
 
-/// 
+/// Jumps the video to the start frame of current subtitle.
 class video_jump_start: public Command {
 public:
 	CMD_NAME("video/jump/start")
@@ -339,7 +339,7 @@ public:
 };
 
 
-/// 
+/// Opens a video file.
 class video_open: public Command {
 public:
 	CMD_NAME("video/open")
@@ -360,7 +360,7 @@ public:
 };
 
 
-/// 
+/// Opens a video clip with solid colour.
 class video_open_dummy: public Command {
 public:
 	CMD_NAME("video/open/dummy")
@@ -377,7 +377,7 @@ public:
 };
 
 
-/// 
+/// Show a mask over the video.
 class video_show_overscan: public Command {
 public:
 	CMD_NAME("video/show_overscan")
@@ -394,7 +394,7 @@ public:
 };
 
 
-/// 
+/// Set zoom to 100%.
 class video_zoom_100: public Command {
 public:
 	CMD_NAME("video/zoom/100")
@@ -410,7 +410,7 @@ public:
 
 
 
-/// 
+/// Set zoom to 200%.
 class video_zoom_200: public Command {
 public:
 	CMD_NAME("video/zoom/200")
@@ -425,7 +425,7 @@ public:
 };
 
 
-/// 
+/// Set zoom to 50%.
 class video_zoom_50: public Command {
 public:
 	CMD_NAME("video/zoom/50")
@@ -440,7 +440,7 @@ public:
 };
 
 
-/// 
+/// Zoom video in.
 class video_zoom_in: public Command {
 public:
 	CMD_NAME("video/zoom/in")
@@ -454,7 +454,7 @@ public:
 };
 
 
-/// 
+/// Zoom video out.
 class video_zoom_out: public Command {
 public:
 	CMD_NAME("video/zoom/out")

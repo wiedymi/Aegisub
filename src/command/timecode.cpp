@@ -55,7 +55,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Closes the currently open timecodes file.
 class timecode_close: public Command {
 public:
 	CMD_NAME("timecode/close")
@@ -69,7 +69,7 @@ public:
 };
 
 
-/// 
+/// Opens a VFR timecodes v1 or v2 file.
 class timecode_open: public Command {
 public:
 	CMD_NAME("timecode/open")
@@ -89,7 +89,7 @@ public:
 };
 
 
-/// 
+/// Saves a VFR timecodes v2 file.
 class timecode_save: public Command {
 public:
 	CMD_NAME("timecode/save")

@@ -61,7 +61,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Launch ASSDraw3 tool for vector drawing.
 class tool_assdraw: public Command {
 public:
 	CMD_NAME("tool/assdraw")
@@ -74,7 +74,7 @@ public:
 	}
 };
 
-/// 
+/// Saves a copy of subtitles with processing applied to it.
 class tool_export: public Command {
 public:
 	CMD_NAME("tool/export")
@@ -90,7 +90,7 @@ public:
 };
 
 
-/// 
+/// Open fonts collector.
 class tool_font_collector: public Command {
 public:
 	CMD_NAME("tool/font_collector")
@@ -106,7 +106,7 @@ public:
 };
 
 
-/// 
+/// Selects lines based on defined criterea.
 class tool_line_select: public Command {
 public:
 	CMD_NAME("tool/line/select")
@@ -122,7 +122,7 @@ public:
 };
 
 
-/// 
+/// Changes resolution and modifies subtitles to conform to change.
 class tool_resampleres: public Command {
 public:
 	CMD_NAME("tool/resampleres")
@@ -138,7 +138,7 @@ public:
 };
 
 
-/// 
+/// Open styling assistant.
 class tool_style_assistant: public Command {
 public:
 	CMD_NAME("tool/style/assistant")
@@ -154,7 +154,7 @@ public:
 };
 
 
-/// 
+/// Open styles manager.
 class tool_style_manager: public Command {
 public:
 	CMD_NAME("tool/style/manager")
@@ -170,7 +170,7 @@ public:
 };
 
 
-/// 
+/// Open Kanji timer.
 class tool_time_kanji: public Command {
 public:
 	CMD_NAME("tool/time/kanji")
@@ -185,7 +185,7 @@ public:
 };
 
 
-/// 
+/// Launch timing post-processor.
 class tool_time_postprocess: public Command {
 public:
 	CMD_NAME("tool/time/postprocess")
@@ -200,7 +200,7 @@ public:
 };
 
 
-/// 
+/// Open translation assistant.
 class tool_translation_assistant: public Command {
 public:
 	CMD_NAME("tool/translation_assistant")

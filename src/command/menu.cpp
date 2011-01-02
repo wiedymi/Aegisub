@@ -48,7 +48,7 @@ namespace cmd {
 /// @{
 
 
-/// 
+/// Audio manipulation.
 class main_audio: public Command {
 public:
 	CMD_NAME("main/audio")
@@ -60,7 +60,7 @@ public:
 	}
 };
 
-/// 
+/// Automation manipulation and scripts.
 class main_automation: public Command {
 public:
 	CMD_NAME("main/automation")
@@ -75,7 +75,7 @@ public:
 
 
 
-/// 
+/// Editing operations.
 class main_edit: public Command {
 public:
 	CMD_NAME("main/edit")
@@ -88,7 +88,7 @@ public:
 };
 
 
-/// 
+/// Sort lines by column.
 class main_edit_sort_lines: public Command {
 public:
 	CMD_NAME("main/edit/sort lines")
@@ -101,7 +101,7 @@ public:
 };
 
 
-/// 
+/// Operations on subtitles.
 class main_file: public Command {
 public:
 	CMD_NAME("main/file")
@@ -114,7 +114,7 @@ public:
 };
 
 
-/// 
+/// Help options.
 class main_help: public Command {
 public:
 	CMD_NAME("main/help")
@@ -127,7 +127,7 @@ public:
 };
 
 
-/// 
+/// Subtitle manipulation.
 class main_main_subtitle: public Command {
 public:
 	CMD_NAME("main/subtitle")
@@ -139,7 +139,7 @@ public:
 	}
 };
 
-/// 
+/// Insert lines into currently active subtitle file.
 class main_subtitle_insert_lines: public Command {
 public:
 	CMD_NAME("main/subtitle/insert lines")
@@ -152,7 +152,7 @@ public:
 };
 
 
-/// 
+/// Sort lines by column.
 class main_subtitle_sort_lines: public Command {
 public:
 	CMD_NAME("main/subtitle/sort lines")
@@ -165,7 +165,7 @@ public:
 };
 
 
-/// 
+/// Merge 2 or more lines together.
 class main_subtitle_join_lines: public Command {
 public:
 	CMD_NAME("main/subtitle/join lines")
@@ -178,7 +178,7 @@ public:
 };
 
 
-/// 
+/// Time manipulation.
 class main_timing: public Command {
 public:
 	CMD_NAME("main/timing")
@@ -191,7 +191,7 @@ public:
 };
 
 
-/// 
+/// Make time continous.
 class main_timing_make_times_continous: public Command {
 public:
 	CMD_NAME("main/timing/make times continous")
@@ -204,7 +204,7 @@ public:
 };
 
 
-/// 
+/// Video operations.
 class main_video: public Command {
 public:
 	CMD_NAME("main/video")
@@ -217,7 +217,7 @@ public:
 };
 
 
-/// 
+/// Override Aspect Ratio
 class main_video_override_ar:
 public Command { public:
 	CMD_NAME("main/video/override ar")
@@ -230,7 +230,7 @@ public Command { public:
 };
 
 
-/// 
+/// Set zoom level.
 class main_video_set_zoom: public Command {
 public:
 	CMD_NAME("main/video/set zoom")
@@ -243,7 +243,7 @@ public:
 };
 
 
-/// 
+/// View options.
 class main_view: public Command {
 public:
 	CMD_NAME("main/view")

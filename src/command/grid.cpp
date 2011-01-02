@@ -54,7 +54,7 @@ namespace cmd {
 
 
 
-/// 
+/// Move to the next subtitle line.
 class grid_line_next: public Command {
 public:
 	CMD_NAME("grid/line/next")
@@ -68,7 +68,7 @@ public:
 };
 
 
-/// 
+/// Move to the previous line.
 class grid_line_prev: public Command {
 public:
 	CMD_NAME("grid/line/prev")
@@ -82,7 +82,7 @@ public:
 };
 
 
-/// 
+/// Cycle through tag hiding modes.
 class grid_tag_cycle_hiding: public Command {
 public:
 	CMD_NAME("grid/tag/cycle_hiding")
@@ -112,7 +112,7 @@ public:
 };
 
 
-/// 
+/// Hide override tags in the subtitle grid.
 class grid_tags_hide: public Command {
 public:
 	CMD_NAME("grid/tags/hide")
@@ -128,7 +128,7 @@ public:
 };
 
 
-/// 
+/// Show full override tags in the subtitle grid.
 class grid_tags_show: public Command {
 public:
 	CMD_NAME("grid/tags/show")
@@ -142,7 +142,7 @@ public:
 };
 
 
-/// 
+/// Replace override tags in the subtitle grid with a simplified placeholder.
 class grid_tags_simplify: public Command {
 public:
 	CMD_NAME("grid/tags/simplify")
