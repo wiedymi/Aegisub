@@ -59,6 +59,7 @@
 namespace cmd {
 
 
+/// 
 class video_aspect_cinematic: public Command {
 public:
 	CMD_NAME("video/aspect/cinematic")
@@ -74,6 +75,7 @@ public:
 };
 
 
+/// 
 class video_aspect_custom: public Command {
 public:
 	CMD_NAME("video/aspect/custom")
@@ -131,6 +133,7 @@ public:
 
 
 
+/// 
 class video_aspect_default: public Command {
 public:
 	CMD_NAME("video/aspect/default")
@@ -147,6 +150,7 @@ public:
 
 
 
+/// 
 class video_aspect_full: public Command {
 public:
 	CMD_NAME("video/aspect/full")
@@ -162,6 +166,7 @@ public:
 };
 
 
+/// 
 class video_aspect_wide: public Command {
 public:
 	CMD_NAME("video/aspect/wide")
@@ -177,6 +182,7 @@ public:
 };
 
 
+/// 
 class video_close: public Command {
 public:
 	CMD_NAME("video/close")
@@ -191,6 +197,7 @@ public:
 
 
 
+/// 
 class video_detach: public Command {
 public:
 	CMD_NAME("video/detach")
@@ -204,6 +211,7 @@ public:
 };
 
 
+/// 
 class video_details: public Command {
 public:
 	CMD_NAME("video/details")
@@ -219,6 +227,7 @@ public:
 };
 
 
+/// 
 class video_focus_seek: public Command {
 public:
 	CMD_NAME("video/focus_seek")
@@ -239,6 +248,7 @@ public:
 };
 
 
+/// 
 class video_frame_next: public Command {
 public:
 	CMD_NAME("video/frame/next")
@@ -252,6 +262,7 @@ public:
 };
 
 
+/// 
 class video_frame_play: public Command {
 public:
 	CMD_NAME("video/frame/play")
@@ -265,6 +276,7 @@ public:
 };
 
 
+/// 
 class video_frame_prev: public Command {
 public:
 	CMD_NAME("video/frame/prev")
@@ -278,6 +290,7 @@ public:
 };
 
 
+/// 
 class video_jump: public Command {
 public:
 	CMD_NAME("video/jump")
@@ -296,6 +309,7 @@ public:
 };
 
 
+/// 
 class video_jump_end: public Command {
 public:
 	CMD_NAME("video/jump/end")
@@ -309,6 +323,7 @@ public:
 };
 
 
+/// 
 class video_jump_start: public Command {
 public:
 	CMD_NAME("video/jump/start")
@@ -322,6 +337,7 @@ public:
 };
 
 
+/// 
 class video_open: public Command {
 public:
 	CMD_NAME("video/open")
@@ -342,6 +358,7 @@ public:
 };
 
 
+/// 
 class video_open_dummy: public Command {
 public:
 	CMD_NAME("video/open/dummy")
@@ -358,6 +375,7 @@ public:
 };
 
 
+/// 
 class video_show_overscan: public Command {
 public:
 	CMD_NAME("video/show_overscan")
@@ -374,6 +392,7 @@ public:
 };
 
 
+/// 
 class video_zoom_100: public Command {
 public:
 	CMD_NAME("video/zoom/100")
@@ -389,6 +408,7 @@ public:
 
 
 
+/// 
 class video_zoom_200: public Command {
 public:
 	CMD_NAME("video/zoom/200")
@@ -403,6 +423,7 @@ public:
 };
 
 
+/// 
 class video_zoom_50: public Command {
 public:
 	CMD_NAME("video/zoom/50")
@@ -417,6 +438,7 @@ public:
 };
 
 
+/// 
 class video_zoom_in: public Command {
 public:
 	CMD_NAME("video/zoom/in")
@@ -430,6 +452,7 @@ public:
 };
 
 
+/// 
 class video_zoom_out: public Command {
 public:
 	CMD_NAME("video/zoom/out")

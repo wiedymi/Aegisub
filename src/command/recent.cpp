@@ -51,6 +51,7 @@
 namespace cmd {
 
 
+/// 
 class recent_audio: public Command {
 public:
 	CMD_NAME("recent/audio")
@@ -64,6 +65,7 @@ public:
 };
 
 
+/// 
 class recent_keyframe: public Command {
 public:
 	CMD_NAME("recent/keyframe")
@@ -77,6 +79,7 @@ public:
 };
 
 
+/// 
 class recent_subtitle: public Command {
 public:
 	CMD_NAME("recent/subtitle")
@@ -91,6 +94,7 @@ public:
 };
 
 
+/// 
 class recent_timecode: public Command {
 public:
 	CMD_NAME("recent/timecode")
@@ -105,6 +109,7 @@ public:
 };
 
 
+/// 
 class recent_video: public Command {
 public:
 	CMD_NAME("recent/video")

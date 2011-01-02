@@ -52,6 +52,7 @@
 
 namespace cmd {
 
+/// 
 class edit_line_copy: public Command {
 public:
 	CMD_NAME("edit/line/copy")
@@ -69,6 +70,7 @@ public:
 };
 
 
+/// 
 class edit_line_cut: public Command {
 public:
 	CMD_NAME("edit/line/cut")
@@ -86,6 +88,7 @@ public:
 };
 
 
+/// 
 class edit_line_delete: public Command {
 public:
 	CMD_NAME("edit/line/delete")
@@ -99,6 +102,7 @@ public:
 };
 
 
+/// 
 class edit_line_duplicate: public Command {
 public:
 	CMD_NAME("edit/line/duplicate")
@@ -112,6 +116,7 @@ public:
 };
 
 
+/// 
 class edit_line_duplicate_shift: public Command {
 public:
 	CMD_NAME("edit/line/duplicate/shift")
@@ -125,6 +130,7 @@ public:
 };
 
 
+/// 
 class edit_line_join_as_karaoke: public Command {
 public:
 	CMD_NAME("edit/line/join/as_karaoke")
@@ -138,6 +144,7 @@ public:
 };
 
 
+/// 
 class edit_line_join_concatenate: public Command {
 public:
 	CMD_NAME("edit/line/join/concatenate")
@@ -151,6 +158,7 @@ public:
 };
 
 
+/// 
 class edit_line_join_keep_first: public Command {
 public:
 	CMD_NAME("edit/line/join/keep_first")
@@ -164,6 +172,7 @@ public:
 };
 
 
+/// 
 class edit_line_paste: public Command {
 public:
 	CMD_NAME("edit/line/paste")
@@ -181,6 +190,7 @@ public:
 };
 
 
+/// 
 class edit_line_paste_over: public Command {
 public:
 	CMD_NAME("edit/line/paste/over")
@@ -194,6 +204,7 @@ public:
 };
 
 
+/// 
 class edit_line_recombine: public Command {
 public:
 	CMD_NAME("edit/line/recombine")
@@ -207,6 +218,7 @@ public:
 };
 
 
+/// 
 class edit_line_split_by_karaoke: public Command {
 public:
 	CMD_NAME("edit/line/split/by_karaoke")
@@ -220,6 +232,7 @@ public:
 };
 
 
+/// 
 class edit_line_swap: public Command {
 public:
 	CMD_NAME("edit/line/swap")
@@ -233,6 +246,7 @@ public:
 };
 
 
+/// 
 class edit_redo: public Command {
 public:
 	CMD_NAME("edit/redo")
@@ -247,6 +261,7 @@ public:
 };
 
 
+/// 
 class edit_search_replace: public Command {
 public:
 	CMD_NAME("edit/search_replace")
@@ -261,6 +276,7 @@ public:
 };
 
 
+/// 
 class edit_undo: public Command {
 public:
 	CMD_NAME("edit/undo")

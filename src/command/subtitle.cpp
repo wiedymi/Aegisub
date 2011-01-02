@@ -61,6 +61,7 @@
 namespace cmd {
 
 
+/// 
 class subtitle_attachment: public Command {
 public:
 	CMD_NAME("subtitle/attachment")
@@ -76,6 +77,7 @@ public:
 };
 
 
+/// 
 class subtitle_find: public Command {
 public:
 	CMD_NAME("subtitle/find")
@@ -90,6 +92,7 @@ public:
 };
 
 
+/// 
 class subtitle_find_next: public Command {
 public:
 	CMD_NAME("subtitle/find/next")
@@ -104,6 +107,7 @@ public:
 };
 
 
+/// 
 class subtitle_insert_after: public Command {
 public:
 	CMD_NAME("subtitle/insert/after")
@@ -117,6 +121,7 @@ public:
 };
 
 
+/// 
 class subtitle_insert_after_videotime: public Command {
 public:
 	CMD_NAME("subtitle/insert/after/videotime")
@@ -130,6 +135,7 @@ public:
 };
 
 
+/// 
 class subtitle_insert_before: public Command {
 public:
 	CMD_NAME("subtitle/insert/before")
@@ -143,6 +149,7 @@ public:
 };
 
 
+/// 
 class subtitle_insert_before_videotime: public Command {
 public:
 	CMD_NAME("subtitle/insert/before/videotime")
@@ -156,6 +163,7 @@ public:
 };
 
 
+/// 
 class subtitle_new: public Command {
 public:
 	CMD_NAME("subtitle/new")
@@ -169,6 +177,7 @@ public:
 };
 
 
+/// 
 class subtitle_open: public Command {
 public:
 	CMD_NAME("subtitle/open")
@@ -188,6 +197,7 @@ public:
 };
 
 
+/// 
 class subtitle_open_charset: public Command {
 public:
 	CMD_NAME("subtitle/open/charset")
@@ -212,6 +222,7 @@ public:
 };
 
 
+/// 
 class subtitle_open_video: public Command {
 public:
 	CMD_NAME("subtitle/open/video")
@@ -225,6 +236,7 @@ public:
 };
 
 
+/// 
 class subtitle_properties: public Command {
 public:
 	CMD_NAME("subtitle/properties")
@@ -241,6 +253,7 @@ public:
 
 
 
+/// 
 class subtitle_save: public Command {
 public:
 	CMD_NAME("subtitle/save")
@@ -254,6 +267,7 @@ public:
 };
 
 
+/// 
 class subtitle_save_as: public Command {
 public:
 	CMD_NAME("subtitle/save/as")
@@ -267,6 +281,7 @@ public:
 };
 
 
+/// 
 class subtitle_select_visiblek: public Command {
 public:
 	CMD_NAME("subtitle/select/visible")
@@ -281,6 +296,7 @@ public:
 };
 
 
+/// 
 class subtitle_spellcheck: public Command {
 public:
 	CMD_NAME("subtitle/spellcheck")
@@ -295,6 +311,7 @@ public:
 	}
 };
 
+/// 
 class subtitle_tags_show: public Command {
 public:
 	CMD_NAME("subtitle/tags/show")

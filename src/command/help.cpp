@@ -50,6 +50,7 @@
 namespace cmd {
 
 
+/// 
 class help_bugs: public Command {
 public:
 	CMD_NAME("help/bugs")
@@ -72,6 +73,7 @@ public:
 };
 
 
+/// 
 class help_contents: public Command {
 public:
 	CMD_NAME("help/contents")
@@ -85,6 +87,7 @@ public:
 };
 
 
+/// 
 class help_files: public Command {
 public:
 	CMD_NAME("help/files")
@@ -103,6 +106,7 @@ public:
 };
 
 
+/// 
 class help_forums: public Command {
 public:
 	CMD_NAME("help/forums")
@@ -116,6 +120,7 @@ public:
 };
 
 
+/// 
 class help_irc: public Command {
 public:
 	CMD_NAME("help/irc")
@@ -129,6 +134,7 @@ public:
 };
 
 
+/// 
 class help_website: public Command {
 public:
 	CMD_NAME("help/website")

@@ -52,6 +52,7 @@
 
 namespace cmd {
 
+/// 
 class timecode_close: public Command {
 public:
 	CMD_NAME("timecode/close")
@@ -65,6 +66,7 @@ public:
 };
 
 
+/// 
 class timecode_open: public Command {
 public:
 	CMD_NAME("timecode/open")
@@ -84,6 +86,7 @@ public:
 };
 
 
+/// 
 class timecode_save: public Command {
 public:
 	CMD_NAME("timecode/save")

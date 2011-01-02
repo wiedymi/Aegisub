@@ -51,6 +51,7 @@
 namespace cmd {
 
 
+/// 
 class audio_close: public Command {
 public:
 	CMD_NAME("audio/close")
@@ -64,6 +65,7 @@ public:
 };
 
 
+/// 
 class audio_open: public Command {
 public:
 	CMD_NAME("audio/open")
@@ -85,6 +87,7 @@ public:
 };
 
 
+/// 
 class audio_open_blank: public Command {
 public:
 	CMD_NAME("audio/open/blank")
@@ -98,6 +101,7 @@ public:
 };
 
 
+/// 
 class audio_open_noise: public Command {
 public:
 	CMD_NAME("audio/open/noise")
@@ -111,6 +115,7 @@ public:
 };
 
 
+/// 
 class audio_open_video: public Command {
 public:
 	CMD_NAME("audio/open/video")
@@ -124,6 +129,7 @@ public:
 };
 
 
+/// 
 class audio_view_spectrum: public Command {
 public:
 	CMD_NAME("audio/view/spectrum")
@@ -137,6 +143,7 @@ public:
 };
 
 
+/// 
 class audio_view_waveform: public Command {
 public:
 	CMD_NAME("audio/view/waveform")

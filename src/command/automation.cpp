@@ -52,6 +52,7 @@
 
 namespace cmd {
 
+/// 
 class am_manager: public Command {
 public:
 	CMD_NAME("am/manager")

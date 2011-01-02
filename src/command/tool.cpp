@@ -58,6 +58,7 @@
 
 namespace cmd {
 
+/// 
 class tool_assdraw: public Command {
 public:
 	CMD_NAME("tool/assdraw")
@@ -70,6 +71,7 @@ public:
 	}
 };
 
+/// 
 class tool_export: public Command {
 public:
 	CMD_NAME("tool/export")
@@ -85,6 +87,7 @@ public:
 };
 
 
+/// 
 class tool_font_collector: public Command {
 public:
 	CMD_NAME("tool/font_collector")
@@ -100,6 +103,7 @@ public:
 };
 
 
+/// 
 class tool_line_select: public Command {
 public:
 	CMD_NAME("tool/line/select")
@@ -115,6 +119,7 @@ public:
 };
 
 
+/// 
 class tool_resampleres: public Command {
 public:
 	CMD_NAME("tool/resampleres")
@@ -130,6 +135,7 @@ public:
 };
 
 
+/// 
 class tool_style_assistant: public Command {
 public:
 	CMD_NAME("tool/style/assistant")
@@ -145,6 +151,7 @@ public:
 };
 
 
+/// 
 class tool_style_manager: public Command {
 public:
 	CMD_NAME("tool/style/manager")
@@ -160,6 +167,7 @@ public:
 };
 
 
+/// 
 class tool_time_kanji: public Command {
 public:
 	CMD_NAME("tool/time/kanji")
@@ -174,6 +182,7 @@ public:
 };
 
 
+/// 
 class tool_time_postprocess: public Command {
 public:
 	CMD_NAME("tool/time/postprocess")
@@ -188,6 +197,7 @@ public:
 };
 
 
+/// 
 class tool_translation_assistant: public Command {
 public:
 	CMD_NAME("tool/translation_assistant")

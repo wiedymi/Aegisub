@@ -51,6 +51,7 @@
 namespace cmd {
 
 
+/// 
 class grid_line_next: public Command {
 public:
 	CMD_NAME("grid/line/next")
@@ -64,6 +65,7 @@ public:
 };
 
 
+/// 
 class grid_line_prev: public Command {
 public:
 	CMD_NAME("grid/line/prev")
@@ -77,6 +79,7 @@ public:
 };
 
 
+/// 
 class grid_tag_cycle_hiding: public Command {
 public:
 	CMD_NAME("grid/tag/cycle_hiding")
@@ -106,6 +109,7 @@ public:
 };
 
 
+/// 
 class grid_tags_hide: public Command {
 public:
 	CMD_NAME("grid/tags/hide")
@@ -121,6 +125,7 @@ public:
 };
 
 
+/// 
 class grid_tags_show: public Command {
 public:
 	CMD_NAME("grid/tags/show")
@@ -134,6 +139,7 @@ public:
 };
 
 
+/// 
 class grid_tags_simplify: public Command {
 public:
 	CMD_NAME("grid/tags/simplify")

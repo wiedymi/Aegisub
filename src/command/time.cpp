@@ -52,6 +52,7 @@
 
 namespace cmd {
 
+/// 
 class time_continous_end: public Command {
 public:
 	CMD_NAME("time/continous/end")
@@ -65,6 +66,7 @@ public:
 };
 
 
+/// 
 class time_continous_start: public Command {
 public:
 	CMD_NAME("time/continous/start")
@@ -79,6 +81,7 @@ public:
 };
 
 
+/// 
 class time_frame_current: public Command {
 public:
 	CMD_NAME("time/frame/current")
@@ -113,6 +116,7 @@ public:
 };
 
 
+/// 
 class time_shift: public Command {
 public:
 	CMD_NAME("time/shift")
@@ -129,6 +133,7 @@ public:
 
 
 
+/// 
 class time_snap_end_video: public Command {
 public:
 	CMD_NAME("time/snap/end_video")
@@ -142,6 +147,7 @@ public:
 };
 
 
+/// 
 class time_snap_frame: public Command {
 public:
 	CMD_NAME("time/snap/frame")
@@ -155,6 +161,7 @@ public:
 };
 
 
+/// 
 class time_snap_scene: public Command {
 public:
 	CMD_NAME("time/snap/scene")
@@ -210,6 +217,7 @@ public:
 };
 
 
+/// 
 class time_snap_start_video: public Command {
 public:
 	CMD_NAME("time/snap/start_video")
@@ -223,6 +231,7 @@ public:
 };
 
 
+/// 
 class time_sort_end: public Command {
 public:
 	CMD_NAME("time/sort/end")
@@ -237,6 +246,7 @@ public:
 };
 
 
+/// 
 class time_sort_start: public Command {
 public:
 	CMD_NAME("time/sort/start")
@@ -251,6 +261,7 @@ public:
 };
 
 
+/// 
 class time_sort_style: public Command {
 public:
 	CMD_NAME("time/sort/style")

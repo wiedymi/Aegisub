@@ -46,6 +46,7 @@
 namespace cmd {
 
 
+/// 
 class main_audio: public Command {
 public:
 	CMD_NAME("main/audio")
@@ -57,6 +58,7 @@ public:
 	}
 };
 
+/// 
 class main_automation: public Command {
 public:
 	CMD_NAME("main/automation")
@@ -71,6 +73,7 @@ public:
 
 
 
+/// 
 class main_edit: public Command {
 public:
 	CMD_NAME("main/edit")
@@ -83,6 +86,7 @@ public:
 };
 
 
+/// 
 class main_edit_sort_lines: public Command {
 public:
 	CMD_NAME("main/edit/sort lines")
@@ -95,6 +99,7 @@ public:
 };
 
 
+/// 
 class main_file: public Command {
 public:
 	CMD_NAME("main/file")
@@ -107,6 +112,7 @@ public:
 };
 
 
+/// 
 class main_help: public Command {
 public:
 	CMD_NAME("main/help")
@@ -119,6 +125,7 @@ public:
 };
 
 
+/// 
 class main_main_subtitle: public Command {
 public:
 	CMD_NAME("main/subtitle")
@@ -130,6 +137,7 @@ public:
 	}
 };
 
+/// 
 class main_subtitle_insert_lines: public Command {
 public:
 	CMD_NAME("main/subtitle/insert lines")
@@ -142,6 +150,7 @@ public:
 };
 
 
+/// 
 class main_subtitle_sort_lines: public Command {
 public:
 	CMD_NAME("main/subtitle/sort lines")
@@ -154,6 +163,7 @@ public:
 };
 
 
+/// 
 class main_subtitle_join_lines: public Command {
 public:
 	CMD_NAME("main/subtitle/join lines")
@@ -166,6 +176,7 @@ public:
 };
 
 
+/// 
 class main_timing: public Command {
 public:
 	CMD_NAME("main/timing")
@@ -178,6 +189,7 @@ public:
 };
 
 
+/// 
 class main_timing_make_times_continous: public Command {
 public:
 	CMD_NAME("main/timing/make times continous")
@@ -190,6 +202,7 @@ public:
 };
 
 
+/// 
 class main_video: public Command {
 public:
 	CMD_NAME("main/video")
@@ -202,6 +215,7 @@ public:
 };
 
 
+/// 
 class main_video_override_ar:
 public Command { public:
 	CMD_NAME("main/video/override ar")
@@ -214,6 +228,7 @@ public Command { public:
 };
 
 
+/// 
 class main_video_set_zoom: public Command {
 public:
 	CMD_NAME("main/video/set zoom")
@@ -226,6 +241,7 @@ public:
 };
 
 
+/// 
 class main_view: public Command {
 public:
 	CMD_NAME("main/view")

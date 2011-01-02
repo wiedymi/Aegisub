@@ -52,6 +52,7 @@ namespace cmd {
 
 
 
+/// 
 class keyframe_close: public Command {
 public:
 	CMD_NAME("keyframe/close")
@@ -65,6 +66,7 @@ public:
 };
 
 
+/// 
 class keyframe_open: public Command {
 public:
 	CMD_NAME("keyframe/open")
@@ -91,6 +93,7 @@ public:
 };
 
 
+/// 
 class keyframe_save: public Command {
 public:
 	CMD_NAME("keyframe/save")
