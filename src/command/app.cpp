@@ -214,7 +214,7 @@ public:
 			Preferences pref(c->parent);
 			pref.ShowModal();
 		} catch (agi::Exception& e) {
-			wxPrintf("Caught agi::Exception: %s -> %s\n", e.GetName(), e.GetMessage());
+			LOG_E("config/init") << "Caught exception: " << e.GetName() << " -> " << e.GetMessage();
 		}
 	}
 };
