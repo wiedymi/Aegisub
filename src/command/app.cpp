@@ -57,8 +57,11 @@
 
 
 namespace cmd {
+/// @defgroup cmd-app Application related
+/// @{
 
-class app_about: public Command {
+/// Launch about dialogue.
+class  app_about: public Command {
 public:
 	CMD_NAME("app/about")
 	STR_MENU("&About..")
@@ -72,7 +75,8 @@ public:
 };
 
 
-class app_display_audio_subs: public Command {
+/// Display audio and subtitles.
+class  app_display_audio_subs: public Command {
 public:
 	CMD_NAME("app/display/audio_subs")
 	STR_MENU("Audio+Subs View")
@@ -86,8 +90,8 @@ public:
 };
 
 
-
-class app_display_full: public Command {
+/// Display audio, video and subtitles.
+class  app_display_full: public Command {
 public:
 	CMD_NAME("app/display/full")
 	STR_MENU("Full view")
@@ -101,7 +105,8 @@ public:
 };
 
 
-class app_display_subs: public Command {
+/// Display subtitles only.
+class  app_display_subs: public Command {
 public:
 	CMD_NAME("app/display/subs")
 	STR_MENU("Subs Only View")
@@ -114,7 +119,8 @@ public:
 };
 
 
-class app_display_video_subs: public Command {
+/// Display video and subtitles only.
+class  app_display_video_subs: public Command {
 public:
 	CMD_NAME("app/display/video_subs")
 	STR_MENU("Video+Subs View")
@@ -127,7 +133,8 @@ public:
 };
 
 
-class app_exit: public Command {
+/// Exit the application.
+class  app_exit: public Command {
 public:
 	CMD_NAME("app/exit")
 	STR_MENU("E&xit")
@@ -140,7 +147,8 @@ public:
 };
 
 
-class app_language: public Command {
+/// Select Aegisub interface language
+class  app_language: public Command {
 public:
 	CMD_NAME("app/language")
 	STR_MENU("&Language...")
@@ -175,7 +183,8 @@ public:
 };
 
 
-class app_log: public Command {
+/// Event log.
+class  app_log: public Command {
 public:
 	CMD_NAME("app/log")
 	STR_MENU("&Log window...")
@@ -189,7 +198,8 @@ public:
 };
 
 
-class app_new_window: public Command {
+/// Open a new application window.
+class  app_new_window: public Command {
 public:
 	CMD_NAME("app/new_window")
 	STR_MENU("New Window")
@@ -202,7 +212,8 @@ public:
 };
 
 
-class app_options: public Command {
+/// Configure Aegisub.
+class  app_options: public Command {
 public:
 	CMD_NAME("app/options")
 	STR_MENU("&Options..")
@@ -220,7 +231,8 @@ public:
 };
 
 
-class app_updates: public Command {
+/// Check to see if there is a new version of Aegisub available.
+class  app_updates: public Command {
 public:
 	CMD_NAME("app/updates")
 	STR_MENU("&Check for Updates..")
@@ -232,7 +244,9 @@ public:
 	}
 };
 
+/// @}
 
+/// Init app/ commands
 void init_app(CommandManager *cm) {
 	cm->reg(new app_about());
 	cm->reg(new app_display_audio_subs());
@@ -248,3 +262,4 @@ void init_app(CommandManager *cm) {
 }
 
 } // namespace cmd
+
