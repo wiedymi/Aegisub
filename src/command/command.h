@@ -33,6 +33,20 @@ DEFINE_SIMPLE_EXCEPTION_NOINNER(CommandIconInvalid, CommandError, "command/icon/
 /// Commands
 namespace cmd {
 
+	/// CommandManager instance.
+	extern CommandManager *cm;
+
+	/// Init all commands.
+	/// @param cm CommandManager instance.
+	void init_command(CommandManager *cm);
+
+	// The following are nothing more than glorified macros.
+	int id(std::string name);					///< @see CommandManager::id
+	void call(agi::Context *c, const int id);	///< @see CommandManager::call
+	int count();								///< @see CommandManager::count
+	Command* get(std::string name);				///< @see CommandManager::get
+
+
 	/// Holds an individual Command
 	class Command {
 	public:
@@ -83,18 +97,4 @@ namespace cmd {
 		/// @param Command object.
 		Command* get(std::string name);
 	};
-
-	/// CommandManager instance.
-	extern CommandManager *cm;
-
-	/// Init all commands.
-	/// @param cm CommandManager instance.
-	void init_command(CommandManager *cm);
-
-	// The following are nothing more than glorified macros.
-	int id(std::string name);					///< @see CommandManager::id
-	void call(agi::Context *c, const int id);	///< @see CommandManager::call
-	int count();								///< @see CommandManager::count
-	Command* get(std::string name);				///< @see CommandManager::get
-
 } // namespace cmd
