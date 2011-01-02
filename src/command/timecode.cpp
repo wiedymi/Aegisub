@@ -61,7 +61,6 @@ public:
 
 	void operator()(agi::Context *c) {
 		VideoContext::Get()->CloseTimecodes();
-		c->EditBox->UpdateFrameTiming();
 	}
 };
 
@@ -81,7 +80,6 @@ public:
 			VideoContext::Get()->LoadTimecodes(filename);
 			OPT_SET("Path/Last/Timecodes")->SetString(STD_STR(filename));
 		}
-		c->EditBox->UpdateFrameTiming();
 	}
 };
 
