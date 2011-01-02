@@ -49,6 +49,8 @@
 #include "video_context.h"
 
 namespace cmd {
+/// @defgroup cmd-recent MRU (Most Recently Used) commands.
+/// @{
 
 
 /// 
@@ -123,6 +125,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_recent(CommandManager *cm) {
 	cm->reg(new recent_audio());

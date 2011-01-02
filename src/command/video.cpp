@@ -57,6 +57,8 @@
 #include "dialog_jumpto.h"
 
 namespace cmd {
+/// @defgroup cmd-video Video commands.
+/// @{
 
 
 /// 
@@ -465,6 +467,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_video(CommandManager *cm) {
 	cm->reg(new video_aspect_cinematic());

@@ -49,6 +49,9 @@
 #include "frame_main.h"
 
 namespace cmd {
+/// @defgroup cmd-grid Subtitle grid commands.
+/// @{
+
 
 
 /// 
@@ -152,6 +155,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_grid(CommandManager *cm) {
 	cm->reg(new grid_line_next());

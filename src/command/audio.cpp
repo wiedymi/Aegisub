@@ -49,6 +49,8 @@
 #include "main.h"
 
 namespace cmd {
+/// @defgroup cmd-audio Audio commands.
+/// @{
 
 
 /// 
@@ -156,6 +158,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_audio(CommandManager *cm) {
 	cm->reg(new audio_close());

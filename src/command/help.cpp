@@ -48,6 +48,9 @@
 #include "main.h"
 
 namespace cmd {
+/// @defgroup cmd-help Help commands.
+/// @{
+
 
 
 /// 
@@ -147,6 +150,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_help(CommandManager *cm) {
 	cm->reg(new help_bugs());

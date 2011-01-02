@@ -51,6 +51,9 @@
 #include "frame_main.h"
 
 namespace cmd {
+/// @defgroup cmd-am Automation commands
+/// @{
+
 
 /// 
 class am_manager: public Command {
@@ -92,6 +95,8 @@ public:
 #endif
 	}
 };
+
+/// @}
 
 void init_automation(CommandManager *cm) {
 	cm->reg(new am_manager());

@@ -57,6 +57,9 @@
 #include "dialog_kara_timing_copy.h"
 
 namespace cmd {
+/// @defgroup cmd-tool Various tool and utilities
+/// @{
+
 
 /// 
 class tool_assdraw: public Command {
@@ -214,6 +217,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_tool(CommandManager *cm) {
 	cm->reg(new tool_assdraw());

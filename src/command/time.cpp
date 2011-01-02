@@ -51,6 +51,9 @@
 #include "ass_file.h"
 
 namespace cmd {
+/// @defgroup cmd-time Time manipulation commands.
+/// @{
+
 
 /// 
 class time_continous_end: public Command {
@@ -275,6 +278,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_time(CommandManager *cm) {
 	cm->reg(new time_continous_end());

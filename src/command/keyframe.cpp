@@ -49,7 +49,8 @@
 #include "video_context.h"
 
 namespace cmd {
-
+/// @defgroup cmd-keyframed Keyframe commands.
+/// @{
 
 
 /// 
@@ -110,6 +111,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_keyframe(CommandManager *cm) {
 	cm->reg(new keyframe_close());

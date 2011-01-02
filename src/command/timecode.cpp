@@ -51,6 +51,9 @@
 #include "subs_edit_box.h"
 
 namespace cmd {
+/// @defgroup cmd-timecode Timecode commands.
+/// @{
+
 
 /// 
 class timecode_close: public Command {
@@ -105,6 +108,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_timecode(CommandManager *cm) {
 	cm->reg(new timecode_close());

@@ -51,6 +51,9 @@
 #include "video_context.h"
 
 namespace cmd {
+/// @defgroup cmd-edit Editing commands.
+/// @{
+
 
 /// 
 class edit_line_copy: public Command {
@@ -290,6 +293,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_edit(CommandManager *cm) {
 	cm->reg(new edit_line_copy());

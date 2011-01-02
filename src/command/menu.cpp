@@ -44,6 +44,8 @@
 #include "aegisub/context.h"
 
 namespace cmd {
+/// @defgroup cmd-menu Main menu dropdown and submenu related commands.
+/// @{
 
 
 /// 
@@ -253,6 +255,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_menu(CommandManager *cm) {
 	cm->reg(new main_audio());

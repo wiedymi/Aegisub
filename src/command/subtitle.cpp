@@ -59,6 +59,8 @@
 
 
 namespace cmd {
+/// @defgroup cmd-subtitle Subtitle commands.
+/// @{
 
 
 /// 
@@ -324,6 +326,7 @@ public:
 	}
 };
 
+/// @}
 
 void init_subtitle(CommandManager *cm) {
 	cm->reg(new subtitle_attachment());
