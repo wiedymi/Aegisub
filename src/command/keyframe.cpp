@@ -113,6 +113,7 @@ public:
 
 /// @}
 
+/// Init keyframe/ commands.
 void init_keyframe(CommandManager *cm) {
 	cm->reg(new keyframe_close());
 	cm->reg(new keyframe_open());

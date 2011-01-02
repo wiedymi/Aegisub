@@ -127,6 +127,7 @@ public:
 
 /// @}
 
+/// Init recent/ commands.
 void init_recent(CommandManager *cm) {
 	cm->reg(new recent_audio());
 	cm->reg(new recent_keyframe());

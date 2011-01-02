@@ -295,6 +295,7 @@ public:
 
 /// @}
 
+/// Init edit/ commands
 void init_edit(CommandManager *cm) {
 	cm->reg(new edit_line_copy());
 	cm->reg(new edit_line_cut());

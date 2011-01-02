@@ -219,6 +219,7 @@ public:
 
 /// @}
 
+/// Init tool/ commands.
 void init_tool(CommandManager *cm) {
 	cm->reg(new tool_assdraw());
 	cm->reg(new tool_export());

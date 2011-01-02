@@ -257,6 +257,7 @@ public:
 
 /// @}
 
+/// Init menu/ commands.
 void init_menu(CommandManager *cm) {
 	cm->reg(new main_audio());
 	cm->reg(new main_automation());

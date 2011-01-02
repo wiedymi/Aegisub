@@ -98,6 +98,7 @@ public:
 
 /// @}
 
+/// Init am/ commands. (automation)
 void init_automation(CommandManager *cm) {
 	cm->reg(new am_manager());
 }

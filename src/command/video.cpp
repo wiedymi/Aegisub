@@ -469,6 +469,7 @@ public:
 
 /// @}
 
+/// Init video/ commands.
 void init_video(CommandManager *cm) {
 	cm->reg(new video_aspect_cinematic());
 	cm->reg(new video_aspect_custom());

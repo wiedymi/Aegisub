@@ -152,6 +152,7 @@ public:
 
 /// @}
 
+/// Init help/ commands.
 void init_help(CommandManager *cm) {
 	cm->reg(new help_bugs());
 	cm->reg(new help_contents());

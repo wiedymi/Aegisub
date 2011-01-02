@@ -160,6 +160,7 @@ public:
 
 /// @}
 
+/// Init audio/ commands
 void init_audio(CommandManager *cm) {
 	cm->reg(new audio_close());
 	cm->reg(new audio_open());

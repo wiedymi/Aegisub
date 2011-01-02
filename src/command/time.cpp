@@ -280,6 +280,7 @@ public:
 
 /// @}
 
+/// Init time/ commands.
 void init_time(CommandManager *cm) {
 	cm->reg(new time_continous_end());
 	cm->reg(new time_continous_start());

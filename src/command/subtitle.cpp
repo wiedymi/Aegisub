@@ -329,6 +329,7 @@ public:
 
 /// @}
 
+/// Init subtitle/ commands.
 void init_subtitle(CommandManager *cm) {
 	cm->reg(new subtitle_attachment());
 	cm->reg(new subtitle_find());

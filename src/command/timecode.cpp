@@ -110,6 +110,7 @@ public:
 
 /// @}
 
+/// Init timecode/ commands.
 void init_timecode(CommandManager *cm) {
 	cm->reg(new timecode_close());
 	cm->reg(new timecode_open());

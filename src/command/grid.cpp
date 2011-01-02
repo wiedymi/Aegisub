@@ -157,6 +157,8 @@ public:
 
 /// @}
 
+
+/// Init grid/ commands.
 void init_grid(CommandManager *cm) {
 	cm->reg(new grid_line_next());
 	cm->reg(new grid_line_prev());
