@@ -32,6 +32,8 @@ DEFINE_SIMPLE_EXCEPTION_NOINNER(CommandIconInvalid, CommandError, "command/icon/
 
 /// Commands
 namespace cmd {
+	class CommandManager;
+	class Command;
 
 	/// CommandManager instance.
 	extern CommandManager *cm;
