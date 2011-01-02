@@ -26,6 +26,7 @@ SRC = \
 	common/mru.cpp \
 	common/option.cpp \
 	common/option_visit.cpp \
+	common/keyframe.cpp \
 	common/log.cpp \
 	common/validator.cpp \
 	common/vfr.cpp \

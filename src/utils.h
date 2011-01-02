@@ -74,17 +74,7 @@ void RestartAegisub();
 /// @brief Templated abs() function
 template <typename T> T tabs(T x) { return x < 0 ? -x : x; }
 
-#ifndef MIN
-#define MIN(a,b) ((a)<(b))?(a):(b)
-#endif
-
-#ifndef MAX
-#define MAX(a,b) ((a)>(b))?(a):(b)
-#endif
-
-#ifndef MID
-#define MID(a,b,c) MAX((a),MIN((b),(c)))
-#endif
+template<typename T> inline T mid(T a, T b, T c) { return std::max(a, std::min(b, c)); }
 
 #ifndef FORCEINLINE
 #ifdef __VISUALC__
@@ -98,21 +88,6 @@ template <typename T> T tabs(T x) { return x < 0 ? -x : x; }
 // __attribute__((always_inline)) gives me errors on g++ ~amz
 #endif
 #endif
-
-/// @brief Code taken from http://bob.allegronetwork.com/prog/tricks.html#clamp Clamp integer to range 
-/// @param x   
-/// @param min 
-/// @param max 
-///
-static FORCEINLINE int ClampSignedInteger32(int x,int min,int max) {
-	x -= min;
-	x &= (~x) >> 31;
-	x += min;
-	x -= max;
-	x &= x >> 31;
-	x += max;
-	return x;
-}
 
 struct delete_ptr {
 	template<class T>

@@ -588,7 +588,7 @@ void BaseGrid::DrawImage(wxDC &dc) {
 
 	// Visible lines
 	int drawPerScreen = h/lineHeight + 1;
-	int nDraw = MID(0,drawPerScreen,GetRows()-yPos);
+	int nDraw = mid(0,drawPerScreen,GetRows()-yPos);
 	int maxH = (nDraw+1) * lineHeight;
 
 	// Row colors
@@ -822,7 +822,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 	int row = event.GetY()/lineHeight + yPos - 1;
 	bool headerClick = row < yPos;
 	if (holding && !click) {
-		row = MID(0,row,GetRows()-1);
+		row = mid(0,row,GetRows()-1);
 	}
 	AssDialogue *dlg = GetDialogue(row);
 	if (!dlg) row = 0;
@@ -948,7 +948,7 @@ void BaseGrid::OnMouseEvent(wxMouseEvent &event) {
 void BaseGrid::ScrollTo(int y) {
 	int w,h;
 	GetClientSize(&w,&h);
-	int nextY = MID(0,y,GetRows()+2 - h/lineHeight);
+	int nextY = mid(0,y,GetRows()+2 - h/lineHeight);
 	if (yPos != nextY) {
 		yPos = nextY;
 		if (scrollBar->IsEnabled()) scrollBar->SetThumbPosition(yPos);
@@ -967,7 +967,7 @@ void BaseGrid::AdjustScrollbar() {
 	int rows = GetRows();
 	bool barToEnable = drawPerScreen < rows+2;
 
-	yPos = MID(0,yPos,rows - drawPerScreen);
+	yPos = mid(0,yPos,rows - drawPerScreen);
 
 	scrollBar->Freeze();
 	scrollBar->GetSize(&sw,&sh);
@@ -1215,7 +1215,7 @@ void BaseGrid::OnKeyDown(wxKeyEvent &event) {
 				extendRow = -1;
 			}
 
-			int next = MID(0,curLine+dir*step,GetRows()-1);
+			int next = mid(0,curLine+dir*step,GetRows()-1);
 			SetActiveLine(GetDialogue(next));
 			SelectRow(next);
 			MakeCellVisible(next,0,false);
@@ -1225,7 +1225,7 @@ void BaseGrid::OnKeyDown(wxKeyEvent &event) {
 		// Move active only
 		if (alt && !shift && !ctrl) {
 			extendRow = -1;
-			int next = MID(0,GetDialogueIndex(GetActiveLine())+dir*step,GetRows()-1);
+			int next = mid(0,GetDialogueIndex(GetActiveLine())+dir*step,GetRows()-1);
 			SetActiveLine(GetDialogue(next));
 			Refresh(false);
 			MakeCellVisible(next,0,false);
@@ -1236,7 +1236,7 @@ void BaseGrid::OnKeyDown(wxKeyEvent &event) {
 		if (shift && !ctrl && !alt) {
 			// Find end
 			if (extendRow == -1) GetDialogueIndex(GetActiveLine());
-			extendRow = MID(0,extendRow+dir*step,GetRows()-1);
+			extendRow = mid(0,extendRow+dir*step,GetRows()-1);
 
 			// Set range
 			int i1 = GetDialogueIndex(GetActiveLine());

@@ -64,7 +64,7 @@
 #include "include/aegisub/audio_player.h"
 #include "include/aegisub/audio_provider.h"
 #include "include/aegisub/video_provider.h"
-#include "keyframe.h"
+#include <libaegisub/keyframe.h>
 #include <libaegisub/access.h>
 #include "main.h"
 #include "mkv_wrap.h"
@@ -133,8 +133,10 @@ void VideoContext::Reset() {
 	StandardPaths::SetPathValue(_T("?video"), "");
 
 	keyFrames.clear();
+	keyFramesFilename.clear();
 	videoFPS = agi::vfr::Framerate();
-	keyframesRevision++;
+	KeyframesOpen(keyFrames);
+	if (!ovrFPS.IsLoaded()) TimecodesOpen(videoFPS);
 
 	// Remove video data
 	frame_n = 0;
@@ -197,6 +199,7 @@ void VideoContext::SetVideo(const wxString &filename) {
 		grid->ass->AddCommitListener(&VideoContext::SubtitlesChanged, this);
 		VideoOpen();
 		KeyframesOpen(keyFrames);
+		TimecodesOpen(FPS());
 	}
 	catch (agi::UserCancelException const&) { }
 	catch (agi::FileNotAccessibleError const& err) {
@@ -448,33 +451,38 @@ void VideoContext::SetAspectRatio(int type, double value) {
 	if (type != 4) value = GetARFromType(type);
 
 	arType = type;
-	arValue = MID(.5, value, 5.);
+	arValue = mid(.5, value, 5.);
 	ARChange(arType, arValue);
 }
 
 void VideoContext::LoadKeyframes(wxString filename) {
 	if (filename == keyFramesFilename || filename.empty()) return;
 	try {
-		keyFrames = KeyFrameFile::Load(filename);
+		std::pair<std::vector<int>, double> kf = agi::keyframe::Load(STD_STR(filename));
+		keyFrames = kf.first;
 		keyFramesFilename = filename;
 		KeyframesOpen(keyFrames);
+		if (kf.second != 0.) {
+			ovrFPS = agi::vfr::Framerate(kf.second);
+			ovrTimecodeFile.clear();
+			SubtitlesChanged();
+			TimecodesOpen(ovrFPS);
+		}
+		config::mru->Add("Keyframes", STD_STR(filename));
 	}
-	catch (const wchar_t *error) {
-		wxMessageBox(error, _T("Error opening keyframes file"), wxOK | wxICON_ERROR, NULL);
+	catch (agi::keyframe::Error const& err) {
+		wxMessageBox(err.GetMessage(), "Error opening keyframes file", wxOK | wxICON_ERROR, NULL);
+		config::mru->Remove("Keyframes", STD_STR(filename));
 	}
-	catch (agi::acs::AcsNotFound const&) {
+	catch (agi::acs::AcsError const&) {
 		wxLogError(L"Could not open file " + filename);
 		config::mru->Remove("Keyframes", STD_STR(filename));
 	}
-	catch (...) {
-		wxMessageBox(_T("Unknown error"), _T("Error opening keyframes file"), wxOK | wxICON_ERROR, NULL);
-	}
-	keyframesRevision++;
 }
 
 void VideoContext::SaveKeyframes(wxString filename) {
-	KeyFrameFile::Save(filename, GetKeyFrames());
-	keyframesRevision++;
+	agi::keyframe::Save(STD_STR(filename), GetKeyFrames(), FPS());
+	config::mru->Add("Keyframes", STD_STR(filename));
 }
 
 void VideoContext::CloseKeyframes() {
@@ -486,7 +494,6 @@ void VideoContext::CloseKeyframes() {
 		keyFrames.clear();
 	}
 	KeyframesOpen(keyFrames);
-	keyframesRevision++;
 }
 
 void VideoContext::LoadTimecodes(wxString filename) {
@@ -496,6 +503,7 @@ void VideoContext::LoadTimecodes(wxString filename) {
 		ovrTimecodeFile = filename;
 		config::mru->Add("Timecodes", STD_STR(filename));
 		SubtitlesChanged();
+		TimecodesOpen(ovrFPS);
 	}
 	catch (const agi::acs::AcsError&) {
 		wxLogError(L"Could not open file " + filename);
@@ -518,6 +526,7 @@ void VideoContext::CloseTimecodes() {
 	ovrFPS = agi::vfr::Framerate();
 	ovrTimecodeFile.clear();
 	SubtitlesChanged();
+	TimecodesOpen(videoFPS);
 }
 
 int VideoContext::TimeAtFrame(int frame, agi::vfr::Time type) const {

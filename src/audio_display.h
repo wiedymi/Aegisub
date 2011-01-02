@@ -48,7 +48,7 @@
 #endif
 
 #include <libaegisub/scoped_ptr.h>
-#include <libaegisub/signals.h>
+#include <libaegisub/signal.h>
 
 
 class AudioRenderer;
@@ -203,6 +203,7 @@ private:
 	virtual void OnAudioOpen(AudioProvider *provider);
 	virtual void OnPlaybackPosition(int64_t sample_position);
 	virtual void OnSelectionChanged();
+	void OnMarkerMoved();
 
 public:
 

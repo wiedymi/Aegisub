@@ -276,6 +276,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libaegisub\common\keyframe.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libaegisub\common\log.cpp"
 				>
 			</File>
@@ -422,6 +426,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libaegisub\include\libaegisub\keyframe.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libaegisub\include\libaegisub\line_iterator.h"
 				>
 			</File>
@@ -454,7 +462,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libaegisub\include\libaegisub\signals.h"
+				RelativePath="..\..\libaegisub\include\libaegisub\signal.h"
 				>
 			</File>
 			<File

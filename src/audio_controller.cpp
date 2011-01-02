@@ -79,38 +79,46 @@ class AudioMarkerProviderKeyframes : public AudioMarkerProvider {
 
 	agi::signal::Connection keyframe_slot;
 	agi::signal::Connection audio_open_slot;
+	agi::signal::Connection timecode_slot;
 
 	std::vector<AudioMarkerKeyframe> keyframe_samples;
 	AudioController *controller;
 
-	void OnKeyframesOpen(std::vector<int> const& raw_keyframes)
+	void Update()
 	{
+		std::vector<int> const& keyframes = vc->GetKeyFrames();
+		agi::vfr::Framerate const& timecodes = vc->FPS();
+
+		if (keyframes.empty() || !timecodes.IsLoaded())
+		{
+			if (keyframe_samples.empty())
+			{
+				return;
+			}
+			keyframe_samples.clear();
+			AnnounceMarkerMoved();
+			return;
+		}
+
 		keyframe_samples.clear();
-		keyframe_samples.reserve(raw_keyframes.size());
-		for (size_t i = 0; i < raw_keyframes.size(); ++i)
+		keyframe_samples.reserve(keyframes.size());
+		for (size_t i = 0; i < keyframes.size(); ++i)
 		{
 			keyframe_samples.push_back(AudioMarkerKeyframe(
-				controller->SamplesFromMilliseconds(vc->TimeAtFrame(raw_keyframes[i]))));
+				controller->SamplesFromMilliseconds(timecodes.TimeAtFrame(keyframes[i]))));
 		}
-		std::sort(keyframe_samples.begin(), keyframe_samples.end());
 		AnnounceMarkerMoved();
-	}
-
-private:
-	// AudioControllerAudioEventListener implementation
-	void OnAudioOpen(AudioProvider *)
-	{
-		OnKeyframesOpen(vc->GetKeyFrames());
 	}
 
 public:
 	AudioMarkerProviderKeyframes(AudioController *controller)
 		: vc(VideoContext::Get())
-		, keyframe_slot(vc->AddKeyframesOpenListener(&AudioMarkerProviderKeyframes::OnKeyframesOpen, this))
-		, audio_open_slot(controller->AddAudioOpenListener(&AudioMarkerProviderKeyframes::OnAudioOpen, this))
+		, keyframe_slot(vc->AddKeyframesListener(&AudioMarkerProviderKeyframes::Update, this))
+		, audio_open_slot(controller->AddAudioOpenListener(&AudioMarkerProviderKeyframes::Update, this))
+		, timecode_slot(vc->AddTimecodesListener(&AudioMarkerProviderKeyframes::Update, this))
 		, controller(controller)
 	{
-		OnKeyframesOpen(vc->GetKeyFrames());
+		Update();
 	}
 
 	void GetMarkers(const SampleRange &range, AudioMarkerVector &out) const
@@ -134,12 +142,14 @@ AudioController::AudioController()
 , playback_mode(PM_NotPlaying)
 , playback_timer(this)
 {
-	Connect(playback_timer.GetId(), wxEVT_TIMER, (wxObjectEventFunction)&AudioController::OnPlaybackTimer);
+	Bind(wxEVT_TIMER, &AudioController::OnPlaybackTimer, this, playback_timer.GetId());
 
 #ifdef wxHAS_POWER_EVENTS
-	Connect(wxEVT_POWER_SUSPENDED, (wxObjectEventFunction)&AudioController::OnComputerSuspending);
-	Connect(wxEVT_POWER_RESUME, (wxObjectEventFunction)&AudioController::OnComputerResuming);
+	Bind(wxEVT_POWER_SUSPENDED, &AudioController::OnComputerSuspending, this);
+	Bind(wxEVT_POWER_RESUME, &AudioController::OnComputerResuming, this);
 #endif
+
+	keyframes_marker_provider->AddMarkerMovedListener(std::tr1::bind(std::tr1::ref(AnnounceMarkerMoved)));
 }
 
 
@@ -156,8 +166,8 @@ void AudioController::OnPlaybackTimer(wxTimerEvent &event)
 	if (!player->IsPlaying() ||
 		(playback_mode != PM_ToEnd && pos >= player->GetEndPosition()+200))
 	{
-		// The +200 is to allow the player to end the sound output cleanly, otherwise a popping
-		// artifact can sometimes be heard.
+		// The +200 is to allow the player to end the sound output cleanly,
+		// otherwise a popping artifact can sometimes be heard.
 		Stop();
 	}
 	else

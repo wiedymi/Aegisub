@@ -193,7 +193,6 @@ SRC += \
 	help_button.cpp \
 	hotkey.cpp \
 	kana_table.cpp \
-	keyframe.cpp \
 	main.cpp \
 	menu.cpp \
 	md5.c \

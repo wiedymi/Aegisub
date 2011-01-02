@@ -551,7 +551,7 @@ AudioDisplay::AudioDisplay(wxWindow *parent, AudioController *controller)
 	slots.push_back(controller->AddPlaybackPositionListener(&AudioDisplay::OnPlaybackPosition, this));
 	slots.push_back(controller->AddPlaybackStopListener(&AudioDisplay::RemoveTrackCursor, this));
 	slots.push_back(controller->AddTimingControllerListener(&AudioDisplay::Refresh, this, true, (const wxRect*)0));
-	slots.push_back(controller->AddMarkerMovedListener(&AudioDisplay::Refresh, this, true, (const wxRect*)0));
+	slots.push_back(controller->AddMarkerMovedListener(&AudioDisplay::OnMarkerMoved, this));
 	slots.push_back(controller->AddSelectionChangedListener(&AudioDisplay::OnSelectionChanged, this));
 
 	OPT_SUB("Audio/Spectrum", &AudioDisplay::ReloadRenderingSettings, this);
@@ -783,8 +783,8 @@ void AudioDisplay::ReloadRenderingSettings()
 
 
 BEGIN_EVENT_TABLE(AudioDisplay, wxWindow)
-    EVT_MOUSE_EVENTS(AudioDisplay::OnMouseEvent)
-    EVT_PAINT(AudioDisplay::OnPaint)
+	EVT_MOUSE_EVENTS(AudioDisplay::OnMouseEvent)
+	EVT_PAINT(AudioDisplay::OnPaint)
 	EVT_SIZE(AudioDisplay::OnSize)
 	EVT_SET_FOCUS(AudioDisplay::OnFocus)
 	EVT_KILL_FOCUS(AudioDisplay::OnFocus)
@@ -1199,17 +1199,22 @@ void AudioDisplay::OnPlaybackPosition(int64_t sample_position)
 
 void AudioDisplay::OnSelectionChanged()
 {
+	/// @todo This is all currently completely pointless as the whole thing is
+	///       refreshed whenever a marker moves anyway
+
 	/// @todo Handle rendering style ranges from timing controller instead
 	SampleRange sel(controller->GetPrimaryPlaybackRange());
 	scrollbar->SetSelection(AbsoluteXFromSamples(sel.begin()), AbsoluteXFromSamples(sel.length()));
 
+
+	int s1 = RelativeXFromSamples(sel.begin());
+	int e1 = RelativeXFromSamples(sel.end());
+	int s2 = RelativeXFromSamples(old_selection.begin());
+	int e2 = RelativeXFromSamples(old_selection.end());
+
 	if (sel.overlaps(old_selection))
 	{
 		// Only redraw the parts of the selection that changed, to avoid flicker
-		int s1 = RelativeXFromSamples(sel.begin());
-		int e1 = RelativeXFromSamples(sel.end());
-		int s2 = RelativeXFromSamples(old_selection.begin());
-		int e2 = RelativeXFromSamples(old_selection.end());
 		if (s1 != s2)
 		{
 			wxRect r(std::min(s1, s2)-10, audio_top, abs(s1-s2)+20, audio_height);
@@ -1223,10 +1228,17 @@ void AudioDisplay::OnSelectionChanged()
 	}
 	else
 	{
-		RefreshRect(wxRect(0, audio_top, GetClientSize().GetX(), audio_height));
+		RefreshRect(wxRect(s1 - 10, audio_top, e1 + 20, audio_height));
+		RefreshRect(wxRect(s2 - 10, audio_top, e2 + 20, audio_height));
 	}
 
 	RefreshRect(scrollbar->GetBounds());
 
 	old_selection = sel;
+}
+
+void AudioDisplay::OnMarkerMoved()
+{
+	/// @todo investigate if it's worth refreshing only the changed spots
+	RefreshRect(wxRect(0, audio_top, GetClientSize().GetWidth(), audio_height));
 }

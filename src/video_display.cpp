@@ -131,7 +131,7 @@ VideoDisplay::VideoDisplay(
 	wxComboBox *zoomBox,
 	wxWindow* parent,
 	AssFile *model)
-: wxGLCanvas (parent, -1, attribList, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER, wxPanelNameStr)
+: wxGLCanvas (parent, -1, attribList, wxDefaultPosition, wxDefaultSize, 0, wxPanelNameStr)
 , alwaysShowTools(OPT_GET("Tool/Visual/Always Show"))
 , vc(VideoContext::Get())
 , currentFrame(-1)
@@ -313,7 +313,6 @@ void VideoDisplay::Render() try {
 		tool->Draw();
 	}
 
-	glFinish();
 	SwapBuffers();
 }
 catch (const VideoOutException &err) {
@@ -489,12 +488,12 @@ void VideoDisplay::OnMouseEvent(wxMouseEvent& event) {
 	}
 
 	if (event.Leaving()) {
-		video.x  = INT_MIN;
-		video.y  = INT_MIN;
+		video.x = INT_MIN;
+		video.y = INT_MIN;
 	}
 	else {
-		video.x  = event.GetX();
-		video.y  = event.GetY();
+		video.x = event.GetX();
+		video.y = event.GetY();
 	}
 
 	tool->OnMouseEvent(event);

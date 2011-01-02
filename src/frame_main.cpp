@@ -68,7 +68,6 @@
 #include "drop.h"
 #include "frame_main.h"
 #include "help_button.h"
-#include "keyframe.h"
 #include "libresrc/libresrc.h"
 #include "main.h"
 #include "standard_paths.h"
@@ -876,7 +875,6 @@ void FrameMain::LoadVideo(wxString file,bool autoload) {
 	}
 
 	SetDisplayMode(1,-1);
-	EditBox->UpdateFrameTiming();
 
 	DetachVideo(VideoContext::Get()->IsLoaded() && OPT_GET("Video/Detached/Enabled")->GetBool());
 	Thaw();
@@ -889,7 +887,6 @@ void FrameMain::LoadVFR(wxString filename) {
 	else {
 		VideoContext::Get()->LoadTimecodes(filename);
 	}
-	EditBox->UpdateFrameTiming();
 }
 
 /// @brief Open help 

@@ -74,7 +74,7 @@ VideoSlider::VideoSlider (wxWindow* parent, wxWindowID id)
 	assert(vc);
 	vc->AddSeekListener(&VideoSlider::SetValue, this);
 	vc->AddVideoOpenListener(&VideoSlider::VideoOpened, this);
-	vc->AddKeyframesOpenListener(&VideoSlider::KeyframesChanged, this);
+	vc->AddKeyframesListener(&VideoSlider::KeyframesChanged, this);
 }
 
 VideoSlider::~VideoSlider() {
@@ -88,7 +88,7 @@ VideoSlider::~VideoSlider() {
 ///
 void VideoSlider::SetValue(int value) {
 	if (val == value) return;
-	val = MID(0, value, max);
+	val = mid(0, value, max);
 	Refresh(false);
 }
 
@@ -284,7 +284,7 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 		// Fast move
 		if (!ctrl && !shift && alt) {
 			if (VideoContext::Get()->IsPlaying()) return;
-			int target = MID(0,val + direction * OPT_GET("Video/Slider/Fast Jump Step")->GetInt(),max);
+			int target = mid<int>(0,val + direction * OPT_GET("Video/Slider/Fast Jump Step")->GetInt(),max);
 			if (target != val) VideoContext::Get()->JumpToFrame(target);
 			return;
 		}
@@ -346,26 +346,14 @@ void VideoSlider::OnKeyDown(wxKeyEvent &event) {
 		// Snap to keyframe
 		if (shift && !ctrl && !alt) {
 			if (direction != 0) {
-				// Prepare
-				int prevKey = 0;
-				int nextKey = max;
-				int keys = keyframes.size();
+				std::vector<int>::iterator pos = std::lower_bound(keyframes.begin(), keyframes.end(), val);
 
-				// Find previous keyframe
-				// This algorithm does unnecessary loops, but it ensures it works even if keyframes are out of order.
-				for (int i=0;i<keys;i++) {
-					int temp = keyframes[i];
-					if (temp < val && temp > prevKey) prevKey = temp;
-				}
+				if (direction < 0 && val != 0 && (pos == keyframes.end() || *pos == val))
+					--pos;
+				if (direction > 0 && pos != keyframes.end())
+					++pos;
 
-				// Find next keyframe
-				for (int i=0;i<keys;i++) {
-					int temp = keyframes[i];
-					if (temp > val && temp < nextKey) nextKey = temp;
-				}
-
-				if (direction == -1) VideoContext::Get()->JumpToFrame(prevKey);
-				if (direction == 1) VideoContext::Get()->JumpToFrame(nextKey);
+				VideoContext::Get()->JumpToFrame(pos == keyframes.end() ? max : *pos);
 				return;
 			}
 		}
