@@ -58,7 +58,19 @@ Video
 
 <h2>Available Command List</h2>
  - @ref cmd-app
-
+ - @ref cmd-audio
+ - @ref cmd-am
+ - @ref cmd-edit
+ - @ref cmd-grid
+ - @ref cmd-help
+ - @ref cmd-keyframed
+ - @ref cmd-menu
+ - @ref cmd-recent
+ - @ref cmd-subtitle
+ - @ref cmd-time
+ - @ref cmd-timecode
+ - @ref cmd-tool
+ - @ref cmd-video
 
 
 */
