@@ -30,39 +30,71 @@ DEFINE_SIMPLE_EXCEPTION_NOINNER(CommandIconInvalid, CommandError, "command/icon/
 #define STR_DISP(a) wxString StrDisplay() const { return a; }
 #define STR_HELP(a) wxString StrHelp() const { return a; }
 
+/// Commands
 namespace cmd {
 
+	/// Holds an individual Command
 	class Command {
 	public:
-		virtual const char* name()=0;
-		virtual wxString StrMenu() const=0;
-		virtual wxString StrDisplay() const=0;
-		virtual wxString StrHelp() const=0;
+		virtual const char* name()=0;				///< Command name.
+		virtual wxString StrMenu() const=0;			///< String for menu purposes including accelerators.
+		virtual wxString StrDisplay() const=0;		///< Plain string for display purposes.
+		virtual wxString StrHelp() const=0;			///< Short help string descripting the command purpose.
+
+		/// Request icon.
+		/// @param size Icon size.
 		wxBitmap* Icon(int size);
+
+		/// Command function
 		virtual void operator()(agi::Context *c)=0;
+
+		/// Destructor
 		virtual ~Command() {};
 	};
 
 
+	/// Manager for commands
 	class CommandManager {
-		typedef std::map<std::string, Command*> cmdMap;
-		typedef std::pair<std::string, Command*> cmdPair;
-		cmdMap map;
+		typedef std::map<std::string, Command*> cmdMap;		///< Map to hold commands.
+		typedef std::pair<std::string, Command*> cmdPair;	///< Pair for command insertion.
+		cmdMap map;											///< Actual map.
+
 	public:
+		/// Register a command.
+		/// @param cmd Command object.
 		void reg(Command *cmd);
+
+		/// Retrieve an ID for event usage or otherwise
+		/// @param name Command name
+		/// @return Command ID
+		/// @note This is guaranteed to be unique.
 		int id(std::string name);
+
+		/// Call a command.
+		/// @param c  Current Context.
+		/// @param id ID for Command to call.
 		void call(agi::Context *c, const int id);
+
+		/// Count number of commands.
+		/// @return ID number.
 		int count() { return map.size(); }
+
+		/// Retrieve a Command object.
+		/// @param Command object.
 		Command* get(std::string name);
 	};
 
+	/// CommandManager instance.
 	extern CommandManager *cm;
 
-	int id(std::string name);
-	void call(agi::Context *c, const int id);
-	int count();
-	Command* get(std::string name);
-
+	/// Init all commands.
+	/// @param cm CommandManager instance.
 	void init_command(CommandManager *cm);
+
+	// The following are nothing more than glorified macros.
+	int id(std::string name);					///< @see CommandManager::id
+	void call(agi::Context *c, const int id);	///< @see CommandManager::call
+	int count();								///< @see CommandManager::count
+	Command* get(std::string name);				///< @see CommandManager::get
 
 } // namespace cmd
