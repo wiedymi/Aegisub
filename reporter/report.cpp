@@ -23,188 +23,126 @@
 #include <wx/log.h>
 #endif
 
+#include <libaegisub/io.h>
+#include <libaegisub/cajun/elements.h>
+#include <libaegisub/cajun/writer.h>
+
+
 #include "report.h"
 #include "include/platform.h"
 #include "aegisub.h"
 
 /// @brief Contstructor
 Report::Report() {
-	ReportCreate();
-}
 
-/// @brief Create report layout and add contents.
-/// @return Document.
-Report::XMLReport Report::ReportCreate() {
+	json::Object root;
 
-	// So we can use GetString() below.
-	locale = new wxLocale();
-
-	doc.doc = new wxXmlDocument();
-
-	doc.report = new wxXmlNode(wxXML_ELEMENT_NODE, "report");
-	doc.doc->SetRoot(doc.report);
 	Platform *p = Platform::GetPlatform();
+	Aegisub a;
 
-	doc.general = new wxXmlNode(doc.report, wxXML_ELEMENT_NODE, "general");
-	Add(doc.general, "signature", p->Signature());
-	Add(doc.general, "date", p->Date());
-	Add(doc.general, "arch", p->ArchName());
-	Add(doc.general, "osfamily", p->OSFamily());
-	Add(doc.general, "osname", p->OSName());
-	Add(doc.general, "osendian", p->Endian());
-	Add(doc.general, "osversion", p->OSVersion());
-	Add(doc.general, "wxversion", p->wxVersion());
-	Add(doc.general, "locale", p->Locale());
-	Add(doc.general, "lang", p->Language());
-	Add(doc.general, "syslang", p->SystemLanguage());
+	json::Object general;
+	general["Signature"] = json::String(p->Signature());
+	general["Date"] = json::String(p->Date());
+	general["Architecture"] = json::String(p->ArchName());
+	general["OS Family"] = json::String(p->OSFamily());
+	general["OS Name"] = json::String(p->OSName());
+	general["Endian"] = json::String(p->Endian());
+	general["OS Version"] = json::String(p->OSVersion());
+	general["wx Version"] = json::String(p->wxVersion());
+	general["Locale"] = json::String(p->Locale());
+	general["Language"] = json::String(p->Language());
+	general["System Language"] = json::String(p->SystemLanguage());
+	root["General"] = general;
 
-	doc.aegisub = new wxXmlNode(wxXML_ELEMENT_NODE, "aegisub");
-	doc.report->AddChild(doc.aegisub);
 
-	Aegisub *config = new Aegisub();
-	Add(doc.aegisub, "lastversion", config->Read("Config/last version"));
-	Add(doc.aegisub, "spelllang", config->Read("Config/spell checker language"));
-	Add(doc.aegisub, "thesauruslang", config->Read("Config/thesaurus language"));
-	Add(doc.aegisub, "audioplayer", config->Read("Config/audio player"));
-	Add(doc.aegisub, "audioprovider", config->Read("Config/audio provider"));
-	Add(doc.aegisub, "videoprovider", config->Read("Config/video provider"));
-	Add(doc.aegisub, "subtitleprovider", config->Read("Config/subtitles provider"));
-	Add(doc.aegisub, "savecharset", config->Read("Config/save charset"));
-	Add(doc.aegisub, "gridfontsize", config->Read("Config/grid font size"));
-	Add(doc.aegisub, "editfontsize", config->Read("Config/edit font size"));
-	Add(doc.aegisub, "spectrum", config->Read("Config/audio spectrum"));
-	Add(doc.aegisub, "spectrumqual", config->Read("Config/audio spectrum quality"));
-	Add(doc.aegisub, "calltips", config->Read("Config/call tips enabled"));
-	Add(doc.aegisub, "medusakeys", config->Read("Config/audio medusa timing hotkeys"));
 
-	doc.hardware = new wxXmlNode(wxXML_ELEMENT_NODE, "hardware");
-	doc.report->AddChild(doc.hardware);
-	Add(doc.hardware, "memory", p->Memory());
 
-	wxXmlNode *cpu = new wxXmlNode(wxXML_ELEMENT_NODE, "cpu");
-	doc.hardware->AddChild(cpu);
-	Add(cpu, "id", p->CPUId());
-	Add(cpu, "speed", p->CPUSpeed());
-	Add(cpu, "count", p->CPUCount());
-	Add(cpu, "cores", p->CPUCores());
-	Add(cpu, "features", p->CPUFeatures());
-	Add(cpu, "features2", p->CPUFeatures2());
+	try {
+		json::Object aegisub;
+		aegisub["Last Version"] = json::String(a.GetString("Version/Last Version"));
+		aegisub["Spelling Language"] = json::String(a.GetString("Tool/Spell Checker/Language"));
+		aegisub["Thesaurus Language"] = json::String(a.GetString("Tool/Thesaurus/Language"));
+		aegisub["Audio Player"] = json::String(a.GetString("Audio/Player"));
+		aegisub["Audio Provider"] = json::String(a.GetString("Audio/Provider"));
+		aegisub["Video Provider"] = json::String(a.GetString("Video/Provider"));
+		aegisub["Subtitles Provider"] = json::String(a.GetString("Subtitle/Provider"));
+		aegisub["Save Charset"] = json::String(a.GetString("App/Save Charset"));
+		aegisub["Grid Font Size"] = json::Number(a.GetInt("Grid/Font Size"));
+		aegisub["Edit Font Size"] = json::Number(a.GetInt("Subtitle/Edit Box/Font Size"));
+		aegisub["Spectrum Enabled"] = json::Boolean(a.GetBool("Audio/Spectrum"));
+		aegisub["Spectrum Quality"] = json::Number(a.GetInt("Audio/Renderer/Spectrum/Quality"));
+		aegisub["Call Tips Enabled"] = json::Boolean(a.GetBool("App/Call Tips"));
+		aegisub["Medusa Hotkeys Enabled"] = json::Boolean(a.GetBool("Audio/Medusa Timing Hotkeys"));
 
-	wxXmlNode *display = new wxXmlNode(wxXML_ELEMENT_NODE, "display");
-	doc.hardware->AddChild(display);
-	Add(display, "depth", p->DisplayDepth());
-	Add(display, "colour", p->DisplayColour());
-	Add(display, "size", p->DisplaySize());
-	Add(display, "ppi", p->DisplayPPI());
+		root["Aegisub"] = aegisub;
+	} catch(...) {
+		root["Aegisub"]["Error"] = json::String("Config file is corrupted");
+	}
 
-	wxXmlNode *display_gl = new wxXmlNode(wxXML_ELEMENT_NODE, "opengl");
-	display->AddChild(display_gl);
 
-	Add(display_gl, "vendor", p->OpenGLVendor());
-	Add(display_gl, "renderer", p->OpenGLRenderer());
-	Add(display_gl, "version", p->OpenGLVersion());
-	Add(display_gl, "extensions", p->OpenGLExt());
+
+	json::Object hardware;
+	hardware["Memory Size"] = json::Number();
+	root["Hardware"] = hardware;
+
+	json::Object cpu;
+	cpu["Id"] = json::String(p->CPUId());
+	cpu["Speed"] = json::String(p->CPUSpeed());
+	cpu["Count"] = json::Number(p->CPUCount());
+	cpu["Cores"] = json::Number(p->CPUCores());
+	cpu["Features"] = json::String(p->CPUFeatures());
+	cpu["Features2"] = json::String(p->CPUFeatures2());
+	root["CPU"] = cpu;
+
+	json::Object display;
+	display["Depth"] = json::Number(p->DisplayDepth());
+	display["Size"] = json::String(p->DisplaySize());
+	display["Pixels Per Inch"] = json::String(p->DisplayPPI());
+
+		json::Object gl;
+		gl["Vendor"] = json::String(p->OpenGLVendor());
+		gl["Renderer"] = json::String(p->OpenGLRenderer());
+		gl["Version"] = json::String(p->OpenGLVersion());
+		gl["Extensions"] = json::String(p->OpenGLExt());
+		display["OpenGL"] = gl;
+
+	root["Display"] = display;
+
 
 #ifdef __WINDOWS__
-	doc.windows = new wxXmlNode(wxXML_ELEMENT_NODE, "windows");
-	doc.report->AddChild(doc.windows);
-	Add(doc.windows, "sp", p->ServicePack());
-	Add(doc.windows, "graphicsver", p->DriverGraphicsVersion());
-	Add(doc.windows, "dshowfilter", p->DirectShowFilters());
-	Add(doc.windows, "antivirus", p->AntiVirus());
-	Add(doc.windows, "firewall", p->Firewall());
-	Add(doc.windows, "dll", p->DLLVersions());
+	json::Object windows;
+	windows["Service Pack"] = json::String();
+	windows["Graphics Driver Version"] = json::String();
+	windows["DirectShow Filters"] = json::String();
+	windows["AntiVirus Installed"] = json::Boolean();
+	windows["Firewall Installed"] = json::Boolean();
+	windows["DLL"] = json::String();
+	root["Windows"] = windows;
+
 #endif
 
 #ifdef __UNIX__
-	doc.unixx = new wxXmlNode(wxXML_ELEMENT_NODE, "unix");
-	doc.report->AddChild(doc.unixx);
-	Add(doc.unixx, "desktopenv", p->DesktopEnvironment());
-	Add(doc.unixx, "lib", p->UnixLibraries());
+	json::Object u_nix;
+	u_nix["Desktop Environment"] = json::String(p->DesktopEnvironment());
+	u_nix["Libraries"] = json::String(p->UnixLibraries());
+	root["Unix"] = u_nix;
 #endif
 
 #ifdef __APPLE__
-	doc.osx = new wxXmlNode(wxXML_ELEMENT_NODE, "osx");
-	doc.report->AddChild(doc.osx);
-	Add(doc.osx, "patch", p->PatchLevel());
-	Add(doc.osx, "quicktimeext", p->QuickTimeExt());
-	Add(doc.osx, "model", p->HardwareModel());
-
+	json::Object osx;
+	osx["Patch"] = json::String(p->PatchLevel());
+	osx["QuickTime Extensions"] = json::String(p->QuickTimeExt());
+	osx["Model"] = json::String(p->HardwareModel());
+	root["OS X"] = osx;
 #endif
 
-	return doc;
-}
-
-/// @brief Add a new XML node.
-/// @param parent Parent nodee
-/// @param node Name of the new node
-/// @param text Contents
-void Report::Add(wxXmlNode *parent, wxString node, wxString text) {
-	// Using AddChild() keeps the nodes in their natural order. It's slower but our
-	// document is pretty small.  Doing it the faster way results in reverse-ordered nodes.
-	wxXmlNode *tmp = new wxXmlNode(wxXML_ELEMENT_NODE, node);
-	tmp->AddChild(new wxXmlNode(wxXML_TEXT_NODE, node, text));
-	parent->AddChild(tmp);
-}
-
-/// @brief Recursive function to populate listView and text-based for Clipboard.
-/// @param node Node to parse.
-/// @param listView wxListView to populate.
-void Report::ProcessNode(wxXmlNode *node, wxString *text, wxListView *listView) {
-	wxString node_name;
-	nameMap::iterator names;
-	nameMap nMap = HumanNames();
-
-	wxXmlNode *child = node->GetChildren();
-
-	while (child) {
-		wxString name = child->GetName();
-
-		if ((names = nMap.find(name)) != nMap.end()) {
-			node_name = locale->GetString(names->second);
-		} else {
-			wxLogDebug("Report::ProcessNode Unknown node found: \"%s\" (add it to nMap)\n", name);
-			node_name = name;
-		}
-
-		wxListItem column;
-		int row = listView->GetItemCount();
-		int depth = child->GetDepth();
-
-		if (child->GetChildren()->GetType() == wxXML_ELEMENT_NODE) {
-			int font_size = 15 - floor(depth * 2 + 0.5);
-			int bgcolour = 155 + (depth * 20);
-			listView->InsertItem(row,node_name);
-			listView->SetItemFont(row, wxFont(font_size, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
-			listView->SetItemBackgroundColour(row, wxColour(bgcolour,bgcolour,bgcolour, wxALPHA_OPAQUE));
-			if (depth == 1) text->Append("\n");
-			text->Append(wxString::Format("%s\n", node_name.Pad((depth*2)-2, ' ', 0)));
-			ProcessNode(child, text, listView);
-		} else {
-			wxString content = child->GetNodeContent();
-			listView->InsertItem(row,node_name);
-			listView->SetItem(row,1, content);
-			text->Append(wxString::Format("%-22s: %s\n", node_name.Pad((depth*2)-2, ' ', 0), content));
-		}
-
-		child = child->GetNext();
-	}
-}
-
-
-void Report::Fill(wxString *text, wxListView *listView) {
-
-	listView->InsertColumn(0, _("Entry"), wxLIST_FORMAT_RIGHT);
-	listView->InsertColumn(1, _("Text"), wxLIST_FORMAT_LEFT, 100);
-
-	ProcessNode(doc.report, text, listView);
-
-	listView->SetColumnWidth(0, wxLIST_AUTOSIZE);
-	listView->SetColumnWidth(1, wxLIST_AUTOSIZE);
+	agi::io::Save file("./t.json");
+	json::Writer::Write(root, file.Get());
 
 }
 
 /// @brief Return Report as Text for the Clipboard.
-void Report::Save(wxString file) {
-	doc.doc->Save(file);
+void Report::Save(std::string filename) {
+//	agi::io::Save file(filename);
+//	json::Writer::Write(root, file.Get());
 }

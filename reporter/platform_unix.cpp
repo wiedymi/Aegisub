@@ -32,7 +32,7 @@ extern "C" {
 }
 
 
-wxString PlatformUnix::OSVersion() {
+const std::string PlatformUnix::OSVersion() {
 	struct utsname name;
 	if (uname(&name) != -1) {
 		return name.release;
@@ -40,38 +40,8 @@ wxString PlatformUnix::OSVersion() {
 	return "";
 }
 
-wxString PlatformUnix::DesktopEnvironment() {
-	return wxTheApp->GetTraits()->GetDesktopEnvironment();
+const char* PlatformUnix::DesktopEnvironment() {
+	return wxTheApp->GetTraits()->GetDesktopEnvironment().c_str();
 }
 
-wxString PlatformUnix::CPUId() {
-	return "";
-};
 
-wxString PlatformUnix::CPUSpeed() {
-	return "";
-};
-
-wxString PlatformUnix::CPUCores() {
-	return "";
-};
-
-wxString PlatformUnix::CPUCount() {
-	return "";
-};
-
-wxString PlatformUnix::CPUFeatures() {
-	return "";
-};
-
-wxString PlatformUnix::CPUFeatures2() {
-	return "";
-};
-
-wxString PlatformUnix::Memory() {
-	return "";
-};
-
-wxString PlatformUnix::UnixLibraries() {
-	return "";
-};

@@ -19,10 +19,6 @@
 /// @ingroup base
 
 #ifndef R_PRECOMP
-#include <map>
-
-#include <wx/xml/xml.h>
-#include <wx/listctrl.h>
 #endif
 
 /// @class Report
@@ -33,43 +29,9 @@ public:
 	Report();
 	~Report() {};
 
-	/// Fill wxListView with report contents.
-	/// @param text pointer to text buffer
-	/// @param listview wxListview to fill
-	void Fill(wxString *text, wxListView *listView);
-
-	/// Save XML report to a file.
-	void Save(wxString file);
+	/// Save JSON report to a file.
+	void Save(std::string filename);
 
 private:
-	/// Comparison callback for nameMap.
-	struct lst_comp {
-		bool operator() (const wxString &a, const wxString &b) const { return a.Cmp(b) < 0; }
-	};
-
-	/// Map of internal XML elements to human readable names.
-	typedef std::map<wxString, wxString, lst_comp> nameMap;
-
-	/// element->human name pairs.
-	typedef std::pair<wxString, wxString> nPair;
-
-	/// Struct to hold generatex XML Report.
-	struct XMLReport {
-		wxXmlDocument *doc;		/// Parent document.
-		wxXmlNode *report;		/// Root node.
-		wxXmlNode *general;		/// General.
-		wxXmlNode *aegisub;		/// Aegisub related..
-		wxXmlNode *hardware;	/// Hardware.
-		wxXmlNode *windows;		/// Windows specific.
-		wxXmlNode *unixx;		/// Unix specific.
-		wxXmlNode *osx;			/// OS X specific.
-	};
-	XMLReport ReportCreate();
-	XMLReport doc;
-
-	void Add(wxXmlNode *parent, wxString node, wxString text);
-	const nameMap HumanNames();
-	nameMap nMap;
-	void ProcessNode(wxXmlNode *node, wxString *text, wxListView *listView);
 	wxLocale *locale;
 };

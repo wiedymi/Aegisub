@@ -34,7 +34,7 @@ public:
 	Platform() {};
 
 	/// Destructor
-	virtual ~Platform() {};
+	~Platform();
 
 	/// Get platform instance.
 	static Platform* GetPlatform();
@@ -48,86 +48,81 @@ public:
 	/// Architecture
 	/// @return Architecture name.
 	/// @retval 32 bit, 64 bit
-	wxString ArchName();
+	std::string ArchName();
 
 	/// OS Family
 	/// @return OS Family
 	/// @retval Unix, Windows, Mac
-	wxString OSFamily();
+	std::string OSFamily();
 
 	/// OS Name
 	/// @return OS Name
 	/// @retval FreeBSD, Windows, Mac
-	wxString OSName();
+	std::string OSName();
 
 	/// Endian
 	/// @return Endian
 	/// @retval Little endian, Big endian
-	wxString Endian();
+	std::string Endian();
 
 	//   From <wx/gdicmn.h>
-
-	/// Is the display colour
-	/// @return true/false
-	/// @retval 1, 0
-	wxString DisplayColour();
 
 	/// Display depth
 	/// @return Depth
 	/// @return Integer
-	wxString DisplayDepth();
+	int DisplayDepth();
 
 	/// Display size
 	/// @return Size delimited by a space.
 	/// @retval "w h"
-	wxString DisplaySize();
+	std::string DisplaySize();
 
 	/// Pixels per inch
 	/// @return PPI
 	/// @retval Integer
-	wxString DisplayPPI();
+	std::string DisplayPPI();
 
 	//   Misc
 
 	/// Report signature
 	/// @return Signature
 	/// @retval SHA256 hash
-	wxString Signature();
+	std::string Signature();
 
 	/// wxWidgets version
 	/// @return Version
 	/// @retval Major.Minor.Micro.Patch: 2.9.0.0
-	wxString wxVersion();
+	std::string wxVersion();
 
 	/// Locale
 	/// @return Locale name
 	/// @retval C,POSIX,<code>
-	wxString Locale();
+	std::string Locale();
 
 	/// Language currently in use
 	/// @return Language reporter is currently running in
 	/// @retval Language code: en_US, en_CA...
-	wxString Language();
+	const char* Language();
 
 	/// System language
 	/// @return Language operating system is currently running in
 	/// @retval Language code: en_US, en_CA...
-	wxString SystemLanguage();
+	const char* SystemLanguage();
 
 	/// Date
 	/// @return Date
 	/// @retval Date in YYYY-MM-DD
-	wxString Date();
+	std::string Date();
 
 	/// Time
 	/// @return Time
 	/// @retval Time in HH:MM:SS
-	wxString Time();
+	std::string Time();
 
 	/// TimeZone
 	/// @return TimeZone
 	/// @retval EST,EDT,JST...
-	wxString TimeZone();
+	std::string TimeZone();
 	//@}
 
 	/// @name Platform Specific
@@ -138,65 +133,65 @@ public:
 	/// Operating System version
 	/// @return OS Version
 	/// @retval Any
-	virtual wxString OSVersion()=0;
+	virtual const std::string OSVersion()=0;
 
 	//   Hardware
 
 	/// CPU ID string
 	/// @return CPU ID
 	/// @retval Any, ex: Intel(R) Pentium(R) M processor 1600MHz
-	virtual wxString CPUId()=0;
+	virtual std::string CPUId()=0;
 
 	/// CPU Speed
 	/// @return Speed
 	/// @retval Integer
-	virtual wxString CPUSpeed()=0;
+	virtual std::string CPUSpeed()=0;
 
 	/// CPU Count
 	/// @return Count
 	/// @retval Integer
-	virtual wxString CPUCount()=0;
+	virtual int CPUCount()=0;
 
 	/// CPU Cores
 	/// @return Cores
 	/// @retval Integer
-	virtual wxString CPUCores()=0;
+	virtual int CPUCores()=0;
 
 	/// CPU Features
 	/// @return Features set 1
 	/// @retval FPU,VME,DE,PSE,TSC,MSR...
-	virtual wxString CPUFeatures()=0;
+	virtual std::string CPUFeatures()=0;
 
 	/// CPU Features2
 	/// @return Features set 2
 	/// @retval CPU-specific features
 	/// @note "EST,TM2" on my P-M, or "SYSCALL,NX,MMX+,LM,3DNow!+,3DNow!" on an Opteron
-	virtual wxString CPUFeatures2()=0;
+	virtual std::string CPUFeatures2()=0;
 
 	/// System memory
 	/// @return Memory
 	/// @retval Integer in bytes
-	virtual wxString Memory()=0;
+	virtual uint64_t Memory()=0;
 
 	/// OpenGL vendor
 	/// @return Vendor
 	/// @retval Any
-	virtual wxString OpenGLVendor();
+	virtual std::string OpenGLVendor();
 
 	/// OpenGL renderer
 	/// @return Renderer
 	/// @retval Any
-	virtual wxString OpenGLRenderer();
+	virtual std::string OpenGLRenderer();
 
 	/// OpenGL version
 	/// @return Renderer version
 	/// @retval Any
-	virtual wxString OpenGLVersion();
+	virtual std::string OpenGLVersion();
 
 	/// OpenGL extensions
 	/// @return OpenGL extensions
 	/// @retval Space delimited list of extensions
-	virtual wxString OpenGLExt();
+	virtual std::string OpenGLExt();
 	//@}
 
 	/// @name Windows
@@ -206,42 +201,40 @@ public:
 	/// Service pack
 	/// @return Service pack
 	/// @retval Any
-	virtual wxString ServicePack()=0;
+	virtual std::string ServicePack()=0;
 
 	/// Graphics driver version
 	/// @return Driver version
 	/// @retval Any
-	virtual wxString DriverGraphicsVersion()=0;
+	virtual std::string DriverGraphicsVersion()=0;
 
 	/// Directshow filters installed
-	/// @return wxXmlNode of filters installed
-	/// @retval A wxXmlNode in the format of:
+	/// @return json::Object of filters installed
+	/// @retval A json::Object format of:
 	/// \verbatim
 	/// <filter>
 	///   <name version="[version]">[name]</name>
 	/// </filter>
 	/// \endverbatim
-	virtual wxString DirectShowFilters()=0;
+	virtual std::string DirectShowFilters()=0;
 
 	/// AntiVirus installed
 	/// @return true/false
 	/// @retval 1,0
-	virtual wxString AntiVirus()=0;
+	virtual std::string AntiVirus()=0;
 
 	/// Firewall installed
 	/// @return true/false
 	/// @retval 1,0
-	virtual wxString Firewall()=0;
+	virtual std::string Firewall()=0;
 
 	/// DLL versions used
-	/// @return wxXmlNode of DLLs used
-	/// @retval A wxXmlNode in the format of:
+	/// @return json::Array of DLLs used
+	/// @retval A json::Array in the format of:
 	/// \verbatim
-	/// <dll>
-	///   <file version="[version]">[name]</file>
-	/// </dll>
+	/// { "version", "name" }
 	/// \endverbatim
-	virtual wxString DLLVersions()=0;
+	virtual std::string DLLVersions()=0;
 #endif
 	//@}
 
@@ -249,20 +242,18 @@ public:
 	//@{
 #ifdef __UNIX__
 
-	/// Dynamic libraries used
-	/// @return wxXmlNode of libraries used
-	/// @retval A wxXmlNode in the format of:
+	/// Library versions used
+	/// @return json::Array of DLLs used
+	/// @retval A json::Array in the format of:
 	/// \verbatim
-	/// <lib>
-	///   <file version="[version]">[name]</file>
-	/// </lib>
+	/// { "version", "name" }
 	/// \endverbatim
-	virtual wxString UnixLibraries()=0;
+	virtual std::string UnixLibraries()=0;
 
 	/// Desktop environment
 	/// @return Environment
 	/// @retval Gnome, KDE, WindowMaker...
-	virtual wxString DesktopEnvironment()=0;
+	virtual const char* DesktopEnvironment()=0;
 #endif
 	//@}
 
@@ -273,22 +264,20 @@ public:
 	/// OS patch level
 	/// @return Patch level
 	/// @retval Any
-	virtual wxString PatchLevel()=0;
+	virtual std::string PatchLevel()=0;
 
 	/// QuickTime extensions
-	/// @return wxXmlNode of extensions used
-	/// @retval A wxXmlNode in the format of:
+	/// @return json::Array of extensions used
+	/// @retval A json::Array in the format of:
 	/// \verbatim
-	/// <quicktime>
-	///   <ext version="[version]">[name]</file>
-	/// </quicktime>
+	/// { "version", "name" }
 	/// \endverbatim
-	virtual wxString QuickTimeExt()=0;
+	virtual std::string QuickTimeExt()=0;
 
 	/// Hardware model
 	/// @return Model
 	/// @retval Any
-	virtual wxString HardwareModel()=0;
+	virtual std::string HardwareModel()=0;
 #endif
 	//@}
 
@@ -301,6 +290,11 @@ private:
 	/// wxLocale instance.
 	wxLocale *locale;
 
+	/// wxGLCanvas.
+	wxGLCanvas *glc;
+
+	/// wxGLContext.
+	wxGLContext *ctx;
 
 	/// Available video information.
 	enum VideoInfo {
@@ -313,6 +307,6 @@ private:
 	/// Retrieve OpenGL video information.
 	/// @param which Requested information
 	/// @return Video info.
-	wxString GetVideoInfo(enum Platform::VideoInfo which);
+	std::string GetVideoInfo(enum Platform::VideoInfo which);
 
 };

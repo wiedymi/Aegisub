@@ -19,6 +19,7 @@
 /// @ingroup base
 
 #ifndef R_PRECOMP
+#include <sstream>
 #include <wx/string.h>
 #include <wx/app.h>
 #include <wx/gdicmn.h>	// Display* functions.
@@ -28,11 +29,11 @@
 #endif
 
 #include "include/platform.h"
-#include "platform_windows.h"
+//#include "platform_windows.h"
 #include "platform_unix.h"
 #include "platform_unix_bsd.h"
-#include "platform_unix_linux.h"
-#include "platform_unix_osx.h"
+//#include "platform_unix_linux.h"
+//#include "platform_unix_osx.h"
 
 extern "C" {
 #ifdef __WXMAC__
@@ -69,134 +70,143 @@ Platform* Platform::GetPlatform() {
 void Platform::Init() {
 	locale = new wxLocale();
 	locale->Init();
+
+	int attList[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
+	glc = new wxGLCanvas(wxTheApp->GetTopWindow(), wxID_ANY, attList, wxDefaultPosition, wxSize(0,0));
+	ctx = new wxGLContext(glc, 0);
+	wxGLCanvas &cr = *glc;
+	ctx->SetCurrent(cr);
+
+}
+
+Platform::~Platform() {
+	delete ctx;
+	delete glc;
+	delete locale;
 }
 
 /**
  * @brief Gather video adapter information via OpenGL
  *
  */
-wxString Platform::GetVideoInfo(enum Platform::VideoInfo which) {
-	int attList[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
-	wxGLCanvas *glc = new wxGLCanvas(wxTheApp->GetTopWindow(), wxID_ANY, attList, wxDefaultPosition, wxDefaultSize);
-	wxGLContext *ctx = new wxGLContext(glc, 0);
-	wxGLCanvas &cr = *glc;
-	ctx->SetCurrent(cr);
+std::string Platform::GetVideoInfo(enum Platform::VideoInfo which) {
 
-	wxString value;
+	std::string value;
 
 	switch (which) {
 		case VIDEO_EXT:
-			value = wxString(glGetString(GL_EXTENSIONS));
+			return reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
 		break;
 		case VIDEO_RENDERER:
-			value = wxString(glGetString(GL_RENDERER));
+			return reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 		break;
 		case VIDEO_VENDOR:
-			value = wxString(glGetString(GL_VENDOR));
+			return reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 		break;
 		case VIDEO_VERSION:
-			value = wxString(glGetString(GL_VERSION));
+			return reinterpret_cast<const char*>(glGetString(GL_VERSION));
+		default:
+			return "";
 	}
 
-	delete ctx;
-	delete glc;
-
-	return value;
 }
 
-wxString Platform::ArchName() {
-	return plat.GetArchName();
+std::string Platform::ArchName() {
+	return std::string(plat.GetArchName());
 };
 
-wxString Platform::OSFamily() {
-	return plat.GetOperatingSystemFamilyName();
+std::string Platform::OSFamily() {
+	return std::string(plat.GetOperatingSystemFamilyName());
 };
 
-wxString Platform::OSName() {
-	return plat.GetOperatingSystemIdName();
+std::string Platform::OSName() {
+	return std::string(plat.GetOperatingSystemIdName());
 };
 
-wxString Platform::Endian() {
-	return plat.GetEndiannessName();
+std::string Platform::Endian() {
+	return std::string(plat.GetEndiannessName());
 };
 
-wxString Platform::DisplayColour() {
-	return wxString::Format(L"%d", wxColourDisplay());
+
+int Platform::DisplayDepth() {
+	return wxDisplayDepth();
 }
 
-wxString Platform::DisplayDepth() {
-	return wxString::Format(L"%d", wxDisplayDepth());
-}
-
-wxString Platform::DisplaySize() {
+std::string Platform::DisplaySize() {
 	int x, y;
 	wxDisplaySize(&x, &y);
-	return wxString::Format(L"%d %d", x, y);
+	std::stringstream ss;
+	ss << x << " " << y;
+	return ss.str();
 }
 
-wxString Platform::DisplayPPI() {
-	return wxString::Format(L"%d %d", wxGetDisplayPPI().GetWidth(), wxGetDisplayPPI().GetHeight());
+std::string Platform::DisplayPPI() {
+	std::stringstream ss;
+	ss << wxGetDisplayPPI().GetWidth() << " " << wxGetDisplayPPI().GetHeight();
+	return ss.str();
 }
 
-wxString Platform::wxVersion() {
-	return wxString::Format(L"%d.%d.%d.%d", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER, wxSUBRELEASE_NUMBER);
+std::string Platform::wxVersion() {
+	std::stringstream ss;
+	ss << wxMAJOR_VERSION << "." << wxMINOR_VERSION << "." << wxRELEASE_NUMBER << "." << wxSUBRELEASE_NUMBER;
+	return ss.str();
 }
 
-wxString Platform::Locale() {
-	return wxLocale().GetSysName();
+std::string Platform::Locale() {
+	return std::string(wxLocale().GetSysName());
 }
 
-wxString Platform::Language() {
+const char* Platform::Language() {
 	const wxLanguageInfo *info = locale->GetLanguageInfo(locale->GetLanguage());
-	return info->CanonicalName;
+	return info->CanonicalName.c_str();
 }
 
-wxString Platform::SystemLanguage() {
+const char* Platform::SystemLanguage() {
 	const wxLanguageInfo *info = locale->GetLanguageInfo(locale->GetSystemLanguage());
-	return info->CanonicalName;
+	return info->CanonicalName.c_str();
 }
 
-wxString Platform::Date() {
+std::string Platform::Date() {
 	return "";
 }
 
-wxString Platform::Signature() {
+std::string Platform::Signature() {
 	return "";
 }
 
 #ifdef __UNIX__
-wxString Platform::DesktopEnvironment() {
+const char* Platform::DesktopEnvironment() {
 	return "";
 }
 #endif
 
-wxString Platform::OpenGLVendor() {
+std::string Platform::OpenGLVendor() {
 	return GetVideoInfo(VIDEO_VENDOR);
 }
 
-wxString Platform::OpenGLRenderer() {
+std::string Platform::OpenGLRenderer() {
 	return GetVideoInfo(VIDEO_RENDERER);
 }
 
-wxString Platform::OpenGLVersion() {
+std::string Platform::OpenGLVersion() {
 	return GetVideoInfo(VIDEO_VERSION);
 }
 
-wxString Platform::OpenGLExt() {
+std::string Platform::OpenGLExt() {
 	return GetVideoInfo(VIDEO_EXT);
 }
 
 #ifdef __APPLE__
 
-wxString Platform::PatchLevel() {
+std::string Platform::PatchLevel() {
 	return "";
 }
 
-wxString Platform::QuickTimeExt() {
+std::string Platform::QuickTimeExt() {
 	return "";
 }
 
-wxString Platform::HardwareModel() {
+std::string Platform::HardwareModel() {
 	return "";
 }
 

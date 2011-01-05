@@ -29,7 +29,7 @@
 #include <stdint.h>
 
 // C++ std
-#include <map>
+#include <sstream>
 
 // 3rd party packages.
 #include <curl/curl.h>
@@ -66,6 +66,5 @@
 #include <wx/wx.h>
 #include <wx/wxchar.h>
 #include <wx/wxprec.h>
-#include <wx/xml/xml.h>
 
 #endif

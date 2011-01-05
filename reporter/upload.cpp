@@ -47,9 +47,9 @@ Upload::~Upload() {
 }
 
 
-/// @brief Submit an XML report.
+/// @brief Submit a JSON report.
 /// @param report filename of the report.
-void Upload::Report(wxString report) {
+void Upload::Report(std::string report) {
 	wxFile file(report, wxFile::read);
 	SendFile("http://reporter.darkbeer.org/PUT/", file);
 }

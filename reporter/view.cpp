@@ -40,8 +40,8 @@ View::View(wxWindow *frame, Report *r)
 	wxListView *listView = new wxListView(this,wxID_ANY,wxDefaultPosition,wxDefaultSize);
 
 	// Fill the list with the actual report.
-	text = new wxString();
-	r->Fill(text, listView);
+	text = new std::string();
+//	r->Fill(text, listView);
 
     listSizer->Add(listView, 1, wxEXPAND);
 	topSizer->Add(listSizer, 1, wxEXPAND | wxALL, 0);

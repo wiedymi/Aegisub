@@ -50,7 +50,7 @@ bool Reporter::OnInit()
 	static const wxCmdLineEntryDesc cmdLineDesc[] = {
 		{ wxCMD_LINE_SWITCH, "c", "crash",      "Launch in crash mode.",	wxCMD_LINE_VAL_NONE, NULL },
 		{ wxCMD_LINE_SWITCH, "r", "report",     "Launch in Report mode.",	wxCMD_LINE_VAL_NONE, NULL },
-		{ wxCMD_LINE_SWITCH, "x", "xml",		"Dump XML file",			wxCMD_LINE_VAL_NONE, NULL },
+		{ wxCMD_LINE_SWITCH, "j", "json",		"Dump JSON file",			wxCMD_LINE_VAL_NONE, NULL },
 		{ wxCMD_LINE_SWITCH, "h", "help",       "This help message",		wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
 		{ wxCMD_LINE_NONE, NULL, NULL, NULL, wxCMD_LINE_VAL_NONE, NULL}
 	};
@@ -87,17 +87,18 @@ bool Reporter::OnInit()
 	setlocale(LC_NUMERIC, "C");
 	setlocale(LC_CTYPE, "C");
 
-	mFrame *frame = new mFrame(_("Aegisub Reporter"));
-	Report *r = new Report;
 
-	if (parser.Found("x")) {
-		r->Save("report.xml");
-		wxPrintf("Report saved to report.xml\n");
+	mFrame *frame = new mFrame(_("Aegisub Reporter"));
+
+	if (parser.Found("j")) {
+		r->Save("report.json");
+		std::cout << "Report saved to report.json" << std::endl;
 		return false;
 	}
 
 	SetTopWindow(frame);
 
+	r = new Report;
 	frame->SetReport(r);
 
 	return true;
@@ -110,31 +111,31 @@ mFrame::mFrame(const wxString &window_title)
 
 	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
 
-	wxStaticBoxSizer *msgSizer = new wxStaticBoxSizer(wxVERTICAL, this, "");
-	topSizer->Add(msgSizer, 1, wxALL, 5);
+	wxBoxSizer *msgSizer = new wxBoxSizer(wxVERTICAL);
+	topSizer->Add(msgSizer, 0, wxALL, 5);
 
-	wxStaticText *title = new wxStaticText(this, -1,_("Welcome to the Aegisub Reporter!"), wxDefaultPosition, wxSize(325,-1), wxALIGN_CENTRE|wxST_NO_AUTORESIZE);
-	msgSizer->Add(title, 1, wxALL, 5);
+	wxStaticText *title = new wxStaticText(this, -1, _("Welcome to the Aegisub reporter!"));
+	msgSizer->Add(title, 0, wxALL, 5);
 	title->SetFont(wxFont(11, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD));
 
-	wxStaticText *msg = new wxStaticText(this, -1,_("In order to better help us target development, and improve Aegisub we would like you to submit some information about your system and setup."));
+	wxStaticText *msg = new wxStaticText(this, -1, _("In order to better help us target development, and improve Aegisub we would like you to submit some information about your system and setup."));
 	msg->Wrap(325);
 	msgSizer->Add(msg, 1, wxALL, 5);
 
-	wxStaticText *notice = new wxStaticText(this, -1,_("This information is completely anonymous, no personal information is sent along it is strictly used for targeting new features and the future direction of Aegisub."));
+	wxStaticText *notice = new wxStaticText(this, -1, _("This information is completely anonymous, no personal information is sent along it is strictly used for targeting new features and the future direction of Aegisub."));
 	msgSizer->Add(notice, 1, wxALL, 5);
 	notice->SetFont(wxFont(11, wxFONTFAMILY_SWISS, wxFONTSTYLE_ITALIC, wxFONTWEIGHT_NORMAL));
 	notice->Wrap(325);
-	msgSizer->Add(new wxButton(this, 42, "View Report"), 0, wxALL, 10 );
-
+	msgSizer->Add(new wxButton(this, 42, "View Report"), 0, wxTOP, 5);
 
 	wxStdDialogButtonSizer *stdButton = new wxStdDialogButtonSizer();
 	stdButton->AddButton(new wxButton(this, wxID_OK, _("Submit")));
 	stdButton->AddButton(new wxButton(this, wxID_CANCEL, _("Cancel")));
 	stdButton->Realize();
-	topSizer->Add(stdButton, 1, wxALL, 5);
+	topSizer->Add(stdButton, 0, wxALL, 5);
 
 	this->SetSizerAndFit(topSizer);
+	msgSizer->Layout();
 
 	// Is there a better way to do this?
 	this->SetMaxSize(this->GetEffectiveMinSize());
@@ -159,6 +160,6 @@ void mFrame::Cancel(wxCommandEvent& WXUNUSED(event)) {
 void mFrame::Submit(wxCommandEvent& WXUNUSED(event)) {
 	Progress *progress = new Progress(this);
 	Upload *upload = new Upload(progress);
-	upload->Report(_("./test.xml"));
+	upload->Report("./test.json");
 }
 

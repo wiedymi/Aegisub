@@ -32,44 +32,43 @@ extern "C" {
 #include "platform_unix_bsd.h"
 
 
-wxString PlatformUnixBSD::CPUId() {
+std::string PlatformUnixBSD::CPUId() {
 	char id[300];
 	size_t len = sizeof(id);
 	sysctlbyname("hw.model", &id, &len, NULL, 0);
-	return wxString::Format("%s", id);
+	return id;
 };
 
-wxString PlatformUnixBSD::CPUSpeed() {
+std::string PlatformUnixBSD::CPUSpeed() {
 	return "";
 };
 
-wxString PlatformUnixBSD::CPUCores() {
-	return "";
+int PlatformUnixBSD::CPUCores() {
+	return 0;
 };
 
-wxString PlatformUnixBSD::CPUCount() {
+int PlatformUnixBSD::CPUCount() {
 	int proc;
 	size_t len = sizeof(proc);
 	sysctlbyname("hw.ncpu", &proc, &len, NULL, 0);
-	return wxString::Format("%d", proc);
+	return proc;
 };
 
-wxString PlatformUnixBSD::CPUFeatures() {
+std::string PlatformUnixBSD::CPUFeatures() {
 	return "";
 };
 
-wxString PlatformUnixBSD::CPUFeatures2() {
+std::string PlatformUnixBSD::CPUFeatures2() {
 	return "";
 };
 
-wxString PlatformUnixBSD::Memory() {
+uint64_t PlatformUnixBSD::Memory() {
 	uint64_t memory;
 	size_t len = sizeof(memory);
 	sysctlbyname("hw.physmem", &memory, &len, NULL, 0);
-	return wxString::Format("%d", memory);
-	return "";
+	return memory;
 };
 
-wxString PlatformUnixBSD::UnixLibraries() {
+std::string PlatformUnixBSD::UnixLibraries() {
 	return "";
 };

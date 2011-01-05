@@ -19,12 +19,12 @@
 /// @ingroup base
 
 #ifndef R_PRECOMP
-#include <wx/fileconf.h>
 #include <wx/wfstream.h>
 #include <wx/stdpaths.h>
 #endif
 
 #include "aegisub.h"
+
 
 #ifdef __WINDOWS__
 #include "../src/config.h"
@@ -36,18 +36,34 @@ Aegisub::Aegisub() {
 	wxStandardPathsBase &paths = wxStandardPaths::Get();
 // Using ifdefs is a pain but it's much easier to centralise this.
 #if defined(__APPLE__)
-	wxString configdir =  wxString::Format("%s-%s", paths.GetUserDataDir(), _T(AEGISUB_VERSION_DATA));
+	std::string conf_user(wxString::Format("%s-%s/config.json", paths.GetUserDataDir(), _T(AEGISUB_VERSION_DATA)));
 #elif defined(__UNIX__)
-	wxString configdir =  wxString::Format("%s/.aegisub-%s", paths.GetUserConfigDir(), _T(AEGISUB_VERSION_DATA));
+	std::string conf_user(wxString::Format("%s/.aegisub-%s/config.json", paths.GetUserConfigDir(), _T(AEGISUB_VERSION_DATA)));
 #else
-	wxString configdir =  wxString::Format("%s/Aegisub", paths.GetUserConfigDir());
+	std::string conf_user(wxString::Format("%s/Aegisub/config.json", paths.GetUserConfigDir()));
 #endif
 
-	wxFileInputStream file(wxString::Format("%s/config.dat", configdir));
-	conf = new wxFileConfig(file);
-	conf->SetExpandEnvVars(false);
+std::cout << conf_user << std::endl;
+	std::string default_config("{}");
+	opt = new agi::Options(conf_user, default_config, agi::Options::FLUSH_SKIP);
 }
 
-wxString Aegisub::Read(wxString key) {
-	return conf->Read(key);
+
+Aegisub::~Aegisub() {
+	delete opt;
+}
+
+
+const std::string Aegisub::GetString(std::string key) {
+		return opt->Get(key)->GetString();
+}
+
+
+int64_t Aegisub::GetInt(std::string key) {
+		return opt->Get(key)->GetInt();
+}
+
+
+bool Aegisub::GetBool(std::string key) {
+		return opt->Get(key)->GetBool();
 }
